@@ -47,8 +47,6 @@ namespace Dash
             {
                 opView.OperatorContent = customLayout.Invoke();
             }
-
-            SetupBindings(opView, docController, context);
             
             return opView;
         }

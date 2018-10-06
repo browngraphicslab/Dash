@@ -7,7 +7,6 @@ using Windows.UI.Xaml.Data;
 using System.Diagnostics;
 using Windows.System;
 using Dash.Converters;
-using Windows.UI.Core;
 
 namespace Dash
 {
@@ -56,7 +55,6 @@ namespace Dash
             video.Unloaded += (s, e) => video.MediaPlayer.Pause();
 
 			// setup bindings on the video
-			SetupBindings(video, docController, context);
 			SetupVideoBinding(video, docController, context);
 			
 			return video;

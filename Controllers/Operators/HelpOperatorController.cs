@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -33,23 +34,26 @@ namespace Dash
             [ComputedResultKey] = TypeInfo.Text
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             if (!inputs.ContainsKey(FuncNameKey))
             {
                 outputs[ComputedResultKey] = OperatorScript.GetFunctionList();
-                return;
+                return Task.CompletedTask;
             }
-            if (!(inputs[FuncNameKey] is TextController enumAsString)) return;
+            if (!(inputs[FuncNameKey] is TextController enumAsString)) return Task.CompletedTask;
             if (enumAsString.Data == "")
             {
                 outputs[ComputedResultKey] = OperatorScript.GetFunctionList();
-                return;
+                return Task.CompletedTask;
             }
             var enumOut = Op.Parse(enumAsString.Data);
             if (enumOut == Op.Name.invalid) throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(enumAsString.Data));
             if (!_constructedExcerpts.ContainsKey(enumOut)) _constructedExcerpts.Add(enumOut, new ScriptHelpExcerpt(enumOut));
             outputs[ComputedResultKey] = _constructedExcerpts[enumOut].GetExcerpt();
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new HelpOperatorController();

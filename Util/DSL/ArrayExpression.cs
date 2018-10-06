@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -17,7 +18,7 @@ namespace Dash
             throw new System.NotImplementedException();
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
              var typeInfo = TypeInfo.None;
             //  execute each element in list if it isn't null
@@ -26,7 +27,7 @@ namespace Dash
             {
                 if (elem != null)
                 {
-                    var field = elem.Execute(scope);
+                    var field = await elem.Execute(scope);
                     outputList.Add(field);
 
                     if (typeInfo == TypeInfo.None && field.TypeInfo != TypeInfo.None)

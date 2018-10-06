@@ -1,0 +1,23 @@
+{
+  "name": "Dash Ext",
+  "version": "1.0",
+  "description": "Dash Ext",
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": [ "background.js" ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "system.display",
+    "*://*/*"
+  ],
+  "manifest_version": 2
+}

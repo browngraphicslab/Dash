@@ -51,40 +51,29 @@ namespace Dash
 
         public FieldControllerBase Dereference(Context context)
         {
-            FieldControllerBase controller;
-            if (context != null)
-            {
-                if (context.TryDereferenceToRoot(this, out controller))
-                {
-                    return controller;
-                }
-            }
-            var doc = GetDocumentController(context);
-            if (doc != null)
-            {
-                context = new Context(context);
-                var newContext = doc.ShouldExecute(context, FieldKey, null, false);
-                if (newContext.TryDereferenceToRoot(this, out controller))
-                {
-                    return controller;
-                }
-
-                var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
-
-                return fmc;
-            }
-            return null;
+            return GetDocumentController(context)?.GetField(FieldKey);
         }
 
         public FieldControllerBase DereferenceToRoot(Context context)
         {
             context = new Context(context);
-            context.AddDocumentContext(GetDocumentController(context));
-            FieldControllerBase reference = Dereference(context);
-            while (reference is ReferenceController)
+            var documentController = GetDocumentController(context);
+            if (documentController == null)
             {
-                context?.AddDocumentContext(((ReferenceController)reference).GetDocumentController(context));
-                reference = reference.Dereference(context);
+                return null;
+            }
+            context.AddDocumentContext(documentController);
+            FieldControllerBase reference = Dereference(context);
+            while (reference is ReferenceController referenceController)
+            {
+                var doc = ((ReferenceController)reference).GetDocumentController(context);
+                if (doc != null)
+                {
+                    context?.AddDocumentContext(doc);
+                    reference = reference.Dereference(context);
+                }
+                else
+                    break;
             }
 
             return reference;

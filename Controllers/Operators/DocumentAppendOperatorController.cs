@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -39,7 +40,7 @@ namespace Dash
             [OutputDocumentKey] = TypeInfo.Document
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -50,6 +51,7 @@ namespace Dash
             del.SetField(new KeyController("Concat output", Guid.NewGuid().ToString()), field, true);
 
             outputs[OutputDocumentKey] = del;
+            return Task.CompletedTask;
         }
     }
 }

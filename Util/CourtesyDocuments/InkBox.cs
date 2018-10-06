@@ -22,14 +22,7 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
-            if (fmController != null)
-            {
-                var inkCanvas = new InkCanvasControl(fmController);
-                SetupBindings(inkCanvas, docController, context);
-
-                return inkCanvas;
-            }
-            return new Grid();
+            return fmController != null ? (FrameworkElement)new InkCanvasControl(fmController) : new Grid();
         }
 
         private static ReferenceController GetInkReference(DocumentController docController)

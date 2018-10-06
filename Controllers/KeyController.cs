@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Dash.Controllers.Operators;
 using DashShared;
 
 namespace Dash
@@ -125,7 +126,6 @@ namespace Dash
             //return Equals(KeyStore.DelegatesKey) ||
             //       Equals(KeyStore.PrototypeKey) ||
             //       Equals(KeyStore.LayoutListKey) ||
-            //       Equals(KeyStore.ActiveLayoutKey) ||
             //       Equals(KeyStore.IconTypeFieldKey);
         }
 
@@ -151,6 +151,11 @@ namespace Dash
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return searchString == null || (Name.ToLower().Contains(searchString.ToLower()) ||
                reg.IsMatch(Name)) ? new StringSearchModel(Name) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<KeyOperator>() + $"(\"{Name}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

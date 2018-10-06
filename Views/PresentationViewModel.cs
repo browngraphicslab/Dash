@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Animation;
@@ -44,7 +43,7 @@ namespace Dash
             if (_listController == null)
             {
                 _listController = new ListController<DocumentController>();
-                MainPage.Instance.MainDocument.SetField(KeyStore.PresentationItemsKey, _listController, true);
+                MainPage.Instance.MainDocument.GetDataDocument().SetField(KeyStore.PresentationItemsKey, _listController, true);
             }
 
             //if (PinnedNodes.Contains(dc)) return;

@@ -1,11 +1,7 @@
-﻿using System;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using DashShared;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.Foundation;
-using Dash.Converters;
-using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -35,8 +31,6 @@ namespace Dash
 
         protected static void SetupBindings(EditableMarkdownBlock element, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(element, docController, context);
-            
             SetupTextBinding(element, docController, context);
         }
 

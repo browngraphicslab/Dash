@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -46,7 +42,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9", "Element Access");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -66,6 +62,7 @@ namespace Dash
             }
             
             outputs[ResultsKey] = newValue;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -42,8 +39,9 @@ namespace Dash
             [OutputKey] = TypeInfo.Any
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, 
-            Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var var = (inputs[VariableKey] as TextController)?.Data;
             var assignment = inputs[AssignmentKey];
@@ -51,6 +49,7 @@ namespace Dash
             scope?.SetVariable(var, assignment);
 
             outputs[OutputKey] = assignment;
+            return Task.CompletedTask;
         }
 
     }

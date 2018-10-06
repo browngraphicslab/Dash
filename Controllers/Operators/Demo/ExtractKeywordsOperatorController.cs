@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 using Gma.CodeCloud.Controls.TextAnalyses.Blacklist;
 using Gma.CodeCloud.Controls.TextAnalyses.Extractors;
@@ -49,7 +50,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Keywords", "8EA60017-CF8E-4885-B712-7C38906C299F");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -97,6 +98,7 @@ namespace Dash
             }
 
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

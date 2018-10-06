@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -84,17 +72,14 @@ namespace Dash
             CurSplitMode = SplitMode.Content;
         }
 
-        public bool DocViewTrySplit(SplitFrame sender, SplitFrame.SplitEventArgs args)
+        public SplitFrame DocViewTrySplit(SplitFrame sender, SplitFrame.SplitEventArgs args)
         {
+            SplitFrame newPane = null;
             switch (args.Direction)
             {
                 case SplitFrame.SplitDirection.Down:
                 case SplitFrame.SplitDirection.Up:
-                    if (_allowedSplits == SplitMode.Horizontal)//Make new nested split manager and move split frame to new manager
-                    {
-                        return false;
-                    }
-                    else
+                    if (_allowedSplits != SplitMode.Horizontal)//Make new nested split manager and move split frame to new manager
                     {
                         if (CurSplitMode == SplitMode.Content)
                         {
@@ -109,7 +94,7 @@ namespace Dash
                             ResizeDirection = GridSplitter.GridResizeDirection.Rows,
                             ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
                         };
-                        var newPane = new SplitFrame()
+                        newPane = new SplitFrame()
                         {
                             DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
                         };
@@ -162,11 +147,7 @@ namespace Dash
                     break;
                 case SplitFrame.SplitDirection.Left:
                 case SplitFrame.SplitDirection.Right:
-                    if (_allowedSplits == SplitMode.Vertical)//Make new nested split manager and move split frame to new manager
-                    {
-                        return false;
-                    }
-                    else
+                    if (_allowedSplits != SplitMode.Vertical)//Make new nested split manager and move split frame to new manager
                     {
                         if (CurSplitMode == SplitMode.Content)
                         {
@@ -181,7 +162,7 @@ namespace Dash
                             ResizeDirection = GridSplitter.GridResizeDirection.Columns,
                             ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
                         };
-                        var newPane = new SplitFrame()
+                        newPane = new SplitFrame()
                         {
                             DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
                         };
@@ -233,7 +214,7 @@ namespace Dash
                     break;
             }
 
-            return true;
+            return newPane;
         }
 
         private void WrapFrameInManager(SplitFrame frame)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -35,9 +36,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Zip", "FA39D712-E1AA-4740-8CC9-C3201708A1F5");
 
-        private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
+        private static readonly List<KeyController> ExcludedKeys = new List<KeyController>();
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -58,6 +59,7 @@ namespace Dash
             }
 
             outputs[OutputKey] = new ListController<DocumentController>(newDocs);
+            return Task.CompletedTask;
         }
 
         private void AddFields(Dictionary<KeyController, FieldControllerBase> fields, DocumentController doc)

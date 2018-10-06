@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -11,7 +10,7 @@ namespace Dash
     /// abstract controller from which "Controller<T>" should inherit.
     /// This class should hold all the abstract contracts that every Controller must inherit
     /// </summary>
-    public abstract class FieldControllerBase : IController<FieldModel>, IDisposable
+    public abstract class FieldControllerBase : IController<FieldModel>
     {
         public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
@@ -25,6 +24,7 @@ namespace Dash
         public abstract TypeInfo TypeInfo { get; }
         public virtual TypeInfo RootTypeInfo => TypeInfo;
         public event FieldUpdatedHandler FieldModelUpdated;
+
         public object Tag = null;
 
         protected FieldControllerBase(FieldModel model) : base(model)
@@ -134,6 +134,12 @@ namespace Dash
         public abstract StringSearchModel SearchForString(string searchString);
 
         /// <summary>
+        /// Convert a field to a script that will evaluate to that field
+        /// </summary>
+        /// <returns>A string that is a script that will evaluate to this field</returns>
+        public abstract string ToScriptString(DocumentController thisDoc = null);
+
+        /// <summary>
         ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
         ///     displaying the number of items stored in collection/list
         /// </summary>
@@ -180,40 +186,5 @@ namespace Dash
         public delegate void FieldControllerDisposedHandler(FieldControllerBase field);
         public event FieldControllerDisposedHandler Disposed;
 
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
-            }
-        }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~FieldControllerBase() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
     }
 }

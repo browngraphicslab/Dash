@@ -248,6 +248,11 @@ namespace Dash
             return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "[" + string.Join(", ", TypedData.Select(f => f.ToScriptString(thisDoc))) + "]";
+        }
+
         // @IList<T> //
         /*
          * Wraps the CopyTo method in the format mandated by IList<Implementation>
@@ -378,7 +383,7 @@ namespace Dash
         {
             if (IsReadOnly) return;
 
-            var prevList = TypedData;
+            var prevList = TypedData.ToList();
             var enumerable = elements.ToList();
             foreach (var element in enumerable)
             {
@@ -397,7 +402,7 @@ namespace Dash
 
             UpdateOnServer(withUndo ? newEvent : null);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, enumerable.ToList(), prevList, prevList.Count - 1));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, enumerable.ToList(), prevList, prevList.Count));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, enumerable.ToList()));
         }
 

@@ -119,7 +119,7 @@ namespace Dash
             //{
             //    var relatedFields = new List<string>();
             //    var relatedStrings = new List<string>();
-                
+
             //    var numMatchedFields = 0;
             //    foreach (var field in node.ViewDocument.EnumDisplayableFields())
             //    {
@@ -180,33 +180,6 @@ namespace Dash
             return outList;
         }
 
-        public static void UnHighlightAllDocs()
-        {
-            //TODO:call this when search is unfocused
-            //list of all collections
-            var allCollections =
-                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
-
-            foreach (var coll in allCollections)
-            {
-                UnHighlightDocs(coll);
-            }
-        }
-
-        public static void UnHighlightDocs(DocumentController coll)
-        {
-            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-            //unhighlight each doc in collection
-            foreach (var doc in colDocs)
-            {
-                MainPage.Instance.HighlightDoc(doc, false, 2);
-                if (doc.DocumentType.ToString() == "Collection Box")
-                {
-                    UnHighlightDocs(doc);
-                }
-            }
-        }
-
         // Handles instances where the user inserted a colon, and determines whether or not the user meant to
         // search the colon as part of a string, or perform a parameterized search
         public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart)
@@ -256,11 +229,11 @@ namespace Dash
             {
                 return SearchByKeyValuePair(new KeyController(name), paramName.Trim('"'));
             }
-            
+
             try
             {
                 paramName = paramName.Trim('"');
-                var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
+                var resultDocs = new DSL().Run(name + "(\"" + paramName + "\")").GetAwaiter().GetResult();
                 if (resultDocs is BaseListController resultList)
                 {
                     var res = DocumentTree.MainPageTree.GetAllNodes().Where(node => resultList.Data.Contains(node.ViewDocument) ||
@@ -272,10 +245,10 @@ namespace Dash
                     var relatedFields = new List<string> { $" >> Operator: { name }" };
                     switch (name)
                     {
-                        case "before":
-                            return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data }));
-                        case "after":
-                            return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data }));
+                    case "before":
+                        return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data }));
+                    case "after":
+                        return res.Select(node => new SearchResult(node, relatedFields, new List<string> { "Modified at: " + node.DataDocument.GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data }));
                     }
                     return res.Select(node => new SearchResult(node, new List<string> { $" >> Operator: { name }" }, new List<string> { trimParam }));
                 }
@@ -360,14 +333,14 @@ namespace Dash
                     {
                         return i;
                     }
-                }           
+                }
             }
             return -1;
         }
 
         // Breaks down the user string while searching based on the desired logical operators and placement
         // of quotes/parenthesis
-        public static IEnumerable<SearchResult> Parse(string inputString)
+        public static IEnumerable<SearchResult> Parse(string inputString, IEnumerable<DocumentController> docs = null)
         {
             if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
 
@@ -381,28 +354,53 @@ namespace Dash
             var results = new List<SearchResult>();
             var keyRefs = new List<string>();
             var fieldRefs = new List<string>();
-            foreach (var node in DocumentTree.MainPageTree)//TODO .GetAllNodes()
+
+            void DocSearch(DocumentController doc)
             {
-                var layoutResults = parseTree(node.ViewDocument);
-                var dataResults = parseTree(node.DataDocument);
-                foreach (var layoutResult in layoutResults)
+                var res = parseTree(doc);
+                foreach (var result in res)
                 {
-                    keyRefs.Add(layoutResult.Key.Name);
-                    fieldRefs.Add(layoutResult.Value.RelatedString);
+                    keyRefs.Add(result.Key.Name);
+                    fieldRefs.Add(result.Value.RelatedString);
                 }
-                foreach (var dataResult in dataResults)
+            }
+            if (docs == null)
+            {
+                foreach (var node in DocumentTree.MainPageTree) //TODO .GetAllNodes()
                 {
-                    keyRefs.Add(dataResult.Key.Name);
-                    fieldRefs.Add(dataResult.Value.RelatedString);
-                }
+                    DocSearch(node.ViewDocument);
+                    DocSearch(node.DataDocument);
 
-                if (keyRefs.Any())
-                {
-                    results.Add(new SearchResult(node, keyRefs, fieldRefs, layoutResults.Count + dataResults.Count));
-                }
+                    if (keyRefs.Any())
+                    {
+                        results.Add(new SearchResult(node, keyRefs, fieldRefs,
+                            keyRefs.Count));
+                    }
 
-                keyRefs.Clear();
-                fieldRefs.Clear();
+                    keyRefs.Clear();
+                    fieldRefs.Clear();
+                }
+            }
+            else
+            {
+                foreach (var documentController in docs)
+                {
+                    DocSearch(documentController);
+                    var dataDoc = documentController.GetDataDocument();
+                    if (dataDoc != documentController)
+                    {
+                        DocSearch(dataDoc);
+                    }
+
+                    if (keyRefs.Any())
+                    {
+                        results.Add(new SearchResult(documentController, keyRefs, fieldRefs,
+                            keyRefs.Count));
+                    }
+
+                    keyRefs.Clear();
+                    fieldRefs.Clear();
+                }
             }
 
             return results;
@@ -476,16 +474,17 @@ namespace Dash
 
             switch (divider)
             {
-                case ' ':
-                    return JoinTwoSearchesWithIntersection(searchResults, Parse(rest), modifiedSearchTerm);
-                case '|':
-                    return JoinTwoSearchesWithUnion(searchResults, Parse(rest));
-                default:
-                    throw new Exception("Unknown Divider");
+            case ' ':
+                return JoinTwoSearchesWithIntersection(searchResults, Parse(rest), modifiedSearchTerm);
+            case '|':
+                return JoinTwoSearchesWithUnion(searchResults, Parse(rest));
+            default:
+                throw new Exception("Unknown Divider");
             }
         }
 
-        public struct SearchTerm {
+        public struct SearchTerm
+        {
 
             public bool Negate { get; set; }
             public readonly string _term;
@@ -494,7 +493,7 @@ namespace Dash
                 Negate = negate;
                 _term = term;
             }
-            
+
             public static ListController<TextController> ConvertSearchTerms(List<SearchTerm> searchTerms)
             {
                 var list = new ListController<TextController>();

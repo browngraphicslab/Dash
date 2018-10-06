@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,8 +17,6 @@ namespace Dash
 
         public DocumentTree(DocumentController headRef)
         {
-            var title = headRef.GetField<TextController>(KeyStore.TitleKey);
-            headRef.SetField<TextController>(KeyStore.TitleKey, $"*{title}*", true);
             Head = new DocumentNode(headRef, null, Nodes);
         }
 
@@ -36,7 +33,7 @@ namespace Dash
                 toSearch.RemoveAt(toSearch.Count - 1);
                 if (doc.GetField(KeyStore.RegionsKey) == null && doc.GetField(KeyStore.LinkDestinationKey) == null)
                 {
-                    cachedNodes[doc] = new DocumentNode(doc, null, null);
+                    cachedNodes[doc] = new DocumentNode(doc, null, cachedNodes);
                 }
 
                 var dfields = doc.EnumDisplayableFields().ToList();
@@ -49,7 +46,8 @@ namespace Dash
                             continue;
                         }
                         toSearch.Add(docField);
-                    } else if(enumDisplayableField.Value is ListController<DocumentController> listField)
+                    }
+                    else if (enumDisplayableField.Value is ListController<DocumentController> listField)
                     {
                         foreach (var documentController in listField)
                         {
@@ -100,8 +98,42 @@ namespace Dash
          */
         public static DocumentTree MainPageTree => new DocumentTree(MainPage.Instance.MainDocument);
 
+        public static List<List<DocumentController>> GetPathsToDocuments(DocumentController doc, bool useDataDoc = true)
+        {
+            List<DocumentNode> nodes;
+
+            if (useDataDoc)
+            {
+                var dataDoc = doc.GetDataDocument();
+                nodes = MainPageTree.Where(node => node.DataDocument.Equals(dataDoc)).ToList();
+            }
+            else
+            {
+                nodes = MainPageTree.Where(node => node.ViewDocument.Equals(doc)).ToList();
+            }
+
+            var paths = new List<List<DocumentController>>(nodes.Count);
+            foreach (var node in nodes)
+            {
+                var path = new List<DocumentController>();
+                var currentNode = node;
+                while (currentNode != null)
+                {
+                    path.Add(currentNode.ViewDocument);
+                    currentNode = currentNode.Parent;
+                }
+
+                path.Reverse();
+                paths.Add(path);
+            }
+
+            paths.Sort((l1, l2) => l1.Count - l2.Count);
+
+            return paths;
+        }
+
         public IEnumerator<DocumentNode> GetEnumerator() => Head.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
     }
-}

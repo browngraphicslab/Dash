@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -44,7 +42,7 @@ namespace Dash
 
         private static readonly KeyController TypeKey = new KeyController("After", "C902F10A-454E-40C0-A2C8-9B2FC9711A9B");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -55,7 +53,7 @@ namespace Dash
 
             if (!DateTime.TryParse(time, out DateTime givenTime))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (!string.IsNullOrEmpty(time))
@@ -76,6 +74,7 @@ namespace Dash
             }
 
             outputs[ResultsKey] = toReturn;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

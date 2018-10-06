@@ -1,19 +1,14 @@
-﻿using DashShared;
-using System;
+﻿using System;
+using DashShared;
 using System.Collections.Generic;
+using Dash.Controllers.Operators;
+using Microsoft.Office.Interop.Word;
 
 namespace Dash
 {
-    class PointerReferenceController : ReferenceController
+    public class PointerReferenceController : ReferenceController
     {
         public ReferenceController DocumentReference { get; private set; }
-
-        DocumentController _lastDoc = null;
-        void fieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
-        {
-            DisposeField();
-            Init();
-        }
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
@@ -30,14 +25,25 @@ namespace Dash
                 ContentController<FieldModel>.GetController<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
             base.Init();
-            _lastDoc = DocumentReference?.GetDocumentController(null);
-           _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+            DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
+            DocumentChanged();
+        }
+
+        private void DocumentReferenceOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            DocumentChanged();
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<PointerReferenceOperator>() +
+                   $"({DocumentReference.ToScriptString(thisDoc)}, {FieldKey.ToScriptString(thisDoc)})";
         }
 
         public override void DisposeField()
         {
              base.DisposeField();
-            _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+            DocumentReference.FieldModelUpdated -= DocumentReferenceOnFieldModelUpdated;
         }
 
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
@@ -48,7 +54,7 @@ namespace Dash
 
         public override FieldControllerBase GetDocumentReference() => DocumentReference;
 
-        public override string ToString() => $"pRef[{DocumentReference}, {FieldKey}]";
+        public override string ToString() => $"pRef({DocumentReference}, {FieldKey})";
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {

@@ -34,6 +34,7 @@
                     </Setter>
                 </Style>-->
 
+
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
@@ -46,17 +47,12 @@
                 <RowDefinition />
                 <RowDefinition Height="80" />
             </Grid.RowDefinitions>
-            <local:DocumentView x:Name="xDocView" Grid.Row="0" DataContext="{Binding CurPage}" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            <!--<Grid x:Name="xDockSpots" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
-                <Button Content="- body -" HorizontalAlignment="Center" VerticalAlignment="Top"    Margin="0 10 0 0"  Width="100" Height="50" Opacity="0.5" Background="White" AllowDrop="True" Drop="Top_Drop"/>
-                <Button Content="- footer -"    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 10" Width="100" Height="50" Opacity="0.5" Background="White" AllowDrop="True" Drop="Bottom_Drop"/>
-            </Grid>-->
+            <ContentPresenter x:Name="XDocDisplay"></ContentPresenter>
             <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
-                                 PlaceholderText="Enter Command" VerticalAlignment="Stretch"
+                                 PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
                                  IsSpellCheckEnabled="False" AcceptsReturn="True"
                                  FontFamily="Consolas" IsColorFontEnabled="True" AllowDrop="True" Drop="XTextBox_OnDrop">
             </local:ActionTextBox>
-            <!--<local:DocumentView x:Name="xDocCaption" x:FieldModifier="public" Grid.Row="1" Height="0" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Visibility="Collapsed" />-->
         </Grid>
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
             x:Name="xSplitter"
@@ -67,7 +63,7 @@
                 FontSize="13">
             <localMicrosoft:GridSplitter.Element>
                 <Grid GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False">
-                    
+
                 </Grid>
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
@@ -76,6 +72,7 @@
                 <RowDefinition Height="40" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="40" />
+                <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
@@ -89,17 +86,19 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch" 
                 SelectionChanged="xThumbs_SelectionChanged" 
-                ItemsSource="{Binding ThumbDocumentViewModels}"
+                ItemsSource="{Binding DocumentViewModels}"
                 ScrollViewer.VerticalScrollMode="Enabled"
                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
                 HorizontalContentAlignment="Stretch"
                 ScrollViewer.IsVerticalRailEnabled="True"
                 Tapped="xThumbs_Tapped"
                 CanDragItems="True"
+                CanReorderItems="True"
+                AllowDrop="True"
+                DragItemsCompleted="xThumbs_DragItemsCompleted" 
                 DragItemsStarting="XThumbs_DragItemsStarting"
                 ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
-
                     <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
                 </ListView.Resources>
                 <ListView.ItemsPanel>
@@ -107,17 +106,27 @@
                         <ItemsStackPanel Orientation="Vertical" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <!--this could be bound to have left/right aligned columns for instance text vs numbers-->
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid PointerPressed="xThumbs_PointerPressed">
-                            <local:DocumentView IsHitTestVisible="False"/>
+                        <Grid PointerPressed="xThumbs_PointerPressed" HorizontalAlignment="Stretch">
+                            <TextBlock DataContextChanged="FrameworkElement_OnDataContextChanged" />
+                            <!--<local:DocumentView IsHitTestVisible="False"/>-->
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Rectangle Grid.Row="2" Fill="{StaticResource DashDarkBlueBrush}" />
+            <Rectangle Grid.Row="3" Fill="{StaticResource DashDarkBlueBrush}" />
+            <Button x:Name="templateButton" Grid.Row="2" Foreground="White" FontSize="16" Content="Generate Template" HorizontalAlignment="Stretch" Background="{StaticResource DashDarkBlueBrush}" Click="TemplateButton_OnClick" VerticalAlignment="Center"/>
             <TextBlock
-                CanDrag="True" Grid.Row="2" FontSize="16" HorizontalAlignment="Stretch"
+                CanDrag="True" Grid.Row="3" FontSize="16" HorizontalAlignment="Stretch"
                 TextAlignment="Center" VerticalAlignment="Center" Foreground="White"
                 DragStarting="ApplyScript_OnDragStarting">Apply Script</TextBlock>
         </Grid>

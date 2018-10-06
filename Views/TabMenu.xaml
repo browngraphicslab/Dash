@@ -1,4 +1,4 @@
-﻿    <UserControl
+﻿<UserControl
     x:Class="Dash.TabMenu"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,39 +18,41 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid x:Name="OuterGrid" CornerRadius="0" MinWidth="200" Padding="0" VerticalAlignment="Stretch"
-          Background="{ThemeResource WindowsBlue}" Opacity="1"  DoubleTapped="XMainGrid_OnDoubleTapped">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />   
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Border Margin="10" BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
-                <AutoSuggestBox x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}"
+    <Border Background="{ThemeResource DashDarkDarkBlueBrush}" CornerRadius="10">
+        <Grid x:Name="OuterGrid" CornerRadius="0" MinWidth="200" Padding="0" VerticalAlignment="Stretch"
+           Opacity="1"  DoubleTapped="XMainGrid_OnDoubleTapped">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Border Margin="10" BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
+                    <AutoSuggestBox x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}"
                                 BorderBrush="Transparent" Margin="5" PlaceholderText="Search all..."/>
-            </Border>
-        </Grid>
+                </Border>
+            </Grid>
 
-        <ListView x:Name="xListView" Grid.Row="1" Background="{ThemeResource DarkBackground}"
+            <ListView x:Name="xListView" Grid.Row="1" Background="{ThemeResource DashDarkBlue}"
                   ItemsSource="{x:Bind DisplayedTabItems}" RequestedTheme="Dark" Tapped="xListView_Tapped" MaxHeight="320" VerticalContentAlignment="Top">
-            
-            <ListView.ItemContainerStyle>
-                <!-- TODO: abstract this bs out-->
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Height" Value="1"></Setter>
-                    <Setter Property="Padding" Value="15,10"></Setter>
-                    <Setter Property="Margin" Value="0"></Setter>
-                    <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
-                    <Setter Property="BorderBrush" Value="{StaticResource BorderHighlight}"></Setter>
-                    <Setter Property="Foreground" Value="White"></Setter>
-                    <Setter Property="Background" Value="{ThemeResource DarkBackground}"></Setter>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate>  
-                    <TextBlock Text="{Binding Path=Title}" FontSize="11"></TextBlock>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+
+                <ListView.ItemContainerStyle>
+                    <!-- TODO: abstract this bs out-->
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Height" Value="1"></Setter>
+                        <Setter Property="Padding" Value="15,10"></Setter>
+                        <Setter Property="Margin" Value="0"></Setter>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderHighlight}"></Setter>
+                        <Setter Property="Foreground" Value="White"></Setter>
+                        <Setter Property="Background" Value="{ThemeResource DarkBackground}"></Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Path=Title}" FontSize="11"></TextBlock>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Border>
 </UserControl>

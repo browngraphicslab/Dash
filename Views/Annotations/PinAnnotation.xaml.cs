@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using System.Web;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Core;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -49,7 +38,12 @@ namespace Dash
                 RegionDocumentController.SetPosition(new Point(curPos.X + p.X, curPos.Y + p.Y));
                 e.Handled = true;
             };
-        } 
+        }
+
+        public override bool IsInView(Rect bounds)
+        {
+            return bounds.Contains(new Point());
+         }
 
         CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
 

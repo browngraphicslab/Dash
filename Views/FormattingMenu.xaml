@@ -5,7 +5,6 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="600">

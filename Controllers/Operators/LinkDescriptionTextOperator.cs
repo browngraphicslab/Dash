@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -41,7 +37,7 @@ namespace Dash
             [ShowDescription] = TypeInfo.Bool
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -63,6 +59,7 @@ namespace Dash
             {
                 outputs[ShowDescription] = new BoolController(false);
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -51,7 +49,7 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("Lambda Map", "E119C98C-6A29-4D10-978C-8E8049330D92");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -68,7 +66,7 @@ namespace Dash
                     var newScope = new Scope();
                     newScope.SetVariable(variableName.Data, obj);
                     var dsl = new DSL(newScope);
-                    var executed = dsl.Run(lambdaString.Data, false);
+                    var executed = await dsl.Run(lambdaString.Data, false);
                     outputList.Add(executed);
                 }
 

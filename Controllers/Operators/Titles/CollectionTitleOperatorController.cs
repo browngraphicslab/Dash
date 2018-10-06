@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -37,7 +38,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -54,7 +55,8 @@ namespace Dash
                 // mechanism of identifying and halting an evaluation cycle
                 if (firstDoc?.DocumentType.Equals(DataBox.DocumentType) == true)
                     output = new TextController(firstDoc.GetDereferencedField(KeyStore.DataKey, null)?.ToString() ?? "");
-                else output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                else
+                    output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
             // bcz: this would be useful if we knew what was changed about the list item document.  If the title is changed, we only care about the first document;
@@ -65,6 +67,7 @@ namespace Dash
             //    return;
 
             outputs[ComputedTitle] = new TextController(output?.Data ?? "Untitled") { ReadOnly = true };
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

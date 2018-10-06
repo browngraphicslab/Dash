@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -384,7 +384,7 @@ namespace Dash
             return false;
         }
 
-        private void InputBoxSubmit(ReplLineViewModel data, string currentText, int? index = null)
+        private async void InputBoxSubmit(ReplLineViewModel data, string currentText, int? index = null)
         {
             if (data.EditTextValue)
             {
@@ -408,12 +408,12 @@ namespace Dash
                 data.LineText = text;
 
                 //undo old variable declarations 
-                _dsl.Run(oldText, true, true);
+                await _dsl.Run(oldText, true, true);
 
                 FieldControllerBase result;
                 try
                 {
-                    result = _dsl.Run(text, true);
+                    result = await _dsl.Run(text, true);
                 }
                 catch (Exception ex)
                 {
@@ -468,7 +468,7 @@ namespace Dash
             }
         }
 
-        private void ReRunLine(ReplLineViewModel data, string text)
+        private async Task ReRunLine(ReplLineViewModel data, string text)
         {
             DisableAllTextBoxes();
 
@@ -485,12 +485,12 @@ namespace Dash
             }
 
             //undo old variable declarations 
-            _dsl.Run(text, true, true);
+            await _dsl.Run(text, true, true);
 
             FieldControllerBase result;
             try
             {
-                result = _dsl.Run(text, true);
+                result = await _dsl.Run(text, true);
             }
             catch (Exception ex)
             {
@@ -515,21 +515,21 @@ namespace Dash
             }
         }
 
-        private void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //tap arrow to revaluate line
             var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             var text = data?.LineText;
 
-            ReRunLine(data, text);
+            await ReRunLine(data, text);
         }
 
-        private void XInputBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void XInputBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             var text = data?.LineText;
 
-            ReRunLine(data, text);
+            await ReRunLine(data, text);
         }
 
         #endregion
@@ -543,7 +543,7 @@ namespace Dash
 
         private void SetupTextBox()
         {
-            void EnterPressed(KeyRoutedEventArgs e)
+            async void EnterPressed(KeyRoutedEventArgs e)
             {
                 if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
@@ -564,7 +564,7 @@ namespace Dash
                 FieldControllerBase retVal;
                 try
                 {
-                    retVal = _dsl.Run(command, true);
+                    retVal = await _dsl.Run(command, true);
                 }
                 catch (Exception ex)
                 {

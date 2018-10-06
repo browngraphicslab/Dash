@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -33,20 +34,23 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Length", "D8368297-5417-40D8-902F-7F1D431EF227");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             switch (inputs[InputKey])
             {
                 case BaseListController list:
                     outputs[LengthKey] = new NumberController(list.Count);
-                    return;
+                    break;
                 case TextController text:
                     outputs[LengthKey] = new NumberController(text.Data.Length);
-                    return;
+                    break;
                 default:
                     outputs[LengthKey] = new NumberController(-1);
-                    return;
+                    break;
             }
+            return Task.CompletedTask;
         }
     }
 }

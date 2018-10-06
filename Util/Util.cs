@@ -122,7 +122,7 @@ namespace Dash
         {
             if (freeform == null) return absolutePosition;
 
-            GeneralTransform r = MainPage.Instance.xCanvas.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
+            GeneralTransform r = MainPage.Instance.xOuterGrid.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
             Debug.Assert(r != null);
             return r.TransformPoint(absolutePosition);
         }
@@ -590,14 +590,14 @@ namespace Dash
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(ListController<DocumentController> collection)
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetDisplayableTypedHeaders(IEnumerable<DocumentController> collection)
         {
             // create the new list of headers
             var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
 
             // iterate over all the documents in the input collection and get their key's
             // and associated types
-            foreach (var docController in collection.TypedData)
+            foreach (var docController in collection)
             {
                 var actualDoc = docController.GetDataDocument();
 

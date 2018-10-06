@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -89,6 +85,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "PdfController";
         }
 
         public override FieldControllerBase GetDefaultController()

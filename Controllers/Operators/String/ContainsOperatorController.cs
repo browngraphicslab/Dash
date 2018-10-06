@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -36,7 +37,9 @@ namespace Dash
             [ResultKey] = TypeInfo.Bool,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             if (inputs[InputStringKey] is TextController inputStr && inputs[ContainerStringKey] is TextController containerStr)
             {

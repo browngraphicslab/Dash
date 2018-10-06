@@ -8,7 +8,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -48,6 +47,10 @@ namespace Dash
         public abstract CollectionViewModel ViewModel { get; }
         public abstract CollectionView.CollectionViewType Type { get; }
         private Mutex _mutex = new Mutex();
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         //SET BACKGROUND IMAGE SOURCE
         public delegate void SetBackground(object backgroundImagePath);
@@ -124,7 +127,8 @@ namespace Dash
             {
                 var storedPath = settingsView.CustomImagePath;
                 if (storedPath != null) _background = storedPath;
-            } else
+            }
+            else
             {
                 _background = settingsView.EnumToPathDict[settingsView.ImageState];
             }
@@ -134,8 +138,11 @@ namespace Dash
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
-            _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
-            _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            if (_backgroundCanvas != null)
+            {
+                _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
+                _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+            }
             if (_lastViewModel != null)
             {
                 _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -176,8 +183,8 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-            snap.SetFitToParent(true);
             return snap;
         }
 
@@ -306,11 +313,9 @@ namespace Dash
             CompositionTarget.Rendering += CompositionTargetOnRendering;
 
             // Begin the animation.
-            _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
-
-
+            _storyboard1.Begin();
         }
 
         protected void Storyboard1OnCompleted(object sender, object e)
@@ -391,7 +396,9 @@ namespace Dash
         /// </summary>
         public static float BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
         private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private static object _backgroundDot = "ms-appx:///Assets/transparent_dot_tilable.png";
         private CanvasBitmap _bgImage;
+        private CanvasBitmap _bgImageDot;
 
         /// <summary>
         /// Collection background tiling image
@@ -469,6 +476,7 @@ namespace Dash
                 _bgImage = await CanvasBitmap.LoadAsync(canvas, new Uri(s));
             else
                 _bgImage = await CanvasBitmap.LoadAsync(canvas, (IRandomAccessStream)_background);
+            _bgImageDot = await CanvasBitmap.LoadAsync(canvas, new Uri((string)_backgroundDot));
             // NOTE *** At this point, _backgroundTask will be marked completed. This has bearing on the IsLoadInProgress bool and how that dictates the rendered drawing (see immediately below).
             // Indicates that the contents of the CanvasControl need to be redrawn. Calling Invalidate results in the Draw event being raised shortly afterward (see immediately below).
             canvas.Invalidate();
@@ -481,15 +489,18 @@ namespace Dash
             {
                 // If the image failed to load in time, simply display a blank white background
                 args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
-            } else
+            }
+            else
             {
+                var ff    = this as CollectionFreeformView;
+                var mat   = ff?._itemsPanelCanvas?.RenderTransform as MatrixTransform;
+                var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = _bgImage;
+                _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var session = args.DrawingSession;
-                session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+                args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
 
@@ -570,7 +581,7 @@ namespace Dash
 
                     var matrix = composite.Value;
 
-                    var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+                    var aliasSafeScale = matrix.M11;// clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
                     _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
                         (float)matrix.M12,
                         (float)matrix.M21,
@@ -676,7 +687,7 @@ namespace Dash
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
-                GetSelectionCanvas().Children.Remove(_marquee);
+                GetSelectionCanvas()?.Children.Remove(_marquee);
                 _marquee = null;
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;
@@ -783,7 +794,11 @@ namespace Dash
             VirtualKey.Delete,
             VirtualKey.G,
             VirtualKey.R,
-            VirtualKey.T
+            VirtualKey.T,
+            VirtualKey.Left,
+            VirtualKey.Right,
+            VirtualKey.Up,
+            VirtualKey.Down
         };
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -893,7 +908,7 @@ namespace Dash
             var type = CollectionView.CollectionViewType.Freeform;
 
             var deselect = false;
-            if (!(this.IsCtrlPressed() || this.IsShiftPressed() || this.IsAltPressed()))
+            if (!(this.IsAltPressed()))
             {
                 switch (modifier)
                 {
@@ -913,7 +928,8 @@ namespace Dash
                     DoAction((views, where, size) =>
                         {
                             var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                            DocumentController newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            var newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
+                            CollectionViewModel.RouteDataBoxReferencesThroughCollection(newCollection, docss);
                             ViewModel.AddDocument(newCollection);
 
                             foreach (DocumentView v in views)
@@ -923,6 +939,83 @@ namespace Dash
                             }
                         });
                     deselect = true;
+                    break;
+                case VirtualKey.Down:
+                case VirtualKey.Left:
+                case VirtualKey.Up:
+                case VirtualKey.Right:
+                    if (!MainPage.Instance.IsShiftPressed()) // arrow aligns to left or right (ctrl + arrow aligns to horizontal or vertical center)
+                    {
+                        DoAction((views, where, size) =>
+                        {
+                            var docDec = MainPage.Instance.XDocumentDecorations;
+                            var rect = docDec.TransformToVisual(GetCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
+                            var centered = MainPage.Instance.IsCtrlPressed();
+                            foreach (var v in views)
+                            {
+                                double alignedX = v.ViewModel.LayoutDocument.GetPosition().Value.X;
+                                double alignedY = v.ViewModel.LayoutDocument.GetPosition().Value.Y;
+                                if (centered)
+                                {
+                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up)    ? (rect.Left + rect.Right)/2-v.ActualWidth  /2 : alignedX;
+                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom)/2-v.ActualHeight /2 : alignedY;
+
+                                }
+                                else
+                                {
+                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right -v.ActualWidth  : alignedX;
+                                    alignedY = modifier == VirtualKey.Up   ? rect.Top  : modifier == VirtualKey.Down  ? rect.Bottom-v.ActualHeight : alignedY;
+                                }
+                                v.ViewModel.LayoutDocument.SetPosition(new Point(alignedX, alignedY));
+                            }
+                        });
+                    }
+                    else // shift + arrow distributes objects horizontally or vertically
+                    {
+                        DoAction((views, where, size) =>
+                        {
+                            var sortY = modifier == VirtualKey.Down || modifier == VirtualKey.Up;
+                            views.Sort((dv1, dv2) =>
+                            {
+                                var v1p = dv1.ViewModel.LayoutDocument.GetPosition() ?? new Point();
+                                var v2p = dv2.ViewModel.LayoutDocument.GetPosition() ?? new Point();
+                                var v1 = sortY ? v1p.Y : v1p.X;
+                                var v2 = sortY ? v2p.Y : v2p.X;
+                                var v1o = sortY ? v1p.X : v1p.Y;
+                                var v2o = sortY ? v2p.X : v2p.Y;
+                                if (v1 < v2)
+                                    return -1;
+                                else if (v1 > v2)
+                                    return 1;
+                                else if (v1o < v2o)
+                                    return -1;
+                                else if (v1o > v2o)
+                                    return 1;
+                                return 0;
+                            });
+
+                            var docDec = MainPage.Instance.XDocumentDecorations;
+                            var usedDim = views.Aggregate(0.0, (val, view) => val + (sortY ? view.ViewModel.Bounds.Height : view.ViewModel.Bounds.Width));
+                            var bounds     = docDec.TransformToVisual(GetCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
+                            var spacing    = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (views.Count -1);
+                            double placement = sortY ? bounds.Top : bounds.Left;
+                            if (modifier == VirtualKey.Down || modifier == VirtualKey.Left)
+                                views.Reverse();
+                            foreach (var v in views)
+                            {
+                                if (modifier == VirtualKey.Down || modifier == VirtualKey.Up)
+                                {
+                                    v.ViewModel.LayoutDocument.SetPosition(new Point(v.ViewModel.LayoutDocument.GetPosition().Value.X, placement));
+                                    placement += v.ViewModel.Bounds.Height + spacing;
+                                }
+                                if (modifier == VirtualKey.Left || modifier == VirtualKey.Right)
+                                {
+                                    v.ViewModel.LayoutDocument.SetPosition(new Point(placement, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
+                                    placement += v.ViewModel.Bounds.Width + spacing;
+                                }
+                            }
+                        });
+                    }
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
@@ -1072,7 +1165,8 @@ namespace Dash
                 Width = 200,
                 Height = 50,
                 Background = new SolidColorBrush(Colors.Transparent),
-                Visibility = Visibility.Collapsed
+                Visibility = Visibility.Collapsed,
+                ManipulationMode = ManipulationModes.All
             };
             previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);

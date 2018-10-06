@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DashShared
+﻿namespace DashShared
 {
     [FieldModelType(TypeInfo.Key)]
     public class KeyModel : FieldModel
