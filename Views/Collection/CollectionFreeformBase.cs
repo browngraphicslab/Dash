@@ -698,13 +698,10 @@ namespace Dash
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
-                GetSelectionCanvas()?.Children.Remove(_marquee);
-                _marquee = null;
-                _isMarqueeActive = false;
+                ResetMarquee(true);
                 if (e != null) e.Handled = true;
             }
 
-            SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
@@ -872,11 +869,22 @@ namespace Dash
         public bool IsMarqueeActive => _isMarqueeActive;
 
         // called by SelectionManager to reset this collection's internal selection-based logic
-        public void ResetMarquee()
+        public void ResetMarquee(bool hardClear)
         {
-            GetSelectionCanvas()?.Children?.Clear();
-            _marquee = null;
-            _isMarqueeActive = false;
+            if (hardClear)
+            {
+                SelectionCanvas?.Children?.Clear();
+                _marquee = null;
+                _isMarqueeActive = false;
+            }
+            else
+            {
+                foreach (UIElement selectionCanvasChild in SelectionCanvas.Children)
+                {
+                    //This is a hack because modifying the visual tree during a manipulation seems to screw up UWP
+                    selectionCanvasChild.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         public List<DocumentView> DocsInMarquee(Rect marquee)
@@ -942,7 +950,6 @@ namespace Dash
                         SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     marquee = _marquee;
                     viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    ResetMarquee();
                 } else
                 {
                     var bounds = GetBoundingRectFromSelection();
@@ -961,7 +968,11 @@ namespace Dash
 
                 var toSelectFrom = viewsToSelectFrom.ToList();
                 using (UndoManager.GetBatchHandle())
+                {
                     action(toSelectFrom, where, new Size(marquee.Width, marquee.Height));
+                }
+
+                ResetMarquee(false);
             }
 
             var type = CollectionView.CollectionViewType.Freeform;

@@ -7,6 +7,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Frame = Microsoft.Office.Interop.Word.Frame;
 using Point = Windows.Foundation.Point;
 
