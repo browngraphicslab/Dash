@@ -10,9 +10,16 @@
     d:DesignWidth="400">
 
     <Grid>
-        <InkToolbar x:Name="inkToolbar"
+        <InkToolbar x:Name="xInkToolbar"
                     VerticalAlignment="Bottom"
                     HorizontalAlignment="Center"
-                    TargetInkCanvas="{Binding CurrentInkCanvas}" />
+                    TargetInkCanvas="{Binding Canvas}"
+                    InitialControls="None"
+                    ActiveToolChanged="InkToolbar_OnActiveToolChanged">
+            <InkToolbarEraserButton/>
+            <InkToolbarBallpointPenButton/>
+            <InkToolbarPencilButton/>
+            <InkToolbarHighlighterButton/>
+        </InkToolbar>
     </Grid>
 </UserControl>

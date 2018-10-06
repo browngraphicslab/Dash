@@ -1171,6 +1171,8 @@ namespace Dash
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+            MainPage.Instance.InkManager.AddInkCanvas(XInkCanvas);
+
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
             GetInkHostCanvas().Children.Add(XInkCanvas);
