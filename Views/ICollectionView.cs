@@ -8,5 +8,7 @@ namespace Dash
         CollectionViewModel ViewModel { get; }
         void SetDropIndicationFill(Brush fill);
         UserControl  UserControl { get; }
+
+        void SetupContextMenu(MenuFlyout contextMenu);
     }
 }

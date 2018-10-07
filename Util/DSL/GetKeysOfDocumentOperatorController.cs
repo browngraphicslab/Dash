@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -42,7 +43,7 @@ namespace Dash
             [ResultKeysKey] = TypeInfo.List,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -59,6 +60,7 @@ namespace Dash
             {
                 outputs[ResultKeysKey] = new ListController<FieldControllerBase>();
             }
+            return Task.CompletedTask;
         }
     }
 }

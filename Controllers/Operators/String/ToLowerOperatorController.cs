@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -33,12 +34,15 @@ namespace Dash
             [OutputStringKey] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             if (inputs[InputStringKey] is TextController tc)
             {
                 outputs[OutputStringKey] = new TextController(tc.TextFieldModel.Data.ToLower());
             }
+            return Task.CompletedTask;
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Dash
         {
             if (!(args.NewValue is DocumentController dc)) return;
 
-            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null).GetValue(null).ToString();
+            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null)?.GetValue(null).ToString();
 
             if (string.IsNullOrEmpty(currentTitle))
             {

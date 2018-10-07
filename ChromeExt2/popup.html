@@ -3,22 +3,23 @@
 <head>
     <style>   
         body {
-            width: 170px;
-            height: 45px;
+            width: 150px;
+            height: 65px;
         }   
         button {
             position: relative;
             display: block;
             margin: 0 auto;
             height: 30px;
-            width: 80px;
+            width: 90%;
             outline: none;
             padding: 0px 5px;
             border-radius: 5px 5px;
             border: 0;
             cursor: pointer;
+            background: #cccccc;
         }
-        span::before {
+        button::before {
             position: relative;
             display: inline-block;
             content: "";
@@ -30,25 +31,19 @@
             height: 12px;
             margin-right: 5px;
         }
-        span {
-            position:relative;
-            display: block;
-            margin-top: 3px;
-            text-align: center;
-        }
-        span.active::before {
+
+        button.active::before {
             background: #48c44c;
         }
 
-        #tblExtract {
-            width: 100px;
+        button + button {
+            margin-top: 3px;
         }
     </style>
 </head>
 <body>
-    <button id="btnSticky">Activate</button>
-    <span id="status">Click to connect</span>
-    <button id="tblExtract">Extract Tables</button>
+    <button id="btnSticky">Activated</button>
+    <button id="btnTblExtract">Table Extraction</button>
     <script src="popup.js"></script>
 </body>
 </html>

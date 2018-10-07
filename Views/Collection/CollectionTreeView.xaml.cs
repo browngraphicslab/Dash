@@ -49,6 +49,10 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xUpOneLevel, upLevel);
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         public void SetUseActiveFrame(bool useActiveFrame)
         {

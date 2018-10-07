@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -21,14 +22,14 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             OperatorController op = null;
             var opName = Op.Name.invalid;
             try
             {
-                op = _funcName.Execute(scope) as FunctionOperatorController;
+                op = await _funcName.Execute(scope) as FunctionOperatorController;
             }
             catch (ScriptExecutionException)
             {
@@ -45,13 +46,24 @@ namespace Dash
                 }
             }
 
-            var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
+            var inputs = new List<FieldControllerBase>();
+            foreach (var scriptExpression in _parameters)
+            {
+                if (scriptExpression == null)
+                {
+                    inputs.Add(null);
+                }
+                else
+                {
+                    inputs.Add(await scriptExpression.Execute(scope));
+                }
+            }
 
             try
             {
                 scope = new ReturnScope();
 
-                var output = op != null ? OperatorScript.Run(op, inputs, scope) : OperatorScript.Run(opName, inputs, scope);
+                var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
                 return output;
             }
             catch (ReturnException)
@@ -67,8 +79,6 @@ namespace Dash
                 if (e.Message.Contains("Invalid group name:")) throw new ScriptExecutionException(new TextErrorModel($"Invalid Regex group name encountered: {e.Message.Substring(e.Message.IndexOf("Invalid group name:") + 20).ToLower()}"));
                 throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
             }
-
-            return new TextController("");
         }
 
         //TDDO This should be fixed
@@ -79,10 +89,19 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            //TODO
-            throw new NotImplementedException();
-            //return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)),
-            //    Op.Parse(_funcName)); //recursive linq
+            var func = _funcName.CreateReference(scope);
+            if (func is OperatorController op)
+            {
+                //TODO
+                return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
+            }
+            else if(_funcName is VariableExpression variable)
+            {
+                op = OperatorScript.GetOperatorWithName(Op.Parse(variable.GetVariableName()));
+                return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
+            }
+
+            return null;
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? ""));

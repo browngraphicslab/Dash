@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -73,19 +74,17 @@ namespace Dash
             e.Handled = true;
         }
 
-        private bool SetExpression(string text)
+        private async Task SetExpression(string text)
         {
             TextBoxLoaded = false;
             try
             {
-                var field = DSL.InterpretUserInput(text, scope: Scope.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                var field = await DSL.InterpretUserInput(text, scope: Scope.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)
             {
-                return false;
             }
-            return true;
         }
 
         private async void UserControl_Drop(object sender, DragEventArgs e)

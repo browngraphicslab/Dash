@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -9,10 +10,10 @@ namespace Dash
 
         public ReturnExpression(ScriptExpression value) => _value = value;
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             if (_value == null) throw new ScriptExecutionException(new InvalidReturnStatementErrorModel());
-            var val = _value.Execute(scope);
+            var val = await _value.Execute(scope);
             //now return val
             scope.SetReturn(val);
 

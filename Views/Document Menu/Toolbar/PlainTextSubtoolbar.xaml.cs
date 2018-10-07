@@ -23,7 +23,7 @@ namespace Dash
             set { SetValue(OrientationProperty, value); }
         }
 
-        private TextBox _currBox;
+        private EditableTextBlock _currBox;
         private FormattingMenuView _menuView = null;
         private DocumentView _docs;
         private Dictionary<string, Button> _buttons;
@@ -42,14 +42,14 @@ namespace Dash
         /**
 		 * Binds the text toolbar with the most recently selected text box for editing purposes.
 		 */
-        public void SetMenuToolBarBinding(TextBox selection)
+        public void SetMenuToolBarBinding(EditableTextBlock selection)
         {
         }
 
         /**
 		 *  Sets the current text box used for editing
 		 */
-        public void SetCurrTextBox(TextBox box)
+        public void SetCurrTextBox(EditableTextBlock box)
         {
             _currBox = box;
         }

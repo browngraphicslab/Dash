@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -27,10 +28,10 @@ namespace Dash
             _opName = opName;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
-            var varCtrl = _var.Execute(scope);
-            var assignCtrl = _assignExp.Execute(scope);
+            var varCtrl = await _var.Execute(scope);
+            var assignCtrl = await _assignExp.Execute(scope);
 
             var inputs = new List<FieldControllerBase>
             {
@@ -41,7 +42,7 @@ namespace Dash
             FieldControllerBase output;
             try
             {
-                output = OperatorScript.Run(_opName, inputs, scope);
+                output = await OperatorScript.Run(_opName, inputs, scope);
                 scope.SetVariable(_var.GetVariableName(), output);
             }
             catch (ScriptExecutionException)

@@ -241,11 +241,16 @@ namespace Dash
         {
             if (string.IsNullOrEmpty(searchString))
             {
-                return new StringSearchModel(true, ToString());
+                return new StringSearchModel(ToString());
             }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
             return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "[" + string.Join(", ", TypedData.Select(f => f.ToScriptString(thisDoc))) + "]";
         }
 
         // @IList<T> //

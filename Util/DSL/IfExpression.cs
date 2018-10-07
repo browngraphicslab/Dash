@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -14,13 +15,13 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>
-            {
-                {IfOperatorController.BoolKey, _parameters[IfOperatorController.BoolKey].Execute(scope)}
-            };
-            var boolRes = ((BoolController)_parameters[IfOperatorController.BoolKey].Execute(scope)).Data;
+            //var inputs = new Dictionary<KeyController, FieldControllerBase>
+            //{
+            //    {IfOperatorController.BoolKey, _parameters[IfOperatorController.BoolKey].Execute(scope)}
+            //};
+            var boolRes = ((BoolController)await _parameters[IfOperatorController.BoolKey].Execute(scope)).Data;
 
             var ifKey = IfOperatorController.IfBlockKey;
             var elseKey = IfOperatorController.ElseBlockKey;
@@ -28,14 +29,14 @@ namespace Dash
             if (boolRes)
             {
                 //inputs.Add(ifKey, _parameters[ifKey].Execute(scope));
-                inputs.Add(elseKey, null);
-                return _parameters[ifKey].Execute(scope);
+                //inputs.Add(elseKey, null);
+                return await _parameters[ifKey].Execute(scope);
             }
             else
             {
-                inputs.Add(ifKey, null);
+                //inputs.Add(ifKey, null);
                 //inputs.Add(elseKey, _parameters[elseKey].Execute(scope));
-                return _parameters[elseKey] != null ? _parameters[elseKey].Execute(scope) : new TextController("");
+                return _parameters[elseKey] != null ? await _parameters[elseKey].Execute(scope) : new TextController("");
             }
 
             try

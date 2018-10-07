@@ -114,61 +114,72 @@ namespace Dash
 
             #region CollectionView context menu 
 
-
-            var contextMenu = ParentDocumentView.MenuFlyout;
-            if (!contextMenu.Items.OfType<MenuFlyoutItem>().Select((mfi) => mfi.Text).Contains("Create Scripting REPL")) {
-
-                var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
-
-                // add a horizontal separator in context menu
-                elementsToBeRemoved.Add(new MenuFlyoutSeparator());
-
-                // add the item to create a repl
-                elementsToBeRemoved.Add(new MenuFlyoutItem()
-                {
-                    Text = "Create Scripting REPL",
-                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Code }
-                });
-                (elementsToBeRemoved.Last() as MenuFlyoutItem).Click += ReplFlyout_OnClick;
-
-                // add the item to create a scripting view
-                elementsToBeRemoved.Add(new MenuFlyoutItem()
-                {
-                    Text = "Create Script Editor",
-                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
-                });
-                (elementsToBeRemoved.Last() as MenuFlyoutItem).Click += ScriptEdit_OnClick;
-
-                // add another horizontal separator
-                elementsToBeRemoved.Add(new MenuFlyoutSeparator());
-
-                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                elementsToBeRemoved.Add(new MenuFlyoutSubItem()
-                {
-                    Text = "View Collection As",
-                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Eye }
-                });
-
-                foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
-                {
-                     (elementsToBeRemoved.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
-                    ((elementsToBeRemoved.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => { using (UndoManager.GetBatchHandle()) SetView(n); };
-                }
-
-                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                elementsToBeRemoved.Add(new MenuFlyoutItem()
-                {
-                    Text = "Toggle Fit To Parent",
-                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
-                });
-                (elementsToBeRemoved.Last() as MenuFlyoutItem).Click += ParentDocumentView.MenuFlyoutItemFitToParent_Click;
-
-                elementsToBeRemoved.ForEach((ele) => contextMenu.Items.Add(ele));
-                Unloaded += (sender, e) => elementsToBeRemoved.ForEach((ele) => contextMenu.Items.Remove(ele));
-            }
-
             SetView(_viewType);
         #endregion
+        }
+
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+            // add another horizontal separator
+            contextMenu.Items.Add(new MenuFlyoutSeparator());
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Collection",
+                FontWeight = Windows.UI.Text.FontWeights.Bold
+            });
+            contextMenu.Items.Add(new MenuFlyoutSeparator());
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            contextMenu.Items.Add(new MenuFlyoutSubItem()
+            {
+                Text = "View As",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Eye }
+            });
+            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+            {
+                (contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
+                ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => {
+                    using (UndoManager.GetBatchHandle())
+                    {
+                        SetView(n);
+                    }
+                };
+            }
+            CurrentView?.SetupContextMenu(contextMenu);
+            
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = ViewModel.ContainerDocument.GetFitToParent() ? "Make Unbounded" : "Fit to Parent",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += ParentDocumentView.MenuFlyoutItemFitToParent_Click;
+
+            // add a horizontal separator in context menu
+            contextMenu.Items.Add(new MenuFlyoutSeparator());
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Scripting",
+                FontWeight = Windows.UI.Text.FontWeights.Bold
+            });
+            contextMenu.Items.Add(new MenuFlyoutSeparator());
+
+            // add the item to create a repl
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Create Scripting REPL",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Code }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += ReplFlyout_OnClick;
+
+            // add the item to create a scripting view
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Create Script Editor",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += ScriptEdit_OnClick;
         }
 
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)

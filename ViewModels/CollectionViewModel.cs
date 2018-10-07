@@ -35,6 +35,7 @@ namespace Dash
         public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
         public TransformGroupData TransformGroup
+
         {
             get
             {
@@ -110,7 +111,7 @@ namespace Dash
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
-        public void FitContents(CollectionView cview)
+        public void FitContents()
         {
             if (LocalSqliteEndpoint.SuspendTimer)
                 return;
@@ -223,7 +224,7 @@ namespace Dash
         void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
-                FitContents(DocumentViewModels.FirstOrDefault()?.Content.GetFirstAncestorOfType<CollectionView>());   // pan/zoom collection so all of its contents are visible
+                FitContents();   // pan/zoom collection so all of its contents are visible
         }
         void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
         {
@@ -755,7 +756,7 @@ namespace Dash
                 var where = new Point();
                 if ((sender as CollectionView)?.CurrentView is CollectionFreeformBase freeformBase)
                 {
-                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.MainSplitter));
+                    where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xOuterGrid));
                 }
                 else if (DocumentViewModels.LastOrDefault() is DocumentViewModel last)
                 {
@@ -769,6 +770,7 @@ namespace Dash
                 }
                 else
                 {
+
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving));
                 }
@@ -815,6 +817,7 @@ namespace Dash
 
                     }
                 }
+
             }
 
             return docsToAdd;

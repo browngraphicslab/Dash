@@ -55,6 +55,7 @@ namespace Dash
         }
         private void View_Loaded(object sender, EventArgs eventArgs)
         {
+            _visibleElements.Clear();
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
             {
                 _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });

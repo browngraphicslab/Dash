@@ -22,6 +22,7 @@ namespace Dash
             operator_add,
             add,
             concat,
+            append,
 
             operator_subtract,
             subtract,
@@ -170,6 +171,18 @@ namespace Dash
             point,
             x, y,
 
+            dref,
+            pref,
+
+            k,//Key
+            d,//Document
+
+            date,
+
+            api,
+
+            get_doc,
+
             // NULL EQUIVALENT
 
             invalid,
@@ -177,7 +190,7 @@ namespace Dash
             // HELP
 
             help,
-            print
+            print,
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
