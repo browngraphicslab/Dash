@@ -35,7 +35,28 @@ namespace Dash
 
         public override SearchPredicate VisitFunction([NotNull] SearchGrammarParser.FunctionContext context)
         {
-            return base.VisitFunction(context);
+            var dsl = new DSL();
+            var func = context.GetText();
+            var funcName = context.WORD().GetText();
+            var field = dsl.Run("return " + func, true).Result;//TODO This probably shouldn't access Result
+            if (field is ListController<DocumentController> list)
+            {
+                return document =>
+                {
+                    if (list.Contains(document))
+                    {
+                        return new Result()
+                        {
+                            new SearchPair(new KeyController(funcName),
+                                new StringSearchModel("Was contained in " + func))
+                        };
+                    }
+
+                    return new Result();
+                };
+            }
+
+            return doc => new Result();
         }
 
         public override SearchPredicate VisitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context)
