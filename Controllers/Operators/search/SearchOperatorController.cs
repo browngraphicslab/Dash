@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
@@ -8,13 +9,16 @@ using DashShared;
 namespace Dash
 {
     [OperatorType(Op.Name.search)]
-    public class SearchOperatorController : OperatorController
+    public sealed class SearchOperatorController : OperatorController
     {
         public SearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
+        {
+            SaveOnServer();
+        }
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Search", "EA5FD353-F99A-4F99-B0BC-5D2C88A51019");
@@ -43,13 +47,14 @@ namespace Dash
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //search all docs for searchText and get results (list of doc controller)
-            string searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
+            string searchText = ((TextController)inputs[TextKey]).Data;
+            var docs = inputs[InputCollection] as ListController<DocumentController>;
             List<SearchResult> searchRes;
             try
             {
-                searchRes = Search.Parse(searchText).ToList();
+                searchRes = Search.Parse(searchText, docs: docs).ToList();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 searchRes = new List<SearchResult>();
             }
@@ -58,6 +63,9 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override FieldControllerBase GetDefaultController() => new SearchOperatorController();
+        public override FieldControllerBase GetDefaultController()
+        {
+            return new SearchOperatorController();
+        }
     }
 }

@@ -168,11 +168,6 @@
     <None Include="Dash_TemporaryKey.pfx" />
     <None Include="Util\Parser2\regen2.bat" />
     <None Include="Util\Parser2\SearchGrammar.g4" />
-    <None Include="Util\Parser\DashSearchGrammar.g4" />
-    <None Include="Util\Parser\DashSearchGrammar.interp" />
-    <None Include="Util\Parser\DashSearchGrammar.tokens" />
-    <None Include="Util\Parser\DashSearchGrammarLexer.interp" />
-    <None Include="Util\Parser\DashSearchGrammarLexer.tokens" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Operators\DateOperator.cs" />
@@ -196,13 +191,6 @@
     <Compile Include="Util\Parser2\SearchGrammarListener.cs" />
     <Compile Include="Util\Parser2\SearchGrammarParser.cs" />
     <Compile Include="Util\Parser2\SearchGrammarVisitor.cs" />
-    <Compile Include="Util\Parser\DashSearchGrammarBaseListener.cs" />
-    <Compile Include="Util\Parser\DashSearchGrammarBaseVisitor.cs" />
-    <Compile Include="Util\Parser\DashSearchGrammarLexer.cs" />
-    <Compile Include="Util\Parser\DashSearchGrammarListener.cs" />
-    <Compile Include="Util\Parser\DashSearchGrammarParser.cs" />
-    <Compile Include="Util\Parser\DashSearchGrammarVisitor.cs" />
-    <Compile Include="Util\Parser\SearchGrammarVisitor.cs" />
     <Compile Include="Converters\IsNullToVisibilityConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
@@ -1497,6 +1485,7 @@
   <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
+    <Folder Include="Util\Parser\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Antlr4.Runtime.Standard">

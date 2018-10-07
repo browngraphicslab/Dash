@@ -92,9 +92,10 @@ namespace Dash
                 {
                     return new Result();
                 }
-                return new Result
+
+                return new Result()
                 {
-                    new SearchPair(null, new StringSearchModel(""))
+                    new SearchPair(new KeyController("Negation"), new StringSearchModel("Negation"))
                 };
             };
         }
@@ -120,14 +121,13 @@ namespace Dash
 
         public override SearchPredicate VisitValue([NotNull] SearchGrammarParser.ValueContext context)
         {
-            //string textToSearch = context.WORD().Symbol.Text ?? context.STRING().Symbol.Text.Trim('"');
+            string textToSearch = context.WORD()?.Symbol.Text ?? context.STRING().Symbol.Text.Trim('"');
             return doc =>
             {
-                var searchString = context.GetText().ToLower();
                 var result = new Result();
                 foreach (var field in doc.EnumDisplayableFields())
                 {
-                    var res = field.Value.SearchForString(searchString);
+                    var res = field.Value.SearchForString(textToSearch);
                     if (res.StringFound)
                     {
                         result.Add(new SearchPair(field.Key, res));
