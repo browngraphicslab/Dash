@@ -28,12 +28,6 @@ public interface SearchGrammarVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitKvsearch(SearchGrammarParser.KvsearchContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SearchGrammarParser#args}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArgs(SearchGrammarParser.ArgsContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link SearchGrammarParser#function}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

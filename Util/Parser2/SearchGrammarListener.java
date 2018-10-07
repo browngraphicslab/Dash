@@ -37,16 +37,6 @@ public interface SearchGrammarListener extends ParseTreeListener {
 	 */
 	void exitKvsearch(SearchGrammarParser.KvsearchContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SearchGrammarParser#args}.
-	 * @param ctx the parse tree
-	 */
-	void enterArgs(SearchGrammarParser.ArgsContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SearchGrammarParser#args}.
-	 * @param ctx the parse tree
-	 */
-	void exitArgs(SearchGrammarParser.ArgsContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SearchGrammarParser#function}.
 	 * @param ctx the parse tree
 	 */

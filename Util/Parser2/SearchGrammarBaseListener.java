@@ -51,18 +51,6 @@ public class SearchGrammarBaseListener implements SearchGrammarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArgs(SearchGrammarParser.ArgsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitArgs(SearchGrammarParser.ArgsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterFunction(SearchGrammarParser.FunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}

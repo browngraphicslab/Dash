@@ -50,12 +50,6 @@ public interface ISearchGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="SearchGrammarParser.args"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitArgs([NotNull] SearchGrammarParser.ArgsContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="SearchGrammarParser.function"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

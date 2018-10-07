@@ -71,18 +71,6 @@ public partial class SearchGrammarBaseListener : ISearchGrammarListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="SearchGrammarParser.args"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterArgs([NotNull] SearchGrammarParser.ArgsContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="SearchGrammarParser.args"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitArgs([NotNull] SearchGrammarParser.ArgsContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="SearchGrammarParser.function"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
