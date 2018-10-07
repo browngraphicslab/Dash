@@ -15,10 +15,7 @@ grammar SearchGrammar;
  	kvsearch				: '-'? keylist ':' value
  							;
 
- 	args					: (value WS* ',' WS*)* value?
- 							;
-
- 	function				: WORD '(' WS* args WS* ')'
+ 	function				: WORD '(' .*? ')'
  							;
 
  	term					: kvsearch
