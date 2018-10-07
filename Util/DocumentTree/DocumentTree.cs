@@ -12,7 +12,7 @@ namespace Dash
     /// </summary>
     public class DocumentTree : IEnumerable<DocumentNode>
     {
-        private DocumentNode Head { get; }
+        public DocumentNode Head { get; }
         public Dictionary<DocumentController, DocumentNode> Nodes = new Dictionary<DocumentController, DocumentNode>();
 
         public DocumentTree(DocumentController headRef)

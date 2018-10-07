@@ -179,6 +179,8 @@ namespace Dash
 
             api,
 
+            get_doc,
+
             // NULL EQUIVALENT
 
             invalid,
