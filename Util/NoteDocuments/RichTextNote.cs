@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.Foundation;
 
 namespace Dash
@@ -33,6 +34,7 @@ namespace Dash
         public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size(), string urlSource=null) :
             base(_prototypeID)
         {
+            Debug.WriteLine("rich text note made");
             var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text + (urlSource != null ? RichTextView.HyperlinkText : ""))));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
             Document.Tag = "Rich Text Note Layout " + rcount;

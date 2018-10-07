@@ -964,6 +964,7 @@ namespace Dash
                     new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
                     new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
                     new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
+                    new ActionViewModel("Add Text Note","Text Note",() => AddTextNote(),null)
                 });
                 menu.AddGroup("DATABASE", new List<ActionViewModel>
                 {
@@ -989,5 +990,12 @@ namespace Dash
             xCanvas.Children.Clear();
             xCanvas.Children.Add(GetMenu());
         }
+        private void AddTextNote()
+        {
+            var where = new Point(-100, 0);
+            var idk = new RichTextNote("new note",where);
+        }
     }
+
+    
 }

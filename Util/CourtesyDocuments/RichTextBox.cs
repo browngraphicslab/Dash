@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -18,6 +19,7 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToRichText);
             SetupDocument(DocumentType, PrototypeId, "RichTextBox Prototype Layout", fields);
+            Debug.WriteLine("rich text box made");
         }
         public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<System.Collections.Generic.List<object>, Windows.UI.Xaml.TextWrapping>
         {
