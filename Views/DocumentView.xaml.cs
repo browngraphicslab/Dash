@@ -840,13 +840,23 @@ namespace Dash
             {
                 return;
             }
-            string pathStr = "";
-            foreach (var collection in path.Skip(1))
-            {
-                pathStr += "/" + collection.Title;
-            }
             DataPackage dp = new DataPackage();
-            dp.SetText(pathStr);
+            dp.SetText(DocumentTree.GetEscapedPath(path));
+            Clipboard.SetContent(dp);
+        }
+
+        private void MenuFlyoutItemGetScript_Click(object o, RoutedEventArgs routedEventArgs)
+        {
+            var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
+            if (path == null)
+            {
+                return;
+            }
+
+            var pathString = DocumentTree.GetEscapedPath(path);
+            var pathScript = $"d(\"{pathString.Replace(@"\", @"\\").Replace("\"", "\\\"")}\")";
+            DataPackage dp = new DataPackage();
+            dp.SetText(pathScript);
             Clipboard.SetContent(dp);
         }
 
@@ -1059,6 +1069,12 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.CodeFork }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCopyPath_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Get Script Representation",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Code }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemGetScript_Click;
 
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 

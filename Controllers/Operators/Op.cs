@@ -173,7 +173,8 @@ namespace Dash
             dref,
             pref,
 
-            k,
+            k,//Key
+            d,//Document
 
             date,
 
