@@ -25,12 +25,12 @@ namespace Dash
     public sealed partial class DocumentView
     {
         private DocumentController _templateEditor;
-        private readonly Flyout    _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
-        private DocumentViewModel  _oldViewModel = null;
+        private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
+        private DocumentViewModel _oldViewModel = null;
         private Point _pointerPoint = new Point(0, 0);
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
+        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
 
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
@@ -244,8 +244,8 @@ namespace Dash
 
 
 
-        
-        
+
+
 
         void updateRenderTransformBinding(object sender, DependencyProperty dp)
         {
@@ -469,7 +469,7 @@ namespace Dash
 
             var proportional = (!isImage && maintainAspectRatio)
                 ? this.IsShiftPressed()
-                :(this.IsShiftPressed() ^ maintainAspectRatio);
+                : (this.IsShiftPressed() ^ maintainAspectRatio);
             if (useX)
             {
                 aspect = 1 / aspect;
@@ -833,6 +833,33 @@ namespace Dash
             }
         }
 
+        private void MenuFlyoutItemCopyPath_Click(object sender, RoutedEventArgs e)
+        {
+            var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
+            if (path == null)
+            {
+                return;
+            }
+            DataPackage dp = new DataPackage();
+            dp.SetText(DocumentTree.GetEscapedPath(path));
+            Clipboard.SetContent(dp);
+        }
+
+        private void MenuFlyoutItemGetScript_Click(object o, RoutedEventArgs routedEventArgs)
+        {
+            var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
+            if (path == null)
+            {
+                return;
+            }
+
+            var pathString = DocumentTree.GetEscapedPath(path);
+            var pathScript = $"d(\"{pathString.Replace(@"\", @"\\").Replace("\"", "\\\"")}\")";
+            DataPackage dp = new DataPackage();
+            dp.SetText(pathScript);
+            Clipboard.SetContent(dp);
+        }
+
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
         {
             ShowContext();
@@ -882,7 +909,7 @@ namespace Dash
                 return;
 
             var dragModel = e.DataView.GetDragModel();
-            if(dragModel != null)
+            if (dragModel != null)
             {
                 if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
 
@@ -899,7 +926,7 @@ namespace Dash
                     curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
                     curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
 
-                    curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey,null), true);
+                    curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
                     updateBindings();
                     e.Handled = true;
@@ -928,7 +955,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
+
         public bool IsTopLevel()
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
@@ -1036,6 +1063,18 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Database }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Copy Path",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.CodeFork }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCopyPath_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Get Script Representation",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Code }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemGetScript_Click;
 
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
@@ -1091,7 +1130,7 @@ namespace Dash
             xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE840 : 0xE77A);
             e.Handled = true;
         }
-        
+
         /// <summary>
         /// Pans content of a document view
         /// </summary>
@@ -1105,10 +1144,10 @@ namespace Dash
                 bool moveYAllowed =
                     xContentTransform.Matrix.OffsetY + deltaY <= 0 && xContentTransform.Matrix.M22 * ViewModel.ActualSize.Y + xContentTransform.Matrix.OffsetY + deltaY + 0.2 >=
                     ViewModel.ActualSize.Y;
-                
+
                 var tgroup = new TransformGroup();
                 tgroup.Children.Add(xContentTransform);
-                tgroup.Children.Add(new TranslateTransform(){ X = moveXAllowed ? deltaX : 0, Y = moveYAllowed ? deltaY : 0 });
+                tgroup.Children.Add(new TranslateTransform() { X = moveXAllowed ? deltaX : 0, Y = moveYAllowed ? deltaY : 0 });
                 xContentTransform.Matrix = tgroup.Value;
             }
         }
@@ -1126,7 +1165,7 @@ namespace Dash
             _pointerPoint = e.GetCurrentPoint(LayoutRoot).Position;
             e.Handled = true;
         }
-       
+
         private void LayoutRoot_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xContentClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
@@ -1148,7 +1187,7 @@ namespace Dash
 
                 //ensures zoom level can't be less than 1
                 if (xContentTransform.Matrix.M11 * deltaScale <= 1) deltaScale = 1 / xContentTransform.Matrix.M11;
-               
+
                 ScaleTransform scale = new ScaleTransform();
                 scale.ScaleX = deltaScale;
                 scale.ScaleY = deltaScale;

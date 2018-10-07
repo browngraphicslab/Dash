@@ -174,11 +174,14 @@ namespace Dash
             dref,
             pref,
 
-            k,
+            k,//Key
+            d,//Document
 
             date,
 
             api,
+
+            get_doc,
 
             // NULL EQUIVALENT
 
