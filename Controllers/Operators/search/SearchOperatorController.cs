@@ -27,6 +27,7 @@ namespace Dash
 
         //Input keys
         public static readonly KeyController TextKey = new KeyController("Term");
+        public static readonly KeyController SortKey = new KeyController("Sorted");
         public static readonly KeyController InputCollection = new KeyController("InputCollection");
 
         //Output keys
@@ -35,6 +36,7 @@ namespace Dash
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
             new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(SortKey, new IOInfo(TypeInfo.Bool, false)),
             new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, false)),
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -53,6 +55,10 @@ namespace Dash
             try
             {
                 searchRes = Search.Parse(searchText, docs: docs).ToList();
+                if ((inputs[SortKey] as BoolController)?.Data ?? false)
+                {
+                    searchRes.Sort((result1, result2) => result2.Rank - result1.Rank);
+                }
             }
             catch (Exception e)
             {
