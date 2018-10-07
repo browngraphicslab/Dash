@@ -803,11 +803,9 @@ namespace Dash
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive)
-            {
-                TriggerActionFromSelection(e.Key, true);
-                e.Handled = true;
-            }
+            var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
+            TriggerActionFromSelection(e.Key, useMarquee);
+            e.Handled = true;
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;
