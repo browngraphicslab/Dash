@@ -1,0 +1,8 @@
+	chain					: '!' phrase
+							| (phrase operator)+ phrase 
+							;
+
+	logical_expr			: chain													// base case
+							| logical_expr operator logical_expr					// intermediate recursion
+							| '(' logical_expr ')'									// accounts for grouping
+							;

@@ -35,8 +35,9 @@
                             <RowDefinition Height="*"></RowDefinition>
                             <RowDefinition Height="Auto"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <ItemsControl x:Name="xColumnsList" Grid.ColumnSpan="2">
-                            <ItemsControl.ItemTemplate>
+                        <ScrollViewer Grid.ColumnSpan="2" Height="200">
+                            <ItemsControl x:Name="xColumnsList">
+                                <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="local:KeyController">
                                     <Grid Padding="1">
                                         <CheckBox Grid.Column="0" Loaded="CheckBox_OnLoaded" Content="{x:Bind Name, Mode=OneWay}"></CheckBox>
@@ -44,6 +45,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        </ScrollViewer>
                         <local:ActionTextBox x:Name="XNewColumnEntry" Grid.Row="1" Grid.Column="0"></local:ActionTextBox>
                         <Button x:Name="XNewColumnButton" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Tapped="XNewColumnButton_OnTapped" Padding="4" Margin="5 0 0 0">
                             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE710;"></FontIcon>

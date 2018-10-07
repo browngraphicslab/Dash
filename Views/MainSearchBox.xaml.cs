@@ -327,8 +327,8 @@ namespace Dash
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
-            try
-            {
+            try {
+
                 searchRes = Search.Parse(text).ToList();
             }
             catch (Exception)
