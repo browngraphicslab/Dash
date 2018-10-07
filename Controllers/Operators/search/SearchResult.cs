@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -13,22 +14,24 @@ namespace Dash
         public List<string> FormattedKeyRef;
         public List<Search.SearchTerm> RtfHighlight { get; set; }
 
-        public SearchResult() : this(null, new List<string>(), new List<string>(), 0) { }
+        public SearchResult(DocumentController doc, List<string> formattedKeyRef, List<string> relevantText,
+            int rank = 1)
+        {
+            FormattedKeyRef = formattedKeyRef;
+            RelevantText = relevantText;
+            Rank = rank;
 
-        //public SearchResult(FieldControllerBase doc)
-        //{
-        //    ViewDocument = doc as DocumentController;
-        //    DataDocument = doc as DocumentController;
-        //    TitleAppendix = "";
-        //    RelevantText = "";
-        //    Rank = 1;
-        //}
+            ViewDocument = doc;
+            DataDocument = doc.GetDataDocument();
+            RtfHighlight = new List<Search.SearchTerm>();
+
+        }
 
         public SearchResult(DocumentNode node, List<string> formattedKeyRef, List<string> relevantText, int rank = 1)
         {
             Node = node;
-            FormattedKeyRef = formattedKeyRef;
-            RelevantText = relevantText;
+            FormattedKeyRef = formattedKeyRef.ToList();
+            RelevantText = relevantText.ToList();
             Rank = rank;
 
             ViewDocument = node.ViewDocument;

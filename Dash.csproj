@@ -166,6 +166,8 @@
     <None Include="ChromeExt\manifest.json" />
     <None Include="ChromeExt\README.md" />
     <None Include="Dash_TemporaryKey.pfx" />
+    <None Include="Util\Parser2\regen2.bat" />
+    <None Include="Util\Parser2\SearchGrammar.g4" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\Operators\DateOperator.cs" />
@@ -181,6 +183,14 @@
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
+    <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
+    <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />
+    <Compile Include="Util\Parser2\SearchGrammarBaseVisitor.cs" />
+    <Compile Include="Util\Parser2\SearchGrammarLexer.cs" />
+    <Compile Include="Util\Parser2\SearchGrammarListener.cs" />
+    <Compile Include="Util\Parser2\SearchGrammarParser.cs" />
+    <Compile Include="Util\Parser2\SearchGrammarVisitor.cs" />
     <Compile Include="Converters\IsNullToVisibilityConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
@@ -1475,8 +1485,12 @@
   <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
+    <Folder Include="Util\Parser\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard">
+      <Version>4.7.1.1</Version>
+    </PackageReference>
     <PackageReference Include="CsvHelper">
       <Version>7.1.1</Version>
     </PackageReference>

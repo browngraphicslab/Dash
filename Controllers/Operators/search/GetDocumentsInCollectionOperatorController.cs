@@ -49,7 +49,7 @@ namespace Dash
             var tree = DocumentTree.MainPageTree;
 
             var reg = new System.Text.RegularExpressions.Regex("^" + term + "$");
-            var final = tree.Where(doc => reg.IsMatch(doc.DataDocument.Title));
+            var final = tree.Where(doc => reg.IsMatch(doc.DataDocument.Title)).ToList();
             var docs = final.SelectMany(node => node.Children, (colNode, documentNode) => documentNode.ViewDocument);
             outputs[ResultsKey] = new ListController<DocumentController>(docs.Distinct());
             return Task.CompletedTask;

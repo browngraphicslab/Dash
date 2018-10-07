@@ -22,6 +22,7 @@ namespace Dash
             operator_add,
             add,
             concat,
+            append,
 
             operator_subtract,
             subtract,

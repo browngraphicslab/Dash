@@ -43,8 +43,12 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            throw new NotImplementedException();
-            //return Execute(scope);
+            if (scope[_variableName] != null)
+            {
+                return scope[_variableName];
+            }
+
+            return null;
         }
 
         public override DashShared.TypeInfo Type => DashShared.TypeInfo.Any;
