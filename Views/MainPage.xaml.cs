@@ -968,9 +968,9 @@ namespace Dash
                 {
                     new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
                     new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
-                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
+                    new ActionViewModel("To-do List", "Track tasks", AddToDoList, null),
                     new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
-                    new ActionViewModel("Add Text Note","Text Note",() => AddTextNote(),null)
+                    new ActionViewModel("Add Text Note","Text Note",AddTextNote,null)
                 });
                 menu.AddGroup("DATABASE", new List<ActionViewModel>
                 {
@@ -997,6 +997,22 @@ namespace Dash
             //xCanvas.Children.Clear();
             xCanvas.Children.Add(GetMenu());
         }
+
+        private void AddToDoList()
+        {
+            var templatedText =
+                "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Century Gothic; \\f3 Symbol}} \\pard{\\b\\ul\\fs30My Todo List:}\\line\\par {\\fs20{\\pard \\li200\\sa120{\\f3 \\\'b7\\~}Test1\\par}{\\pard \\li200\\sa120{\\f3 \\\'b7\\~}Test2\\par}}}";
+            var note = new RichTextNote(templatedText).Document;
+            var vm = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+            var view = SplitFrame.ActiveFrame.ViewModel.Content;
+            if (view is CollectionView cv)
+            {
+                Actions.DisplayDocument(cv.ViewModel, note, new Point(0, 0));
+            }
+
+            xCanvas.Children.Remove(_menu);
+        }
+
         private void AddTextNote()
         {
             var where = new Point(0,0);
