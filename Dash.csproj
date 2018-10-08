@@ -672,6 +672,9 @@
     <Compile Include="Views\KVPListText.xaml.cs">
       <DependentUpon>KVPListText.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\KVPRow.xaml.cs">
+      <DependentUpon>KVPRow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\LinkButton.xaml.cs">
       <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
@@ -1257,6 +1260,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\KVPListText.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\KVPRow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

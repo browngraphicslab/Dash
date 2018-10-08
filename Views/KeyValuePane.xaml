@@ -61,11 +61,11 @@
                 <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Margin="-12,-4,0,0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
                 <Button Width="40" Height="48" Foreground="White"  Background="Transparent" x:Name="xSwitchButton" x:FieldModifier="public"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
-                    <fontIcons:FontAwesome FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Icon="Exchange" />
+                    <TextBlock Text="&#xE8AB;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="20" />
                 </Button>
                 <!--close button-->
                 <Button Width="40" Height="48" Foreground="White" Background="Transparent" x:Name="xCloseButton" Tapped="CloseButton_Tapped"   Grid.Column="3">
-                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Text="{StaticResource ClearIcon}" />
+                    <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="20" />
                 </Button>
             </Grid>
         </Grid>
@@ -78,44 +78,14 @@
                     <ColumnDefinition Width="3*" ></ColumnDefinition>
                     <ColumnDefinition Width="5*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <!--key listview-->
-                <ListView 
-                    Name="xKeyListView" 
-                    ScrollViewer.VerticalScrollMode="Disabled" 
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled" 
-                    ScrollViewer.IsVerticalRailEnabled="False"
-                    Grid.Column="0" 
-                    HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Stretch" 
-                    SelectionMode="None" 
-                    CanDragItems="True" 
-                    DragItemsStarting="xKeyListView_DragItemsStarting"
-                    ItemsSource="{x:Bind ListItemSource}">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem" x:Name="CollapseBox">
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Setter Property="Padding" Value="10" />
-                            <Setter Property="Margin" Value="0" />
-                            <Setter Property="BorderThickness" Value="0,0,1,1" />
-                            <Setter Property="BorderBrush" Value="LightGray" />
-                            <Setter Property="Height" Value="50" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:EditableScriptViewModel">
-                            <TextBlock Text="{x:Bind Key.Name}"  PointerPressed="KeyValueScriptView_PointerPressed"></TextBlock>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-
-                <!--field listview-->
+                
                 <ListView 
                     ScrollViewer.VerticalScrollMode="Disabled" 
                     ScrollViewer.VerticalScrollBarVisibility="Disabled" 
                     ScrollViewer.IsVerticalRailEnabled="False"
                     Name="xFieldListView" 
-                    Grid.Column="1" 
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
                     HorizontalAlignment="Stretch" 
                     VerticalAlignment="Stretch" 
                     SelectionMode="None" 
@@ -130,12 +100,11 @@
                             <Setter Property="Margin" Value="0" />
                             <Setter Property="BorderThickness" Value="0,0,1,1" />
                             <Setter Property="BorderBrush" Value="LightGray" />
-                            <Setter Property="Height" Value="50" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <local:KeyValueScriptView PointerPressed="KeyValueScriptView_PointerPressed"></local:KeyValueScriptView>
+                            <local:KVPRow PointerPressed="KeyValueScriptView_PointerPressed"></local:KVPRow>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 

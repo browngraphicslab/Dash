@@ -114,8 +114,6 @@ namespace Dash
         {
             xBackground.Height = 120;
             xBackground.VerticalAlignment = VerticalAlignment.Top;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Expand_Value(this);
         }
 
         public void CollapseBox()
@@ -124,9 +122,6 @@ namespace Dash
             xValueColumn.Width = new GridLength(1, GridUnitType.Star);
             xBackground.Height = 50;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Collapse_Value(this);
-            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
