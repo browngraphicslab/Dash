@@ -60,7 +60,6 @@ namespace Dash
         public RichTextView()
         {
             InitializeComponent();
-            Debug.WriteLine("rich text view made");
 
             Loaded += OnLoaded;
             Unloaded += UnLoaded;

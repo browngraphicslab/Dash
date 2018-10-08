@@ -146,10 +146,13 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
+                    Debug.WriteLine("not null");
                 }
                 else
                 {
-                    MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                    Debug.WriteLine("null");
+                    var note = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
+                    MainDocument = note.Document;
                     MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                     MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
                 }
@@ -163,6 +166,7 @@ namespace Dash
                 if (col.Count == 0)
                 {
                     var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                    Debug.WriteLine("new collection note");
                     col.Add(documentController);
                     lastWorkspace = documentController;
                     lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -947,6 +951,8 @@ namespace Dash
             ToolTipService.SetToolTip(xSearchButton, search);
         }
 
+        private ActionMenu _menu;
+
         private void ActionMenuTest_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             ActionMenu GetMenu()
@@ -984,16 +990,24 @@ namespace Dash
                     new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
                     new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
                 });
+                _menu = menu;
                 return menu;
             }
 
-            xCanvas.Children.Clear();
+            //xCanvas.Children.Clear();
             xCanvas.Children.Add(GetMenu());
         }
         private void AddTextNote()
         {
-            var where = new Point(-100, 0);
-            var idk = new RichTextNote("new note",where);
+            var where = new Point(0,0);
+            var postitNote = new RichTextNote().Document;
+            var viewModel = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+            var view = SplitFrame.ActiveFrame.ViewModel.Content;
+            if (view is CollectionView cv)
+            {
+                Actions.DisplayDocument(cv.ViewModel, postitNote, where);
+            }
+            xCanvas.Children.Remove(_menu);
         }
     }
 
