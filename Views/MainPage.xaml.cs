@@ -151,39 +151,40 @@ namespace Dash
             }
             else
             {
-                    MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
-                    MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
-                    MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
+                MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
+                MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
+
             LoadSettings();
 
-                //get current presentations if any and set data context of pres view to pres view model
-                var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
+            //get current presentations if any and set data context of pres view to pres view model
+            var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+            xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
 
-                var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                DocumentController lastWorkspace;
-                if (col.Count == 0)
-                {
-                    var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
-                    col.Add(documentController);
-                    lastWorkspace = documentController;
-                    lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                    lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
-                }
-                else
-                {
-                    lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                }
+            var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            DocumentController lastWorkspace;
+            if (col.Count == 0)
+            {
+                var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                col.Add(documentController);
+                lastWorkspace = documentController;
+                lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
+            }
+            else
+            {
+                lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            }
 
-                XMainSplitter.SetContent(lastWorkspace);
+            XMainSplitter.SetContent(lastWorkspace);
 
-                var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
-                xMainTreeView.DataContext = treeContext;
-                xMainTreeView.SetUseActiveFrame(true);
-                //xMainTreeView.ToggleDarkMode(true);
+            var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
+            xMainTreeView.DataContext = treeContext;
+            xMainTreeView.SetUseActiveFrame(true);
+            //xMainTreeView.ToggleDarkMode(true);
 
-                SetupMapView(lastWorkspace);
+            SetupMapView(lastWorkspace);
 
             if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
 
@@ -368,7 +369,7 @@ namespace Dash
                 }
                 return;
             }
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) && 
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) &&
                 !(FocusManager.GetFocusedElement() is TextBox))
             {
                 var pos = this.RootPointerPos();
@@ -696,7 +697,7 @@ namespace Dash
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                 }
-           }
+            }
             else
             {
                 var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));

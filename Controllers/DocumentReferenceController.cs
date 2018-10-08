@@ -13,13 +13,18 @@ namespace Dash
         public DocumentController DocumentController
         {
             get => _documentController;
-            set
-            {
-                _documentController = value;
-                (Model as DocumentReferenceModel).DocumentId = value.Id;
-                UpdateOnServer(null);//TODO DBUpdate: Add FieldUpdate and undo
-                DocumentChanged();
-            }
+            set => SetDocumentController(value, true);
+        }
+
+        private void SetDocumentController(DocumentController doc, bool withUndo)
+        {
+            var oldDoc = _documentController;
+            var newDoc = doc;
+            _documentController = doc;
+            (Model as DocumentReferenceModel).DocumentId = doc.Id;
+            UndoCommand command = withUndo ? new UndoCommand(() => SetDocumentController(newDoc, false), () => SetDocumentController(oldDoc, false)) : null;
+            UpdateOnServer(command);
+            DocumentChanged();
         }
 
         public DocumentReferenceController(DocumentController doc, KeyController key, bool copyOnWrite = false) : base(new DocumentReferenceModel(doc.Id, key.Id, copyOnWrite))
@@ -56,11 +61,6 @@ namespace Dash
             _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
             Debug.Assert(_documentController != null);
             DocumentChanged();
-        }
-
-        public void ChangeFieldDoc(DocumentController doc, bool withUndo = true)
-        {
-            DocumentController = doc;
         }
 
         public override FieldControllerBase Copy()

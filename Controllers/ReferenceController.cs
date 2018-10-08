@@ -40,6 +40,8 @@ namespace Dash
             _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
             _lastDoc = GetDocumentController(null);
             _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+
+            OnFieldModelUpdated(null);
         }
 
         public override void DisposeField()

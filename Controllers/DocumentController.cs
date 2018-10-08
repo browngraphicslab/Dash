@@ -872,10 +872,14 @@ namespace Dash
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field.Id;
+                if (!doc.Equals(this))
+                {
+                    doc.UpdateOnServer(null);
+                }
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference = new DocumentFieldReference(this, key);
+                var reference = new DocumentFieldReference(doc, key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
 
                 if (key.Equals(KeyStore.PrototypeKey))

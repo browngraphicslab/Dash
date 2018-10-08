@@ -45,7 +45,7 @@ namespace Dash
         /*
          * Wrapper to retrieve the list items stored in the ListController.
          */
-        private List<T> _typedData = new List<T>();
+        private List<T> _typedData;
         public List<T> TypedData
         {
             get => _typedData;
@@ -120,18 +120,26 @@ namespace Dash
         // Parameterless
         public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            _typedData = new List<T>();
             ConstructorHelper(false);
         }
 
         // IEnumerable<T> (list of items)
         public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            foreach (var field in list)
+            {
+                field.FieldModelUpdated += ContainedFieldUpdated;
+            }
+            _typedData = new List<T>(list);
             ConstructorHelper(readOnly);
         }
 
         // T (item)
         public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            item.FieldModelUpdated += ContainedFieldUpdated;
+            _typedData = new List<T> {item};
             ConstructorHelper(readOnly);
         }
 
@@ -145,8 +153,6 @@ namespace Dash
             Debug.Assert(!model.SubTypeInfo.Equals(TypeInfo.None));
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
             return new ListController<T>(model);
-
-
         }
 
         public override async Task InitializeAsync()
@@ -162,6 +168,10 @@ namespace Dash
             List<T> list = fields as List<T> ?? new List<T>(fields);
 
             // furthermore, confirms the type of the list in the model matches the type of this list controller
+            foreach (var field in list)
+            {
+                field.FieldModelUpdated += ContainedFieldUpdated;
+            }
             _typedData = list;
         }
 
@@ -377,11 +387,6 @@ namespace Dash
             TypedData.Add(element);
             ListModel.Data.Add(element.Id );
             return true;
-        }
-        
-        public static explicit operator ListController<T>(FieldUpdatedEventArgs v)
-        {
-            throw new NotImplementedException();
         }
 
         public override void AddRange(IEnumerable<FieldControllerBase> elements)

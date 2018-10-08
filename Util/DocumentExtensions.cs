@@ -464,7 +464,6 @@ namespace Dash
             if (oldToNewDocMappings.ContainsKey(doc))
                 return oldToNewDocMappings[doc];
 
-            //TODO tfs: why do we make a delegate in copy?
             var copy = doc.GetPrototype()?.MakeDelegate() ??
                             new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), doc.DocumentType);
             oldToNewDocMappings.Add(doc, copy);
