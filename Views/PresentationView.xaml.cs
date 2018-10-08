@@ -248,10 +248,9 @@ namespace Dash
             if (!SplitFrame.TryNavigateToDocument(dc))
             {
                 var tree = DocumentTree.MainPageTree;
-                if (tree.Nodes.ContainsKey(dc)
-                ) //TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
+                var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(dc));
+                if (docNode != null)//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
                 {
-                    var docNode = tree.Nodes[dc];
                     SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
                 }
                 else
