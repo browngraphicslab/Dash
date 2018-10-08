@@ -146,9 +146,9 @@ namespace Dash
                         if (!SplitFrame.TryNavigateToDocument(document))
                         {
                             var tree = DocumentTree.MainPageTree;
-                            if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                            var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(document));
+                            if (docNode != null)//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
                             {
-                                var docNode = tree.Nodes[document];
                                 SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
                             }
                             else
