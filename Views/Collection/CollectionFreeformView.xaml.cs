@@ -21,6 +21,9 @@ namespace Dash
             xOuterGrid.SizeChanged += OnSizeChanged;
             xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
+            xOuterGrid.PointerCanceled += OnPointerCancelled;
+            //xOuterGrid.PointerCaptureLost += OnPointerReleased;
+
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }

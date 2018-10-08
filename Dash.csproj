@@ -193,6 +193,10 @@
     <Compile Include="Util\Parser2\SearchGrammarParser.cs" />
     <Compile Include="Util\Parser2\SearchGrammarVisitor.cs" />
     <Compile Include="Converters\IsNullToVisibilityConverter.cs" />
+    <Compile Include="Util\InkManager.cs" />
+    <Compile Include="Util\InkSubToolbar.xaml.cs">
+      <DependentUpon>InkSubToolbar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
       <DependentUpon>ActionMenu.xaml</DependentUpon>
@@ -1043,6 +1047,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Util\InkSubToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ActionMenu\ActionMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

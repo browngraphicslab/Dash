@@ -7,7 +7,21 @@ namespace Dash
 {
     public class DocumentNode : IEnumerable<DocumentNode>
     {
-        public IReadOnlyList<DocumentNode> Children { get; }
+        private List<DocumentNode> _children;
+
+        public IReadOnlyList<DocumentNode> Children
+        {
+            get
+            {
+                if (_children == null)
+                {
+                    var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                    _children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this)).ToList();
+                }
+
+                return _children;
+            }
+        }
 
         public DocumentNode Parent { get; }
 
@@ -27,7 +41,7 @@ namespace Dash
          * Only constructor must have two documents, one for the view and one for the data.
          * They can be the same document
          */
-        public DocumentNode(DocumentController viewDocument, DocumentNode parent, IDictionary<DocumentController, DocumentNode> nodes)
+        public DocumentNode(DocumentController viewDocument, DocumentNode parent)
         {
             ViewDocument = viewDocument;
             DataDocument = ViewDocument.GetDataDocument();
@@ -38,19 +52,6 @@ namespace Dash
             //each region and doc has link to and from - all vis
             //search through links + regions, discard link / region, parent null = dock
             Parent = parent;
-
-
-            if (true || nodes.TryAdd(DataDocument, this))
-            {
-                //only keep if doc con or list of doc
-                var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                Children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this, nodes)).ToList();
-            }
-            else
-            {
-                Children = new List<DocumentNode>();
-            }
-            //maybe add Children to hash set here?
         }
 
         public IEnumerator<DocumentNode> GetEnumerator()

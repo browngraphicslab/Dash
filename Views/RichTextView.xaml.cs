@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
@@ -66,8 +67,25 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    if (!SelectionManager.IsSelected(docView))
+                    {
+                        SelectionManager.Select(docView, false);
+                        var selection = xRichEditBox.Document.Selection;
+                        string boxText;
+                        xRichEditBox.Document.GetText(TextGetOptions.None, out boxText);
+                        var lenght = boxText.Length - 1;
+                        selection.StartPosition = lenght;
+                        selection.EndPosition = lenght;
+                        xRichEditBox.Focus(FocusState.Keyboard);
+                    }
+                       
+                    SelectionManager.TryInitiateDragDrop(docView, e, null);
+                }
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
-                DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
+                DocumentView.FocusedDocument = docView;
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
