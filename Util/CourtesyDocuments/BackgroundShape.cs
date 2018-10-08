@@ -1,6 +1,5 @@
 ﻿using DashShared;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -39,7 +38,7 @@ namespace Dash
         public BackgroundShape(FieldControllerBase refToBackground, FieldControllerBase refToSides, FieldControllerBase refToFill, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToBackground);
-            fields.Add(KeyStore.IsAdornmentKey, new TextController("true"));
+            fields.Add(KeyStore.IsAdornmentKey, new BoolController(true));
             fields.Add(KeyStore.SideCountKey, refToSides);
             fields.Add(KeyStore.GroupBackgroundColorKey, refToFill);
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
@@ -50,8 +49,6 @@ namespace Dash
             var pathBox = new Viewbox { Stretch = Stretch.Fill };
             var corePath = new Path { StrokeThickness = 0 };
             pathBox.Child = corePath;
-
-            SetupBindings(pathBox, docController, context);
 
             BindPathShape(corePath, docController, context);
             BindPathFill(corePath, docController, context);

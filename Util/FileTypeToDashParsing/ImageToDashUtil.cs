@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -144,7 +143,7 @@ namespace Dash
         /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
-        private static async Task<StorageFile> CreateUniqueLocalFile()
+        public static async Task<StorageFile> CreateUniqueLocalFile()
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
@@ -155,7 +154,7 @@ namespace Dash
         /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
-        private static async Task<StorageFile> CreateLocalFile(string fileName)
+        public static async Task<StorageFile> CreateLocalFile(string fileName)
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = fileName + ".jpg"; // somehow this works for all images... who knew
@@ -170,7 +169,7 @@ namespace Dash
         {
             Point size = await GetImageSize(localFile);
             double imgWidth = size.X;
-            double imgHeight = size.Y;
+            double imgHeight = double.NaN;
 
             return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
         }

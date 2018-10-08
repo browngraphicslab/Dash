@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -140,27 +139,27 @@ namespace Dash
 
             switch (link.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Zoom:
+                case LinkBehavior.Follow:
                     //navigate to link
                     if (linkContext)
                     {
-                        if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(document, false))
+                        if (!SplitFrame.TryNavigateToDocument(document))
                         {
                             var tree = DocumentTree.MainPageTree;
-                            if (tree.Nodes.ContainsKey(document))//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                            var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(document));
+                            if (docNode != null)//TODO This doesn't handle documents in collections that aren't in the document "visual tree"
                             {
-                                var docNode = tree.Nodes[document];
-                                MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(docNode.Parent.ViewDocument, docNode.ViewDocument);
+                                SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
                             }
                             else
                             {
-                                MainPage.Instance.SetCurrentWorkspace(document);
+                                SplitFrame.OpenInActiveFrame(document);
                             }
                         }
                     }
                     else
                     {
-                        MainPage.Instance.SetCurrentWorkspace(document);
+                        SplitFrame.OpenInActiveFrame(document);
                     }
 
                     break;
@@ -185,7 +184,7 @@ namespace Dash
                     }
                     break;
                 case LinkBehavior.Dock:
-                    MainPage.Instance.Dock_Link(link, direction, linkContext);
+                    MainPage.Instance.DockLink(link, direction, linkContext);
                     break;
                 case LinkBehavior.Float:
                     MainPage.Instance.AddFloatingDoc(document);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -14,7 +14,7 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override Task<FieldControllerBase> Execute(Scope scope)
         {
             return null;
             //if (_parameters == null) { return null; }

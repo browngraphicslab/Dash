@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.concat, Op.Name.operator_add)]
+    [OperatorType(Op.Name.append, Op.Name.operator_add)]
     public sealed class ListAppendOperatorController : OperatorController
     {
         //Input keys
@@ -36,7 +37,10 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("List appending", new Guid("2F2C4A08-C81D-426E-913D-A5FBE5436619"));
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var listA = inputs[ListAKey] as BaseListController;
             var toAppendController = inputs[ToAppendKey];
@@ -49,6 +53,7 @@ namespace Dash
             var l = (BaseListController) listA.Copy();
             l.AddBase(toAppendController);
             outputs[ResultsKey] = l;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ListAppendOperatorController();

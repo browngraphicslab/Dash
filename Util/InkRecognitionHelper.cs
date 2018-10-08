@@ -309,9 +309,10 @@ namespace Dash
             {
                 doc.SetField(KeyStore.ParsedFieldsKey, list, true);
             }
-            var layout = new FreeFormDocument(layoutDocs,
-                position, size).Document;
-            doc.SetActiveLayout(layout, true, true);
+            var layout = new FreeFormDocument(layoutDocs, position, size).Document;
+
+            throw new Exception("ActiveLayout code has not been updated yet");
+            // doc.SetActiveLayout(layout, true, true);
             if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc);
             return doc;
         }

@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
-    public class DataVirtualizationSource<T>
+    public class DataVirtualizationSource
     {
         private const double MaxPageWidth = 1500; // maximum width to render a page.  avoids generating oversized (memory-wise) Bitmaps
         private readonly ObservableCollection<Image> _visibleElements = new ObservableCollection<Image>();
@@ -55,6 +55,7 @@ namespace Dash
         }
         private void View_Loaded(object sender, EventArgs eventArgs)
         {
+            _visibleElements.Clear();
             for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
             {
                 _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });
@@ -81,10 +82,10 @@ namespace Dash
             if (_scrollViewer.ActualHeight != 0)
             {
                 var endIndex   = GetIndex(_scrollViewer.ActualHeight + scrollOffset) + 1;
-                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight));
+                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight)) - 1;
                 var pageBuffer = (endIndex - startIndex) / 2;
                 startIndex = Math.Max(startIndex - pageBuffer, 0);
-                endIndex   = Math.Min(endIndex   + pageBuffer, _visibleElements.Count - 1);
+                endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);
                 for (var i = 0; i < _visibleElements.Count; i++)
                 {
                     var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
@@ -105,7 +106,7 @@ namespace Dash
         private async void RenderPage(int pageNum)
         {
             using (var page = _view.PDFdoc.GetPage((uint)pageNum))
-            {
+            { 
                 while (_visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])
                 {
                     BitmapSource source = null;
@@ -115,7 +116,7 @@ namespace Dash
                         var options = new Windows.Data.Pdf.PdfPageRenderOptions();
                         var stream = new InMemoryRandomAccessStream();
                         var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
-                        var widthRatio = targetWidth == 0 ? 1 : (targetWidth / screenMap.X) / _view.PdfMaxWidth;
+                        var widthRatio = (targetWidth / screenMap.X) / _view.PdfMaxWidth;
                         var box = page.Dimensions.MediaBox;
                         options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, MaxPageWidth);
                         options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, MaxPageWidth * box.Height / box.Width);
@@ -123,7 +124,7 @@ namespace Dash
                         source = new BitmapImage();
                         await source.SetSourceAsync(stream);
                     }
-                    _visibleElements[pageNum].Source = source;
+                    _visibleElements[pageNum].Source = source; 
                     _visibleElementsRenderedWidth[pageNum] = targetWidth;
                 }
                 _visibleElementsIsRendering[pageNum] = false;

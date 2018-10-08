@@ -156,7 +156,10 @@ namespace Dash
             AppBarButton[] buttons =
             {
                 xCopy,
-                xDelete
+                xDelete,
+                xMakeInstance,
+                xFitWidth,
+                xFitHeight
             };
             docSpecificButtons = buttons;
 
@@ -166,6 +169,9 @@ namespace Dash
             {
                 xCopy,
                 xDelete,
+                xMakeInstance,
+                xFitWidth,
+                xFitHeight,
                 xAddGroup,
                 xAddImage,
                 xAddVideo,
@@ -314,7 +320,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(reb);
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(reb);
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -348,7 +354,7 @@ namespace Dash
                         }
                         else if (data is ListController<DocumentController>)
                         {
-                            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                            if (MainPage.Instance.IsCtrlPressed())
                             {
                                 if (!containsInternalContent)
                                 {
@@ -376,7 +382,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<RichEditBox>());
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -384,9 +390,9 @@ namespace Dash
                         {
                             containsInternalContent = true;
                             baseLevelContentToolbar = xPlainTextToolbar;
-                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<EditableTextBlock>());
                             //give toolbar access to the most recently selected text box for editing purposes
-                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<EditableTextBlock>());
                             xPlainTextToolbar.SetDocs(selection);
                             subtoolbarElement = xPlainTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
@@ -515,6 +521,36 @@ namespace Dash
                 d.CopyDocument();
             }
         }
+        // copy btn
+        private void FitWidth(object sender, RoutedEventArgs e)
+        {
+            foreach (var d in SelectionManager.GetSelectedDocs())
+            {
+                if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
+                    d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
+                else d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
+            }
+        }
+        // copy btn
+        private void FitHeight(object sender, RoutedEventArgs e)
+        {
+            foreach (var d in SelectionManager.GetSelectedDocs())
+            {
+                if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
+                    d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
+                else d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
+                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
+            }
+        }
+        // copy btn
+        private void MakeInstance(object sender, RoutedEventArgs e)
+        {
+            foreach (var d in SelectionManager.GetSelectedDocs())
+            {
+                d.MakeInstance();
+            }
+        }
 
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
@@ -562,13 +598,13 @@ namespace Dash
             }
 
 	        xToolbar.IsOpen = true;
-		}
+        }
 
         /// <summary>
         /// When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
         /// </summary>
         private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
+         {
 			//opens file picker and limits search by listed image extensions
 			var imagePicker = new FileOpenPicker
             {
@@ -594,7 +630,7 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController == null) continue;
 
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = @where;
                     mainPageCollectionView.ViewModel.AddDocument(docController);
@@ -643,11 +679,11 @@ namespace Dash
                 {
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     docController.GetDataDocument().SetTitle(file.Name);
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
 
                 //add error message for null file?
@@ -681,11 +717,11 @@ namespace Dash
                 {
                     //create a doc controller for the audio, set position, and add to canvas
                     var docController = await new AudioToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     docController.GetDataDocument().SetTitle(file.Name);
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
                 //add error message for null file?
             }
@@ -696,10 +732,10 @@ namespace Dash
 	    private void Add_Group_On_Click(object sender, RoutedEventArgs e)
 	    {
 			//create and add group to workspace
-		    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+		    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
 			var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
 
-			MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
+			mainPageCollectionView.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
 		}
 
 
@@ -932,6 +968,9 @@ namespace Dash
         private ToolTip _addVideo;
         private ToolTip _addAudio;
         private ToolTip _copy;
+        private ToolTip _instance;
+        private ToolTip _fitWidth;
+        private ToolTip _fitHeight;
         private ToolTip _delete;
         private ToolTip _undo;
         private ToolTip _redo;
@@ -1015,6 +1054,30 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xAddAudio, _addAudio);
 
+            _instance = new ToolTip()
+            {
+                Content = "Instance",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xMakeInstance, _instance);
+
+            _fitWidth = new ToolTip()
+            {
+                Content = "Fit Width",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+
+            ToolTipService.SetToolTip(xFitWidth, _fitWidth);
+            _fitHeight = new ToolTip()
+            {
+                Content = "Fit Height",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xFitHeight, _fitHeight);
+
             _copy = new ToolTip()
             {
                 Content = "Copy",
@@ -1093,7 +1156,32 @@ namespace Dash
 
         private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
         {
-           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
+        }
+
+        private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Left, SplitFrame.ActiveFrame.DocumentController, true);
+        }
+
+        private void XSplitHorizontal_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Down, SplitFrame.ActiveFrame.DocumentController, true);
+        }
+
+        private void XCloseSplit_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.Delete();
+        }
+
+        private void XGoBack_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.GoBack();
+        }
+
+        private void XGoForward_OnClick(object sender, RoutedEventArgs e)
+        {
+            SplitFrame.ActiveFrame.GoForward();
         }
     }
 }

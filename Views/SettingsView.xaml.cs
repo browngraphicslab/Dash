@@ -5,22 +5,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -189,6 +183,13 @@ namespace Dash
             set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, value, true);
         }
 
+        public string UserName
+        {
+            //This gets called before the settings are initialized, so _settingsDoc is null
+            get => _settingsDoc?.GetField<TextController>(KeyStore.AuthorKey)?.Data;
+            set => _settingsDoc?.SetField<TextController>(KeyStore.AuthorKey, value, true);
+        }
+
         #endregion
 
         #region CONSTRUCTOR
@@ -306,6 +307,8 @@ namespace Dash
             AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: (sender, dp) => UpdateNumBackups(), mode: BindingMode.OneWay);
             AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) => UpdateInterval());
             AddSettingsBinding<NumberController>(xBackgroundOpacitySlider, RangeBase.ValueProperty, KeyStore.BackgroundImageOpacityKey, handler: (sender, dp) => CollectionFreeformView.BackgroundOpacity = BackgroundImageOpacity);
+
+            AddSettingsBinding<TextController>(XAuthorBox, TextBox.TextProperty, KeyStore.AuthorKey);
         }
 
         private void ProcessEnumsAndImage(BackgroundImageState thisState)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -36,7 +37,10 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("List zip", new Guid("B4F07219-AA26-4E71-965E-CBDF6D44708E"));
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var listA = (BaseListController) inputs[ListAKey];
             var listB = (BaseListController) inputs[ListBKey];
@@ -77,6 +81,7 @@ namespace Dash
             }
 
             outputs[ResultsKey] = zipped;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ListAppendOperatorController();

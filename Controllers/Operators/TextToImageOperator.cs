@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash.Controllers.Operators
@@ -39,7 +40,7 @@ namespace Dash.Controllers.Operators
                 [ImageKey] = TypeInfo.Image,
             };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -54,6 +55,7 @@ namespace Dash.Controllers.Operators
             {
                 throw new ScriptExecutionException(new ImageCreationFailureErrorModel(uri));
             }   
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new TextToImageOperator();

@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation.Collections;
-using Excel = Microsoft.Office.Interop.Excel;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace OfficeInterop
@@ -14,6 +10,7 @@ namespace OfficeInterop
     {
         private Word.Application _word;
         private readonly Word.Document _doc;
+        private static IntPtr windowHandle = IntPtr.Zero;
 
         private ChromeApp _chrome;
 
@@ -24,16 +21,79 @@ namespace OfficeInterop
                 _word?.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
                 _word = null;
             };
+
+            Program.ShutdownWordApps();
             _word = new Word.Application();
             _doc = _word.Documents.Add();
+
             _chrome = new ChromeApp();
-            _chrome.MessageReceived += s =>
+            _chrome.MessageReceived += message =>
             {
+                Debug.WriteLine("received message:");
+                Debug.WriteLine(message);
+                Debug.WriteLine("----------------");
+
+                // See if Chrome is open
+                var newWindowHandle = WindowAPI.GetWindowByName("Chrome");
+                if (newWindowHandle == IntPtr.Zero)
+                {
+                    return;
+                }
+
+                if (newWindowHandle != windowHandle)
+                {
+                    windowHandle = newWindowHandle;
+                    WindowAPI.AddWindowEventListener(windowHandle, onMoveSizeChanged);
+                }
+
+                if (message.StartsWith("activate"))
+                {
+                    var sizex = WindowAPI.GetControlSize(windowHandle);
+
+                    // place chrome in top-left corner
+                    WindowAPI.ModifyWindow(windowHandle, 0, 0, (int)sizex.Width, (int)sizex.Height);
+
+                    // ... notify Dash here that plugin was activated, pass 'size'.
+
+                }
+                else if (message.StartsWith("deactivate"))
+                {
+                }
+                else if (message.StartsWith("expand"))
+                {
+                    WindowAPI.UndoSticky(windowHandle);
+
+                    // ... notify Dash here
+                }
+                else if (message.StartsWith("collapse"))
+                {
+                    WindowAPI.MakeSticky(windowHandle);
+                }
+                else
+                {
+                }
+
+                var colon = message.IndexOf(':');
+                var bracket = message.IndexOf('[');
+                if (colon >= 0 && colon < bracket)
+                {
+                    message = message.Substring(colon + 1);
+                }
                 OnSendRequest(new ValueSet()
                 {
                     ["REQUEST"] = "Chrome",
                     ["DEBUG"] = "Received Chrome message",
-                    ["DATA"] = s
+                    ["DATA"] = message
+                });
+
+
+                // ... notify Dash here
+                var size = WindowAPI.GetControlSize(windowHandle);
+                OnSendRequest(new ValueSet()
+                {
+                    ["REQUEST"] = "SizeChrome",
+                    ["DEBUG"] = "Chrome window changed",
+                    ["DATA"] = "" + size.Width + "," + size.Height
                 });
             };
             _chrome.Start();
@@ -45,8 +105,21 @@ namespace OfficeInterop
             _word = null;
         }
 
+        private void onMoveSizeChanged(IntPtr hook, uint type, IntPtr hwnd, int idObject, int child, uint thread, uint time)
+        {
+            var size = WindowAPI.GetControlSize(windowHandle);
+            Debug.WriteLine("Size/Position of Chrome has changed.");
+            Debug.WriteLine(size);
+            OnSendRequest(new ValueSet()
+            {
+                ["REQUEST"] = "SizeChrome",
+                ["DEBUG"] = "Chrome window changed",
+                ["DATA"] = "" + size.Width + "," + size.Height
+            });
+        }
+
         //Event that is triggered when we want to send a message through the interop to Dash
-        public event Action<ValueSet> SendRequest; 
+        public event Action<ValueSet> SendRequest;
 
         /// <summary>
         /// Processes a message that was received through the interop from Dash and dispatches is to the correct place
@@ -61,28 +134,28 @@ namespace OfficeInterop
             string result = "";
             switch (value)
             {
-                case "HTML to RTF":
-                    try
-                    {
-                        _doc.Content.Select();//Select all and delete in case we are reusing a document
-                        _doc.Content.Delete();
+            case "HTML to RTF":
+                try
+                {
+                    _doc.Content.Select();//Select all and delete in case we are reusing a document
+                    _doc.Content.Delete();
 
-                        _doc.Content.Paste();//paste html
-                        _doc.Content.Select();//select all
-                        _doc.Content.Copy();//copy rtf
-                        result = "SUCCESS";
-                    }
-                    catch (Exception exc)
-                    {
-                        result = exc.Message;
-                    }
-                    break;
-                case "Chrome":
-                    _chrome.Send(Encoding.UTF8.GetBytes(request["DATA"] as string));
-                    break;
-                default:
-                    result = "unknown request";
-                    break;
+                    _doc.Content.Paste();//paste html
+                    _doc.Content.Select();//select all
+                    _doc.Content.Copy();//copy rtf
+                    result = "SUCCESS";
+                }
+                catch (Exception exc)
+                {
+                    result = exc.Message;
+                }
+                break;
+            case "Chrome":
+                _chrome.Send(Encoding.UTF8.GetBytes(request["DATA"] as string));
+                break;
+            default:
+                result = "unknown request";
+                break;
             }
 
             response.Add("RESPONSE", result);

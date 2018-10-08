@@ -110,6 +110,10 @@ namespace Dash
 
             if (imageExtensions.Any(data.EndsWith))
                 return new ImageController(new Uri(data));
+            if (data.EndsWith("pdf"))
+            {
+                return new PdfController(new Uri(data));
+            }
             return new TextController(data);
 
 

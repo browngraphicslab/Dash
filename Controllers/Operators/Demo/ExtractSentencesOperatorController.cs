@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -51,7 +52,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Sentence Analyzer", new Guid("D9EE3561-0A30-4DA9-B11A-859CABCF237B"));
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -88,6 +89,7 @@ namespace Dash
             }
 
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

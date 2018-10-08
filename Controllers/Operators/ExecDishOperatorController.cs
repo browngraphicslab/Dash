@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using DashShared;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -40,13 +40,13 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Exec", new Guid("F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0"));
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             try
             {
-                var result = TypescriptToOperatorParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
+                var result = await TypescriptToOperatorParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
                 outputs[ResultKey] = result;
             }
             catch (InvalidDishScriptException dishScriptException)

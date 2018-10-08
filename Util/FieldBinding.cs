@@ -5,8 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using Dash.Converters;
 
 namespace Dash
 {
@@ -79,7 +77,7 @@ namespace Dash
                     if (GetConverter != null)
                     {
                         converter = GetConverter(field);
-						Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
+                        Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
                     }
                     var fieldData = ValueType == BindingValueType.Value ? field.GetValue(context) : field;
                     var xamlData = converter == null || fieldData == null
@@ -126,8 +124,8 @@ namespace Dash
         }
         public bool ConvertFromXaml(object xamlData)
         {
-            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel || 
-                         FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ? 
+            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel ||
+                         FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ?
                 Document.GetField(Key) : Document.GetDereferencedField<TField>(Key, Context);
             if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference)
             {
@@ -207,15 +205,15 @@ namespace Dash
             if (binding == null) return;
             switch (binding.Mode)
             {
-                case BindingMode.OneTime:
-                    AddOneTimeBinding(element, property, binding);
-                    break;
-                case BindingMode.OneWay:
-                    AddOneWayBinding(element, property, binding);
-                    break;
-                case BindingMode.TwoWay:
-                    AddTwoWayBinding(element, property, binding);
-                    break;
+            case BindingMode.OneTime:
+                AddOneTimeBinding(element, property, binding);
+                break;
+            case BindingMode.OneWay:
+                AddOneWayBinding(element, property, binding);
+                break;
+            case BindingMode.TwoWay:
+                AddTwoWayBinding(element, property, binding);
+                break;
             }
         }
 
@@ -269,26 +267,25 @@ namespace Dash
                     }
                 };
 
+            //int id = ID++;
             int refCount = 0;
+            bool loading = false;
+
+            element.Unloaded += OnElementOnUnloaded;
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
+            if (element.IsInVisualTree())
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Add(handler);
-                refCount++;
+                loading = true;
+                element.Loading += OnElementOnLoading;
+                AddBinding();
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+            }
+            else
+            {
+                element.Loaded += OnElementOnLoading;
             }
 
-            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
-            {
-                element.Loaded -= OnElementOnLoaded;
-                element.Loaded += OnElementOnLoaded;
-
-                if (--refCount == 0)
-                {
-                    binding.Remove(handler);
-                }
-            }
-
-            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            void AddBinding()
             {
                 if (refCount++ == 0)
                 {
@@ -297,13 +294,38 @@ namespace Dash
                 }
             }
 
-            element.Unloaded += OnElementOnUnloaded;
+            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
+            {
+                if (--refCount == 0)
+                {
+                    binding.Remove(handler);
+                }
 
-            //element.Loaded += OnElementOnLoaded;
+                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+
+                //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
+                //tfs: the assert fails because Loaded and Unloaded can get called out of order
+                //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
+                //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
+                //     but it does kinda mess with how the reference counting should work...
+                //Debug.Assert(refCount >= 0);
+            }
+
+            void OnElementOnLoading(object frameworkElement, object o)
+            {
+                if (loading && element.IsInVisualTree())
+                {
+                    return;
+                }
+                AddBinding();
+
+                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
+            }
 
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
+                element.Loading -= OnElementOnLoading;
+                element.Loaded -= OnElementOnLoading;
                 element.Unloaded -= OnElementOnUnloaded;
                 binding.Remove(handler);
                 refCount = 0;
@@ -312,9 +334,11 @@ namespace Dash
             AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
+        //private static int ID = 0;
         private static void AddTwoWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding)
             where T : FrameworkElement
         {
+            //int id = ID++;
             bool updateUI = true;
             DocumentController.DocumentUpdatedHandler handler =
                 (sender, args, context) =>
@@ -342,46 +366,71 @@ namespace Dash
                             binding.ConvertToXaml(element, property, binding.Context);
                     }
                 };
-            
+
             long token = -1;
             int refCount = 0;
+            bool loading = false;
+            element.Unloaded += OnElementOnUnloaded;
 
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
+            if (element.IsInVisualTree())
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Add(handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
-                refCount++;
+                loading = true;
+                element.Loading += OnElementOnLoaded;
+                AddBinding();
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
-
-            //element.Loaded += OnElementOnLoaded;
-            element.Unloaded += OnElementOnUnloaded;
-            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
+            else
             {
-                element.Loaded -= OnElementOnLoaded;
                 element.Loaded += OnElementOnLoaded;
-
-                if (--refCount == 0)
-                {
-                    binding.Remove(handler);
-                    element.UnregisterPropertyChangedCallback(property, token);
-                    token = -1;
-                }
             }
 
-            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            void AddBinding()
             {
                 if (refCount++ == 0)
                 {
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                     token = element.RegisterPropertyChangedCallback(property, callback);
+                    //Debug.WriteLine($"Binding {id,-5} Add :            RefCount = {refCount,5}, {element.GetType().Name}");
                 }
+            }
+
+            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
+            {
+
+                if (--refCount == 0)
+                {
+                    binding.Remove(handler);
+                    element.UnregisterPropertyChangedCallback(property, token);
+                    token = -1;
+                    //Debug.WriteLine($"Binding {id,-5} Remove :         RefCount = {refCount,5}, {element.GetType().Name}");
+                }
+
+                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+
+                //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
+                //tfs: the assert fails because Loaded and Unloaded can get called out of order
+                //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
+                //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
+                //     but it does kinda mess with how the reference counting should work...
+                //Debug.Assert(refCount >= 0);
+            }
+
+            void OnElementOnLoaded(object frameworkElement, object o)
+            {
+                if (loading && element.IsInVisualTree())
+                {
+                    return;
+                }
+                AddBinding();
+                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void RemoveBinding()
             {
-                element.Loaded   -= OnElementOnLoaded;
+                element.Loading -= OnElementOnLoaded;
+                element.Loaded -= OnElementOnLoaded;
                 element.Unloaded -= OnElementOnUnloaded;
                 binding.Remove(handler);
                 if (token != -1)

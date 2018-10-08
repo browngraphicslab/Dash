@@ -60,6 +60,7 @@ namespace Dash
         public RichTextView()
         {
             InitializeComponent();
+
             Loaded += OnLoaded;
             Unloaded += UnLoaded;
 
@@ -90,9 +91,11 @@ namespace Dash
 
             xRichEditBox.Drop += (s, e) =>
             {
-                e.Handled = true;
-                xRichEditBox_Drop(s, e);
-                this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
+                if (!MainPage.Instance.IsAltPressed())
+                {
+                    e.Handled = true;
+                    xRichEditBox_Drop(s, e);
+                }
             };
 
             PointerWheelChanged += (s, e) => e.Handled = true;
@@ -148,12 +151,17 @@ namespace Dash
                 if (getDocView() != null)
                     getDocView().CacheMode = new BitmapCache();
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                var readableText= getReadableText();
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.IsSelected(docView) && docView?.ViewModel?.DocumentController?.GetField(KeyStore.ActiveLayoutKey) == null)
+                    if (!SelectionManager.IsSelected(docView))
                         using (UndoManager.GetBatchHandle())
                             docView.DeleteDocument();
+                }
+                else if (readableText.StartsWith("#"))
+                {
+                    Text = new RichTextModel.RTD(readableText.Substring(1));
                 }
             };
 
@@ -196,7 +204,7 @@ namespace Dash
             if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
             {
                 var docView = getDocView();
-                if (args.DeselectedViews.Contains(docView) && docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                if (args.DeselectedViews.Contains(docView))
                     docView.DeleteDocument();
             }
         }
@@ -307,7 +315,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && IsLoaded)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null && (true || IsLoaded))
             {
                 //var s1 = xRichEditBox.Document.Selection.StartPosition;
                 //var s2 = xRichEditBox.Document.Selection.EndPosition;
@@ -375,7 +383,10 @@ namespace Dash
                         {
                             if (this.IsCtrlPressed())
                                 nearestOnCollection.DeleteDocument();
-                            else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true, false);
+                            else
+                            {
+                                SplitFrame.TryNavigateToDocument(nearestOnCollection.ViewModel.DocumentController);
+                            }
                         }
                         else
                         {
@@ -462,6 +473,11 @@ namespace Dash
                 getDataDoc().CaptureNeighboringContext();
             }
 
+            if (e.Key.Equals(VirtualKey.Enter))
+            {
+                processMarkdown();
+            }
+
             if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
@@ -469,6 +485,30 @@ namespace Dash
                 getDocView().HandleShiftEnter();
                 e.Handled = true;
             }
+            if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
+            {
+                if (xRichEditBox.Document.Selection.EndPosition < getReadableText().Length-1)
+                {
+                    var clone = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+                    xRichEditBox.Document.Selection.MoveEnd(TextRangeUnit.Character, -1);
+                    xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                }
+                var s1 = xRichEditBox.Document.Selection.StartPosition;
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = ParagraphAlignment.Right;
+                xRichEditBox.Document.Selection.SetRange(s1, s1);
+                e.Handled = true;
+            }
+            if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Left))
+            {
+                var clone = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, 1);
+                xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                var s1 = xRichEditBox.Document.Selection.StartPosition;
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = ParagraphAlignment.Left;
+                xRichEditBox.Document.Selection.SetRange(s1, s1);
+                e.Handled = true;
+            }
+
 
             if (e.Key.Equals(VirtualKey.Escape))
             {
@@ -530,6 +570,62 @@ namespace Dash
                 ;
         }
 
+        void processMarkdown()
+        {
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            var origFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+            var origAlign = xRichEditBox.Document.Selection.ParagraphFormat.Alignment;
+            var align = origAlign;
+            var hashcount = 0;
+            var extracount = 0;
+
+            for (int i = s1 - 2; i >= 0; i--)
+            {
+                xRichEditBox.Document.Selection.SetRange(i, i + 1);
+                string text = xRichEditBox.Document.Selection.Text;
+                if (text == "}")
+                {
+                    align = ParagraphAlignment.Right;
+                    extracount++;
+                } else if (text == "^")
+                {
+                    align = ParagraphAlignment.Center;
+                    extracount++;
+                } else if (text == "{")
+                {
+                    align = ParagraphAlignment.Left;
+                    extracount++;
+                } else if (text == "#")
+                {
+                    hashcount++;
+                } else if (text == "\r")
+                {
+                    xRichEditBox.Document.Selection.SetRange(i + 1, i + 2);
+                    break;
+                } else
+                {
+                    extracount = hashcount = 0;
+                    align = origAlign;
+                }
+            }
+            if (hashcount > 0 || extracount > 0)
+            {
+                xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition,
+                                                         xRichEditBox.Document.Selection.StartPosition + hashcount + extracount);
+                if (xRichEditBox.Document.Selection.StartPosition == 0)
+                    CollectionFreeformBase.PreviewFormatString = xRichEditBox.Document.Selection.Text;
+                xRichEditBox.Document.Selection.Text = "";
+                xRichEditBox.Document.Selection.SetRange(xRichEditBox.Document.Selection.StartPosition, s2);
+                xRichEditBox.Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = align;
+                xRichEditBox.Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
+            }
+            xRichEditBox.Document.Selection.SetRange(s1, s2);
+            xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
+            xRichEditBox.Document.Selection.CharacterFormat.Size = origFormat.Size;
+        }
+
         private async void Clipboard_ContentChanged(object sender, object e)
         {
             Clipboard.ContentChanged -= Clipboard_ContentChanged;
@@ -569,6 +665,7 @@ namespace Dash
         public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
         public void AppSuspending(object sender, Windows.ApplicationModel.SuspendingEventArgs args)
         {
+            return;
             ClearSearchHighlights();
         }
 
@@ -651,6 +748,11 @@ namespace Dash
                 regions.Add(dc);
 
             _selectionDocControllers.Add(selection, dc);
+
+            using (UndoManager.GetBatchHandle())
+            {
+                this.convertTextFromXamlRTF();
+            }
 
             return dc;
         }

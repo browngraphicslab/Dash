@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -41,7 +39,7 @@ namespace Dash
                 [DocKey] = TypeInfo.Document,
             };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -55,10 +53,10 @@ namespace Dash
             {
                 outputs[DocKey] = Search.SearchIndividualById(id);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return;
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

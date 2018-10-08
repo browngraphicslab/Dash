@@ -21,7 +21,7 @@ namespace Dash
         public static string DefaultText = "Default Text";
         public static string DefaultFontWeight = "Normal"; // 100;
         public static double DefaultTextAlignment = (int)TextAlignment.Center;
-        public static double DefaultFontSize = (Double)App.Instance.Resources["DefaultFontSize"];
+        public static double DefaultFontSize = (double)App.Instance.Resources["DefaultFontSize"];
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
         public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 40, FontWeight weight = null, Color? backgroundColor = null)
@@ -29,20 +29,13 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             fields.Add(KeyStore.FontWeightKey, new TextController(weight == null ? DefaultFontWeight : weight.ToString()));
             fields.Add(KeyStore.FontSizeKey, new NumberController(DefaultFontSize));
-          //  fields.Add(TextAlignmentKey, new NumberController((int)(refToText.RootTypeInfo == TypeInfo.Text ? TextAlignment.Left : TextAlignment.Right)));
             if (backgroundColor != null)
                 fields.Add(KeyStore.BackgroundColorKey, new TextController(backgroundColor.ToString()));
-            if (w != 0 && !double.IsNaN(w))
-                (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
-            if (h != 0 && !double.IsNaN(h))
-                (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             SetupDocument(DocumentType, PrototypeId, "TextingBox Prototype Layout", fields);
         }
 
         protected static void SetupBindings(EditableTextBlock element, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(element, docController, context);
-
             BindFontWeight(element, docController, context);
             BindFontSize(element, docController, context);
             BindTextAlignment(element, docController, context);

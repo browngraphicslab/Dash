@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash;
 using Dash.Annotations;
-using MyToolkit.Multimedia;
-using static Dash.DataTransferTypeInfo;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -46,16 +34,17 @@ namespace Dash
     {
         public DocumentController RegionDocumentController;
         public AnnotationType AnnotationType = AnnotationType.None;
-        protected readonly NewAnnotationOverlay ParentOverlay;
+        protected readonly AnnotationOverlay ParentOverlay;
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
         public Selection ViewModel => DataContext as Selection;
         
-        protected AnchorableAnnotation(NewAnnotationOverlay parentOverlay, DocumentController regionDocumentController)
+        protected AnchorableAnnotation(AnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;
             RegionDocumentController = regionDocumentController;
         }
+        public abstract bool IsInView(Rect bounds);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
@@ -100,14 +89,14 @@ namespace Dash
         {
             // get the list of linkhandlers starting from this all the way up to the mainpage
             var linkHandlers = ParentOverlay.GetAncestorsOfType<ILinkHandler>().ToList();
-            // NewAnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
+            // AnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
             linkHandlers.Insert(0, ParentOverlay);
             ParentOverlay.AnnotationManager.FollowRegion(selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
             if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
-                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<NewAnnotationOverlay>())
+                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<AnnotationOverlay>())
                 foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
                 { 
                     if (nvo.SelectedRegion != null)
@@ -155,26 +144,19 @@ namespace Dash
 
             if (pos != null)
             {
-                shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
+
+                shape.RenderTransform = new TranslateTransform { X = pos.Value.X, Y = pos.Value.Y };
             }
             else
             {
-                var bindingX = new FieldBinding<PointController>()
+                var bindingXf = new FieldBinding<PointController>()
                 {
                     Mode = BindingMode.OneWay,
                     Document = RegionDocumentController,
                     Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(false)
+                    Converter = new PointToTranslateTransformConverter()
                 };
-                this.AddFieldBinding(Canvas.LeftProperty, bindingX);
-                var bindingY = new FieldBinding<PointController>()
-                {
-                    Mode = BindingMode.OneWay,
-                    Document = RegionDocumentController,
-                    Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(true)
-                };
-                this.AddFieldBinding(Canvas.TopProperty, bindingY);
+                this.AddFieldBinding(RenderTransformProperty, bindingXf);
             }
 
             if (RegionDocumentController != null)
@@ -207,7 +189,7 @@ namespace Dash
             {
                 return new Binding
                 {
-                    Path = new PropertyPath(nameof(ViewModel.IsSelected)),
+                    Path = new PropertyPath(nameof(IsSelected)),
                     Mode = BindingMode.OneWay,
                     Converter = new BoolToBrushConverter(_selectedBrush, _unselectedBrush)
                 };

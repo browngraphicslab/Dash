@@ -1,7 +1,8 @@
-﻿using DashShared;
-using System;
+﻿using System;
+using DashShared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -50,6 +51,12 @@ namespace Dash
             DocumentChanged();
         }
 
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<PointerReferenceOperator>() +
+                   $"({DocumentReference.ToScriptString(thisDoc)}, {FieldKey.ToScriptString(thisDoc)})";
+        }
+
         public override void DisposeField()
         {
              base.DisposeField();
@@ -64,7 +71,7 @@ namespace Dash
 
         public override FieldControllerBase GetDocumentReference() => DocumentReference;
 
-        public override string ToString() => $"pRef[{DocumentReference}, {FieldKey}]";
+        public override string ToString() => $"pRef({DocumentReference}, {FieldKey})";
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -36,7 +37,9 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Element Access", new Guid("4B1577D2-BD3E-457B-BA74-F7ED46F2A0F7"));
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var indexable = inputs[ListKey];
             var varIndex = ((NumberController)inputs[IndexKey]).Data;
@@ -57,6 +60,7 @@ namespace Dash
                     outputs[ResultsKey] = new TextController(stringToIndex.Data[(int)varIndex].ToString());
                     break;
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ElementAccessOperatorController();

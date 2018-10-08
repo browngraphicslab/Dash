@@ -1,21 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Zu.TypeScript;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -115,7 +101,7 @@ namespace Dash
         }
 
 
-        private void XRepl_OnClick(object sender, RoutedEventArgs e)
+        private async void XRepl_OnClick(object sender, RoutedEventArgs e)
         {
             var collection = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
             if (collection == null) return;
@@ -132,7 +118,7 @@ namespace Dash
                 FieldControllerBase returnValue;
                 try
                 {
-                    returnValue = _dsl.Run(command.Data, true);
+                    returnValue = await _dsl.Run(command.Data, true);
                 }
                 catch (Exception ex)
                 {
@@ -157,7 +143,7 @@ namespace Dash
         
          }
 
-        private void XRun_OnClick(object sender, RoutedEventArgs e)
+        private async void XRun_OnClick(object sender, RoutedEventArgs e)
         {
             //make new scope
             _scope = new OuterReplScope();
@@ -167,7 +153,7 @@ namespace Dash
             _running = true;
             try
             {
-                returnValue = _dsl.Run(xTextBox.Text, true);
+                returnValue = await _dsl.Run(xTextBox.Text, true);
             }
             catch (Exception ex)
             {

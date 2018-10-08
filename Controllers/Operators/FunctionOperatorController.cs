@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -60,7 +61,9 @@ namespace Dash
             [ResultKey] = TypeInfo.Any,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             for (var i = 0; i < _inputNames.Count; i++)
             {
@@ -76,7 +79,7 @@ namespace Dash
                 scope?.DeclareVariable(_inputNames[i], value);
             }
 
-            FieldControllerBase result = _block.Execute(scope);
+            FieldControllerBase result = await _block.Execute(scope);
 
             outputs[ResultKey] = result;
         }

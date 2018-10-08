@@ -12,7 +12,7 @@ namespace Dash
         /*
          * TODO: ENUMS ARE DIRECTLY CONVERTED TO STRINGS FOR INTERPRETATION! If you want to rename, use resharper by hitting ctrl r r to update name globally
          */
-          
+
         public enum Name
         {
             //TODO: MAKE YOUR OWN CATEGORIES PLS
@@ -22,6 +22,7 @@ namespace Dash
             operator_add,
             add,
             concat,
+            append,
 
             operator_subtract,
             subtract,
@@ -98,44 +99,44 @@ namespace Dash
             link,
             link_des_text,
 
-                // collections
-                coll,
-                coll_title,
-                rtf_title,
-                inside,
+            // collections
+            coll,
+            coll_title,
+            rtf_title,
+            inside,
 
-                // images
-                image,
+            // images
+            image,
 
-                // lists
-                zip,
-                count,
-                len,
+            // lists
+            zip,
+            count,
+            len,
 
-                // templates
-                apply,
-                set_template,
-                templates,
+            // templates
+            apply,
+            set_template,
+            templates,
 
-                // PDFs
-                references,
-                regex,
-                text,
+            // PDFs
+            references,
+            regex,
+            text,
 
             // COMMANDS
 
-                // search
-                f,
-                fs,
-                find,
-                find_s,
-                find_single,
+            // search
+            f,
+            fs,
+            find,
+            find_s,
+            find_single,
 
-                search,
-                intersect_by_value,
+            search,
+            intersect_by_value,
 
-                // misc
-                map,
+            // misc
+            map,
 
             // EXECUTE
 
@@ -166,6 +167,22 @@ namespace Dash
             function,
             function_call,
 
+            // Point functions
+            point,
+            x, y,
+
+            dref,
+            pref,
+
+            k,//Key
+            d,//Document
+
+            date,
+
+            api,
+
+            get_doc,
+
             // NULL EQUIVALENT
 
             invalid,
@@ -173,7 +190,7 @@ namespace Dash
             // HELP
 
             help,
-            print
+            print,
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
@@ -234,11 +251,11 @@ namespace Dash
                 "Binary - given two numbers, computes the quotient of divident A and divisor B.\n            " +
                 "Invoked by its function call in the REPL, formatted as divide(A, B).\n      " +
                 "EXAMPLES:\n            divide(35, 7) = 5\n            divide(4.6, 2) = 2.3",
-            [Name.operator_modulo] = 
+            [Name.operator_modulo] =
                 "Given numerical inputs, computes the remainder given by the dividend A and divisor B.\n            " +
                 "Invoked by the % token in the REPL, formatted as A % B.\n      " +
                 "EXAMPLES:\n            10 % 5 = 0\n            11 % 6 = 5",
-            [Name.modulo] = 
+            [Name.modulo] =
                 "Binary - given two numbers, computes the remainder of divident A and divisor B.\n            " +
                 "Invoked by its function call in the REPL, formatted as modulo(A, B).\n      " +
                 "EXAMPLES:\n            modulo(35, 7) = 0\n            modulo(18, 5) = 3",

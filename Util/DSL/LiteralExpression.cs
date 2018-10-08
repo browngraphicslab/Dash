@@ -1,4 +1,6 @@
-﻿namespace Dash
+﻿using System.Threading.Tasks;
+
+namespace Dash
 {
 
     public class LiteralExpression : ScriptExpression
@@ -10,9 +12,9 @@
             this._field = field;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override Task<FieldControllerBase> Execute(Scope scope)
         {
-            return _field;
+            return Task.FromResult(_field);
         }
 
         public FieldControllerBase GetField()

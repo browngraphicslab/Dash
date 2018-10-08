@@ -1,7 +1,5 @@
 ﻿using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Dash.Controllers;
 using DashShared;
 using System;
 
@@ -25,7 +23,6 @@ namespace Dash
             ebox.Tag = "Auto TextBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
             ebox.HorizontalAlignment = HorizontalAlignment.Stretch;
             ebox.VerticalAlignment = VerticalAlignment.Stretch;
-            SetupBindings(ebox, documentController, context);
             return ebox;
         }
     }

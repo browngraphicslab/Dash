@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
-using Dash.Annotations;
 
 namespace Dash
 {
@@ -16,7 +15,6 @@ namespace Dash
 		public static KeyController RegionsKey                           = new KeyController("Regions", new Guid("1B958E26-624B-4E9A-82C9-2E18609D6A39"));
 		public static KeyController RegionDefinitionKey                  = new KeyController("RegionDefinition", new Guid("6EEDCB86-76F4-4937-AE0D-9C4BC6744310"));
 		public static KeyController RegionTypeKey                        = new KeyController("RegionType", new Guid("8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC"));
-		public static KeyController ActiveLayoutKey                      = new KeyController("ActiveLayout", new Guid("BEBEC91F-F85A-4F72-A7D2-E2912571FBDA"));
 		public static KeyController TitleKey                             = new KeyController("Title", new Guid("0C074CB4-6D05-4363-A867-C0A061C1573F"));
 		public static KeyController CaptionKey                           = new KeyController("Caption", new Guid("D01D6702-A3AD-4546-9BFB-C5263F8D5599"));
 		public static KeyController PrototypeKey                         = new KeyController("_Prototype", new Guid("866A6CC9-0B8D-49A3-B45F-D7954631A682"));
@@ -141,6 +139,7 @@ namespace Dash
 		public static KeyController RecentTagsKey                        = new KeyController("Recent Tags", new Guid("DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5"));
 		public static KeyController LinkTagKey                           = new KeyController("List of tags", new Guid("72371594-582C-46FE-BE81-9F2B95C5FD50"));
 		public static KeyController SelectedSchemaRow                    = new KeyController("SelectedElement", new Guid("B9B5742B-E4C7-45BD-AD6E-F3C254E45027"));
+		public static KeyController SchemaDisplayedColumns               = new KeyController("_Displayed Columns", new Guid("7424AFD5-D43B-449F-AD04-B48E686621AB"));
 
 
 

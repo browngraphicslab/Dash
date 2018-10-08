@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
     [OperatorType(Op.Name.search)]
-    public class SearchOperatorController : OperatorController
+    public sealed class SearchOperatorController : OperatorController
     {
         public SearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
+        {
+            SaveOnServer();
+        }
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Search", new Guid("EA5FD353-F99A-4F99-B0BC-5D2C88A51019"));
@@ -22,6 +27,7 @@ namespace Dash
 
         //Input keys
         public static readonly KeyController TextKey = new KeyController("Term");
+        public static readonly KeyController SortKey = new KeyController("Sorted");
         public static readonly KeyController InputCollection = new KeyController("InputCollection");
 
         //Output keys
@@ -30,6 +36,7 @@ namespace Dash
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
             new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(SortKey, new IOInfo(TypeInfo.Bool, false)),
             new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, false)),
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -37,23 +44,34 @@ namespace Dash
             [ResultsKey] = TypeInfo.List,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //search all docs for searchText and get results (list of doc controller)
-            string searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
+            string searchText = ((TextController)inputs[TextKey]).Data;
+            var docs = inputs[InputCollection] as ListController<DocumentController>;
             List<SearchResult> searchRes;
             try
             {
-                searchRes = Search.Parse(searchText).ToList();
+                searchRes = Search.Parse(searchText, docs: docs).ToList();
+                if ((inputs[SortKey] as BoolController)?.Data ?? false)
+                {
+                    searchRes.Sort((result1, result2) => result2.Rank - result1.Rank);
+                }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 searchRes = new List<SearchResult>();
             }
             var searchResultDocs = searchRes.Select(res => res.ViewDocument).ToArray();
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
+            return Task.CompletedTask;
         }
 
-        public override FieldControllerBase GetDefaultController() => new SearchOperatorController();
+        public override FieldControllerBase GetDefaultController()
+        {
+            return new SearchOperatorController();
+        }
     }
 }

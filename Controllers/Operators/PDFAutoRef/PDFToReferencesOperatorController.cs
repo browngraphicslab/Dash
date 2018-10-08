@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -36,10 +37,12 @@ namespace Dash
             [ComputedResultKey] = TypeInfo.Document
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             FieldControllerBase source = inputs[PdfKey];
-            if (!(source is DocumentController pdfDoc && pdfDoc.DocumentType.Equals(PdfBox.DocumentType))) return;
+            if (!(source is DocumentController pdfDoc && pdfDoc.DocumentType.Equals(PdfBox.DocumentType))) return Task.CompletedTask;
             
             string documentText = pdfDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data.Replace("ACM Trans. Graph. 29,", "ACM Trans. Graph. 29.");
 
@@ -67,6 +70,7 @@ namespace Dash
             pdfDoc.SetField(KeyStore.ReferencesDictKey, referenceList, true);
 
             outputs[ComputedResultKey] = referenceList;
+            return Task.CompletedTask;
         }
 
         public static string Normalize(string s)

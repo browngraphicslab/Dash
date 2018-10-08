@@ -171,7 +171,11 @@ namespace Dash
 
             if (!ancestors.Contains(relativeTo))
             {
-                throw new InvalidOperationException("Element not in visual tree.");
+                var descendants = dob.GetDescendants().ToArray();
+                if (!descendants.Contains(relativeTo))
+                {
+                    throw new InvalidOperationException("Element not in visual tree.");
+                }
             }
 
             var pos =

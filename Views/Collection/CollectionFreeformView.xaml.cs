@@ -1,5 +1,4 @@
-﻿using Microsoft.Graphics.Canvas.UI.Xaml;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -59,11 +58,6 @@ namespace Dash
         public override Grid GetOuterGrid()
         {
             return xOuterGrid;
-        }
-
-        public override AutoSuggestBox GetTagBox()
-        {
-            return TagKeyBox;
         }
 
         public override Canvas GetSelectionCanvas()

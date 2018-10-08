@@ -1,6 +1,7 @@
 ﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -124,10 +125,12 @@ namespace Dash
             if (_dataContextDocument != null)
             {
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
+                {
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(
                             new EditableScriptViewModel(
                                 new DocumentFieldReference(_dataContextDocument.Id, keyFieldPair.Key)));
+                }
             }
 
         }

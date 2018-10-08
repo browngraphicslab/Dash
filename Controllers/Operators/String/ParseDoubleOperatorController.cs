@@ -2,6 +2,7 @@
 using DashShared;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -34,12 +35,15 @@ namespace Dash
             [ResultKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             string str = (inputs[InputStringKey] as TextController)?.Data;
 
             if (double.TryParse(str, out double num)) outputs[ResultKey] = new NumberController(num);
             else throw new ScriptExecutionException(new TextErrorModel($"Failed to parse \"{str}\" as a double."));
+            return Task.CompletedTask;
         }
     }
 }

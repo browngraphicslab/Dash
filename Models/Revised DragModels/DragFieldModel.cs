@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
-using Windows.UI.Xaml.Controls;
 
 // ReSharper disable once CheckNamespace
 namespace Dash {
@@ -14,20 +13,21 @@ namespace Dash {
 
         public DragFieldModel(params DocumentFieldReference[] draggedRefs) => DraggedRefs = draggedRefs.ToList();
 
-        public override List<DocumentController> GetDropDocuments(Point where, Windows.UI.Xaml.FrameworkElement target)
+        public override List<DocumentController> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target)
         {
             var dropDocuments = DraggedRefs.Select(RefToDBox).ToList();
 
             DocumentController RefToDBox(DocumentFieldReference reference)
             {
-                DocumentController dbox = new DataBox(reference.GetReferenceController(), where.X, where.Y).Document;
-                dbox.SetField(KeyStore.DocumentContextKey, reference.DocumentController, true);
+                var type = reference.DereferenceToRoot(null);
+                var dbox = new DataBox(reference.GetReferenceController(), where?.X ?? 0, where?.Y ?? 0, type is TextController ? double.NaN : 300, type is TextController || type is ImageController ? double.NaN : 300).Document;
 
-                KeyController key = reference.FieldKey;
-                if (key == null) return dbox;
-
-                dbox.Tag = $"Dragged Field Doc => Key: {key.Name}";
-                dbox.SetTitle(key.Name);
+                if (reference.FieldKey != null)
+                {
+                    dbox.Tag = $"Dragged Field Doc => Key: {reference.FieldKey.Name}";
+                    dbox.SetTitle(reference.FieldKey.Name);
+                }
+                reference.GetReferenceController().GetDocumentController(null).Link(dbox, LinkBehavior.Annotate, "KeyValue");
 
                 return dbox;
             }

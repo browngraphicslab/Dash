@@ -4,6 +4,7 @@ using DashShared;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -38,12 +39,14 @@ namespace Dash
             [MatchDocsKey] = TypeInfo.Document,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             string text = (inputs[TextKey] as TextController)?.Data;
             string expr = (inputs[ExpressionKey] as TextController)?.Data;
 
-            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(expr)) return;
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(expr)) return Task.CompletedTask;
 
             var reg = new Regex($@"{expr}");
             var matches = reg.Matches(text).ToList();
@@ -79,6 +82,7 @@ namespace Dash
                 matchDocs.Add(infoDoc);
             }
             outputs[MatchDocsKey] = matchDocs;
+            return Task.CompletedTask;
         }
 
         private bool IsNumeric(string name) => _digits.Contains(name[0].ToString());

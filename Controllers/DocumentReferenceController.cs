@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Linq;
 using DashShared;
 
 namespace Dash
 {
-    public class
-        DocumentReferenceController : ReferenceController
+    public class DocumentReferenceController : ReferenceController
     {
         private DocumentController _documentController;
 
@@ -17,7 +17,7 @@ namespace Dash
             {
                 _documentController = value;
                 (Model as DocumentReferenceModel).DocumentId = value.Id;
-                UpdateOnServer(null);//TODO Add FieldUpdate and undo
+                UpdateOnServer(null);//TODO DBUpdate: Add FieldUpdate and undo
                 DocumentChanged();
             }
         }
@@ -60,18 +60,7 @@ namespace Dash
 
         public void ChangeFieldDoc(DocumentController doc, bool withUndo = true)
         {
-            DocumentController oldDoc = DocumentController;
-            UndoCommand newEvent = new UndoCommand(() => ChangeFieldDoc(DocumentController, false), () => ChangeFieldDoc(oldDoc, false));
-
-            //docController for old DocumentId
-            var docController = GetDocumentController(null);
-            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
             DocumentController = doc;
-            //docController for given DocumentId
-            var docController2 = GetDocumentController(null);
-            docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-
-            UpdateOnServer(withUndo ? newEvent : null);
         }
 
         public override FieldControllerBase Copy()
@@ -90,8 +79,7 @@ namespace Dash
             return new DocumentFieldReference(DocumentController, FieldKey);
         }
 
-
-        public override string ToString() => $"dRef[{DocumentController}, {FieldKey}]";
+        public override string ToString() => $"dRef({DocumentController}, {FieldKey})";
 
         public override FieldControllerBase GetDocumentReference() => DocumentController;
 
@@ -102,6 +90,31 @@ namespace Dash
                 return new DocumentReferenceController(mapping[GetDocumentController(null)] as DocumentController, FieldKey);
             }
             return null;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            var funcString = DSL.GetFuncName<DocumentReferenceOperator>();
+            string DocAndKeyToString(DocumentController doc, KeyController key)
+            {
+                return funcString + $"({doc.ToScriptString(thisDoc)}, {key.ToScriptString(thisDoc)})";
+            }
+            var ops = DocumentController.GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
+            if (ops != null)
+            {
+                var op = ops.FirstOrDefault(o => o.Outputs.ContainsKey(FieldKey));
+                if (op != null)
+                {
+                    //return DSL.GetFuncName(op) + "(" + string.Join(", ", op.Inputs.Select(kvp => DocAndKeyToString(DocumentController, kvp.Key))) + ")";
+                    return DSL.GetFuncName(op) + "(" + string.Join(", ", op.Inputs.Select(kvp => $"this.{kvp.Key.Name}")) + ")";
+                }
+            }
+            if (thisDoc == DocumentController)
+            {
+                return $"this.{FieldKey}";
+            }
+
+            return DocAndKeyToString(DocumentController, FieldKey);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -47,7 +45,9 @@ namespace Dash
             [ResultDocKey] = TypeInfo.Document,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
             var keyName = (inputs[KeyNameKey] as TextController)?.Data.Replace("_", " ");
@@ -61,6 +61,7 @@ namespace Dash
 
             outputs[ResultDocKey] = new TextController(feedback + fieldValue.GetValue(null));
 
+            return Task.CompletedTask;
         }
     }
 }

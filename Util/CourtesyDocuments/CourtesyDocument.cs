@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Dash.Converters;
@@ -68,7 +66,8 @@ namespace Dash
         /// </summary>
         protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList)
         {
-            dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
+            throw new Exception("ActiveLayout code has not been updated yet");
+            //dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
@@ -101,68 +100,61 @@ namespace Dash
             };
         }
 
-        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
-        {
-            //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
-
-            //Set alignments
-            BindHorizontalAlignment(element, docController, context);
-            BindVerticalAlignment(element, docController, context);
-        }
-
-        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
+        public static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
             FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.WidthFieldKey,
-                Context = context
+                Context = context,
+                Tag="BindWidth in CourtesyDocument"
             };
 
             element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
         }
 
-        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
+        public static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
+            var binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.HeightFieldKey,
-                Context = context
+                Context = context,
+                Tag="BindHeight in CourtesyDocument"
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
         }
 
-        protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
-            Context context)
+        public static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
+            HorizontalAlignment defaultValue)
         {
-            var binding = new FieldBinding<TextController>()
+            var binding = docController == null ? null : new FieldBinding<TextController>()
             {
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Document = docController,
                 Key = KeyStore.HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
-                Context = context
+                Tag = "HorizontalAlignment binding in CourtesyDocument",
+                FallbackValue = defaultValue
             };
 
             element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
         }
 
-        protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
-            Context context)
+        public static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
+            VerticalAlignment defaultValue)
         {
-            var binding = new FieldBinding<TextController>()
+            var binding = docController == null ? null : new FieldBinding<TextController>()
             {
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Document = docController,
                 Key = KeyStore.VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
-                Context = context
+                Tag = "VerticalAlignment binding in CourtesyDocument",
+                FallbackValue = defaultValue
             };
 
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
@@ -200,8 +192,8 @@ namespace Dash
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
-                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString()),
-                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString()),
+                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Left.ToString()),
+                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Top.ToString()),
                 [KeyStore.ActualSizeKey] = new PointController(double.NaN, double.NaN),
                 
             };
@@ -244,7 +236,7 @@ namespace Dash
     }
 
     public enum LinkBehavior {
-        Zoom,
+        Follow,
         Annotate,
         Dock,
         Float,
@@ -259,7 +251,7 @@ namespace Dash
         }
         public static LinkBehavior GetLinkBehavior(this DocumentController document)
         {
-            var data = document.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
+            var data = document.GetDereferencedField<TextController>(KeyStore.LinkBehaviorKey, null)?.Data;
             return data == null ? LinkBehavior.Annotate : Enum.Parse<LinkBehavior>(data);
         }
 
@@ -270,7 +262,7 @@ namespace Dash
         }
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
-            var data = document.GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data;
+            var data = document.GetDereferencedField<TextController>(KeyStore.HorizontalAlignmentKey,null)?.Data;
             return data == null ? HorizontalAlignment.Stretch : Enum.Parse<HorizontalAlignment>(data);
         }
 
@@ -280,18 +272,17 @@ namespace Dash
         }
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
-            var data =  document.GetField<TextController>(KeyStore.VerticalAlignmentKey)?.Data ; 
+            var data =  document.GetDereferencedField<TextController>(KeyStore.VerticalAlignmentKey,null)?.Data ; 
             return data == null ? VerticalAlignment.Stretch : Enum.Parse<VerticalAlignment>(data);
         }
 
         public static bool GetFitToParent(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null);
-            return data?.Data == "true";
+            return document.GetDereferencedField<BoolController>(KeyStore.CollectionFitToParentKey, null)?.Data ?? false;
         }
         public static void    SetFitToParent(this DocumentController document, bool fit)
         {
-            document.SetField<TextController>(KeyStore.CollectionFitToParentKey, fit ? "true": "false", true);
+            document.SetField<BoolController>(KeyStore.CollectionFitToParentKey, fit, true);
         }
         public static void    SetTitle(this DocumentController document, string title)
         {
@@ -300,12 +291,12 @@ namespace Dash
 
         public static bool    GetIsAdornment(this DocumentController document)
         {
-            var data = document.GetDereferencedField<TextController>(KeyStore.IsAdornmentKey, null);
-            return data?.Data == "true";
+            var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);
+            return data?.Data == true;
         }
         public static void    SetIsAdornment(this DocumentController document,bool adornment)
         {
-            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
+            document.SetField<BoolController>(KeyStore.IsAdornmentKey, adornment, true);
         }
 
         public static  Color? GetBackgroundColor(this DocumentController document)
@@ -334,7 +325,7 @@ namespace Dash
         }
         public static Point?  GetActualSize(this DocumentController document)
         {
-            return document.GetField<PointController>(KeyStore.ActualSizeKey)?.Data;
+            return document.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null)?.Data;
         }
 
         public static bool    GetHidden(this DocumentController document)
@@ -413,9 +404,9 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
-        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, NewAnnotationOverlay overlay)
+        public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
-            var t = regionDocumentController.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            var t = regionDocumentController.GetDataDocument().GetDereferencedField<TextController>(KeyStore.RegionTypeKey, null);
             var annoType = t == null
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);

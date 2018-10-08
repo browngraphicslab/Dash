@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Dash
 {
     [OperatorType(Op.Name.less_than, Op.Name.operator_less_than)]

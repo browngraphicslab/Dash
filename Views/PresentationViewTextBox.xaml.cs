@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.System;
+﻿using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -80,7 +79,7 @@ namespace Dash
         {
             if (!(args.NewValue is DocumentController dc)) return;
 
-            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null).GetValue(null).ToString();
+            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null)?.GetValue(null).ToString();
 
             if (string.IsNullOrEmpty(currentTitle))
             {

@@ -3,16 +3,11 @@ using System.Collections.ObjectModel;
 
 namespace Dash
 {
-	public class LinkActivationManager
+	public static class LinkActivationManager
 	{
 		public static ObservableCollection<DocumentView> ActivatedDocs = new ObservableCollection<DocumentView>();
 		
-		public LinkActivationManager()
-		{
-			
-		}
-
-		public void ToggleActivation(DocumentView view)
+		public static void ToggleActivation(DocumentView view)
 		{
 			if (IsActivated(view))
 			{
@@ -25,45 +20,43 @@ namespace Dash
 			
 		}
 
-		public void ActivateDoc(DocumentView view)
+		public static void ActivateDoc(DocumentView view)
 		{
 			ActivateDocHelper(view, true);
 		}
 
-		private void ActivateDocHelper(DocumentView view, bool shouldUndo)
+		private static void ActivateDocHelper(DocumentView view, bool shouldUndo)
 		{
-			if (IsActivated(view)) return;
+            if (!IsActivated(view))
+            {
+                ActivatedDocs.Add(view);
 
-			ActivatedDocs.Add(view);
-            view.SetActivationMode(true);
-			//add activation border 
-			///view.SetLinkBorderColor();
-
-			if (shouldUndo) UndoManager.EventOccured(new UndoCommand(() => ActivateDocHelper(view, false), () => DeactivateDocHelper(view, false)));
+                if (shouldUndo)
+                    UndoManager.EventOccured(new UndoCommand(() => ActivateDocHelper(view, false), () => DeactivateDocHelper(view, false)));
+            }
 		}
 
-		public void DeactivateDoc(DocumentView view)
+		public static void DeactivateDoc(DocumentView view)
 		{
 			DeactivateDocHelper(view, true);
 		}
 
-		public void DeactivateDocHelper(DocumentView view, bool shouldUndo)
+		public static void DeactivateDocHelper(DocumentView view, bool shouldUndo)
 		{
-			if (!IsActivated(view)) return;
-
-			ActivatedDocs.Remove(view);
-			//remove activation border 
-			///view.RemoveLinkBorderColor();
-            view.SetActivationMode(false);
-            if (shouldUndo) UndoManager.EventOccured(new UndoCommand(() => DeactivateDocHelper(view, false), () => ActivateDocHelper(view, false)));
+            if (IsActivated(view))
+            {
+                ActivatedDocs.Remove(view);
+                if (shouldUndo)
+                    UndoManager.EventOccured(new UndoCommand(() => DeactivateDocHelper(view, false), () => ActivateDocHelper(view, false)));
+            }
 		}
 
-		public bool IsActivated(DocumentView view)
+		public static bool IsActivated(DocumentView view)
 		{
 			return ActivatedDocs.Contains(view);
 		}
 
-		public void DeactivateAll()
+		public static void DeactivateAll()
 		{
 			DocumentView[] copyArray = new DocumentView[ActivatedDocs.Count];
 			ActivatedDocs.CopyTo(copyArray, 0);
@@ -75,7 +68,7 @@ namespace Dash
 			}
 		}
 
-		public void DeactivateAllExcept(List<DocumentView> list)
+		public static void DeactivateAllExcept(List<DocumentView> list)
 		{
 			DocumentView[] copyArray = new DocumentView[ActivatedDocs.Count];
 			ActivatedDocs.CopyTo(copyArray, 0);

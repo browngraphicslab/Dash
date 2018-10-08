@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -55,7 +52,7 @@ namespace Dash
         public static void StartBatch()
         {
             _batchCounter++;
-            System.Diagnostics.Debug.WriteLine("START BATCH : " + _batchCounter);
+            //System.Diagnostics.Debug.WriteLine("START BATCH : " + _batchCounter);
         }
 
         /// <summary>
@@ -65,7 +62,7 @@ namespace Dash
         public static void EndBatch()
         {
             _batchCounter--;
-            System.Diagnostics.Debug.WriteLine("END BATCH : " + _batchCounter);
+            //System.Diagnostics.Debug.WriteLine("END BATCH : " + _batchCounter);
             //only finalize Batch is all batches closed and stuff happened in batch
             if ((_batchCounter == 0) && (_currentBatch.Count != 0))
             {

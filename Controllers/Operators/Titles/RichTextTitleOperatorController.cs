@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -40,7 +41,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -77,6 +78,7 @@ namespace Dash
 
             computedTitle = (computedTitle ?? "").Replace((char)160, ' ');
             outputs[ComputedTitle] = new TextController(computedTitle);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

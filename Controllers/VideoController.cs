@@ -63,7 +63,12 @@ namespace Dash
 			return StringSearchModel.False;
 		}
 
-		public override FieldControllerBase GetDefaultController()
+	    public override string ToScriptString(DocumentController thisDoc)
+	    {
+	        return "VideoController";
+	    }
+
+	    public override FieldControllerBase GetDefaultController()
 		{
 			return new VideoController(new Uri("ms-appx:///Assets/DefaultVideo.mp4"));
 		}
