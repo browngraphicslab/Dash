@@ -41,7 +41,7 @@ namespace Dash
             var columns = rows.FirstOrDefault()?.GetEnumerator();
             if (columns != null)
             {
-                var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 200).Document;
+                var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Stacking, 200, 200).Document;
                 prototype.GetDataDocument().SetTitle("Prototype Row Record");
                 foreach (var c in rows.FirstOrDefault())
                 {

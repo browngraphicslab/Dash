@@ -40,11 +40,11 @@ namespace Dash
             Parent = parent;
 
 
-            if (nodes.TryAdd(DataDocument, this))
+            if (true || nodes.TryAdd(DataDocument, this))
             {
                 //only keep if doc con or list of doc
                 var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                Children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Where((doc) => !nodes.ContainsKey(doc)).Select(child => new DocumentNode(child, this, nodes)).ToList();
+                Children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this, nodes)).ToList();
             }
             else
             {

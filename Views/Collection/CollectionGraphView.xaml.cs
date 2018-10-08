@@ -91,6 +91,10 @@ namespace Dash
             Loaded += CollectionGraphView_Loaded;
             Unloaded += CollectionGraphView_Unloaded;
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         public DocumentController ParentDocument
         {

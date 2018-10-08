@@ -13,9 +13,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Graphics.Display;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI.Input;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -162,7 +164,38 @@ namespace Dash
                 {
                     Debug.Assert(allSelections.Last().Range.Value != -1);
                     Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
+                    StringBuilder fontStringBuilder = new StringBuilder("\\fonttbl ");
+                    Dictionary<string, int> fontMap = new Dictionary<string, int>();
+                    int fontNum = 0;
+                    foreach (var selection in allSelections)
+                    {
+                        for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
+                        {
+                            var ele = _bottomAnnotationOverlay.TextSelectableElements[i];
+                            var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
+;
+                            var correctedFont = fontFamily;
+                            if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
+                            {
+                                correctedFont = "Georgia";
+                            }
+                            else if (fontFamily?.Contains("Impact", StringComparison.OrdinalIgnoreCase) ?? false)
+                            {
+                                correctedFont = "Impact";
+                            }
+
+                            if (!fontMap.ContainsKey(fontFamily))
+                            {
+                                fontMap.Add(fontFamily, fontNum);
+                                fontStringBuilder.Append("\\f" + fontNum + " " + correctedFont + "; ");
+                                fontNum++;
+                            }
+                        }
+                    }
+
+
                     StringBuilder sb = new StringBuilder();
+                    sb.Append("{\\rtf1\\ansi {" + fontStringBuilder + "}\\pard{\\sa120 ");
                     allSelections.Sort((s1, s2) => Math.Sign(s1.Range.Key - s2.Range.Key));
 
                     // get the indices from our selections and ignore any duplicate selections
@@ -184,11 +217,15 @@ namespace Dash
 
                     // if there's ever a jump in our indices, insert two line breaks before adding the next index
                     var prevIndex = indices.First() - 1;
+                    var currentFontSize = 0;
+                    var isItalic = false;
+                    var isBold = false;
+                    var currentFont = "";
                     foreach (var index in indices)
                     {
                         if (prevIndex + 1 != index)
                         {
-                            sb.Append("\r\n\r\n");
+                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
                         }
 
                         var selectableElement = _bottomAnnotationOverlay.TextSelectableElements[index];
@@ -199,17 +236,72 @@ namespace Dash
                               !char.IsLower(sb[sb.Length - 1]))) &&
                             _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
                             _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
-                            sb.Append("\r\n\r\n");
+                        {
+                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
+                        }
+                        var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
+                            .GetFontName();
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
-                            sb.Append((string)selectableElement.Contents);
+                            var dpi = DisplayInformation.GetForCurrentView().LogicalDpi;
+                            var fontSize = (int) (selectableElement.Bounds.Height * 72 / dpi);
+                            if (fontSize != currentFontSize)
+                            {
+                                sb.Append("\\fs" + 2 * fontSize);
+                                currentFontSize = fontSize;
+                            }
+
+                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                            {
+                                sb.Append("{\\b");
+                                isBold = true;
+                            }
+                            else if (isBold && selectableElement.Bounds.Width <
+                                     1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                            {
+                                sb.Append("}");
+                                isBold = false;
+                            }
+
+                            //if (isBold && !font.Contains("Bold"))
+                            //{
+                            //    sb.Append("}");
+                            //    isBold = false;
+                            //}
+                            //else if (!isBold && font.Contains("Bold"))
+                            //{
+                            //    sb.Append("{\\sa120\\b");
+                            //    sb.Append("\\fs" + 2 * fontSize);
+                            //    isBold = true;
+                            //}
+
+                            if (font != currentFont)
+                            {
+                                sb.Append("}{\\sa120\\f" + fontMap[font]);
+                                sb.Append("\\fs" + 2 * fontSize);
+                                currentFont = font;
+                            }
+
+                            var contents = (string)selectableElement.Contents;
+                            if (char.IsWhiteSpace(contents, 0))
+                            {
+                                sb.Append("\\~");
+                            }
+                            else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
+                            {
+                                sb.Append("\\_");
+                            }
+                            else
+                            {
+                                sb.Append((string)selectableElement.Contents);
+                            }
                         }
 
                         prevIndex = index;
                     }
 
                     var dataPackage = new DataPackage();
-                    dataPackage.SetText(sb.ToString());
+                    dataPackage.SetRtf(sb.ToString());
                     dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
                     Clipboard.SetContent(dataPackage);
                     args.Handled = true;
@@ -542,7 +634,7 @@ namespace Dash
                     offset += page.GetPageSize().GetHeight() + 10;
                     processor.ProcessPageContent(page);
                 }
-             });
+            });
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;

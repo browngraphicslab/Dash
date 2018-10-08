@@ -122,7 +122,7 @@ namespace Dash
         {
             if (freeform == null) return absolutePosition;
 
-            GeneralTransform r = MainPage.Instance.xCanvas.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
+            GeneralTransform r = MainPage.Instance.xOuterGrid.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
             Debug.Assert(r != null);
             return r.TransformPoint(absolutePosition);
         }

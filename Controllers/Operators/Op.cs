@@ -22,6 +22,7 @@ namespace Dash
             operator_add,
             add,
             concat,
+            append,
 
             operator_subtract,
             subtract,
@@ -173,11 +174,14 @@ namespace Dash
             dref,
             pref,
 
-            k,
+            k,//Key
+            d,//Document
 
             date,
 
             api,
+
+            get_doc,
 
             // NULL EQUIVALENT
 

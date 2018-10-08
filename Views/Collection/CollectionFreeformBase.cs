@@ -47,6 +47,10 @@ namespace Dash
         public abstract CollectionViewModel ViewModel { get; }
         public abstract CollectionView.CollectionViewType Type { get; }
         private Mutex _mutex = new Mutex();
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         //SET BACKGROUND IMAGE SOURCE
         public delegate void SetBackground(object backgroundImagePath);
