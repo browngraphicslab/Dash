@@ -11,141 +11,142 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xMainGrid" Padding="20" Background="Transparent">
+    <Grid x:Name="XMainGrid" Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height ="32" />
+            <RowDefinition Height ="60" />
             <RowDefinition Height ="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Rectangle Height="60" Width="Auto" Grid.Row="0" Fill="{StaticResource DashDarkBlueBrush}" Margin="-20, -50, -20, -20" ></Rectangle>
-        
-        <Button x:Name="xClosePresentation" Grid.Row="0" Margin="241,-10,0,0" Click="XClosePresentation_OnClick" Background="LightGray" >
-          <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="9" Margin="5" />
-        </Button>
-        <Grid x:Name="xSettingsGrid" Background="Transparent" Grid.Row="0"  HorizontalAlignment="Left" Width="32" Height="32" Margin="-5,-10,0,0" >
-            <Ellipse x:Name="xSettingsButton" Width="32" Height="32" HorizontalAlignment="Center"  VerticalAlignment="Bottom" Margin="0" Fill="{StaticResource DashDarkBlueBrush}" >
-                <FlyoutBase.AttachedFlyout>
-                    <Flyout x:Name="xSettingsFlyout">
+
+        <Grid x:Name="XHeader" Background="{StaticResource DashDarkBlueBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10" Background="Transparent">
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Settings" Placement="Bottom" VerticalOffset="30" />
+                </ToolTipService.ToolTip>
+                <Button.Flyout>
+                    <Flyout x:Name="XSettingsFlyout">
                         <StackPanel Spacing="20">
-                            <ComboBox x:Name="xPresentations" Width ="200" Height="30" x:FieldModifier="public" HorizontalAlignment="Center" ItemsSource="{Binding Presentations}"  DisplayMemberPath="Title" SelectionChanged="XPresentations_OnSelectionChanged"></ComboBox>
-                            <Button x:Name="xNewPresButton" Width="200" Height="30" HorizontalAlignment="Center" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Click="XNewPresButton_OnClick">+ New Pres</Button>
+                            <ComboBox x:Name="XPresentations" Width ="200" Height="30" x:FieldModifier="public" HorizontalAlignment="Center" ItemsSource="{Binding Presentations}"  DisplayMemberPath="Title" SelectionChanged="XPresentations_OnSelectionChanged"></ComboBox>
+                            <Button x:Name="XNewPresButton" Width="200" Height="30" HorizontalAlignment="Center" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Click="XNewPresButton_OnClick">+ New Pres</Button>
                         </StackPanel>
                     </Flyout>
-                </FlyoutBase.AttachedFlyout>
-            </Ellipse>
-            <TextBlock x:Name="xSettingsIcon"  HorizontalAlignment="Right" VerticalAlignment="Bottom"  Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White"  Padding="0" Margin="7" PointerPressed="XSettingsGrid_OnPointerPressed"/>
-            <ToolTipService.ToolTip>
-                <ToolTip Content="Settings" Placement="Bottom" VerticalOffset="30" />
-            </ToolTipService.ToolTip>
+                </Button.Flyout>
+                <TextBlock x:Name="XSettingsIcon"  HorizontalAlignment="Right" VerticalAlignment="Bottom"  Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White"  Padding="0" Margin="7" PointerPressed="XSettingsGrid_OnPointerPressed"/>
+            </Button>
+            <Button x:Name="XClosePresentation" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"  Click="XClosePresentation_OnClick" Background="LightGray" >
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="9" Margin="5" />
+            </Button>
+            <local:EditableTextBlock Grid.Column="1" TextAlignment="Center" HorizontalContentAlignment="Center" MinWidth="265" FontSize="26" HorizontalAlignment="Center" x:Name="XTitle" />
         </Grid>
-        <StackPanel Grid.Row="1" Margin="0,-10,0,0" x:Name="xOuterStack" x:FieldModifier="public">
+        <StackPanel Grid.Row="1" Margin="0,-10,0,0" x:Name="XOuterStack" x:FieldModifier="public">
             <StackPanel.Resources>
-                <Storyboard x:Name="xContentIn" x:FieldModifier="public">
+                <Storyboard x:Name="XContentIn" x:FieldModifier="public">
                     <DoubleAnimation 
-                        Storyboard.TargetName="xTransportControls"
+                        Storyboard.TargetName="XTransportControls"
                         Storyboard.TargetProperty="MinHeight"
                         To="60"
                         Duration="0:0:0.3"
                         EnableDependentAnimation="True"/>
                     <DoubleAnimation 
-                        Storyboard.TargetName="xPinnedNodesListView"
+                        Storyboard.TargetName="XPinnedNodesListView"
                         Storyboard.TargetProperty="Opacity"
                         To="1"
                         Duration="0:0:0.5"
                         EnableDependentAnimation="True"/>
                     <DoubleAnimation 
-                        Storyboard.TargetName="xNumberList"
+                        Storyboard.TargetName="XNumberList"
                         Storyboard.TargetProperty="Opacity"
                         To="1"
                         Duration="0:0:0.5"
                         EnableDependentAnimation="True"/>
                     <DoubleAnimation 
-                        Storyboard.TargetName="xPresentationTitle"
+                        Storyboard.TargetName="XPresentationTitle"
                         Storyboard.TargetProperty="Opacity"
                         To="1"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
-                <Storyboard x:Name="xContentOut" x:FieldModifier="public">
+                <Storyboard x:Name="XContentOut" x:FieldModifier="public">
                     <DoubleAnimation 
-                        Storyboard.TargetName="xTransportControls"
+                        Storyboard.TargetName="XTransportControls"
                         Storyboard.TargetProperty="Opacity"
                         To="0"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"
                         Completed="Timeline_OnCompleted"/>
                     <DoubleAnimation 
-                        Storyboard.TargetName="xPinnedNodesListView"
+                        Storyboard.TargetName="XPinnedNodesListView"
                         Storyboard.TargetProperty="Opacity"
                         To="0"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                     <DoubleAnimation 
-                        Storyboard.TargetName="xNumberList"
+                        Storyboard.TargetName="XNumberList"
                         Storyboard.TargetProperty="Opacity"
                         To="0"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                     <DoubleAnimation 
-                        Storyboard.TargetName="xPresentationTitle"
+                        Storyboard.TargetName="XPresentationTitle"
                         Storyboard.TargetProperty="Opacity"
                         To="0"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
-                <Storyboard x:Name="xSettingsIn" x:FieldModifier="public">
+                <Storyboard x:Name="XSettingsIn" x:FieldModifier="public">
                     <DoubleAnimation 
-                        Storyboard.TargetName="xSettingsPanel"
+                        Storyboard.TargetName="XSettingsPanel"
                         Storyboard.TargetProperty="Opacity"
                         To="1"
                         Duration="0:0:0.4"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
-                <Storyboard x:Name="xSettingsOut" x:FieldModifier="public">
+                <Storyboard x:Name="XSettingsOut" x:FieldModifier="public">
                     <DoubleAnimation 
-                        Storyboard.TargetName="xSettingsPanel"
+                        Storyboard.TargetName="XSettingsPanel"
                         Storyboard.TargetProperty="Opacity"
                         To="0"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
-                <Storyboard x:Name="xHelpIn" x:FieldModifier="public">
+                <Storyboard x:Name="XHelpIn" x:FieldModifier="public">
                     <DoubleAnimation 
-                        Storyboard.TargetName="xHelpPrompt"
+                        Storyboard.TargetName="XHelpPrompt"
                         Storyboard.TargetProperty="Opacity"
                         To="0.5"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
-                <Storyboard x:Name="xHelpOut" x:FieldModifier="public">
+                <Storyboard x:Name="XHelpOut" x:FieldModifier="public">
                     <DoubleAnimation 
-                        Storyboard.TargetName="xHelpPrompt"
+                        Storyboard.TargetName="XHelpPrompt"
                         Storyboard.TargetProperty="Opacity"
                         To="0"
                         Duration="0:0:0.2"
                         EnableDependentAnimation="True"/>
                 </Storyboard>
             </StackPanel.Resources>
-            <!--TO DO: ADD SETTINGS BTN -->
-            <TextBlock x:Name="xPresentationTitle"  Opacity="0"  Foreground="White" TextAlignment="Center" Text="Presentation Mode" FontSize="20" Width="200"  HorizontalAlignment="Center"  Padding="0, 0, 0, 20" Margin="-10,-28,0,0"/>
 
             <!--<TextBlock x:Name="xTitle" Opacity="1"  TextAlignment="Center" Text="{x:Bind CurrTitle, Mode=OneWay}" FontSize="26" Padding="0, 0, 0, 15" Margin="0,5,0,0"/>-->
-            <local:EditableTextBlock Opacity="1"  TextAlignment="Center" Text="{x:Bind CurrTitle, Mode=OneWay}" HorizontalContentAlignment="Center" MinWidth="265" FontSize="26" Padding="0, 0, 0, 15" Margin="0,5,0,0" HorizontalAlignment="Left" x:Name="xTitle" ></local:EditableTextBlock>
-            <CommandBar x:Name="xTransportControls" Height="0"  Opacity="1" HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed" x:FieldModifier="public" >
-
-                <AppBarButton x:Name="xBackButton" x:FieldModifier="public" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
-                <AppBarButton x:Name="xPlayStopButton" x:FieldModifier="public" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
-                <AppBarButton x:Name="xNextButton" x:FieldModifier="public" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
-
+            <CommandBar x:Name="XTransportControls" Height="0"  Opacity="1" HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed" x:FieldModifier="public" >
+                <AppBarButton x:Name="XBackButton" x:FieldModifier="public" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarButton x:Name="XPlayStopButton" x:FieldModifier="public" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
+                <AppBarButton x:Name="XNextButton" x:FieldModifier="public" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
             </CommandBar>
-            <TextBlock x:Name="xHelpPrompt" x:FieldModifier="public" Visibility="Collapsed" Opacity="0"  TextAlignment="Center" FontSize="16" Padding="0, 22, 0, 0"/>
+            <TextBlock x:Name="XHelpPrompt" x:FieldModifier="public" Visibility="Collapsed" Opacity="0"  TextAlignment="Center" FontSize="16" Padding="0, 22, 0, 0"/>
             <Grid Margin="0, 30, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+                <!--- TODO This shouldn't need two different listviews... -->
                 <ListView 
-                    x:Name="xNumberList"
+                    x:Name="XNumberList"
                     ItemsSource="{Binding PinNumbers}" 
                     SelectionMode="None" 
                     IsItemClickEnabled="False" 
@@ -159,7 +160,7 @@
                     </ListView.ItemTemplate>
                 </ListView>
                 <ListView 
-                    x:Name="xPinnedNodesListView" 
+                    x:Name="XPinnedNodesListView" 
                     ItemsSource="{Binding PinnedNodes}" 
                     ReorderMode="Enabled" 
                     Margin="0, -26, 0, 0"
@@ -197,16 +198,16 @@
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
                                 <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="2">
                                     <SymbolIcon Symbol="Delete"/>
-                                    </Button>
+                                </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
         </StackPanel>
-        <StackPanel x:Name="xSettingsPanel" Opacity="0" HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="2">
+        <StackPanel x:Name="XSettingsPanel" Opacity="0" HorizontalAlignment="Center" Background="Transparent" Orientation="Horizontal" Grid.Row="2">
             <AppBarButton 
-                x:Name="xResetButton"
+                x:Name="XResetButton"
                 Icon="Zoom" 
                 Label="Re-Focus" 
                 Click="ResetButton_Click" 
@@ -215,14 +216,14 @@
                 IsCompact="False" 
                 Margin="10"/>
             <AppBarToggleButton 
-                x:Name="xLoopButton" 
+                x:Name="XLoopButton" 
                 Icon="RepeatAll" 
                 Label="Loop" 
                 Checked="RepeatButton_OnChecked" 
                 Unchecked="RepeatButton_OnUnchecked" 
                 Margin="0,10,0,0"/>
             <AppBarToggleButton 
-                x:Name="xShowLinesButton" 
+                x:Name="XShowLinesButton" 
                 Icon="Go" 
                 Label="Show Lines" 
                 IsEnabled="True" 

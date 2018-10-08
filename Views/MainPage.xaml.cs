@@ -516,20 +516,20 @@ namespace Dash
                     xPresentationExpand.Begin();
                     xPresentationExpand.Completed += (sender, o) =>
                     {
-                        xPresentationView.xContentIn.Begin();
-                        xPresentationView.xHelpIn.Begin();
+                        xPresentationView.XContentIn.Begin();
+                        xPresentationView.XHelpIn.Begin();
                     };
-                    xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
-                    xPresentationView.xSettingsIn.Completed += (sender, o) =>
+                    xPresentationView.XContentIn.Completed += (sender, o) => { xPresentationView.XSettingsIn.Begin(); };
+                    xPresentationView.XSettingsIn.Completed += (sender, o) =>
                     {
-                        var isChecked = xPresentationView.xShowLinesButton.IsChecked;
+                        var isChecked = xPresentationView.XShowLinesButton.IsChecked;
                         if (isChecked != null && (bool)isChecked) xPresentationView.ShowLines();
                     };
                 }
                 else
                 {
                     xUtilTabColumn.MinWidth = 300;
-                    xPresentationView.xTransportControls.Height = 60;
+                    xPresentationView.XTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
                 }
 
@@ -541,20 +541,20 @@ namespace Dash
                 if (animate)
                 {
                     xPresentationView.TryPlayStopClick();
-                    xPresentationView.xSettingsOut.Begin();
-                    xPresentationView.xContentOut.Begin();
-                    xPresentationView.xHelpOut.Begin();
+                    xPresentationView.XSettingsOut.Begin();
+                    xPresentationView.XContentOut.Begin();
+                    xPresentationView.XHelpOut.Begin();
                     xPresentationRetract.Begin();
                 }
                 else
                 {
                     xUtilTabColumn.MinWidth = 0;
-                    xPresentationView.xTransportControls.Height = 0;
+                    xPresentationView.XTransportControls.Height = 0;
                     xPresentationView.SimulateAnimation(false);
                 }
 
                 PresentationView presView = Instance.xPresentationView;
-                presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                presView.XShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
         }
@@ -564,7 +564,7 @@ namespace Dash
             xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
             if (CurrPresViewState == PresentationViewState.Collapsed)
             {
-                TextBlock help = xPresentationView.xHelpPrompt;
+                TextBlock help = xPresentationView.XHelpPrompt;
                 help.Opacity = 0;
                 help.Visibility = Visibility.Collapsed;
                 SetPresentationState(true);

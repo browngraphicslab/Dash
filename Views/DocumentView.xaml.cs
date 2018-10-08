@@ -967,7 +967,7 @@ namespace Dash
 
             using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.PinToPresentation(ViewModel.DataDocument);
+                MainPage.Instance.PinToPresentation(ViewModel.DocumentController);
                 if (ViewModel.LayoutDocument == null)
                 {
                     Debug.WriteLine("uh oh");

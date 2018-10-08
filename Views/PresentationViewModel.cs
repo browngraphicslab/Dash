@@ -44,7 +44,7 @@ namespace Dash
                     _pinNumbers.Add(new PresentationNumberViewModel(i));
                 }
                 //update ComboBox selection accordingly
-                MainPage.Instance.xPresentationView.xPresentations.SelectedItem = value;
+                MainPage.Instance.xPresentationView.XPresentations.SelectedItem = value;
             }
         }
 
@@ -107,7 +107,7 @@ namespace Dash
         {
             if (PinnedNodes.Count == 0)
             {
-                Storyboard helpOut = MainPage.Instance.xPresentationView.xHelpOut;
+                Storyboard helpOut = MainPage.Instance.xPresentationView.XHelpOut;
 
                 void Completed(object o, object sender) => HelpOutOnCompleted(o, sender, dc);
                 _onCompleted.Add(Completed);
@@ -133,7 +133,7 @@ namespace Dash
         private void HelpOutOnCompleted(object sender, object o, DocumentController dc = null)
         {
             PresentationView presView = MainPage.Instance.xPresentationView;
-            presView.xHelpPrompt.Visibility = Visibility.Collapsed;
+            presView.XHelpPrompt.Visibility = Visibility.Collapsed;
 
             CurrPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(dc);
             PinnedNodes.Add(dc);
@@ -141,7 +141,7 @@ namespace Dash
 
             foreach (var handler in _onCompleted)
             {
-                presView.xHelpOut.Completed -= handler;
+                presView.XHelpOut.Completed -= handler;
             }
             _onCompleted.Clear();
         }
@@ -164,12 +164,12 @@ namespace Dash
             if (PinnedNodes.Count > 0) return;
 
             PresentationView presView = MainPage.Instance.xPresentationView;
-            presView.xHelpPrompt.Visibility = Visibility.Visible;
+            presView.XHelpPrompt.Visibility = Visibility.Visible;
 
             if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
 
             await Task.Delay(550);
-            presView.xHelpIn.Begin();
+            presView.XHelpIn.Begin();
         }
 
         //change the current working presentation
