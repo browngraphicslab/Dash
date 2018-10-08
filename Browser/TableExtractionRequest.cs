@@ -45,19 +45,21 @@ namespace Dash
                 prototype.GetDataDocument().SetTitle("Prototype Row Record");
                 foreach (var c in rows.FirstOrDefault())
                 {
-                    prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key), "<" + c.Key + ">", true);
+                    prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
                 }
 
                 columns.MoveNext();
-                var primaryKey = new KeyController(columns.Current.Key ?? "<empty>"); // choose a better primary key -- this should become the document's title, too.
+                var primaryKey = new KeyController(columns.Current.Key.Trim() ?? "<empty>"); // choose a better primary key -- this should become the document's title, too.
 
-                var protobox = new DataBox(new DocumentReferenceController(prototype.GetDataDocument(), primaryKey), 0, 0, 100, 50).Document;
-                CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
+                var protobox = new DataBox(new DocumentReferenceController(prototype.GetDataDocument(), primaryKey), 0, 0, double.NaN, 50).Document;
+                protobox.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
                 prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(protobox), true);
+                CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
 
-                var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser)).ToList().Prepend(prototype);
-
-                return new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
+                var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                cnote.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, prototype, true);
+                return cnote;
             }
             return null;
         }
@@ -69,7 +71,7 @@ namespace Dash
             
             foreach (var kvp in obj)
             {
-                var key = new KeyController(kvp.Key);
+                var key = new KeyController(kvp.Key.Trim());
                 var val = parser.ParseValue(kvp.Value);
                 datadoc.SetField(key, val, true);
                 if (key.Equals(primaryKey))
@@ -77,6 +79,7 @@ namespace Dash
                     datadoc.SetTitle(val.ToString());
                 }
             }
+            doc.SetField(KeyStore.LayoutPrototypeKey, proto, true);
 
             return doc;
         }

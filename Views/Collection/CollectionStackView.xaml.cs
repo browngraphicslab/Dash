@@ -21,8 +21,31 @@ namespace Dash.Views.Collection
         public CollectionStackView()
         {
             this.InitializeComponent();
+            this.DataContextChanged += CollectionStackView_DataContextChanged;
+            this.Loaded += CollectionStackView_Loaded;
         }
 
+        private void CollectionStackView_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.DocumentViewModels != null)
+            {
+                foreach (var dvm in ViewModel.DocumentViewModels.ToArray())
+                {
+                    dvm.IsWidthless = true;
+                }
+            }
+        }
+
+        private void CollectionStackView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (ViewModel?.DocumentViewModels != null)
+            {
+                foreach (var dvm in ViewModel.DocumentViewModels.ToArray())
+                {
+                    dvm.IsWidthless = true;
+                }
+            }
+        }
 
         public void SetDropIndicationFill(Brush fill)
         {

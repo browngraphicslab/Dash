@@ -20,6 +20,8 @@ namespace Dash {
             DocumentController RefToDBox(DocumentFieldReference reference)
             {
                 var type = reference.DereferenceToRoot(null);
+                if (type is DocumentController docField)
+                    return docField;
                 var dbox = new DataBox(reference.GetReferenceController(), where?.X ?? 0, where?.Y ?? 0, type is TextController ? double.NaN : 300, type is TextController || type is ImageController ? double.NaN : 300).Document;
 
                 if (reference.FieldKey != null)
