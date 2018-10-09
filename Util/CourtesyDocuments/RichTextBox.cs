@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dash
 {

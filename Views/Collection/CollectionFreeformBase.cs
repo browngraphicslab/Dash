@@ -808,7 +808,7 @@ namespace Dash
             VirtualKey.Left,
             VirtualKey.Right,
             VirtualKey.Up,
-            VirtualKey.Down
+            VirtualKey.Down,
         };
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)

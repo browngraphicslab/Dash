@@ -85,6 +85,7 @@ namespace Dash
                 _sortColumn.SortDirection = DataGridSortDirection.Ascending;
                 break;
             }
+            ViewModel.ContainerDocument.SetField<ListController<TextController>>(KeyStore.ColumnSortingKey, new List<string>(new string[] { _sortColumn.Key.Name, _sortColumn.SortDirection.ToString() }), true);
             UpdateSort();
         }
 

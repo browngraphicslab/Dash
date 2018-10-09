@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.Foundation;
 
 namespace Dash
