@@ -51,7 +51,7 @@ namespace Dash
 
         public async Task<FieldControllerBase> GetControllerAsync(string id)
         {
-            id = id.ToLower();
+            id = id.ToUpper();
             if (_cache.TryGetValue(id, out FieldControllerBase field))
             {
                 return field;
@@ -74,10 +74,6 @@ namespace Dash
 
         public async Task<IList<FieldControllerBase>> GetControllersAsync(IEnumerable<string> ids)
         {
-            if (ids.Contains("a1aabee2-d842-490a-875e-72c509011d86"))
-            {
-
-            }
             var list = ids as IList<string> ?? ids.ToList();
             var fields = new List<FieldControllerBase>(list.Count);
             var missingIds = new List<string>();
@@ -85,7 +81,7 @@ namespace Dash
 
             for (var i = 0; i < list.Count; i++)
             {
-                var id = list[i].ToLower();
+                var id = list[i].ToUpper();
                 if (_cache.TryGetValue(id, out var field))
                 {
                     fields.Add(field);

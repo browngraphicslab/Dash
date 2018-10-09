@@ -19,7 +19,7 @@ namespace Dash
     {
         protected DocumentController GetLayoutPrototype(DocumentType documentType, string prototypeId, string abstractInterface)
         {
-            prototypeId = prototypeId.ToLower();
+            prototypeId = prototypeId.ToUpper();
             return RESTClient.Instance.Fields.GetController<DocumentController>(prototypeId) ??
                    InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
         }

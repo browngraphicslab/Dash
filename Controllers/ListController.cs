@@ -167,7 +167,7 @@ namespace Dash
             var set = new HashSet<string>();
             foreach (var data in ListModel.Data)
             {
-                set.Add(data.ToLower());
+                set.Add(data.ToUpper());
             }
 
             ListModel.Data = set.ToList();

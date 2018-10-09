@@ -58,15 +58,15 @@ namespace Dash
 
             _initialized = true;
             var refModel = Model as DocumentReferenceModel;
-            refModel.DocumentId = refModel.DocumentId.ToLower();
-            refModel.KeyId = refModel.KeyId.ToLower();
-            if (refModel.KeyId == "dac24308-6904-4060-ac0e-9b6ad61947cc")
+            refModel.DocumentId = refModel.DocumentId.ToUpper();
+            refModel.KeyId = refModel.KeyId.ToUpper();
+            if (refModel.KeyId == "DAC24308-6904-4060-AC0E-9B6AD61947CC")
             {
-                refModel.KeyId = "b695be9b-4eac-df25-b073-04da2921efb2";
+                refModel.KeyId = "B695BE9B-4EAC-DF25-B073-04DA2921EFB2";
             }
-            if (refModel.KeyId == "657b821a-fe94-4f21-bd7d-1615a2171a9b")
+            if (refModel.KeyId == "657B821A-FE94-4F21-BD7D-1615A2171A9B")
             {
-                refModel.KeyId = "0afd0e9b-fc4e-2dd6-4ee4-79d9a022c484";
+                refModel.KeyId = "0AFD0E9B-FC4E-2DD6-4EE4-79D9A022C484";
             }
             UpdateOnServer(null);
             await base.InitializeAsync();

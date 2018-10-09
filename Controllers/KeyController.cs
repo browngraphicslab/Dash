@@ -73,11 +73,12 @@ namespace Dash
 
         public KeyController(KeyModel model) : base(model)
         {
-            if (model.Id == "aoekma9j-ip37-96hi-vj36-ihfi39ahi8de")
+            var upper = model.Id.ToUpper();
+            if (upper == "AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE")
             {
-                model = new KeyModel(model.Name, "d154932b-d770-483b-903f-4887038394fd");
+                model = new KeyModel(model.Name, "D154932B-D770-483B-903F-4887038394FD");
             }
-            if (model.Id == "icon7d27-fa81-4d88-b2fa-42b7888525af")
+            if (upper == "ICON7D27-FA81-4D88-B2FA-42B7888525AF")
             {
                 model = new KeyModel(model.Name, "8C8B7C69-8A09-40F3-BEE4-28B64E82CE08");
             }

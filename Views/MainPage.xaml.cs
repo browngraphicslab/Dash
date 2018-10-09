@@ -194,11 +194,6 @@ namespace Dash
 
             void InitDoc(DocumentController initDoc)
             {
-                if (initDoc.Id ==
-                    "delegate-of-001ede6c-a713-4c54-bf98-0bafb6230d61-2c47ff26-8d1b-47ed-967d-5b5af8d546c9")
-                {
-
-                }
                 foreach (var field in initDoc.EnumFields())
                 {
                     initDoc.ShouldExecute(null, field.Key, null);

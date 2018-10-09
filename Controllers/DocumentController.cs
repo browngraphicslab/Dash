@@ -84,7 +84,7 @@ namespace Dash
                 {
                     lower = "b695be9b-4eac-df25-b073-04da2921efb2";
                 }
-                dict[lower] = documentModelField.Value;
+                dict[lower.ToUpper()] = documentModelField.Value;
             }
 
             DocumentModel.Fields = dict;
