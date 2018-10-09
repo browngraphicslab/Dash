@@ -155,8 +155,9 @@ namespace Dash
                 }
                 LoadSettings();
 
-                var presentationItems = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
+                //get current presentations if any and set data context of pres view to pres view model
+                var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
 
                 var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 DocumentController lastWorkspace;

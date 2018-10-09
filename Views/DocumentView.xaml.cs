@@ -87,7 +87,7 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (ViewModel?.IsDimensionless == true)
+            if (ViewModel?.IsDimensionless == true || ViewModel?.IsWidthless == true)
             {
                 Width = double.NaN;
                 Height = double.NaN;
@@ -925,6 +925,7 @@ namespace Dash
                     }
                     curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
                     curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
+                    curLayout.SetField(KeyStore.LayoutPrototypeKey, draggedLayout, true);
 
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
@@ -967,7 +968,7 @@ namespace Dash
 
             using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+                MainPage.Instance.PinToPresentation(ViewModel.DocumentController);
                 if (ViewModel.LayoutDocument == null)
                 {
                     Debug.WriteLine("uh oh");

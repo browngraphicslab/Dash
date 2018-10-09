@@ -35,9 +35,11 @@ namespace Dash
 {
     public abstract class CollectionFreeformBase : UserControl, ICollectionView
     {
-        MatrixTransform _transformBeingAnimated;// Transform being updated during animation
-        Panel _itemsPanelCanvas => GetCanvas();
-        CollectionViewModel _lastViewModel = null;
+        private MatrixTransform _transformBeingAnimated;// Transform being updated during animation
+
+        private Panel _itemsPanelCanvas => GetCanvas();
+
+        private CollectionViewModel _lastViewModel = null;
         public UserControl UserControl => this;
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
@@ -156,6 +158,14 @@ namespace Dash
         protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             _lastViewModel = ViewModel;
+
+            if (ViewModel?.DocumentViewModels != null)
+            {
+                foreach (var dvm in ViewModel.DocumentViewModels)
+                {
+                    dvm.IsWidthless = false;
+                }
+            }
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)

@@ -9,21 +9,17 @@
     d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     mc:Ignorable="d"
+    PointerWheelChanged="UserControl_PointerWheelChanged" 
     d:DesignHeight="300"
     d:DesignWidth="400">
     <Grid x:Name="xOuterGrid" Background="#CCFFFFFF" ManipulationMode="All" >
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <!--<telerikGrid:RadDataGrid x:Name="xDataGrid" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></telerikGrid:RadDataGrid>-->
         <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False"/>
 
-        <Button Grid.Row="1" HorizontalAlignment="Left" Tapped="AddRow_OnTapped" Padding="4">
-            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" Glyph="&#xE710;"></FontIcon>
+        <Button HorizontalAlignment="Left" VerticalAlignment="Bottom" Tapped="AddRow_OnTapped" Padding="4">
+            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;"/>
         </Button>
-        <Button Grid.Row="1" HorizontalAlignment="Right" Padding="2">
-            <TextBlock FontSize="14" Padding="0">Columns</TextBlock>
+        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Padding="2">
+            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;" />
             <Button.Flyout>
                 <Flyout x:Name="xColumnFlyout" Placement="Bottom" Opening="XColumnFlyout_OnOpening">
                     <Grid>

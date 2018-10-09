@@ -13,11 +13,10 @@ namespace Dash
     public class DocumentTree : IEnumerable<DocumentNode>
     {
         public DocumentNode Head { get; }
-        public Dictionary<DocumentController, DocumentNode> Nodes = new Dictionary<DocumentController, DocumentNode>();
 
         public DocumentTree(DocumentController headRef)
         {
-            Head = new DocumentNode(headRef, null, Nodes);
+            Head = new DocumentNode(headRef, null);
         }
 
         public IEnumerable<DocumentNode> GetAllNodes()
@@ -33,7 +32,7 @@ namespace Dash
                 toSearch.RemoveAt(toSearch.Count - 1);
                 if (doc.GetField(KeyStore.RegionsKey) == null && doc.GetField(KeyStore.LinkDestinationKey) == null)
                 {
-                    cachedNodes[doc] = new DocumentNode(doc, null, cachedNodes);
+                    cachedNodes[doc] = new DocumentNode(doc, null);
                 }
 
                 var dfields = doc.EnumDisplayableFields().ToList();
