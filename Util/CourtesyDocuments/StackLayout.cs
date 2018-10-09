@@ -13,7 +13,7 @@ namespace Dash
     public class StackLayout : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Layout");
-        public static KeyController StyleKey = new KeyController("Style", "943A801F-A4F4-44AE-8390-31630055D62F");
+        public static KeyController StyleKey = new KeyController("Style", new Guid("943A801F-A4F4-44AE-8390-31630055D62F"));
         private static readonly string PrototypeId = "1CEB0635-0B57-452A-93F9-F43C66EEF911";
 
         public StackLayout(IEnumerable<DocumentController> docs, bool horizontal = false, Point where = new Point(), Size size = new Size())

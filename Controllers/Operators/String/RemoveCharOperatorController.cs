@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Dash
         public RemoveCharOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Remove all of specified char", "A1AE7EAF-4C95-42C9-AFF9-845673B87042");
+        private static readonly KeyController TypeKey = new KeyController("Remove all of specified char", new Guid("A1AE7EAF-4C95-42C9-AFF9-845673B87042"));
 
         //Input keys
         public static readonly KeyController SourceKey = new KeyController("Source string");

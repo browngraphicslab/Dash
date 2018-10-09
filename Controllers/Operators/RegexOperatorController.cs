@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DashShared;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
@@ -18,7 +19,7 @@ namespace Dash
         public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Regex", "DF48D210-40A9-46A2-B32A-8F3C96C6CDD7");
+        private static readonly KeyController TypeKey = new KeyController("Regex", new Guid("DF48D210-40A9-46A2-B32A-8F3C96C6CDD7"));
 
         //Input keys
         public static readonly KeyController TextKey = new KeyController("Text");

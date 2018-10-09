@@ -24,12 +24,6 @@ namespace Dash
 
 		}
 
-		public override void Init()
-		{
-
-		}
-
-
 		public VideoModel VideoFieldModel => Model as VideoModel;
 
 

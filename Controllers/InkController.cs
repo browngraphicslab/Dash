@@ -22,13 +22,15 @@ namespace Dash
             UpdateStrokesFromList(new List<InkStroke>(), false);
         }
 
+        public InkController(string inkData) : base(new InkModel(inkData))
+        {
+            UpdateStrokesFromData(inkData);
+            SaveOnServer();
+        }
+
         public InkController(InkModel inkFieldModel) : base(inkFieldModel)
         {
             UpdateStrokesFromData(inkFieldModel.Data);
-        }
-        public override void Init()
-        {
-
         }
 
         /// <summary>
@@ -63,7 +65,7 @@ namespace Dash
 
         public override FieldControllerBase Copy()
         {
-            return new InkController(new InkModel(InkData));
+            return new InkController(InkData);
         }
 
         public override FieldControllerBase GetDefaultController()

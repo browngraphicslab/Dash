@@ -1,4 +1,6 @@
-﻿namespace Dash
+﻿using System;
+
+namespace Dash
 {
     [OperatorType(Op.Name.operator_add, Op.Name.add)]
     public class AddOperatorController : BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>
@@ -8,7 +10,7 @@
         public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Add", "5C121004-6C32-4BB7-9CBF-C4A6573376EF");
+        private static readonly KeyController TypeKey = new KeyController("Add", new Guid("5C121004-6C32-4BB7-9CBF-C4A6573376EF"));
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

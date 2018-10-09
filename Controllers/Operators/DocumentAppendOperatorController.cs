@@ -22,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Document Append", "4DAD9DE7-DAF8-4EB6-8EA4-8AA5F8D00121");
+        private static readonly KeyController TypeKey = new KeyController("Document Append", new Guid("4DAD9DE7-DAF8-4EB6-8EA4-8AA5F8D00121"));
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -48,7 +48,7 @@ namespace Dash
             FieldControllerBase field = inputs[FieldKey];
 
             var del = doc.MakeDelegate();
-            del.SetField(new KeyController("Concat output", Guid.NewGuid().ToString()), field, true);
+            del.SetField(new KeyController("Concat output", Guid.NewGuid()), field, true);
 
             outputs[OutputDocumentKey] = del;
             return Task.CompletedTask;

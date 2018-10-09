@@ -1,4 +1,6 @@
-﻿namespace Dash
+﻿using System;
+
+namespace Dash
 {
     [OperatorType(Op.Name.not_equal, Op.Name.operator_not_equal)]
     public class InverseEqualityOperatorController : BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>
@@ -8,7 +10,7 @@
         public InverseEqualityOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("C15646FF-8D78-4258-B0A1-A71212427159", "Not Equal To");
+        private static readonly KeyController TypeKey = new KeyController("Not Equal To", new Guid("C15646FF-8D78-4258-B0A1-A71212427159"));
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

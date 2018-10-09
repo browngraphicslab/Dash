@@ -39,6 +39,7 @@
     <Prefer32Bit>true</Prefer32Bit>
     <Optimize>false</Optimize>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -51,6 +52,7 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -226,7 +228,6 @@
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
     <Compile Include="Controllers\HtmlController.cs" />
-    <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\ExponentialOperatorController.cs" />
@@ -266,6 +267,7 @@
     <Compile Include="Models\HtmlModel.cs" />
     <Compile Include="Models\PdfModel.cs" />
     <Compile Include="Controllers\ReplaceOperatorController.cs" />
+    <Compile Include="Rest\Endpoints\CachedEndpoint.cs" />
     <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
     <Compile Include="LinkActivationManager.cs" />
@@ -459,11 +461,9 @@
     <Compile Include="Util\DSL\VariableExpression.cs" />
     <Compile Include="Util\DSL\Error Models\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
-    <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Extensions\StringExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />

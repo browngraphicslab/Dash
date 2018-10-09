@@ -17,7 +17,7 @@ namespace Dash.Controllers.Operators
         public WhereOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Where Operator", "6faf4dbe-9666-49a7-8908-a271b6f47b4e");
+        private static readonly KeyController TypeKey = new KeyController("Where Operator", new Guid("6faf4dbe-9666-49a7-8908-a271b6f47b4e"));
 
         public override FieldControllerBase GetDefaultController()
         {

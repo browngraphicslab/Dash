@@ -27,7 +27,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Join Tables", "50b36009-0a53-4790-b6fe-0a9007db4d92");
+        private static readonly KeyController TypeKey = new KeyController("Join Tables", new Guid("50b36009-0a53-4790-b6fe-0a9007db4d92"));
 
         public override FieldControllerBase GetDefaultController()
         {

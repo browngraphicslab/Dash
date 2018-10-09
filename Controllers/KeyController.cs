@@ -38,28 +38,19 @@ namespace Dash
             OnFieldModelUpdated(null);
         }
 
-        private static string GetId(string name)
+        private static string _hackId;
+        public KeyModel KeyModel => Model as KeyModel;
+        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out _hackId) ? _hackId : UtilShared.GetDeterministicGuid(name).ToString())
         {
-            if (_nameDictionary.ContainsKey(name))
-            {
-                return _nameDictionary[name];
-            }
-
-            var id = Guid.NewGuid().ToString();
-            _nameDictionary[name] = id;
-            return id;
         }
 
-        public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : base(new KeyModel(name, GetId(name)))
+        private KeyController(string name, string id) : base(new KeyModel(name, id))
         {
-            IsOnServer(delegate (bool onServer)
+            if (!_nameDictionary.ContainsKey(name))
             {
-                if (!onServer)
-                {
-                    SaveOnServer();
-                }
-            });
+                _nameDictionary[name] = id;
+                SaveOnServer();
+            }
         }
 
         /// <summary>
@@ -67,17 +58,14 @@ namespace Dash
         /// </summary>
         /// <param name="name"></param>
         /// <param name="guid"></param>
-        public KeyController(string name, string guid) : base(new KeyModel(name, guid))
+        public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
-            IsOnServer(delegate (bool onServer)
+            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
+            if (!_nameDictionary.ContainsKey(name))
             {
-                if (!onServer)
-                {
-                    SaveOnServer();
-                }
-            });
-            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == guid);
-            _nameDictionary[name] = guid;
+                SaveOnServer();
+                _nameDictionary[name] = Id;
+            }
         }
 
         public KeyController() : this(Guid.NewGuid().ToString())
@@ -86,18 +74,13 @@ namespace Dash
 
         public KeyController(KeyModel model) : base(model)
         {
-            Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
+            Debug.Assert(!_nameDictionary.ContainsKey(model.Name) || _nameDictionary[model.Name] == model.Id);
             _nameDictionary[model.Name] = model.Id;
-        }
-
-        public override void Init()
-        {
-
         }
 
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         public override bool Equals(object obj)
@@ -105,8 +88,6 @@ namespace Dash
             var k = obj as KeyController;
             return k != null && k.Id.Equals(Id);
         }
-
-        public static bool IsPresent(string key) => _nameDictionary.ContainsKey(key);
 
         public override int GetHashCode()
         {
