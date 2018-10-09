@@ -121,14 +121,6 @@ namespace Dash
         {
             _undoVar = undoVar;
 
-            var hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
-
-            if (_currentScriptExecutions.Contains(hash))
-            {
-                return new TextController(script);
-            }
-
-            _currentScriptExecutions.Add(hash);
             try
             {
                 //turn script string into function expression
@@ -145,10 +137,6 @@ namespace Dash
             catch (ScriptException scriptException)
             {
                 throw new InvalidDishScriptException(script, scriptException.Error, scriptException);
-            }
-            finally
-            {
-                _currentScriptExecutions.Remove(hash);
             }
         }
 
@@ -171,7 +159,7 @@ namespace Dash
             }
         }
 
-        public static ScriptExpression ParseToExpression(string script, bool returnNode = false)
+        public static ScriptExpression ParseToExpression(string script)
         {
             //this formats string to INode and sends it to below function
             script = script.EndsWith(';') ? script : script + ";";
@@ -490,7 +478,6 @@ namespace Dash
                 var funExpr = (node as Zu.TypeScript.TsTypes.FunctionExpression);
 
                 return new FunctionDeclarationExpression(funExpr.SourceStr, funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
-                break;
             case SyntaxKind.ArrowFunction:
                 break;
             case SyntaxKind.DeleteExpression:

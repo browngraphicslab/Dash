@@ -37,6 +37,8 @@ namespace Dash
             Message = new HttpRequestMessage(method, apiUri);
             ApiUri = apiUri;
             RequestType = method;
+            Message.Headers.UserAgent.TryParseAdd("Dash");
+            
         }
 
         public Request SetAuthUri(Uri uri)
@@ -57,10 +59,7 @@ namespace Dash
             {
                 
                 // add custom header properties to request
-                if (!Message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value))
-                    return null;
-                    // TODO: have some error happen here
-                    //TODO check for spaces in key or value text?
+                Message.Headers.Add(entry);
             }
             return this;
         }

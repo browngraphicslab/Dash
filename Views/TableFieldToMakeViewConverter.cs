@@ -52,11 +52,13 @@ namespace Dash
                 var binding = new FieldBinding<ImageController>
                 {
                     Document = _docController,
-                    Key = KeyStore.DataKey,
+                    Key = _key,
                     Mode = BindingMode.OneWay,
                     Converter = UriToBitmapImageConverter.Instance
                 };
                 image.AddFieldBinding(Image.SourceProperty, binding);
+                image.Height = 100;
+                image.Margin = new Thickness(10, 10, 10, 10);
                 currView = image;
             }
             if (data is VideoController)
@@ -107,18 +109,12 @@ namespace Dash
             }
             else if (data is ListController<DocumentController> docList)
             {
-                //if (double.IsNaN(_docController.GetWidth()))
-                //{ // if we're going to show a CollectionBox, give it initial dimensions, otherwise it has no default size
-                //    _docController.SetWidth(400);
-                //    _docController.SetHeight(400);
-                //}
-                //currView = CollectionBox.MakeView(_docController, _context);
 
                 WrapPanel wrap = new WrapPanel();
 
                 KVPDocBox docBox = null;
                 wrap.HorizontalAlignment = HorizontalAlignment.Center;
-                wrap.Margin = new Thickness(0, 10, 0, 0);
+                wrap.Margin = new Thickness(0, 10, 0, 10);
                 foreach (var doc in docList)
                 {
                     docBox = new KVPDocBox(doc.DocumentType, doc.Title);
@@ -140,34 +136,6 @@ namespace Dash
             else if (data is ListController<BoolController> boolList)
             {
                 WrapPanel wrap = new WrapPanel();
-                //KVPListText listText = null;
-                //wrap.HorizontalAlignment = HorizontalAlignment.Center;
-                //wrap.Margin = new Thickness(0, 15, 0, 0);
-                //foreach (var booler in boolList)
-                //{
-                //    Grid grid = new Grid();
-
-                //    grid.Width = 24;
-                //    grid.Height = 24;
-                //    grid.Margin = new Thickness(6, 0, 0, 0);
-                //    TextBlock text = new TextBlock();
-
-                //    text.Margin = new Thickness(-1, -4, 0, 0);
-
-                //    if (booler.Data)
-                //    {
-                //        text.Text = "T";
-                //        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 16, 160, 93));
-                //    }
-                //    else
-                //    {
-                //        text.Text = "F";
-                //        text.Foreground = new SolidColorBrush(Color.FromArgb(255, 186, 0, 21));
-                //    }
-                //    grid.Children.Add(text);
-                //    wrap.Children.Add(grid);
-                //}
-
                 currView = wrap;
 
             }

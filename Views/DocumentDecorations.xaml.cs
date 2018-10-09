@@ -1025,7 +1025,7 @@ namespace Dash
                 xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
                 if (SelectedDocs.Count > 1)
                 {
-                    foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+                    foreach (var d in SelectedDocs.Where(sd => sd.ViewModel != null).Select(sd => sd.ViewModel.DataDocument))
                     {
                         var dvalue = d?.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
                         if (dvalue != xHeaderText.Text)

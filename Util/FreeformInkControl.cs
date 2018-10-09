@@ -58,6 +58,7 @@ namespace Dash
                     : InkInputProcessingMode.Inking;
             TargetInkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(GlobalInkSettings.Attributes);
             TargetInkCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction = InkInputRightDragAction.AllowProcessing;
+            //TargetInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.None;
             UpdateStrokes();
             SetInkInputType(GlobalInkSettings.InkInputType);
             UpdateSelectionMode();

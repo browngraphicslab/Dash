@@ -119,6 +119,7 @@ namespace Dash
             ViewModel.Items.Clear();
             if (!clearData) return;
 
+            _currentHistoryIndex = 0;
             _dataDoc.SetField(KeyStore.ReplScopeKey, new DocumentController(), true);
             NewBlankScopeAndDSL();
             _lineTextList?.Clear();

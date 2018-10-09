@@ -12,12 +12,11 @@ namespace Dash
     /// </summary>
     public class DocumentTree : IEnumerable<DocumentNode>
     {
-        private DocumentNode Head { get; }
-        public Dictionary<DocumentController, DocumentNode> Nodes = new Dictionary<DocumentController, DocumentNode>();
+        public DocumentNode Head { get; }
 
         public DocumentTree(DocumentController headRef)
         {
-            Head = new DocumentNode(headRef, null, Nodes);
+            Head = new DocumentNode(headRef, null);
         }
 
         public IEnumerable<DocumentNode> GetAllNodes()
@@ -33,7 +32,7 @@ namespace Dash
                 toSearch.RemoveAt(toSearch.Count - 1);
                 if (doc.GetField(KeyStore.RegionsKey) == null && doc.GetField(KeyStore.LinkDestinationKey) == null)
                 {
-                    cachedNodes[doc] = new DocumentNode(doc, null, cachedNodes);
+                    cachedNodes[doc] = new DocumentNode(doc, null);
                 }
 
                 var dfields = doc.EnumDisplayableFields().ToList();
@@ -130,6 +129,68 @@ namespace Dash
             paths.Sort((l1, l2) => l1.Count - l2.Count);
 
             return paths;
+        }
+
+
+        public static string GetEscapedPath(List<DocumentController> path)
+        {
+            string EscapeName(string name)
+            {
+                return name.Replace("`", "``").Replace("/", @"`/");
+            }
+            string pathStr = "";
+            foreach (var collection in path.Skip(1))
+            {
+                pathStr += "/" + EscapeName(collection.Title);
+            }
+
+            return pathStr;
+        }
+
+        public static DocumentController GetDocumentAtPath(string path)
+        {
+            if (path.Length == 0)
+            {
+                return null;
+            }
+
+            if (path[0] != '/')
+            {
+                return null;
+            }
+
+            DocumentNode currentNode = MainPageTree.Head;
+            int startIndex = 1;
+            int endIndex = startIndex;
+
+            DocumentNode GetChild(DocumentNode node, string name)
+            {
+                name = name.Replace("`/", "/").Replace("``", "`");
+
+                return node.Children.FirstOrDefault(dn => dn.ViewDocument.Title == name);
+            }
+            while (endIndex < path.Length)
+            {
+                var currentChar = path[endIndex];
+                if (currentChar == '/')
+                {
+                    currentNode = GetChild(currentNode, path.Substring(startIndex, endIndex - startIndex));
+                    if (currentNode == null)
+                    {
+                        return null;
+                    }
+
+                    startIndex = endIndex + 1;
+                } else if (currentChar == '`')
+                {
+                    endIndex++;
+                }
+
+                endIndex++;
+            }
+
+            var docName = path.Substring(startIndex);
+            return GetChild(currentNode, docName)?.ViewDocument;
         }
 
         public IEnumerator<DocumentNode> GetEnumerator() => Head.GetEnumerator();
