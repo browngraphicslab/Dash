@@ -179,6 +179,7 @@
     <Compile Include="Browser\TableExtractionRequest.cs" />
     <Compile Include="Browser\UrlChangedRequest.cs" />
     <Compile Include="Browser\ActivateRequest.cs" />
+    <Compile Include="Controllers\Operators\JoinOperator.cs" />
     <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
@@ -187,6 +188,8 @@
     <Compile Include="Popups\NewTemplatePopup.xaml.cs">
       <DependentUpon>NewTemplatePopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\Operators\Sum.cs" />
+    <Compile Include="Controllers\Operators\WhereOperator.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
     <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />
@@ -685,6 +688,9 @@
     </Compile>
     <Compile Include="Views\KVPListText.xaml.cs">
       <DependentUpon>KVPListText.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\KVPRow.xaml.cs">
+      <DependentUpon>KVPRow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\LinkButton.xaml.cs">
       <DependentUpon>LinkButton.xaml</DependentUpon>
@@ -1278,6 +1284,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\KVPRow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\LinkButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1484,13 +1494,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="DashShared\DashShared.csproj">
-      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
-      <Name>DashShared</Name>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
     <Folder Include="Util\Parser\" />
@@ -1582,6 +1585,12 @@
     <SDKReference Include="WindowsDesktop, Version=10.0.17134.0">
       <Name>Windows Desktop Extensions for the UWP</Name>
     </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DashShared\DashShared.csproj">
+      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
+      <Name>DashShared</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
