@@ -182,6 +182,7 @@
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Controllers\Operators\WhereOperator.cs" />
     <Compile Include="Converters\IsNullToVisibilityConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">

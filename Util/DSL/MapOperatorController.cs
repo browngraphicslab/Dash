@@ -52,10 +52,7 @@ namespace Dash
                 foreach (var field in inputList.Data.ToArray())
                 {
                     var res = await OperatorScript.Run(lambda, new List<FieldControllerBase> {field}, new Scope());
-                    if (res != null)
-                    {
-                        outputList.Add(res);
-                    }
+                    if (res != null) outputList.Add(res);
                 }
             }
 

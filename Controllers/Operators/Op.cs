@@ -137,6 +137,7 @@ namespace Dash
 
             // misc
             map,
+            where,
 
             // EXECUTE
 
