@@ -93,16 +93,11 @@ namespace Dash
                 _transactionMutex.WaitOne();
 
                 var allIds = GetAllIds();
-                if (_currentTransaction != null)
-                {
-                    _currentTransaction.Commit();
-                }
                 var unused = allIds.Where(id => !Cache.ContainsKey(id)).ToList();
                 const int numIds = 50;
                 var ids = new List<string>(numIds);
                 for (int i = 0, count = unused.Count / numIds; i <= count; ++i)
                 {
-                    _currentTransaction = _db.BeginTransaction();
                     Debug.WriteLine($"Deleted {i * numIds} documents");
                     for (int j = i * numIds; j < (i + 1) * numIds && j < unused.Count; ++j)
                     {
@@ -111,12 +106,10 @@ namespace Dash
 
                     DeleteDocuments(ids);
                     ids.Clear();
-                    _currentTransaction.Commit();
                 }
             }
             finally
             {
-                _currentTransaction = _db.BeginTransaction();
                 _transactionMutex.ReleaseMutex();
             }
             //TODO DB: Maybe use reference counting instead of trying to track down references?
