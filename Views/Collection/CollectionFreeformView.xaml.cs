@@ -220,15 +220,19 @@ namespace Dash
                 double imageHeight = docController.GetHeight();
                 double imageWidth = docController.GetWidth();
                 var colRect = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformBounds(new Rect(point.X, point.Y, imageWidth, imageHeight));
+                
                 // add adornment
-                var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
-                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 1.2 * colRect.Width, 1.4 * colRect.Height);
+                var adornFormPoint = new Point(colRect.X, colRect.Y);
+                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray,
+                    BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 1.2 * colRect.Width, 1.3 * colRect.Height);
                 ViewModel.AddDocument(adorn);
-                // add image
-                var pos = new Point(colRect.Left + ((1.2 * colRect.Width - imageWidth) / 2), colRect.Top + ((1.2 * colRect.Height - imageHeight) / 2));
+                //// add image
+                var pos = new Point(colRect.Left + 0.1 * colRect.Width, colRect.Top + 0.1 * colRect.Height);
                 Actions.DisplayDocument(ViewModel, docController, pos);
+                docController.SetWidth(colRect.Width);
+                docController.SetHeight(colRect.Height);
                 // add caption
-                var where = new Point(colRect.X, colRect.Top + (1.15 * colRect.Height));
+                var where = new Point(colRect.X, colRect.Top + 1.1 * colRect.Height);
                 var postitNote = new RichTextNote("{\\rtf1\\ansi\\deff0\\pard\\qc{" + docController.Title + "}\\par}").Document;
                 postitNote.SetWidth(1.2 * colRect.Width);
                 Actions.DisplayDocument(ViewModel, postitNote, where);
