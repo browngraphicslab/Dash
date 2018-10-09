@@ -179,7 +179,7 @@ namespace Dash
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController == null) { continue; }
-                    var pos = new Point(colPoint.X + (counter * (defaultLength + 5)), colPoint.Y);
+                    var pos = new Point(colPoint.X + (counter * (defaultLength + 5)), colPoint.Y + 10);
                     docController.SetWidth(defaultLength);
                     docController.SetHeight(defaultLength);
                     Actions.DisplayDocument(ViewModel, docController, pos);
@@ -222,12 +222,8 @@ namespace Dash
                 var colRect = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformBounds(new Rect(point.X, point.Y, imageWidth, imageHeight));
                 // add adornment
                 var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
-<<<<<<< HEAD
-                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 100 + colRect.Width, 100 + colRect.Height);
-                adorn.SetGroup(docController.Title);
-=======
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 1.2 * colRect.Width, 1.4 * colRect.Height);
->>>>>>> origin/amenu_rtf_templates
+                adorn.SetGroup(docController.Title);
                 ViewModel.AddDocument(adorn);
                 // add image
                 var pos = new Point(colRect.Left + ((1.2 * colRect.Width - imageWidth) / 2), colRect.Top + ((1.2 * colRect.Height - imageHeight) / 2));
