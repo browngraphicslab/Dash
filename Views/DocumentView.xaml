@@ -25,7 +25,7 @@
 
     <Grid x:Name="xMasterStack">
         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
-        <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent" />
+        <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False" />
         <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved" IsHitTestVisible="{Binding IsNotBackgroundPinned}">
             <Grid.Clip>
                 <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
