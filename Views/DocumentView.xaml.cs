@@ -1097,7 +1097,7 @@ namespace Dash
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
                 {
                     Text = "Add to Action Menu",
-                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.PlusCircle }
                 });
                 (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAddToActionMenu_Click;
             }
