@@ -70,6 +70,8 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
+        public InkManager InkManager { get; set; }
+
         public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
@@ -204,6 +206,8 @@ namespace Dash
                 SetupMapView(lastWorkspace);
 
                 if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+
+                InkManager = new InkManager();
 
                 return Task.CompletedTask;
             }

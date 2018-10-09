@@ -1183,5 +1183,15 @@ namespace Dash
         {
             SplitFrame.ActiveFrame.GoForward();
         }
+        
+        private void XEnableInk_OnChecked(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.InkManager.ShowToolbar();
+        }
+
+        private void XEnableInk_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.InkManager.HideToolbar();
+        }
     }
 }

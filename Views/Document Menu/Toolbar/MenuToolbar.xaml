@@ -547,6 +547,16 @@
                     PointerExited="HideAppBarToolTip">
                         <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                     </AppBarButton>
+                    <AppBarToggleButton 
+                        Height="60"
+                        x:Name="xEnableInk"
+                        Style="{StaticResource AppBarToggleButtonStyler}"
+                        Unchecked="XEnableInk_OnUnchecked" 
+                        Checked="XEnableInk_OnChecked"
+                        PointerEntered="ShowAppBarToolTip"
+                        PointerExited="HideAppBarToolTip">
+                        <TextBlock x:Name="xInkSymbol" Text="&#xE76D;" FontSize="16" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarToggleButton>
                     <AppBarButton 
                     Height="60"
                     x:Name="xMakeInstance"
@@ -634,7 +644,7 @@
                     Click="XExport_OnClick"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                        <TextBlock x:Name="xExportIcon" Text="&#xEDE1;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="2, 0, 0, 0" Padding="0" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="xExportIcon" Text="&#xE898;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="2, 0, 0, 0" Padding="0" HorizontalAlignment="Center"/>
                     </AppBarButton>
                     <AppBarButton 
                     x:Name="xPresentationMode"

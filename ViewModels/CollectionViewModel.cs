@@ -32,7 +32,7 @@ namespace Dash
         DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-        public InkController InkController => ContainerDocument.GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
+        public InkController InkController => ContainerDocument.GetDataDocument().GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
         public TransformGroupData TransformGroup
 
