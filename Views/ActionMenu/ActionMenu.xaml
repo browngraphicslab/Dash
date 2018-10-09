@@ -22,7 +22,7 @@
             <Border CornerRadius="7" BorderThickness="1" BorderBrush="#66AAAAAA" Visibility="{x:Bind UseFilterBox, Mode=OneWay}">
                 <TextBox x:Name="XFilterBox" PlaceholderText="Search" FontSize="12" BorderThickness="0" TextChanged="XFilterBox_OnTextChanged"></TextBox>
             </Border>
-            <ListView Grid.Row="1" ItemsSource="{Binding Source={StaticResource GroupCVS}}" IsItemClickEnabled="True" ItemClick="ListViewBase_OnItemClick">
+            <ListView Grid.Row="1" ItemsSource="{Binding Source={StaticResource GroupCVS}}" IsItemClickEnabled="True" x:Name="xListView" x:FieldModifier="public" ItemClick="ListViewBase_OnItemClick">
                 <ListView.GroupStyle>
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
