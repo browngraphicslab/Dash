@@ -813,9 +813,11 @@ namespace Dash
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
-            TriggerActionFromSelection(e.Key, useMarquee);
-            e.Handled = true;
+            if (!(FocusManager.GetFocusedElement() is RichEditBox) && !(FocusManager.GetFocusedElement() is TextBox))
+            {
+                var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
+                TriggerActionFromSelection(e.Key, useMarquee);
+            }
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;

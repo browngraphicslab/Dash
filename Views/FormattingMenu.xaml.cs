@@ -38,8 +38,7 @@ namespace Dash
         public WordCount WC;
 
         public ObservableCollection<TextBlock> FontFamilyNames { get; } = new ObservableCollection<TextBlock>();
-
-        private bool _fontSizeChanged = false;
+        
         private bool _fontSizeTextChanged = false;
         private bool _fontFamilyChanged = false;
 
@@ -200,7 +199,6 @@ namespace Dash
             var index = _sizes.IndexOf(currentFontSize);
             if (index != xFontSizeComboBox.SelectedIndex)
             {
-                _fontSizeChanged = true;
                 _fontSizeTextChanged = true;
                 xFontSizeComboBox.SelectedIndex = index;
                 xFontSizeTextBox.Text = currentFontSize.ToString();
@@ -345,37 +343,30 @@ namespace Dash
                 return;
             }
             _fontSizeTextChanged = true;
-            xFontSizeTextBox.Text = selectedFontSize.ToString();
-            if (!_fontSizeChanged)
+            if (selectedFontSize != null)
             {
-                if (selectedFontSize != null)
+                xFontSizeTextBox.Text = selectedFontSize.ToString();
+                //select all if nothing is selected
+                using (UndoManager.GetBatchHandle())
                 {
-                    //select all if nothing is selected
-                    using (UndoManager.GetBatchHandle())
+                    if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
+                        xRichEditBox.Document.Selection.EndPosition)
                     {
-                        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
-                            xRichEditBox.Document.Selection.EndPosition)
-                        {
-                            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
-                            var end = text.Length;
-                            xRichEditBox.Document.Selection.SetRange(0, end);
-                            xRichEditBox.Document.Selection.CharacterFormat.Size =
-                                (float)Convert.ToDouble(selectedFontSize.ToString());
-                            xRichEditBox.Document.Selection.SetRange(end, end);
-                        }
-                        else
-                        {
-                            xRichEditBox.Document.Selection.CharacterFormat.Size =
-                                (float)Convert.ToDouble(selectedFontSize.ToString());
-                        }
-
-                        richTextView.UpdateDocumentFromXaml();
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        var end = text.Length;
+                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.CharacterFormat.Size =
+                            (float)Convert.ToDouble(selectedFontSize.ToString());
+                        xRichEditBox.Document.Selection.SetRange(end, end);
                     }
+                    else
+                    {
+                        xRichEditBox.Document.Selection.CharacterFormat.Size =
+                            (float)Convert.ToDouble(selectedFontSize.ToString());
+                    }
+
+                    richTextView.UpdateDocumentFromXaml();
                 }
-            }
-            else
-            {
-                _fontSizeChanged = false;
             }
         }
 
@@ -412,6 +403,8 @@ namespace Dash
 
                     richTextView.UpdateDocumentFromXaml();
                 }
+                this.xFontSizeComboBox.SelectedItem = null;
+                xFontSizeTextBox.Text = fontSize.ToString();
             }
             else
             {
