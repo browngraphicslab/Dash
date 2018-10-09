@@ -284,7 +284,7 @@ namespace Dash
         {
             document.SetField<BoolController>(KeyStore.CollectionFitToParentKey, fit, true);
         }
-        public static void    SetTitle(this DocumentController document, string title)
+        public static void SetTitle(this DocumentController document, string title)
         {
             document.SetField<TextController>(KeyStore.TitleKey, title, true);
         }
@@ -478,6 +478,15 @@ namespace Dash
         {
             return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? 0;
         }
-        
+
+        public static void SetGroup(this DocumentController document, string groupname)
+        {
+            document.SetField<TextController>(KeyStore.GroupKey, groupname, true);
+        }
+
+        public static string GetGroup(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.GroupKey, null)?.Data ?? "";
+        }
     }
 }

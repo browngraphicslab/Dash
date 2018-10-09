@@ -209,6 +209,7 @@ namespace Dash
                 // add adornment
                 var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 100 + colRect.Width, 100 + colRect.Height);
+                adorn.SetGroup(docController.Title);
                 ViewModel.AddDocument(adorn);
                 // add image
                 var pos = new Point(50 + colRect.X, 50 + colRect.Y);

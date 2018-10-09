@@ -143,6 +143,7 @@ namespace Dash
 		/// </summary>
 		public static KeyController SelectedSchemaRow = new KeyController("SelectedElement", "B9B5742B-E4C7-45BD-AD6E-F3C254E45027");
 		public static KeyController SchemaDisplayedColumns = new KeyController("_Displayed Columns", "7424AFD5-D43B-449F-AD04-B48E686621AB");
+        public static KeyController GroupKey = new KeyController("Group", "ACB51087-DC89-4075-83D7-63C0155B7E61");
 
 
 
