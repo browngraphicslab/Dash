@@ -109,6 +109,20 @@ namespace Dash
             menu.AddAction("BASIC", new ActionViewModel("To-Do List", "Track your tasks!", AddToDoList, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Image", "Add many images",  AddMultipleImages, source));
+
+            var templates = MainPage.Instance.MainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
+            foreach (var template in templates)
+            {
+                var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,
+                    template.GetField<TextController>(KeyStore.CaptionKey).Data, point =>
+                    {
+                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                        Actions.DisplayDocument(ViewModel, template.GetCopy(), colPoint);
+                        return Task.FromResult(true);
+                    }, source);
+                menu.AddAction("CUSTOM", avm);
+            }
         }
 
         private Task<bool> AddToDoList(Point point)

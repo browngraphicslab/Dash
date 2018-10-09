@@ -951,6 +951,17 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
+
+        public async Task<(string, string)> PromptNewTemplate()
+        {
+            var templatePopup = new NewTemplatePopup();
+            SetUpPopup(templatePopup);
+
+            var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
+        }
     }
 
 
