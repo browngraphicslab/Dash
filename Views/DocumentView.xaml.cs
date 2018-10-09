@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -87,7 +88,7 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (ViewModel?.IsDimensionless == true)
+            if (ViewModel?.IsDimensionless == true || ViewModel?.IsWidthless == true)
             {
                 Width = double.NaN;
                 Height = double.NaN;
@@ -925,6 +926,7 @@ namespace Dash
                     }
                     curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
                     curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
+                    curLayout.SetField(KeyStore.LayoutPrototypeKey, draggedLayout, true);
 
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
@@ -967,7 +969,7 @@ namespace Dash
 
             using (UndoManager.GetBatchHandle())
             {
-                MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+                MainPage.Instance.PinToPresentation(ViewModel.DocumentController);
                 if (ViewModel.LayoutDocument == null)
                 {
                     Debug.WriteLine("uh oh");
@@ -1090,6 +1092,15 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
+            if (ViewModel.Content is RichTextView)
+            {
+                xMenuFlyout.Items.Add(new MenuFlyoutItem()
+                {
+                    Text = "Add to Action Menu",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.PlusCircle }
+                });
+                (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAddToActionMenu_Click;
+            }
 
             if (ViewModel.Content is CollectionView collectionView)
             {
@@ -1099,6 +1110,21 @@ namespace Dash
                 (cpresent.Content is CollectionView collectionView2))
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
+            }
+        }
+
+        private async void MenuFlyoutItemAddToActionMenu_Click(object sender, RoutedEventArgs e)
+        {
+            (string name, string desc) = await MainPage.Instance.PromptNewTemplate();
+            if (!(name == string.Empty && desc == string.Empty))
+            {
+                var copy = ViewModel.DocumentController.GetCopy();
+                copy.SetTitle(name);
+                copy.SetField<TextController>(KeyStore.CaptionKey, desc, true);
+                var templates = MainPage.Instance.MainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
+                templates.Add(copy);
+                MainPage.Instance.MainDocument.GetDataDocument().SetField(KeyStore.TemplateListKey, templates, true);
             }
         }
 

@@ -114,7 +114,7 @@ namespace Dash
 
             else if ( packageView.Contains(StandardDataFormats.Text))
             {
-                dropDocs.Add(await TableExtractionRequest.ProcessTableData((await packageView.GetTextAsync())));
+                dropDocs.Add(await TableExtractionRequest.ProcessTableData(await packageView.GetTextAsync(), where ?? new Point()));
             }
 
             // Image (rarely hit, most images fall under Storage Items)

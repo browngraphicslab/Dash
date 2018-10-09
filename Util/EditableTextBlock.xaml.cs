@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -85,7 +84,6 @@ namespace Dash
 
         private void XTextBox_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Debug.WriteLine("moving textbox");
             e.Handled = true;
         }
 

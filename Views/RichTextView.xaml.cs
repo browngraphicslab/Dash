@@ -321,6 +321,7 @@ namespace Dash
                 //var s1 = xRichEditBox.Document.Selection.StartPosition;
                 //var s2 = xRichEditBox.Document.Selection.EndPosition;
 
+
                 if (Text.RtfFormatString != _lastXamlRTFText)
                 {
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -344,6 +345,26 @@ namespace Dash
                 }
                 //this.xRichEditBox.Document.Selection.StartPosition = s1;
                 //this.xRichEditBox.Document.Selection.EndPosition = s2;
+
+                //var readableText = getReadableText();
+                //if (readableText.Equals("#/") || readableText.Equals("/"))
+                //{
+                //    var actionMenu = MainPage.Instance.xCanvas.Children.FirstOrDefault(fe => fe is ActionMenu);
+                //    if (actionMenu == null)
+                //    {
+                //        CreateActionMenu(xRichEditBox);
+                //    }
+                //    else
+                //    {
+                //        var transformToVisual = xRichEditBox.TransformToVisual(MainPage.Instance);
+                //        var pos = transformToVisual.TransformPoint(new Point(0, ActualHeight));
+                //        actionMenu.RenderTransform = new TranslateTransform
+                //        {
+                //            X = pos.X,
+                //            Y = pos.Y
+                //        };
+                //    }
+                //}
             }
         }
 
@@ -420,7 +441,7 @@ namespace Dash
                     }
                 }
             }
-
+            
             return nearest;
         }
 
@@ -674,11 +695,14 @@ namespace Dash
         private string GetParsedText()
         {
             var fullText = getReadableText();
+            if (fullText.Length == 0) return "";
+
             if (fullText[0].Equals('#'))
             {
                 fullText = fullText.Substring(1);
             }
 
+            if (fullText.Length == 0) return "";
             if (fullText[0].Equals('/'))
             {
                 fullText = fullText.Substring(1);

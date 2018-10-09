@@ -143,7 +143,8 @@ namespace Dash
         {
             InitializeComponent();
             _targetPoint = targetPoint;
-            
+
+
             GroupCVS.Source = Groups;
         }
 

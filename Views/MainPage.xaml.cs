@@ -147,27 +147,24 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-                    Debug.WriteLine("not null");
                 }
                 else
                 {
-                    Debug.WriteLine("null");
-                    var note = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-                    MainDocument = note.Document;
+                    MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
                     MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                     MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
                 }
                 LoadSettings();
 
-                var presentationItems = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                xPresentationView.DataContext = presentationItems != null ? new PresentationViewModel(presentationItems) : new PresentationViewModel();
+                //get current presentations if any and set data context of pres view to pres view model
+                var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+                xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
 
                 var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
                     var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
-                    Debug.WriteLine("new collection note");
                     col.Add(documentController);
                     lastWorkspace = documentController;
                     lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -950,6 +947,17 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xSearchButton, search);
+        }
+
+        public async Task<(string, string)> PromptNewTemplate()
+        {
+            var templatePopup = new NewTemplatePopup();
+            SetUpPopup(templatePopup);
+
+            var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
         }
     }
 

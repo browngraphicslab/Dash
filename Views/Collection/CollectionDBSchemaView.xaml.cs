@@ -24,6 +24,8 @@ namespace Dash
     public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+
+        private WindowsDictionaryColumn _sortColumn;
         public DataGrid DataGrid => xDataGrid;
 
         //ICollectionView implementation
@@ -53,6 +55,8 @@ namespace Dash
             xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
             xDataGrid.LoadingRow += XDataGrid_LoadingRow;
             xDataGrid.ColumnReordered += XDataGridOnColumnReordered;
+            xDataGrid.CanUserSortColumns = true;
+            xDataGrid.Sorting += XDataGrid_Sorting;
 
             XNewColumnEntry.AddKeyHandler(VirtualKey.Enter, args =>
             {
@@ -60,6 +64,44 @@ namespace Dash
             });
 
             Loaded += OnLoaded;
+        }
+
+        private void XDataGrid_Sorting(object sender, DataGridColumnEventArgs e)
+        {
+            var sortColumn = (WindowsDictionaryColumn)e.Column;
+            if (_sortColumn != null && sortColumn != _sortColumn)
+            {
+                _sortColumn.SortDirection = null;
+            }
+            _sortColumn = sortColumn;
+            switch (e.Column.SortDirection) {
+                case DataGridSortDirection.Ascending:
+                _sortColumn.SortDirection = DataGridSortDirection.Descending;
+                break;
+                case DataGridSortDirection.Descending:
+                _sortColumn.SortDirection = null;
+                break;
+                default:
+                _sortColumn.SortDirection = DataGridSortDirection.Ascending;
+                break;
+            }
+            UpdateSort();
+        }
+
+        private void UpdateSort()
+        {
+            switch (_sortColumn?.SortDirection)
+            {
+            case DataGridSortDirection.Ascending:
+                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.OrderBy<DocumentViewModel, string>((dvm) => dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key, null)?.ToString() ?? "");
+                break;
+            case DataGridSortDirection.Descending:
+                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.OrderByDescending<DocumentViewModel, string>((dvm) => dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key, null)?.ToString() ?? "");
+                break;
+            default:
+                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels;
+                break;
+            }
         }
 
         private void XDataGridOnColumnReordered(object sender, DataGridColumnEventArgs dataGridColumnEventArgs)
@@ -169,6 +211,11 @@ namespace Dash
                 return;
             }
 
+            if (_oldViewModel != null) {
+
+                _oldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+            }
+
             _oldViewModel = ViewModel;
 
             if (ViewModel == null)
@@ -184,7 +231,6 @@ namespace Dash
                 ViewModel.ContainerDocument.SetField(KeyStore.SchemaDisplayedColumns, Keys, true);
             }
 
-
             foreach (var key in Keys)
             {
                 xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { Header = key });
@@ -194,6 +240,21 @@ namespace Dash
             {
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
             }
+
+            ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+            ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+        }
+
+        private void DocumentViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (ViewModel != null)
+            {
+                UpdateSort();
+            }
+            else if (_oldViewModel != null)
+            {
+                _oldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+            }
         }
 
         private void AddKey(KeyController key)
@@ -202,35 +263,34 @@ namespace Dash
             {
                 Keys.Add(key);
                 xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { Header = key });
+                var schemaColumns = ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
 
                 foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
                 {
                     AddDataBoxForKey(key, dvm);
+                    dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, schemaColumns.Copy(), true);
                 }
             }
         }
 
         private void AddDataBoxForKey(KeyController key, DocumentViewModel dvm)
         {
-            var docs = dvm.DocumentController.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-            DocumentController db = null;
+            var proto = dvm.DocumentController.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm.DocumentController;
+            var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
 
             foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
             {
-                var fkey = (doc.GetField(KeyStore.DataKey) as DocumentReferenceController)?.FieldKey;
+                var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
                 if (key.Equals(fkey) == true)
                 {
-                    db = doc;
-                    break;
+                    return; // document already has a databox view of the added key
                 }
             }
-            if (db == null)
-            {
-                //dvm.DocumentController.GetDataDocument().SetField<TextController>(key, "<empty>", true);
-                docs.Add(new DataBox(new DocumentReferenceController(dvm.DocumentController.GetDataDocument(), key), 0, 35 * docs.Count, 100, double.NaN).Document);
-                docs.Last().SetTitle(key.Name);
-                dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Copy(), true);
-            }
+
+            var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
+            CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
+            proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
+            newDataBoxCol.SetTitle(key.Name);
         }
 
         private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
@@ -250,15 +310,34 @@ namespace Dash
         private void RemoveKey(KeyController key)
         {
             var index = Keys.IndexOf(key);
-            if (index == -1)
+            if (index != -1)
             {
-                return;
+                Keys.RemoveAt(index);
+                xDataGrid.Columns.RemoveAt(index);
+                var schemaColumns = ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
+
+                foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
+                {
+                    RemoveDataBoxForKey(key, dvm);
+                    dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, schemaColumns.Copy(), true);
+                }
+
             }
+        }
 
-            Keys.RemoveAt(index);
-            //ViewModel.ContainerDocument.RemoveFromListField(KeyStore.SchemaDisplayedColumns, key);
-
-            xDataGrid.Columns.RemoveAt(index);
+        private void RemoveDataBoxForKey(KeyController key, DocumentViewModel dvm)
+        {
+            var proto = dvm.DocumentController.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ?? dvm.DocumentController;
+            var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+            foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
+            {
+                var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
+                if (key.Equals(fkey) == true)
+                {
+                    proto.RemoveFromListField(KeyStore.DataKey, doc);
+                    break;
+                }
+            }
         }
 
         private void XColumnFlyout_OnOpening(object sender, object e)
@@ -331,6 +410,11 @@ namespace Dash
         private void XNewColumnButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             AddNewColumn();
+        }
+
+        private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 

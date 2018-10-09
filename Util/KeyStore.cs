@@ -17,7 +17,9 @@ namespace Dash
 		public static KeyController TitleKey = new KeyController("Title", "0C074CB4-6D05-4363-A867-C0A061C1573F");
 		public static KeyController CaptionKey = new KeyController("Caption", "D01D6702-A3AD-4546-9BFB-C5263F8D5599");
 		public static KeyController PrototypeKey = new KeyController("_Prototype", "866A6CC9-0B8D-49A3-B45F-D7954631A682");
-		public static KeyController DelegatesKey = new KeyController("_Delegates", "D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB");
+        public static KeyController CollectionItemLayoutPrototypeKey = new KeyController("CollectionItemLayoutPrototype", "7C6F72BA-EC97-4DA5-8ACE-5F4F1118F185");
+        public static KeyController LayoutPrototypeKey = new KeyController("LayoutPrototype", "77805171-247D-4485-A257-1751619C2C45");
+        public static KeyController DelegatesKey = new KeyController("_Delegates", "D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB");
 		public static KeyController UserSetWidthKey = new KeyController("_userSetWidth", "7D3E7CDB-D0C7-4316-BA3B-3C032F24B5AA");
 		public static KeyController WidthFieldKey = new KeyController("Width", "5B329D99-96BF-4703-8E28-9B7B1C1B837E");
 		public static KeyController HeightFieldKey = new KeyController("Height", "9ED34365-C821-4FB2-A955-A8C0B10C77C5");
@@ -136,8 +138,8 @@ namespace Dash
 		public static KeyController TitleMatchKey = new KeyController("Title Match", "FEBBA568-0DC5-4E8E-8FFE-339CC3E0B1D2");
 		public static KeyController TagsKey = new KeyController("Tags", "4E56A0DC-C096-4542-892C-2F4C979FF6BC");
 		public static KeyController RecentTagsKey = new KeyController("Recent Tags", "DE080F88-9A7A-4D5C-88E8-7DE1C445D6C5");
-		public static KeyController LinkTagKey =
-			new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
+	    public static KeyController JoinInfoKey = new KeyController("Join Information", "08A0A6F9-6AC1-4B03-89CD-E7127646D9DB");
+        public static KeyController LinkTagKey = new KeyController("List of tags", "72371594-582C-46FE-BE81-9F2B95C5FD50");
 		/// <summary>
 		/// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
 		/// </summary>
