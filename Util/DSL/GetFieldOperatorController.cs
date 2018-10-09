@@ -74,7 +74,7 @@ namespace Dash
                 sb.Append(keyName.Substring(prevIndex));
 
                 var newKeyName = sb.ToString();
-                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(newKeyName), null);
+                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(newKeyName), null) ?? doc.GetDataDocument().GetDereferencedField(new KeyController(newKeyName), null);
             }
 
             

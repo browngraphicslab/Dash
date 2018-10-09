@@ -337,20 +337,7 @@ namespace Dash
 
                 }
             }
-
-            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var parColl = SelectionManager.GetSelectedDocs()?.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformBase>();
-            var coll = parColl ?? (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            // bcz: needs to be in keyUp because when typing in a new textBox inside a nested collection, no one catches the KeyDown event and putting this in KeyDown
-            //       would cause a collection to be created when typing a 'c'
-            // bcz: needs to be in keyDown because of potential conflicts when releasing the ctrl key before the 'c' key which causes this to 
-            //       create a collection around a PDF when you're just copying text
-            if (!(FocusManager.GetFocusedElement() is RichEditBox) && coll != null && !coll.IsMarqueeActive && !(FocusManager.GetFocusedElement() is TextBox))
-            {
-                coll.TriggerActionFromSelection(e.VirtualKey, false);
-            }
-
+            
             e.Handled = true;
         }
 
