@@ -126,6 +126,25 @@ namespace Dash
             {
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
+
+            JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
+            JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
+        }
+
+        public void Query(string search)
+        {
+            JavaScriptHack.Navigate(new Uri("https://www.google.com/search?q=" + search.Replace(' ', '+')));
+        }
+
+        private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"kno-fb-ctx\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+        }
+
+        private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
+        {
+            var value = e.Value as string;
+            Debug.WriteLine("val = " + value);
         }
 
         private void HideLinkInputBox()
