@@ -24,6 +24,7 @@ using Point = Windows.Foundation.Point;
 using System.Web;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
+using Windows.Storage.Pickers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -165,7 +166,7 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                    var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                     Debug.WriteLine("new collection note");
                     col.Add(documentController);
                     lastWorkspace = documentController;
@@ -377,7 +378,7 @@ namespace Dash
                 }
                 return;
             }
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) && 
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) &&
                 !(FocusManager.GetFocusedElement() is TextBox))
             {
                 var pos = this.RootPointerPos();
@@ -705,7 +706,7 @@ namespace Dash
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                 }
-           }
+            }
             else
             {
                 var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
@@ -753,7 +754,7 @@ namespace Dash
             }
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
-            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth/origHeight : 1;
+            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
@@ -952,5 +953,5 @@ namespace Dash
         }
     }
 
-    
+
 }

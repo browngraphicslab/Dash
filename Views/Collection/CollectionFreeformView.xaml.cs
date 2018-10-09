@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -104,9 +107,11 @@ namespace Dash
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text", "Add a new text box!", AddTextNote, source));
             menu.AddAction("BASIC", new ActionViewModel("To-Do List", "Track your tasks!", AddToDoList, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Image", "Add many images",  AddMultipleImages, source));
         }
 
-        private bool AddToDoList(Point point)
+        private Task<bool> AddToDoList(Point point)
         {
             var templatedText =
                 "{\\rtf1\\fbidis\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fnil Century Gothic; } {\\f1\\fnil\\fcharset0 Century Gothic; } {\\f2\\fnil\\fcharset2 Symbol; } }" +
@@ -116,14 +121,105 @@ namespace Dash
             var note = new RichTextNote(templatedText).Document;
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
             Actions.DisplayDocument(ViewModel, note, colPoint);
-            return true;
+            return Task.FromResult(true);
         }
 
-        private bool AddTextNote(Point point)
+        private Task<bool> AddTextNote(Point point)
         {
             var postitNote = new RichTextNote().Document;
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
+            return Task.FromResult(true);
+        }
+
+        private async Task<bool> AddMultipleImages(Point point)
+        {
+            var imagePicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            imagePicker.FileTypeFilter.Add(".jpg");
+            imagePicker.FileTypeFilter.Add(".jpeg");
+            imagePicker.FileTypeFilter.Add(".bmp");
+            imagePicker.FileTypeFilter.Add(".png");
+            imagePicker.FileTypeFilter.Add(".svg");
+
+            //adds each image selected to Dash
+            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+
+            //TODO just add new images to docs list instead of going through mainPageCollectionView
+            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            if (imagesToAdd != null)
+            {
+                double defaultLength = 200;
+
+                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                var adornFormPoint = colPoint;
+                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
+                ViewModel.AddDocument(adorn);
+
+                int counter = 0;
+                foreach (var thisImage in imagesToAdd)
+                {
+                    var parser = new ImageToDashUtil();
+                    var docController = await parser.ParseFileAsync(thisImage);
+                    if (docController == null) { continue; }
+                    var pos = new Point(colPoint.X + (counter * (defaultLength + 5)), colPoint.Y);
+                    docController.SetWidth(defaultLength);
+                    docController.SetHeight(defaultLength);
+                    Actions.DisplayDocument(ViewModel, docController, pos);
+                    counter++;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> AddImageWithCaption(Point point)
+        {
+            var imagePicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            imagePicker.FileTypeFilter.Add(".jpg");
+            imagePicker.FileTypeFilter.Add(".jpeg");
+            imagePicker.FileTypeFilter.Add(".bmp");
+            imagePicker.FileTypeFilter.Add(".png");
+            imagePicker.FileTypeFilter.Add(".svg");
+
+            //adds each image selected to Dash
+            var imageToAdd = await imagePicker.PickSingleFileAsync();
+
+            //TODO just add new images to docs list instead of going through mainPageCollectionView
+            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            if (imageToAdd != null)
+            {
+                var parser = new ImageToDashUtil();
+                var docController = await parser.ParseFileAsync(imageToAdd);
+                if (docController == null) { return false; }
+                double imageHeight = docController.GetHeight();
+                double imageWidth = docController.GetWidth();
+                var colRect = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformBounds(new Rect(point.X, point.Y, imageWidth, imageHeight));
+                // add adornment
+                var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
+                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 100 + colRect.Width, 100 + colRect.Height);
+                ViewModel.AddDocument(adorn);
+                // add image
+                var pos = new Point(50 + colRect.X, 50 + colRect.Y);
+                Actions.DisplayDocument(ViewModel, docController, pos);
+                // add caption
+                var where = new Point(colRect.X, 45 + colRect.Bottom);
+                var postitNote = new RichTextNote("{\\rtf1\\ansi\\deff0\\pard\\qc{" + docController.Title + "}\\par}").Document;
+                postitNote.SetWidth(100 + colRect.Width);
+                Actions.DisplayDocument(ViewModel, postitNote, where);
+            }
+
             return true;
         }
     }

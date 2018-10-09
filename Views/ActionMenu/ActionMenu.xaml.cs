@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -218,9 +219,10 @@ namespace Dash
 
         public event Action<bool> ActionCommitted;
 
-        private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
+        private async void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
         {
-            bool removeTextBox = (e.ClickedItem as ActionViewModel)?.Action?.Invoke(_targetPoint) ?? false;
+            var action = ((ActionViewModel) e.ClickedItem).Action;
+            var removeTextBox = action != null && await action.Invoke(_targetPoint);
             MainPage.Instance.xCanvas.Children.Remove(this);
             OnActionCommitted(removeTextBox);
         }

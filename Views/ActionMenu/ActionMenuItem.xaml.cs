@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -31,9 +32,9 @@ namespace Dash
             set => SetProperty(ref _helpText, value);
         }
 
-        public Func<Point, bool> Action { get; set; }
+        public Func<Point, Task<bool>> Action { get; set; }
 
-        public ActionViewModel(string title, string helpText, Func<Point, bool> action, ImageSource thumbnailSource)
+        public ActionViewModel(string title, string helpText, Func<Point, Task<bool>> action, ImageSource thumbnailSource)
         {
             _title = title;
             _helpText = helpText;

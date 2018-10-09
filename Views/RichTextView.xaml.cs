@@ -477,7 +477,6 @@ namespace Dash
                     Y = pos.Y + 20
                 }
             };
-            menu.xListView.SelectedIndex = 0;
             menu.ActionCommitted += Menu_ActionCommitted;
 
             sender.TextChanged += delegate
