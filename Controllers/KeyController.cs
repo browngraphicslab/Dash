@@ -38,8 +38,9 @@ namespace Dash
             OnFieldModelUpdated(null);
         }
 
+        private static string _hackId;
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out var id) ? id : UtilShared.GetDeterministicGuid(name).ToString())
+        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out _hackId) ? _hackId : UtilShared.GetDeterministicGuid(name).ToString())
         {
         }
 
