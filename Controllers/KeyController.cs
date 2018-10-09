@@ -59,9 +59,12 @@ namespace Dash
         /// <param name="guid"></param>
         public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
-            SaveOnServer();
             Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
-            _nameDictionary[name] = Id;
+            if (!_nameDictionary.ContainsKey(name))
+            {
+                SaveOnServer();
+                _nameDictionary[name] = Id;
+            }
         }
 
         public KeyController() : this(Guid.NewGuid().ToString())
