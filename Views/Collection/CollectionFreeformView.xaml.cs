@@ -222,16 +222,20 @@ namespace Dash
                 var colRect = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformBounds(new Rect(point.X, point.Y, imageWidth, imageHeight));
                 // add adornment
                 var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
+<<<<<<< HEAD
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 100 + colRect.Width, 100 + colRect.Height);
                 adorn.SetGroup(docController.Title);
+=======
+                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 1.2 * colRect.Width, 1.4 * colRect.Height);
+>>>>>>> origin/amenu_rtf_templates
                 ViewModel.AddDocument(adorn);
                 // add image
-                var pos = new Point(50 + colRect.X, 50 + colRect.Y);
+                var pos = new Point(colRect.Left + ((1.2 * colRect.Width - imageWidth) / 2), colRect.Top + ((1.2 * colRect.Height - imageHeight) / 2));
                 Actions.DisplayDocument(ViewModel, docController, pos);
                 // add caption
-                var where = new Point(colRect.X, 45 + colRect.Bottom);
+                var where = new Point(colRect.X, colRect.Top + (1.15 * colRect.Height));
                 var postitNote = new RichTextNote("{\\rtf1\\ansi\\deff0\\pard\\qc{" + docController.Title + "}\\par}").Document;
-                postitNote.SetWidth(100 + colRect.Width);
+                postitNote.SetWidth(1.2 * colRect.Width);
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
 
