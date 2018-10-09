@@ -45,9 +45,9 @@ namespace Dash
 
         private KeyController(string name, string id) : base(new KeyModel(name, id))
         {
-            if (!_nameDictionary.ContainsKey(name))
+            if (!_nameDictionary.ContainsKey(name.ToLower()))
             {
-                _nameDictionary[name] = id;
+                _nameDictionary[name.ToLower()] = id;
                 SaveOnServer();
             }
         }
@@ -59,9 +59,13 @@ namespace Dash
         /// <param name="guid"></param>
         public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
-            SaveOnServer();
+            name = name.ToLower();
             Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
-            _nameDictionary[name] = Id;
+            if (!_nameDictionary.ContainsKey(name))
+            {
+                _nameDictionary[name] = Id;
+                SaveOnServer();
+            }
         }
 
         public KeyController() : this(Guid.NewGuid().ToString())
@@ -70,6 +74,15 @@ namespace Dash
 
         public KeyController(KeyModel model) : base(model)
         {
+            if (model.Id == "aoekma9j-ip37-96hi-vj36-ihfi39ahi8de")
+            {
+                model = new KeyModel(model.Name, "d154932b-d770-483b-903f-4887038394fd");
+            }
+            if (model.Id == "icon7d27-fa81-4d88-b2fa-42b7888525af")
+            {
+                model = new KeyModel(model.Name, "8C8B7C69-8A09-40F3-BEE4-28B64E82CE08");
+            }
+            UpdateOnServer(null);
             Debug.Assert(!_nameDictionary.ContainsKey(model.Name) || _nameDictionary[model.Name] == model.Id);
             _nameDictionary[model.Name] = model.Id;
         }

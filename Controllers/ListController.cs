@@ -164,6 +164,15 @@ namespace Dash
 
             _initialized = true;
 
+            var set = new HashSet<string>();
+            foreach (var data in ListModel.Data)
+            {
+                set.Add(data.ToLower());
+            }
+
+            ListModel.Data = set.ToList();
+            UpdateOnServer(null);
+
             var fields = await RESTClient.Instance.Fields.GetControllersAsync<T>(ListModel.Data);
             List<T> list = fields as List<T> ?? new List<T>(fields);
 

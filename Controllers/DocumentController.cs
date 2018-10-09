@@ -61,6 +61,35 @@ namespace Dash
 
             var endpoint = RESTClient.Instance.Fields;
 
+            var dict = new Dictionary<string, string>();
+            foreach (var documentModelField in DocumentModel.Fields)
+            {
+                string lower = documentModelField.Key.ToLower();
+                if (lower == "aoekma9j-ip37-96hi-vj36-ihfi39ahi8de")
+                {
+                    lower = "d154932b-d770-483b-903f-4887038394fd";
+                }
+
+                if (lower == "icon7d27-fa81-4d88-b2fa-42b7888525af")
+                {
+                    lower = "8c8b7c69-8a09-40f3-bee4-28b64e82ce08";
+                }
+
+                if (lower == "657b821a-fe94-4f21-bd7d-1615a2171a9b")
+                {
+                    lower = "0afd0e9b-fc4e-2dd6-4ee4-79d9a022c484";
+                }
+
+                if (lower == "dac24308-6904-4060-ac0e-9b6ad61947cc")
+                {
+                    lower = "b695be9b-4eac-df25-b073-04da2921efb2";
+                }
+                dict[lower] = documentModelField.Value;
+            }
+
+            DocumentModel.Fields = dict;
+            UpdateOnServer(null);
+
             var keys = await endpoint.GetControllersAsync<KeyController>(DocumentModel.Fields.Keys);
             var values = await endpoint.GetControllersAsync(DocumentModel.Fields.Values);
             SetFields(new Dictionary<KeyController, FieldControllerBase>(keys.Zip(values,
@@ -210,7 +239,8 @@ namespace Dash
                 if (path.Length == 1)
                 {
                     return refDoc; // found <DocName=a>
-                } else
+                }
+                else
                     foreach (var e in refDoc.EnumFields())
                         if (e.Key.Name == path[1])
                         {
@@ -254,7 +284,8 @@ namespace Dash
                             SetField(key, new NumberController(num), true, false);
                         else SetField(key, new TextController(fieldStr), true, false);
                     }
-                } else if (lookupOperator(strings[0]) != null)
+                }
+                else if (lookupOperator(strings[0]) != null)
                 {
                     var opModel = lookupOperator(strings[0]);
                     var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);
@@ -266,7 +297,8 @@ namespace Dash
                         if (docRef != null)
                         {
                             opModel.SetField(opFieldController.Inputs[count++].Key, docRef, true);
-                        } else
+                        }
+                        else
                         {
                             var target = opFieldController.Inputs[count++];
                             if (target.Value.Type == TypeInfo.Number)
@@ -274,16 +306,20 @@ namespace Dash
                                 var res = 0.0;
                                 if (double.TryParse(a.Trim(' '), out res))
                                     opModel.SetField(target.Key, new NumberController(res), true);
-                            } else if (target.Value.Type == TypeInfo.Text)
+                            }
+                            else if (target.Value.Type == TypeInfo.Text)
                             {
                                 opModel.SetField(target.Key, new TextController(a), true);
-                            } else if (target.Value.Type == TypeInfo.Image)
+                            }
+                            else if (target.Value.Type == TypeInfo.Image)
                             {
                                 opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
-                            } else if (target.Value.Type == TypeInfo.Video)
+                            }
+                            else if (target.Value.Type == TypeInfo.Video)
                             {
                                 opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
-                            } else if (target.Value.Type == TypeInfo.Audio)
+                            }
+                            else if (target.Value.Type == TypeInfo.Audio)
                             {
                                 opModel.SetField(target.Key, new AudioController(new Uri(a)), true);
                             }
@@ -299,7 +335,8 @@ namespace Dash
                     }
                     SetField(key, new DocumentReferenceController(opModel, opFieldController.Outputs.First().Key), true, false);
                 }
-            } else
+            }
+            else
             {
                 if (curField != null && !(curField is ReferenceController))
                     if (curField is NumberController nc)
@@ -310,19 +347,22 @@ namespace Dash
                                 SetField(key, new NumberController(num), true);
                             else nc.Data = num;
                         else return false;
-                    } else if (curField is TextController tc)
+                    }
+                    else if (curField is TextController tc)
                     {
                         if (copy)
                             SetField(key, new TextController(textInput), true);
                         else tc.Data = textInput;
-                    } else if (curField is ImageController ic)
+                    }
+                    else if (curField is ImageController ic)
                     {
                         try
                         {
                             if (copy)
                                 SetField(key, new ImageController(new Uri(textInput)), true);
                             else ic.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             ic.Data = null;
                         }
@@ -349,45 +389,53 @@ namespace Dash
                     else if (curField is DateTimeController)
                     {
                         return curField.TrySetValue(new DateTimeToStringConverter().ConvertXamlToData(textInput));
-                    } else if (curField is VideoController vc)
+                    }
+                    else if (curField is VideoController vc)
                     {
                         try
                         {
                             if (copy)
                                 SetField(key, new VideoController(new Uri(textInput)), true);
                             else vc.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             vc.Data = null;
                         }
-                    } else if (curField is AudioController ac)
+                    }
+                    else if (curField is AudioController ac)
                     {
                         try
                         {
                             if (copy)
                                 SetField(key, new AudioController(new Uri(textInput)), true);
                             else ac.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             ac.Data = null;
                         }
-                    } else if (curField is DocumentController)
+                    }
+                    else if (curField is DocumentController)
                     {
                         Debug.WriteLine("Warning: changing document field into a text field");
                         SetField(key, new TextController(textInput), true);
                         //TODO tfs: fix this 
                         //throw new NotImplementedException();
                         //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
-                    } else if (curField is ListController<DocumentController> lc)
+                    }
+                    else if (curField is ListController<DocumentController> lc)
                     {
                         if (copy)
                             SetField(key, new ListController<DocumentController>(new DocumentCollectionToStringConverter().ConvertXamlToData(textInput)), true);
                         else lc.TypedData =
                             new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
-                    } else if (curField is RichTextController rtc)
+                    }
+                    else if (curField is RichTextController rtc)
                     {
                         rtc.Data = new RichTextModel.RTD(textInput);
-                    } else
+                    }
+                    else
                     {
                         return false;
                     }
@@ -463,7 +511,7 @@ namespace Dash
         /// </summary>
         /// <param name="key">the key for the list field being modified</param>
         /// <param name="value">the value being added to the list</param>
-        public void AddToListField<T>(KeyController key, T value, int? index = null) where T: FieldControllerBase
+        public void AddToListField<T>(KeyController key, T value, int? index = null) where T : FieldControllerBase
         {
             if (index is int intIndex)
             {
@@ -546,7 +594,8 @@ namespace Dash
                 if (c.DocContextList.Contains(doc))
                 {
                     c2 = c;
-                } else
+                }
+                else
                 {
                     c2 = new Context(c);
                     c2.AddDocumentContext(doc);
@@ -686,7 +735,8 @@ namespace Dash
                     var mappedField = f.Value.CopyIfMapped(mapping);
                     if (mappedField != null)
                         SetField(f.Key, mappedField, true);
-                } else if (f.Value is ListController<DocumentController> listDocs)
+                }
+                else if (f.Value is ListController<DocumentController> listDocs)
                 {
                     var newListDocs = new ListController<DocumentController>();
                     foreach (var l in listDocs.TypedData)
@@ -939,7 +989,8 @@ namespace Dash
                 {
                     return true;
                 }
-            } else
+            }
+            else
             {
                 var f = new TDefault();
                 if (f.TrySetValue(v))
@@ -1148,7 +1199,8 @@ namespace Dash
                     {
                         return;
                     }
-                } else
+                }
+                else
                 {
                     inputs[opFieldInput.Key] = field;
                 }
@@ -1238,7 +1290,8 @@ namespace Dash
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
                 return KeyStore.TypeRenderer[DocumentType](this, context);
-            } else
+            }
+            else
 
                 return makeAllViewUI(context);
         }
@@ -1345,7 +1398,7 @@ namespace Dash
             void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
                 var refSender = sender as ReferenceController;
-                var proto =this.GetPrototypeWithFieldKey(reference.FieldKey);
+                var proto = this.GetPrototypeWithFieldKey(reference.FieldKey);
                 //if (new Context(proto).IsCompatibleWith(c))
                 {
                     var newContext = new Context(c);
@@ -1382,7 +1435,8 @@ namespace Dash
             try
             {
                 spaces = spaces.Substring(2);
-            } catch (Exception)
+            }
+            catch (Exception)
             {
 
             }

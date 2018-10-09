@@ -169,13 +169,13 @@ namespace Dash
                 var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 col.Add(documentController);
                 lastWorkspace = documentController;
-                lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
             }
             else
             {
                 lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
             }
+            lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+            lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
 
             XMainSplitter.SetContent(lastWorkspace);
 
@@ -191,6 +191,28 @@ namespace Dash
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
+
+            void InitDoc(DocumentController initDoc)
+            {
+                if (initDoc.Id ==
+                    "delegate-of-001ede6c-a713-4c54-bf98-0bafb6230d61-2c47ff26-8d1b-47ed-967d-5b5af8d546c9")
+                {
+
+                }
+                foreach (var field in initDoc.EnumFields())
+                {
+                    initDoc.ShouldExecute(null, field.Key, null);
+                }
+            }
+
+            foreach (var kvp in (RESTClient.Instance.Fields as LocalSqliteEndpoint).Cache.ToList())
+            {
+                if (kvp.Value is DocumentController initDoc)
+                {
+                    InitDoc(initDoc);
+                }
+            }
+
 
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
@@ -464,6 +486,7 @@ namespace Dash
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
             this.JavaScriptHack.Focus(FocusState.Programmatic);
+            (RESTClient.Instance.Fields as LocalSqliteEndpoint).CleanupDocuments();
             var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
             var mapPt = e.GetPosition(mapViewCanvas);
 

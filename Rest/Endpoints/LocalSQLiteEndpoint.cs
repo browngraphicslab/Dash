@@ -20,6 +20,7 @@ namespace Dash
         /// Connection to the sqlite database
         /// </summary>
         private SqliteConnection _db;
+
         private SqliteTransaction _currentTransaction;
         private readonly System.Timers.Timer _backupTimer, _cleanupTimer;
         private readonly System.Threading.Timer _saveTimer;
@@ -84,11 +85,71 @@ namespace Dash
             _transactionMutex.ReleaseMutex();
         }
 
-        private async void CleanupDocuments()
+        public void CleanupDocuments()
         {
-            var fields = new HashSet<FieldModel>();
+            Debug.WriteLine("Cleanup");
+            try
+            {
+                _transactionMutex.WaitOne();
+
+                var allIds = GetAllIds();
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Commit();
+                }
+                var unused = allIds.Where(id => !Cache.ContainsKey(id)).ToList();
+                const int numIds = 50;
+                var ids = new List<string>(numIds);
+                for (int i = 0, count = unused.Count / numIds; i <= count; ++i)
+                {
+                    _currentTransaction = _db.BeginTransaction();
+                    Debug.WriteLine($"Deleted {i * numIds} documents");
+                    for (int j = i * numIds; j < (i + 1) * numIds && j < unused.Count; ++j)
+                    {
+                        ids.Add(unused[j]);
+                    }
+
+                    DeleteDocuments(ids);
+                    ids.Clear();
+                    _currentTransaction.Commit();
+                }
+            }
+            finally
+            {
+                _currentTransaction = _db.BeginTransaction();
+                _transactionMutex.ReleaseMutex();
+            }
             //TODO DB: Maybe use reference counting instead of trying to track down references?
             //await DeleteDocumentsExcept(fields);
+        }
+
+        private List<string> GetAllIds()
+        {
+            _transactionMutex.WaitOne();
+            try
+            {
+                var getDocCommand = new SqliteCommand
+                {
+                    //i.e. "In "Fields", return the field contents at the specified document id"
+                    CommandText = @"SELECT `id` FROM `Fields`;",
+                    Connection = _db,
+                    Transaction = _currentTransaction
+                };
+                var reader = getDocCommand.ExecuteReader();
+
+                var l = new List<string>();
+                while (reader.Read())
+                {
+                    var id = reader.GetString(0);
+                    l.Add(id);
+                }
+
+                return l;
+            }
+            finally
+            {
+                _transactionMutex.ReleaseMutex();
+            }
         }
 
         public override void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
@@ -186,6 +247,30 @@ namespace Dash
             return Task.CompletedTask;
         }
 
+        //Temp method for cleanup
+        public void DeleteDocuments(IEnumerable<string> ids)
+        {
+            var watch = Stopwatch.StartNew();
+
+            var fieldModels = ids.ToList();
+            var tempParams = new string[fieldModels.Count];
+
+            for (var i = 0; i < fieldModels.Count; ++i) { tempParams[i] = "@param" + i; }
+
+            _transactionMutex.WaitOne();
+            var deleteDocsCommand = new SqliteCommand
+            {
+                //i.e. "In "Fields", return the field contents at the specified document ids"
+                CommandText = @"DELETE FROM `Fields` WHERE `id` IN (" + string.Join(", ", tempParams) + ");",
+                Connection = _db,
+                Transaction = _currentTransaction
+            };
+
+            for (var i = 0; i < fieldModels.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[i]); }
+
+            SafeExecuteMutateQuery(deleteDocsCommand, "DeleteDocument", watch.ElapsedMilliseconds);
+        }
+
         public override Task DeleteDocuments(IEnumerable<FieldModel> documents)
         {
             var watch = Stopwatch.StartNew();
@@ -204,7 +289,7 @@ namespace Dash
                 Transaction = _currentTransaction
             };
 
-            for (var i = 0; i < fieldModels.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[i]); }
+            for (var i = 0; i < fieldModels.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[i].Id); }
 
             if (!SafeExecuteMutateQuery(deleteDocsCommand, "DeleteDocument", watch.ElapsedMilliseconds)) return Task.FromException(new InvalidOperationException());
             return Task.CompletedTask;

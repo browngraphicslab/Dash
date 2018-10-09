@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,12 @@ namespace Dash
     public abstract class CachedEndpoint : IModelEndpoint<FieldModel>
     {
         private readonly Dictionary<string, FieldControllerBase> _cache = new Dictionary<string, FieldControllerBase>();
+        public IReadOnlyDictionary<string, FieldControllerBase> Cache { get; }
+
+        protected CachedEndpoint()
+        {
+            Cache = new ReadOnlyDictionary<string, FieldControllerBase>(_cache);
+        }
 
         protected abstract Task AddModel(FieldModel newDocument);
         protected abstract Task UpdateModel(FieldModel documentToUpdate);
@@ -44,6 +51,7 @@ namespace Dash
 
         public async Task<FieldControllerBase> GetControllerAsync(string id)
         {
+            id = id.ToLower();
             if (_cache.TryGetValue(id, out FieldControllerBase field))
             {
                 return field;
@@ -66,6 +74,10 @@ namespace Dash
 
         public async Task<IList<FieldControllerBase>> GetControllersAsync(IEnumerable<string> ids)
         {
+            if (ids.Contains("a1aabee2-d842-490a-875e-72c509011d86"))
+            {
+
+            }
             var list = ids as IList<string> ?? ids.ToList();
             var fields = new List<FieldControllerBase>(list.Count);
             var missingIds = new List<string>();
@@ -73,7 +85,7 @@ namespace Dash
 
             for (var i = 0; i < list.Count; i++)
             {
-                var id = list[i];
+                var id = list[i].ToLower();
                 if (_cache.TryGetValue(id, out var field))
                 {
                     fields.Add(field);
@@ -92,11 +104,17 @@ namespace Dash
                 var foundFieldsDict = foundFields.ToDictionary(fm => fm.Id, fm => fm);
                 for (int i = 0; i < foundFields.Count; i++)
                 {
-                    var f = foundFieldsDict[missingIds[i]];
-                    var field = FieldControllerFactory.CreateFromModel(f);
-                    _cache[missingIds[i]] = field;
-                    await field.InitializeAsync();
-                    fields[missingIdxs[i]] = field;
+                    if (foundFieldsDict.TryGetValue(missingIds[i], out var f))
+                    {
+                        var field = FieldControllerFactory.CreateFromModel(f);
+                        _cache[missingIds[i]] = field;
+                        await field.InitializeAsync();
+                        fields[missingIdxs[i]] = field;
+                    }
+                    else
+                    {
+                        fields[missingIdxs[i]] = null;
+                    }
                 }
             }
 

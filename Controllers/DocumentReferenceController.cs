@@ -57,8 +57,20 @@ namespace Dash
             }
 
             _initialized = true;
+            var refModel = Model as DocumentReferenceModel;
+            refModel.DocumentId = refModel.DocumentId.ToLower();
+            refModel.KeyId = refModel.KeyId.ToLower();
+            if (refModel.KeyId == "dac24308-6904-4060-ac0e-9b6ad61947cc")
+            {
+                refModel.KeyId = "b695be9b-4eac-df25-b073-04da2921efb2";
+            }
+            if (refModel.KeyId == "657b821a-fe94-4f21-bd7d-1615a2171a9b")
+            {
+                refModel.KeyId = "0afd0e9b-fc4e-2dd6-4ee4-79d9a022c484";
+            }
+            UpdateOnServer(null);
             await base.InitializeAsync();
-            _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
+            _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>(refModel.DocumentId);
             Debug.Assert(_documentController != null);
             DocumentChanged();
         }
