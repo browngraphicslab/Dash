@@ -241,7 +241,7 @@ namespace Dash
         {
             if (string.IsNullOrEmpty(searchString))
             {
-                return new StringSearchModel(true, ToString());
+                return new StringSearchModel(ToString());
             }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
@@ -341,6 +341,7 @@ namespace Dash
 
         private bool AddHelper(T element)
         {
+            Debug.Assert(element != null);
             if (AvoidDuplicates) if (TypedData.Contains(element)) return false; // Conditionally avoid duplicate addition
 
             element.FieldModelUpdated += ContainedFieldUpdated;

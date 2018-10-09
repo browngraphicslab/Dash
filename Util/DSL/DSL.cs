@@ -39,7 +39,7 @@ namespace Dash
             }
             catch (DSLException e)
             {
-                if (!catchErrors) throw e;
+                if (!catchErrors) throw;
 
                 if (e is ScriptExecutionException exception) return Task.FromResult<FieldControllerBase>(exception.Error.GetErrorDoc()); 
                 return Task.FromResult<FieldControllerBase>(new TextController(e.GetHelpfulString()));

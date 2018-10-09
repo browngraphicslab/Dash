@@ -1155,7 +1155,7 @@ namespace Dash
                 // dereference the inputs so that the field is now the actual field from the output document
                 field = field?.DereferenceToRoot(context);
 
-                if (field == null)
+                if (field == null && opFieldInput.Value.IsRequired)
                 {
                     // if the reference was null and the reference was recquired just return the context
                     // since the operator cannot execute

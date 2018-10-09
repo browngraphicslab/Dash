@@ -6,7 +6,7 @@ using DashShared;
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.concat, Op.Name.operator_add)]
+    [OperatorType(Op.Name.append, Op.Name.operator_add)]
     public sealed class ListAppendOperatorController : OperatorController
     {
         //Input keys
