@@ -24,6 +24,7 @@ using Point = Windows.Foundation.Point;
 using System.Web;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
+using Windows.Storage.Pickers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -165,7 +166,7 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                    var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                     Debug.WriteLine("new collection note");
                     col.Add(documentController);
                     lastWorkspace = documentController;
@@ -377,7 +378,7 @@ namespace Dash
                 }
                 return;
             }
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) && 
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) &&
                 !(FocusManager.GetFocusedElement() is TextBox))
             {
                 var pos = this.RootPointerPos();
@@ -705,7 +706,7 @@ namespace Dash
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                 }
-           }
+            }
             else
             {
                 var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
@@ -753,7 +754,7 @@ namespace Dash
             }
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
-            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth/origHeight : 1;
+            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
@@ -951,10 +952,16 @@ namespace Dash
             ToolTipService.SetToolTip(xSearchButton, search);
         }
 
-        private ActionMenu _menu;
+        private ActionMenu _menu = null;
 
         private void ActionMenuTest_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (_menu != null)
+            {
+                xCanvas.Children.Remove(_menu);
+                _menu = null;
+                return;
+            }
             ActionMenu GetMenu()
             {
                 ActionMenu menu = new ActionMenu
@@ -966,11 +973,12 @@ namespace Dash
                 ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
                 menu.AddGroup("BASIC", new List<ActionViewModel>
                 {
-                    new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
+                    new ActionViewModel("Text Note", "Plain text",() => AddTextNote(), source),
+                    new ActionViewModel("Image with Caption","Image",() => AddImageWithCaption(),null),
+                    new ActionViewModel("Multiple Images","Image",()=>AddMultipleImages(),null),
                     new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
                     new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
-                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
-                    new ActionViewModel("Add Text Note","Text Note",() => AddTextNote(),null)
+                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null)
                 });
                 menu.AddGroup("DATABASE", new List<ActionViewModel>
                 {
@@ -993,23 +1001,112 @@ namespace Dash
                 _menu = menu;
                 return menu;
             }
-
-            //xCanvas.Children.Clear();
             xCanvas.Children.Add(GetMenu());
         }
         private void AddTextNote()
         {
-            var where = new Point(0,0);
-            var postitNote = new RichTextNote().Document;
-            var viewModel = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             var view = SplitFrame.ActiveFrame.ViewModel.Content;
             if (view is CollectionView cv)
             {
+                var where = Util.GetCollectionFreeFormPoint(cv.CurrentView as CollectionFreeformBase, new Point(500, 500));
+                var postitNote = new RichTextNote().Document;
                 Actions.DisplayDocument(cv.ViewModel, postitNote, where);
             }
             xCanvas.Children.Remove(_menu);
+            _menu = null;
+        }
+
+        private async void AddImageWithCaption()
+        {
+            var view = SplitFrame.ActiveFrame.ViewModel.Content;
+            if (view is CollectionView cv)
+            {
+                var imagePicker = new FileOpenPicker
+                {
+                    ViewMode = PickerViewMode.Thumbnail,
+                    SuggestedStartLocation = PickerLocationId.PicturesLibrary
+                };
+                imagePicker.FileTypeFilter.Add(".jpg");
+                imagePicker.FileTypeFilter.Add(".jpeg");
+                imagePicker.FileTypeFilter.Add(".bmp");
+                imagePicker.FileTypeFilter.Add(".png");
+                imagePicker.FileTypeFilter.Add(".svg");
+
+                //adds each image selected to Dash
+                var imageToAdd = await imagePicker.PickSingleFileAsync();
+
+                //TODO just add new images to docs list instead of going through mainPageCollectionView
+                //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                if (imageToAdd != null)
+                {
+                    var parser = new ImageToDashUtil();
+                    var docController = await parser.ParseFileAsync(imageToAdd);
+                    if (docController == null) { return; }
+                    double imageHeight = docController.GetHeight();
+                    double imageWidth = docController.GetWidth();
+                    // add adornment
+                    var adornFormPoint = new Point(250, 250);
+                    var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 100 + imageWidth, 100 + imageHeight);
+                    cv.ViewModel.AddDocument(adorn);
+                    // add image
+                    var pos = new Point(300, 270);
+                    Actions.DisplayDocument(cv.ViewModel, docController, pos);
+                    // add caption
+                    var where = new Point(250, 295 + imageHeight);
+                    var postitNote = new RichTextNote("{\\rtf1\\ansi\\deff0\\pard\\qc{" + docController.Title + "}\\par}").Document;
+                    postitNote.SetWidth(100 + imageWidth);
+                    Actions.DisplayDocument(cv.ViewModel, postitNote, where);
+                }
+            }
+        }
+
+        public async void AddMultipleImages()
+        {
+            var view = SplitFrame.ActiveFrame.ViewModel.Content;
+            if (view is CollectionView cv)
+            {
+                var imagePicker = new FileOpenPicker
+                {
+                    ViewMode = PickerViewMode.Thumbnail,
+                    SuggestedStartLocation = PickerLocationId.PicturesLibrary
+                };
+                imagePicker.FileTypeFilter.Add(".jpg");
+                imagePicker.FileTypeFilter.Add(".jpeg");
+                imagePicker.FileTypeFilter.Add(".bmp");
+                imagePicker.FileTypeFilter.Add(".png");
+                imagePicker.FileTypeFilter.Add(".svg");
+
+                //adds each image selected to Dash
+                var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+
+                //TODO just add new images to docs list instead of going through mainPageCollectionView
+                //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                if (imagesToAdd != null)
+                {
+                    double defaultLength = 200;
+
+                    var adornFormPoint = new Point(240, 240);
+                    var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5*(imagesToAdd.Count-1)), defaultLength + 40);
+                    cv.ViewModel.AddDocument(adorn);
+
+                    int counter = 0;
+                    foreach (var thisImage in imagesToAdd)
+                    {
+                        var parser = new ImageToDashUtil();
+                        var docController = await parser.ParseFileAsync(thisImage);
+                        if (docController == null) { continue; }
+                        var pos = new Point(250 + (counter*(defaultLength + 5)), 250);
+                        docController.SetWidth(defaultLength);
+                        docController.SetHeight(defaultLength);
+                        Actions.DisplayDocument(cv.ViewModel, docController, pos);
+                        counter++;
+                    }
+                }
+            }
+            xCanvas.Children.Remove(_menu);
+            _menu = null;
         }
     }
 
-    
+
 }

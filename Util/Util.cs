@@ -544,6 +544,14 @@ namespace Dash
             return new BackgroundNote(shape, pos,new Size(width, height)).Document;
         }
 
+        public static DocumentController AdornmentWithPosandColor(Color color,BackgroundShape.AdornmentShape shape, Point pos,
+            double width = 200, double height = 200)
+        {
+            var note = new BackgroundNote(shape, pos, new Size(width, height));
+            note.SetAdornmentColor(color);
+            return note.Document;
+        }
+
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController AdornmentDoc()
         {
