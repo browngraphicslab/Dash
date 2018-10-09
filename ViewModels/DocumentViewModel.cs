@@ -65,6 +65,7 @@ namespace Dash
         private bool _isNotBackgroundPinned = true;
 
         public bool IsDimensionless = false;
+        public bool IsWidthless = false;
         public bool IsNotBackgroundPinned
         {
             get => _isNotBackgroundPinned;
@@ -95,7 +96,7 @@ namespace Dash
         }
         public double Width
         {
-            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless || IsWidthless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height

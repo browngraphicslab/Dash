@@ -14,13 +14,14 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView 
+    public sealed partial class RichTextView
     {
         #region Intilization 
 
@@ -66,13 +67,13 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
-                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                _manipulator = !e.IsRightPressed() ? null : new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
-            AddHandler(PointerMovedEvent, new PointerEventHandler((s,e) => _manipulator?.PointerMoved(s,e)), true);
-            AddHandler(PointerReleasedEvent, new PointerEventHandler((s,e) => _manipulator = null), true);
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
+            AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) => _manipulator = null), true);
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -115,14 +116,14 @@ namespace Dash
                     FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
                     _everFocused = true;
                     docView.CacheMode = null;
-                    
+
                     //if (!noCollapse)
                     //{
-                        ClearSearchHighlights();
-                        //SetSelected("");
-                        xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                    ClearSearchHighlights();
+                    //SetSelected("");
+                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
                     //    xReplaceBoxPanel.Visibility = Visibility.Collapsed;
-                        
+
                     //}
                     //noCollapse = false;
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
@@ -130,15 +131,15 @@ namespace Dash
                 }
             };
 
-            xSearchBox.GotFocus += (s, e) =>  MatchQuery(getSelected());
+            xSearchBox.GotFocus += (s, e) => MatchQuery(getSelected());
 
             xSearchBox.LostFocus += (s, e) =>
             {
                 //if (!noCollapse)
                 //{
-                    ClearSearchHighlights();
-                    //SetSelected("");
-                    xSearchBoxPanel.Visibility = Visibility.Collapsed;
+                ClearSearchHighlights();
+                //SetSelected("");
+                xSearchBoxPanel.Visibility = Visibility.Collapsed;
                 //    xReplaceBoxPanel.Visibility = Visibility.Collapsed;
                 //    noCollapse = false;
                 //}
@@ -151,7 +152,7 @@ namespace Dash
                 if (getDocView() != null)
                     getDocView().CacheMode = new BitmapCache();
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
-                var readableText= getReadableText();
+                var readableText = getReadableText();
                 if (string.IsNullOrEmpty(getReadableText()))
                 {
                     var docView = getDocView();
@@ -280,7 +281,7 @@ namespace Dash
         string getRtfText()
         {
             string allRtfText;
-            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText); 
+            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
             var strippedRtf = allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             return new Regex("\\\\par[\r\n}\\\\]*\0").Replace(strippedRtf, "}\r\n\0");
         }
@@ -297,7 +298,7 @@ namespace Dash
                 //var start = this.xRichEditBox.Document.Selection.StartPosition;
                 //var end = this.xRichEditBox.Document.Selection.EndPosition;
                 Text = new RichTextModel.RTD(xamlRTF);
-               // this.xRichEditBox.Document.Selection.SetRange(start, end);
+                // this.xRichEditBox.Document.Selection.SetRange(start, end);
             }
         }
 
@@ -319,7 +320,8 @@ namespace Dash
             {
                 //var s1 = xRichEditBox.Document.Selection.StartPosition;
                 //var s2 = xRichEditBox.Document.Selection.EndPosition;
-                
+
+
                 if (Text.RtfFormatString != _lastXamlRTFText)
                 {
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -343,6 +345,26 @@ namespace Dash
                 }
                 //this.xRichEditBox.Document.Selection.StartPosition = s1;
                 //this.xRichEditBox.Document.Selection.EndPosition = s2;
+
+                //var readableText = getReadableText();
+                //if (readableText.Equals("#/") || readableText.Equals("/"))
+                //{
+                //    var actionMenu = MainPage.Instance.xCanvas.Children.FirstOrDefault(fe => fe is ActionMenu);
+                //    if (actionMenu == null)
+                //    {
+                //        CreateActionMenu(xRichEditBox);
+                //    }
+                //    else
+                //    {
+                //        var transformToVisual = xRichEditBox.TransformToVisual(MainPage.Instance);
+                //        var pos = transformToVisual.TransformPoint(new Point(0, ActualHeight));
+                //        actionMenu.RenderTransform = new TranslateTransform
+                //        {
+                //            X = pos.X,
+                //            Y = pos.Y
+                //        };
+                //    }
+                //}
             }
         }
 
@@ -419,7 +441,7 @@ namespace Dash
                     }
                 }
             }
-
+            
             return nearest;
         }
 
@@ -458,6 +480,75 @@ namespace Dash
             }
             e.Handled = true;
         }
+
+        private void CreateActionMenu(RichEditBox sender)
+        {
+            var transformToVisual = sender.TransformToVisual(MainPage.Instance.xCanvas);
+            var pos = transformToVisual.TransformPoint(new Point(0, ActualHeight));
+            var menu = new ActionMenu(transformToVisual.TransformPoint(new Point(0, 0)))
+            {
+                Width = 400,
+                Height = 500,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                UseFilterBox = false,
+                RenderTransform = new TranslateTransform
+                {
+                    X = pos.X - 20,
+                    Y = pos.Y + 20
+                }
+            };
+            menu.ActionCommitted += Menu_ActionCommitted;
+
+            sender.TextChanged += delegate
+            {
+                var currMenu = MainPage.Instance.xCanvas.Children.FirstOrDefault(fe => fe is ActionMenu);
+                if (currMenu != null)
+                {
+                    var fullText = GetParsedText();
+                    (currMenu as ActionMenu).FilterString = fullText;
+                }
+
+            };
+
+            ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
+
+            //menu.AddGroup("DATABASE", new List<ActionViewModel>
+            //    {
+            //        new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+            //        new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
+            //        new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), null),
+            //    });
+            //menu.AddGroup("TEST1", new List<ActionViewModel>
+            //    {
+            //        new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
+            //        new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
+            //        new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+            //    });
+            //menu.AddGroup("TEST2", new List<ActionViewModel>
+            //    {
+            //        new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), null),
+            //        new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
+            //        new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
+            //    });
+
+            var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            cfv?.AddToMenu(menu);
+            MainPage.Instance.xCanvas.Children.Add(menu);
+        }
+
+        private void Menu_ActionCommitted(bool removeTextBox)
+        {
+            if (removeTextBox)
+            {
+                this.GetFirstAncestorOfType<DocumentView>()?.DeleteDocument();
+            }
+
+            _isActionMenuOpen = false;
+        }
+
+        private bool _isActionMenuOpen = false;
+
         /// <summary>
         /// Create short cuts for the xRichEditBox (ctrl+I creates indentation by default, ctrl-Z will get rid of the indentation, showing only the italized text)
         /// </summary>
@@ -473,9 +564,27 @@ namespace Dash
                 getDataDoc().CaptureNeighboringContext();
             }
 
+            if (e.Key == (VirtualKey)191)
+            {
+                CreateActionMenu(sender as RichEditBox);
+                _isActionMenuOpen = true;
+            }
+
+            if (e.Key.Equals(VirtualKey.Down))
+            {
+
+            }
+
             if (e.Key.Equals(VirtualKey.Enter))
             {
-                processMarkdown();
+                if (_isActionMenuOpen)
+                {
+                    CloseAndInputActionMenu();
+                }
+                else
+                {
+                    processMarkdown();
+                }
             }
 
             if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
@@ -487,7 +596,7 @@ namespace Dash
             }
             if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
             {
-                if (xRichEditBox.Document.Selection.EndPosition < getReadableText().Length-1)
+                if (xRichEditBox.Document.Selection.EndPosition < getReadableText().Length - 1)
                 {
                     var clone = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
                     xRichEditBox.Document.Selection.MoveEnd(TextRangeUnit.Character, -1);
@@ -536,30 +645,30 @@ namespace Dash
             {
                 switch (e.Key)
                 {
-                    case VirtualKey.H:
-                        this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
-                        e.Handled = true;
-                        break;
-                    case VirtualKey.F:
-                        xSearchBoxPanel.Visibility = Visibility.Visible;
-                        xSearchBoxPanel.UpdateLayout();
-                        xSearchBox.GetFirstDescendantOfType<TextBox>()?.Focus(FocusState.Programmatic);
-                        e.Handled = true;
-                        break;
-                    case VirtualKey.L:
-                        if (this.IsShiftPressed())
+                case VirtualKey.H:
+                    this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
+                    e.Handled = true;
+                    break;
+                case VirtualKey.F:
+                    xSearchBoxPanel.Visibility = Visibility.Visible;
+                    xSearchBoxPanel.UpdateLayout();
+                    xSearchBox.GetFirstDescendantOfType<TextBox>()?.Focus(FocusState.Programmatic);
+                    e.Handled = true;
+                    break;
+                case VirtualKey.L:
+                    if (this.IsShiftPressed())
+                    {
+                        if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.None)
                         {
-                            if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.None)
-                            {
-                                xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.Bullet;
-                            }
-                            else if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
-                            {
-                                xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
-                            }
-                            e.Handled = true;
+                            xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.Bullet;
                         }
-                        break;
+                        else if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
+                        {
+                            xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
+                        }
+                        e.Handled = true;
+                    }
+                    break;
                     //case VirtualKey.R:
                     //    xReplaceBox.Visibility = Visibility.Visible;
                     //    xReplaceBoxPanel.Visibility = Visibility.Visible;
@@ -568,6 +677,38 @@ namespace Dash
             }
             else
                 ;
+        }
+
+        private void CloseAndInputActionMenu()
+        {
+            ActionMenu actionMenu = (ActionMenu) MainPage.Instance.xCanvas.Children.FirstOrDefault(fe => fe is ActionMenu);
+            if (actionMenu != null)
+            {
+                MainPage.Instance.xCanvas.Children.Remove(actionMenu);
+                var transformToVisual = this.TransformToVisual(MainPage.Instance.xCanvas);
+                var pos = transformToVisual.TransformPoint(new Point(0, ActualHeight));
+                //var colPos = this.Get
+                actionMenu.InvokeAction(GetParsedText(), pos);
+            }
+        }
+
+        private string GetParsedText()
+        {
+            var fullText = getReadableText();
+            if (fullText.Length == 0) return "";
+
+            if (fullText[0].Equals('#'))
+            {
+                fullText = fullText.Substring(1);
+            }
+
+            if (fullText.Length == 0) return "";
+            if (fullText[0].Equals('/'))
+            {
+                fullText = fullText.Substring(1);
+            }
+
+            return fullText;
         }
 
         void processMarkdown()
@@ -588,22 +729,27 @@ namespace Dash
                 {
                     align = ParagraphAlignment.Right;
                     extracount++;
-                } else if (text == "^")
+                }
+                else if (text == "^")
                 {
                     align = ParagraphAlignment.Center;
                     extracount++;
-                } else if (text == "{")
+                }
+                else if (text == "{")
                 {
                     align = ParagraphAlignment.Left;
                     extracount++;
-                } else if (text == "#")
+                }
+                else if (text == "#")
                 {
                     hashcount++;
-                } else if (text == "\r")
+                }
+                else if (text == "\r")
                 {
                     xRichEditBox.Document.Selection.SetRange(i + 1, i + 2);
                     break;
-                } else
+                }
+                else
                 {
                     extracount = hashcount = 0;
                     align = origAlign;
@@ -676,7 +822,7 @@ namespace Dash
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
-            
+
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             Application.Current.Suspending += AppSuspending;
 
@@ -736,7 +882,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.Link = link;
                 }
                 else
-                    return theDoc  ?? LayoutDocument;
+                    return theDoc ?? LayoutDocument;
             }
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
@@ -1001,7 +1147,8 @@ namespace Dash
                     if (secondDig >= 0 && secondDig < 10)
                     {
                         _highlightNum = (_highlightNum = rtfFormatting[defaultHighlight + 10] - '0') * 10 + secondDig;
-                    } else
+                    }
+                    else
                         _highlightNum = rtfFormatting[defaultHighlight + 10] - '0';
                 }
                 else
@@ -1009,7 +1156,7 @@ namespace Dash
                 string highlightedText = rtfFormatting + InsertHighlight(text, query.ToLower());
 
                 highlightedText = highlightedText.Insert(colorParamsEnd - 1, ";\\red255\\green255\\blue0");
-                
+
                 // Splitting the text and reconstructing the string is due to the fact that \\highlight can't have spaces when combined with another escaped
                 // rtf command, so we need to delete specifically those spaces, but leave spaces following \\highlight when next to normal text
                 string[] split = highlightedText.Split(' ');
@@ -1019,7 +1166,7 @@ namespace Dash
                     {
                         newRtf = split[0];
                     }
-                    else if (!string.IsNullOrEmpty(split[i]) && (split[i].Remove(split[i].Length - 1).EndsWith("\\highlight") && split[i + 1].StartsWith("\\") && !split[i + 1].StartsWith("\\'")) || 
+                    else if (!string.IsNullOrEmpty(split[i]) && (split[i].Remove(split[i].Length - 1).EndsWith("\\highlight") && split[i + 1].StartsWith("\\") && !split[i + 1].StartsWith("\\'")) ||
                         (split[i + 1].StartsWith($"\\highlight{_colorParamsCount}") && split[i].Contains("\\") && !(split[i].Contains("\n") || split[i].Contains("\t") || split[i].Contains("\r") || split[i].Contains("\\'"))))
                     {
                         newRtf += " " + split[i] + split[i + 1];
@@ -1028,7 +1175,7 @@ namespace Dash
                     else
                     {
                         newRtf += " " + split[i];
-                       // _originalCharFormat.Add(s,selectedText.CharacterFormat.BackgroundColor);
+                        // _originalCharFormat.Add(s,selectedText.CharacterFormat.BackgroundColor);
                     }
                 }
                 newRtf += " " + split[split.Length - 1];
@@ -1054,8 +1201,8 @@ namespace Dash
                 //    xRichEditBox.Document.Selection.EndPosition = 0;
                 //    i = 1;
 
-                }
-           xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newRtf);
+            }
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newRtf);
         }
 
         /// <summary>
@@ -1070,18 +1217,18 @@ namespace Dash
 
             if (i >= 0)
             {
-            string toHighlight = rtf.Substring(i, len);
-            if (toHighlight.IndexOf("\\highlight") > 0)
-            {
-                int highlightEnd = 12;
-                int secondDig = rtf[11] - '0';
-                if (secondDig >= 0 && secondDig < 10)
+                string toHighlight = rtf.Substring(i, len);
+                if (toHighlight.IndexOf("\\highlight") > 0)
                 {
-                    highlightEnd += 1;
+                    int highlightEnd = 12;
+                    int secondDig = rtf[11] - '0';
+                    if (secondDig >= 0 && secondDig < 10)
+                    {
+                        highlightEnd += 1;
+                    }
+                    toHighlight = toHighlight.Substring(0, i + 1) + toHighlight.Substring(highlightEnd);
                 }
-                toHighlight = toHighlight.Substring(0, i + 1) + toHighlight.Substring(highlightEnd);
-            }
-                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + toHighlight + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query);;
+                return rtf.Substring(0, i) + $"\\highlight{_colorParamsCount} " + toHighlight + $"\\highlight{_highlightNum} " + InsertHighlight(rtf.Substring(i + len), query); ;
             }
             return rtf;
         }
@@ -1222,7 +1369,7 @@ namespace Dash
         /// </summary>
         private void ClearSearchHighlights(bool silent = false)
         {
-           
+
             if (_originalRtfFormat == null)
                 return;
             var s1 = xRichEditBox.Document.Selection.StartPosition;
@@ -1231,13 +1378,13 @@ namespace Dash
             queryIndex = -1;
             xRichEditBox.Document.Selection.StartPosition = s1;
             xRichEditBox.Document.Selection.EndPosition = s2;
-            
+
             _originalRtfFormat = null;
             if (_searchHighlight)
             {
                 _searchHighlight = false;
             }
-            
+
             //xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
             //foreach (var tuple in _originalCharFormat)
             //{
@@ -1279,7 +1426,6 @@ namespace Dash
         }
 
         #endregion
-
 
         #region commented out code
 

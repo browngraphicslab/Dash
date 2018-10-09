@@ -478,7 +478,6 @@ namespace Dash
                 var funExpr = (node as Zu.TypeScript.TsTypes.FunctionExpression);
 
                 return new FunctionDeclarationExpression(funExpr.SourceStr, funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
-                break;
             case SyntaxKind.ArrowFunction:
                 break;
             case SyntaxKind.DeleteExpression:
