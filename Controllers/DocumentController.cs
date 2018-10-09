@@ -794,9 +794,6 @@ namespace Dash
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
 
-            //TODO Make this undo-able
-            value.DisposeField();
-
             return true;
         }
 
@@ -868,7 +865,6 @@ namespace Dash
                 //}
 
                 //field.SaveOnServer();
-                overwrittenField?.DisposeField();
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field.Id;
@@ -1359,13 +1355,6 @@ namespace Dash
             if (newField != null && key != KeyStore.DelegatesKey /*&& key.Name != "_Cache Access Key"*/)
             {
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
-
-                void DisposedHandler(FieldControllerBase field)
-                {
-                    newField.FieldModelUpdated -= TriggerDocumentFieldUpdated;
-                    newField.Disposed -= DisposedHandler;
-                };
-                newField.Disposed += DisposedHandler;
             }
         }
 

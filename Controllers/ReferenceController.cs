@@ -28,7 +28,7 @@ namespace Dash
             FieldKey = await RESTClient.Instance.Fields.GetControllerAsync<KeyController>(ReferenceFieldModel.KeyId);
         }
 
-        DocumentController _lastDoc = null;
+        private DocumentController _lastDoc = null;
 
         protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
@@ -37,16 +37,30 @@ namespace Dash
 
         protected void DocumentChanged()
         {
-            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            if (IsReferenced)
+            {
+                _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            }
+
             _lastDoc = GetDocumentController(null);
-            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            if (IsReferenced)
+            {
+                _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            }
 
             OnFieldModelUpdated(null);
         }
 
-        public override void DisposeField()
+        protected override void RefInit()
         {
-            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            base.RefInit();
+            _lastDoc.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+        }
+
+        protected override void RefDestroy()
+        {
+            base.RefDestroy();
+            _lastDoc.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         public KeyController FieldKey { get; protected set; }

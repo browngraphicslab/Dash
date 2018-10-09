@@ -252,17 +252,6 @@ namespace Dash
         public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
 
         /*
-         * Returns a view of the given list in the form of a table
-         */
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewForCollectionAndLists("📜", delegate (TextBlock block)
-            {
-                block.Text = string.Format($"{TypedData.Count()} object(s)");           //TODO make a factory and specify what objects it contains ,,,, 
-            });
-        }
-
-        /*
          * Creates and returns a duplicate of this ListController and its underlying data
          */
         public override FieldControllerBase Copy() => new ListController<T>(new List<T>(TypedData));

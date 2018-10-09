@@ -42,11 +42,6 @@ namespace Dash
 
         public string InkData => InkFieldModel.Data;
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return new Grid();
-        }
-
         public override object GetValue(Context context)
         {
             return InkData;

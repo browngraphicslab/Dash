@@ -57,12 +57,6 @@ namespace Dash
                    $"({DocumentReference.ToScriptString(thisDoc)}, {FieldKey.ToScriptString(thisDoc)})";
         }
 
-        public override void DisposeField()
-        {
-             base.DisposeField();
-            DocumentReference.FieldModelUpdated -= DocumentReferenceOnFieldModelUpdated;
-        }
-
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
 
         public override DocumentController GetDocumentController(Context context) => DocumentReference?.DereferenceToRoot<DocumentController>(context);
