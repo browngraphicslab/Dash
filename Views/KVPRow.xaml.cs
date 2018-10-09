@@ -83,7 +83,7 @@ namespace Dash
 
         private void Delete_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            ViewModel.Document.RemoveField(ViewModel.Key);
         }
 
         private void Edit_OnTapped(object sender, TappedRoutedEventArgs e)
