@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -1091,6 +1092,15 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
+            if (ViewModel.Content is RichTextView)
+            {
+                xMenuFlyout.Items.Add(new MenuFlyoutItem()
+                {
+                    Text = "Add to Action Menu",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.PlusCircle }
+                });
+                (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAddToActionMenu_Click;
+            }
 
             if (ViewModel.Content is CollectionView collectionView)
             {
@@ -1100,6 +1110,21 @@ namespace Dash
                 (cpresent.Content is CollectionView collectionView2))
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
+            }
+        }
+
+        private async void MenuFlyoutItemAddToActionMenu_Click(object sender, RoutedEventArgs e)
+        {
+            (string name, string desc) = await MainPage.Instance.PromptNewTemplate();
+            if (!(name == string.Empty && desc == string.Empty))
+            {
+                var copy = ViewModel.DocumentController.GetCopy();
+                copy.SetTitle(name);
+                copy.SetField<TextController>(KeyStore.CaptionKey, desc, true);
+                var templates = MainPage.Instance.MainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
+                templates.Add(copy);
+                MainPage.Instance.MainDocument.GetDataDocument().SetField(KeyStore.TemplateListKey, templates, true);
             }
         }
 

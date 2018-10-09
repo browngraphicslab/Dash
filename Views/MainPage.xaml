@@ -110,7 +110,6 @@
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
         <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-            <Button Tapped="ActionMenuTest_OnTapped" Width="10" Height="10">Test</Button>
             <local:DocumentDecorations x:Name="XDocumentDecorations" x:FieldModifier="public"/>
             <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
 

@@ -24,6 +24,7 @@ using Point = Windows.Foundation.Point;
 using System.Web;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
+using Windows.Storage.Pickers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -163,7 +164,7 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                    var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                     col.Add(documentController);
                     lastWorkspace = documentController;
                     lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -374,7 +375,7 @@ namespace Dash
                 }
                 return;
             }
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) && 
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) &&
                 !(FocusManager.GetFocusedElement() is TextBox))
             {
                 var pos = this.RootPointerPos();
@@ -702,7 +703,7 @@ namespace Dash
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                 }
-           }
+            }
             else
             {
                 var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
@@ -750,7 +751,7 @@ namespace Dash
             }
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
-            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth/origHeight : 1;
+            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
@@ -948,47 +949,17 @@ namespace Dash
             ToolTipService.SetToolTip(xSearchButton, search);
         }
 
-        private void ActionMenuTest_OnTapped(object sender, TappedRoutedEventArgs e)
+        public async Task<(string, string)> PromptNewTemplate()
         {
-            ActionMenu GetMenu()
-            {
-                ActionMenu menu = new ActionMenu
-                {
-                    Width = 400,
-                    Height = 500,
-                    UseFilterBox = false
-                };
-                ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-                menu.AddGroup("BASIC", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
-                    new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
-                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
-                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
-                });
-                menu.AddGroup("DATABASE", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), null),
-                });
-                menu.AddGroup("TEST1", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
-                });
-                menu.AddGroup("TEST2", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), null),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
-                });
-                return menu;
-            }
+            var templatePopup = new NewTemplatePopup();
+            SetUpPopup(templatePopup);
 
-            xCanvas.Children.Clear();
-            xCanvas.Children.Add(GetMenu());
+            var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
         }
     }
+
+
 }
