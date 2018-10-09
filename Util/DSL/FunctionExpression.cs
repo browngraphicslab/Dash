@@ -89,10 +89,19 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            //TODO
-            throw new NotImplementedException();
-            //return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)),
-            //    Op.Parse(_funcName)); //recursive linq
+            var func = _funcName.CreateReference(scope);
+            if (func is OperatorController op)
+            {
+                //TODO
+                return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
+            }
+            else if(_funcName is VariableExpression variable)
+            {
+                op = OperatorScript.GetOperatorWithName(Op.Parse(variable.GetVariableName()));
+                return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
+            }
+
+            return null;
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? ""));

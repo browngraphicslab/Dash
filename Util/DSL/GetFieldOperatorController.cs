@@ -45,17 +45,6 @@ namespace Dash
         {
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
 
-            string updatedKeyName = null;
-            if (args != null)
-            {
-                if (!(args.FieldArgs is DocumentController.DocumentFieldUpdatedEventArgs dargs))
-                {
-                    return Task.CompletedTask;
-                }
-
-                updatedKeyName = dargs.Reference.FieldKey.Name;
-            }
-
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
