@@ -809,7 +809,6 @@ namespace Dash
             VirtualKey.Right,
             VirtualKey.Up,
             VirtualKey.Down,
-            VirtualKey.RightButton
         };
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -1028,7 +1027,8 @@ namespace Dash
                         });
                     }
                     break;
-                case VirtualKey.Back: case VirtualKey.Delete: case VirtualKey.RightButton:
+                case VirtualKey.Back:
+                case VirtualKey.Delete:
                     DoAction((views, where, size) =>
                     {
                         foreach (DocumentView v in views)

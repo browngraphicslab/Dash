@@ -147,13 +147,10 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-                    Debug.WriteLine("not null");
                 }
                 else
                 {
-                    Debug.WriteLine("null");
-                    var note = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-                    MainDocument = note.Document;
+                    MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
                     MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                     MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
                 }
@@ -168,7 +165,6 @@ namespace Dash
                 if (col.Count == 0)
                 {
                     var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
-                    Debug.WriteLine("new collection note");
                     col.Add(documentController);
                     lastWorkspace = documentController;
                     lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
