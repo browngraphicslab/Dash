@@ -57,8 +57,8 @@
                     <ColumnDefinition Width="40"></ColumnDefinition>
                     <ColumnDefinition Width="40"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,-4,0,0" VerticalAlignment="Center" FontWeight="Bold" TextAlignment="Center" />
-                <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Margin="-12,-4,0,0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
+                <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,0,0,0" VerticalAlignment="Center" FontWeight="Bold" TextAlignment="Center" />
+                <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Margin="-12,0,0,0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
                 <Button Width="40" Height="48" Foreground="White"  Background="Transparent" x:Name="xSwitchButton" x:FieldModifier="public"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
                     <TextBlock Text="&#xE8AB;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="20" />

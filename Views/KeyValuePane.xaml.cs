@@ -181,7 +181,7 @@ namespace Dash
                 }
                 catch (DSLException e)
                 {
-                    fmController = new TextController(e.GetHelpfulString());
+                    fmController = null;
                 }
 
                 activeContextDoc.SetField(key, fmController, true);

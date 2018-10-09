@@ -128,7 +128,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                var field = await DSL.InterpretUserInput(xEditBox.Text);
+                var field = await DSL.InterpretUserInput(xEditBox.Text, true);
                 if (field != null)
                 {
                     ViewModel.Document.SetField(ViewModel.Key, field, true);
