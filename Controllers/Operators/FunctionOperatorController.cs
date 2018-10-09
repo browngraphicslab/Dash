@@ -22,8 +22,9 @@ namespace Dash
 
         public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) => SaveOnServer();
 
-        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
+        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, Scope scope = null) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
         {
+            _funcScope = scope;
             InitFunc(paramss, block, returnType);
         }
 
@@ -44,6 +45,7 @@ namespace Dash
         private readonly List<string> _inputNames = new List<string>();
         private ScriptExpression _block;
         private TypeInfo _returnType;
+        private Scope _funcScope;
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Function", new Guid("1573E918-19E0-47A9-BB9D-0531233277C9"));
@@ -65,6 +67,7 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
+            scope = new Scope(scope);
             for (var i = 0; i < _inputNames.Count; i++)
             {
                 FieldControllerBase value = inputs[Inputs[i].Key];
@@ -76,7 +79,12 @@ namespace Dash
                 {
                     throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType + ". Potentially other mismatched parameters."));
                 }
-                scope?.DeclareVariable(_inputNames[i], value);
+                scope.DeclareVariable(_inputNames[i], value);
+            }
+
+            if (_funcScope != null)
+            {
+                scope = scope.Merge(_funcScope);
             }
 
             FieldControllerBase result = await _block.Execute(scope);

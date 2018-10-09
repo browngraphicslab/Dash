@@ -18,6 +18,8 @@ namespace Dash
 		public static KeyController TitleKey                             = new KeyController("Title", new Guid("0C074CB4-6D05-4363-A867-C0A061C1573F"));
 		public static KeyController CaptionKey                           = new KeyController("Caption", new Guid("D01D6702-A3AD-4546-9BFB-C5263F8D5599"));
 		public static KeyController PrototypeKey                         = new KeyController("_Prototype", new Guid("866A6CC9-0B8D-49A3-B45F-D7954631A682"));
+        public static KeyController CollectionItemLayoutPrototypeKey     = new KeyController("CollectionItemLayoutPrototype", new Guid("7C6F72BA-EC97-4DA5-8ACE-5F4F1118F185"));
+        public static KeyController LayoutPrototypeKey                   = new KeyController("LayoutPrototype", new Guid("77805171-247D-4485-A257-1751619C2C45"));
 		public static KeyController DelegatesKey                         = new KeyController("_Delegates", new Guid("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB"));
 		public static KeyController UserSetWidthKey                      = new KeyController("_userSetWidth", new Guid("7D3E7CDB-D0C7-4316-BA3B-3C032F24B5AA"));
 		public static KeyController WidthFieldKey                        = new KeyController("Width", new Guid("5B329D99-96BF-4703-8E28-9B7B1C1B837E"));
@@ -140,6 +142,7 @@ namespace Dash
 		public static KeyController LinkTagKey                           = new KeyController("List of tags", new Guid("72371594-582C-46FE-BE81-9F2B95C5FD50"));
 		public static KeyController SelectedSchemaRow                    = new KeyController("SelectedElement", new Guid("B9B5742B-E4C7-45BD-AD6E-F3C254E45027"));
 		public static KeyController SchemaDisplayedColumns               = new KeyController("_Displayed Columns", new Guid("7424AFD5-D43B-449F-AD04-B48E686621AB"));
+	    public static KeyController JoinInfoKey                          = new KeyController("Join Information", new Guid("08A0A6F9-6AC1-4B03-89CD-E7127646D9DB"));
 
 
 
