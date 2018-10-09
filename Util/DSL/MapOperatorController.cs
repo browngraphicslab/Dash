@@ -67,7 +67,10 @@ namespace Dash
                     newScope.SetVariable(variableName.Data, obj);
                     var dsl = new DSL(newScope);
                     var executed = await dsl.Run(lambdaString.Data, false);
-                    outputList.Add(executed);
+                    if (executed != null)
+                    {
+                        outputList.Add(executed);
+                    }
                 }
 
                 outputs[ResultListKey] = outputList;
