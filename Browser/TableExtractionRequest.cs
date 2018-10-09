@@ -17,7 +17,7 @@ namespace Dash
         
         public override async Task Handle(BrowserView browser)
         {
-            var tab = await ProcessTableData(data);
+            var tab = await ProcessTableData(data, new Point());
             if (tab != null)
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -25,18 +25,18 @@ namespace Dash
             }
         }
 
-        public static async Task<DocumentController> ProcessTableData(string data)
+        public static async Task<DocumentController> ProcessTableData(string data, Point where)
         {
             var token = JToken.Parse(data);
             if (token is JArray tables)
             {
-                    var tab = ParseTable(tables.OfType<JObject>(), new JsonToDashUtil());
-                    return tab;
+                var tab = ParseTable(tables.OfType<JObject>(), new JsonToDashUtil(), where);
+                return tab;
             }
             return null;
         }
 
-        private static DocumentController ParseTable(IEnumerable<JObject> rows, JsonToDashUtil parser)
+        private static DocumentController ParseTable(IEnumerable<JObject> rows, JsonToDashUtil parser, Point where)
         {
             var columns = rows.FirstOrDefault()?.GetEnumerator();
             if (columns != null)
@@ -57,7 +57,7 @@ namespace Dash
                 CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
 
                 var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
-                var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
                 cnote.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, prototype, true);
                 return cnote;
             }

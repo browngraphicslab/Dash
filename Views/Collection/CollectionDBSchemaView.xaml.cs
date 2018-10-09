@@ -263,35 +263,34 @@ namespace Dash
             {
                 Keys.Add(key);
                 xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { Header = key });
+                var schemaColumns = ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
 
                 foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
                 {
                     AddDataBoxForKey(key, dvm);
+                    dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, schemaColumns.Copy(), true);
                 }
             }
         }
 
         private void AddDataBoxForKey(KeyController key, DocumentViewModel dvm)
         {
-            var proto = dvm.DocumentController;
+            var proto = dvm.DocumentController.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm.DocumentController;
             var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-            DocumentController db = null;
 
             foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
             {
-                var fkey = (doc.GetField(KeyStore.DataKey) as DocumentReferenceController)?.FieldKey;
+                var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
                 if (key.Equals(fkey) == true)
                 {
-                    db = doc;
-                    break;
+                    return; // document already has a databox view of the added key
                 }
             }
-            if (db == null)
-            {
-                docs.Add(new DataBox(new DocumentReferenceController(dvm.DocumentController.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document);
-                docs.Last().SetTitle(key.Name);
-                dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).Copy(), true);
-            }
+
+            var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
+            CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
+            proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
+            newDataBoxCol.SetTitle(key.Name);
         }
 
         private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
@@ -313,34 +312,31 @@ namespace Dash
             var index = Keys.IndexOf(key);
             if (index != -1)
             {
+                Keys.RemoveAt(index);
+                xDataGrid.Columns.RemoveAt(index);
+                var schemaColumns = ViewModel.ContainerDocument.GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
+
                 foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
                 {
                     RemoveDataBoxForKey(key, dvm);
+                    dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, schemaColumns.Copy(), true);
                 }
 
-                Keys.RemoveAt(index);
-
-                xDataGrid.Columns.RemoveAt(index);
             }
         }
 
         private void RemoveDataBoxForKey(KeyController key, DocumentViewModel dvm)
         {
-            var proto = dvm.DataDocument.GetDereferencedField<DocumentController>(KeyStore.CollectionItemLayoutPrototypeKey, null) ?? dvm.DocumentController;
-            var docs = dvm.DocumentController.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-            DocumentController db = null;
+            var proto = dvm.DocumentController.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ?? dvm.DocumentController;
+            var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
             foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
             {
-                var fkey = (doc.GetField(KeyStore.DataKey) as DocumentReferenceController)?.FieldKey;
+                var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
                 if (key.Equals(fkey) == true)
                 {
-                    db = doc;
+                    proto.RemoveFromListField(KeyStore.DataKey, doc);
                     break;
                 }
-            }
-            if (db != null)
-            {
-                docs.Remove(db);
             }
         }
 
