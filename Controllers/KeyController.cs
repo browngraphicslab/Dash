@@ -45,9 +45,9 @@ namespace Dash
 
         private KeyController(string name, string id) : base(new KeyModel(name, id))
         {
-            if (!_nameDictionary.ContainsKey(name.ToLower()))
+            if (!_nameDictionary.ContainsKey(name))
             {
-                _nameDictionary[name.ToLower()] = id;
+                _nameDictionary[name] = id;
                 SaveOnServer();
             }
         }
@@ -59,7 +59,6 @@ namespace Dash
         /// <param name="guid"></param>
         public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
-            name = name.ToLower();
             Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
             if (!_nameDictionary.ContainsKey(name))
             {

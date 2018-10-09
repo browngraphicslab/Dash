@@ -7,8 +7,11 @@
         /// The name of the entity, this is useful for search and provides a front end that
         /// can be displayed to the user
         /// </summary>
-        private string _name;
-        public string Name { get => _name; set => _name = value.ToLower(); }
+        public string Name
+        {
+            get;
+            set;
+        }
 
         public KeyModel(string name, string guid) : base(guid) {
             Name = name;

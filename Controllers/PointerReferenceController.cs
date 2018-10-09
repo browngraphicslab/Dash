@@ -42,6 +42,7 @@ namespace Dash
             var refModel = Model as PointerReferenceModel;
             refModel.ReferenceFieldModelId = refModel.ReferenceFieldModelId.ToLower();
             refModel.KeyId = refModel.KeyId.ToLower();
+            UpdateOnServer(null);
             DocumentReference = await RESTClient.Instance.Fields.GetControllerAsync<ReferenceController>(
                     refModel.ReferenceFieldModelId);
             await base.InitializeAsync();
