@@ -81,6 +81,7 @@ namespace Dash
                         selection.StartPosition = lenght;
                         selection.EndPosition = lenght;
                         xRichEditBox.Focus(FocusState.Keyboard);
+                        MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
                     }
                        
                     SelectionManager.TryInitiateDragDrop(docView, e, null);

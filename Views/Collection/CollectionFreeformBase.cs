@@ -712,6 +712,8 @@ namespace Dash
                 if (e != null) e.Handled = true;
             }
 
+            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
+
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
@@ -733,6 +735,7 @@ namespace Dash
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;
             }
+            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
         }
 
         public bool StartMarquee(Point pos)
@@ -825,6 +828,7 @@ namespace Dash
                 //      if (SelectionManager.IsSelected(docview))
                 //    //SelectionManager.Select(docview, false);
                 //SelectionManager.TryInitiateDragDrop(docview, args, null);
+		        ViewManipulationControls.isPanning = false;
             }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
