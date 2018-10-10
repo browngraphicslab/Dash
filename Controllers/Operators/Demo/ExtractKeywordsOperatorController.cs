@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ namespace Dash
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
             {
                 new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
-                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Text, true)),
+                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Key, true)),
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
@@ -48,15 +49,14 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Keywords", "8EA60017-CF8E-4885-B712-7C38906C299F");
+        private static readonly KeyController TypeKey = new KeyController("Keyword Operator", new Guid("8EA60017-CF8E-4885-B712-7C38906C299F"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
-            var textFieldKeyId = (inputs[TextField] as TextController).Data;
-            var textFieldKey = ContentController<FieldModel>.GetController<KeyController>(textFieldKeyId);
+            var textFieldKey = inputs[TextField] as KeyController;
 
             // get all the text from the input documents
             var allText = "";

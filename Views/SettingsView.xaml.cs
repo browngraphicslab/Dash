@@ -484,7 +484,7 @@ namespace Dash
             //CONFIRM ERASE DATABASE
             else if (_eraseConfidence == DbEraseSafetyConfidence.Confident)
             {
-                _endpoint.DeleteAllDocuments(null, null);
+                await _endpoint.DeleteAllDocuments();
                 ResetEraseButton();
 
                 await CoreApplication.RequestRestartAsync("");
@@ -534,6 +534,31 @@ namespace Dash
         }
 
         #endregion
+
+
+        private bool _usePdfTextSelection = false;
+        public bool UsePdfTextSelection
+        {
+            get => _usePdfTextSelection;
+            set
+            {
+                if (value == _usePdfTextSelection) return;
+                _usePdfTextSelection = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _useInkCanvas = false;
+        public bool UseInkCanvas
+        {
+            get => _useInkCanvas;
+            set
+            {
+                if (value == _useInkCanvas) return;
+                _useInkCanvas = value;
+                OnPropertyChanged();
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

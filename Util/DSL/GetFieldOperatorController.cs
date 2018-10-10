@@ -20,7 +20,7 @@ namespace Dash
         public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("GetField", "6277A484-644D-4BC4-8D3C-7F7DFCBA6517");
+        private static readonly KeyController TypeKey = new KeyController("GetField", new Guid("6277A484-644D-4BC4-8D3C-7F7DFCBA6517"));
 
         //Input keys
         public static readonly KeyController KeyNameKey = new KeyController("KeyName");

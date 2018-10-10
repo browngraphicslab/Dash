@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -32,7 +33,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Get Data Document", "420D6ED9-F09E-4912-B106-576567E00C83");
+        private static readonly KeyController TypeKey = new KeyController("Get Data Document", new Guid("420D6ED9-F09E-4912-B106-576567E00C83"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

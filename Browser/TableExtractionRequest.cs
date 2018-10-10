@@ -48,6 +48,7 @@ namespace Dash
                     prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
                 }
 
+
                 columns.MoveNext();
                 var primaryKey = new KeyController(columns.Current.Key.Trim() ?? "<empty>"); // choose a better primary key -- this should become the document's title, too.
 
@@ -56,9 +57,16 @@ namespace Dash
                 prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(protobox), true);
                 CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
 
+                var jobj2 = rows.First();
+                var listOfColumns = new List<KeyController>();
+                foreach (var keyValuePair in jobj2)
+                {
+                    listOfColumns.Add(new KeyController(keyValuePair.Key.Trim()));    
+                }
                 var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
                 cnote.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, prototype, true);
+                cnote.SetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns, listOfColumns, true);
                 return cnote;
             }
             return null;

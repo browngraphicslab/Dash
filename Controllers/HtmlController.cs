@@ -17,11 +17,6 @@ namespace Dash
         {
         }
 
-        public override void Init()
-        {
-            
-        }
-
         /// <summary>
         ///     The <see cref="TextFieldModel" /> associated with this <see cref="TextController" />,
         ///     You should only set values on the controller, never directly on the model!

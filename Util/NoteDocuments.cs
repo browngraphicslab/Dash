@@ -10,7 +10,7 @@ namespace Dash
 
         public NoteDocument(string prototypeID)
         {
-            _prototype = ContentController<FieldModel>.GetController<DocumentController>(prototypeID);
+            _prototype = RESTClient.Instance.Fields.GetController<DocumentController>(prototypeID);
             if (_prototype == null)
             {
                 _prototype = createPrototype(prototypeID);

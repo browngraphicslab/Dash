@@ -16,7 +16,7 @@ namespace DashShared
             return Guid.NewGuid().ToString();
         }
 
-        public static string GetDeterministicGuid(string input)
+        public static Guid GetDeterministicGuid(string input)
         {
             //use MD5 hash to get a 128 bit hash of the string:
             var md5 = MD5.Create();
@@ -28,7 +28,7 @@ namespace DashShared
             //generate a guid from the hash:
             var hashGuid = new Guid(hashBytes);
 
-            return hashGuid.ToString();
+            return hashGuid;
         }
     }
 }

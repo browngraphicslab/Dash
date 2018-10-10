@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -17,7 +18,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("For", "3294AA7E-6E6A-4AE7-9D83-5693723A1EEA");
+        private static readonly KeyController TypeKey = new KeyController("For", new Guid("3294AA7E-6E6A-4AE7-9D83-5693723A1EEA"));
 
         //Input keys
         public static readonly KeyController CounterDeclarationKey = new KeyController("Count Declaration");

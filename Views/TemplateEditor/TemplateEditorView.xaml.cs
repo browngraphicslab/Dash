@@ -1305,7 +1305,7 @@ namespace Dash
 						if ((selectedDoc.GetField<PointerReferenceController>(KeyStore.DataKey)?.GetDocumentController(null).Equals(workingDoc.GetDataDocument()) ?? false) ||
 							(selectedDoc.GetField<PointerReferenceController>(KeyStore.DataKey)?.GetDocumentController(null).GetDataDocument().Equals(workingDoc) ?? false))
 						{
-							newRef.FieldKey = specificKey;
+							//newRef.FieldKey = specificKey;//TODO DB
 						}
 						else
 						{

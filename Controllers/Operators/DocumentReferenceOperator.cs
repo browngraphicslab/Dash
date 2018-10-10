@@ -26,7 +26,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DocumentReference", "a4c20265-528d-4ff4-9066-a431c2711a73");
+        private static readonly KeyController TypeKey = new KeyController("DocumentReference", new Guid("a4c20265-528d-4ff4-9066-a431c2711a73"));
 
         public override FieldControllerBase GetDefaultController()
         {

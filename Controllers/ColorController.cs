@@ -13,8 +13,6 @@ namespace Dash
 
         public ColorController(ColorModel colorFieldModel) : base(colorFieldModel) { }
 
-        public override void Init() { }
-
         public ColorModel ColorFieldModel => Model as ColorModel;
 
         public override FieldControllerBase GetDefaultController() => new ColorController(Colors.White);

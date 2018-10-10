@@ -1,4 +1,5 @@
-﻿using DashShared;
+﻿using System;
+using DashShared;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Dash
         public static readonly KeyController ResultKey = new KeyController("Double");
         
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("ParseDouble", "9CBE9126-02B6-4635-B309-FB6F0489FC0E");
+        private static readonly KeyController TypeKey = new KeyController("ParseDouble", new Guid("9CBE9126-02B6-4635-B309-FB6F0489FC0E"));
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

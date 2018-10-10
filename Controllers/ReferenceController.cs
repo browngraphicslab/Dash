@@ -1,12 +1,14 @@
 ﻿using System;
 using DashShared;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Dash.Converters;
 
 namespace Dash
 {
     public abstract class ReferenceController : FieldModelController<ReferenceModel>
     {
-        public ReferenceController(ReferenceModel model) : base(model)
+        protected ReferenceController(ReferenceModel model) : base(model)
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
@@ -14,17 +16,23 @@ namespace Dash
 
         }
 
-        DocumentController _lastDoc = null;
-        public override void Init()
+        private bool _initialized = false;
+        public override async Task InitializeAsync()
         {
-            if (FieldKey == null)
+            if (_initialized)
             {
-                FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
+                return;
             }
 
-            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            _lastDoc = GetDocumentController(null);
-            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _initialized = true;
+            FieldKey = await RESTClient.Instance.Fields.GetControllerAsync<KeyController>(ReferenceFieldModel.KeyId);
+        }
+
+        DocumentController _lastDoc = null;
+
+        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+        {
+            OnFieldModelUpdated(args?.FieldArgs, c);
         }
 
         protected void DocumentChanged()
@@ -32,12 +40,8 @@ namespace Dash
             _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
             _lastDoc = GetDocumentController(null);
             _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            DocFieldUpdated(null, null, null);
-        }
 
-        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
-        {
-            OnFieldModelUpdated(args?.FieldArgs, c);
+            OnFieldModelUpdated(null);
         }
 
         public override void DisposeField()
@@ -45,16 +49,11 @@ namespace Dash
             _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public KeyController FieldKey { get; set; }
+        public KeyController FieldKey { get; protected set; }
 
         public abstract DocumentController GetDocumentController(Context context);
 
         public abstract FieldControllerBase GetDocumentReference();
-
-        public override IEnumerable<DocumentController> GetReferences()
-        {
-            yield return GetDocumentController(null);
-        }
 
         public override FieldControllerBase Dereference(Context context)
         {

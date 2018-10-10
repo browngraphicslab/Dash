@@ -30,26 +30,11 @@ namespace DashShared
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<KeyModel, FieldModel> fields, DocumentType type, string id = null) : base(id)
+        public DocumentModel(IDictionary<string, string> fields, DocumentType type, string id = null) : base(id)
         {
             DocumentType = type ?? throw new ArgumentNullException();
-            Fields = fields.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value.Id);
+            Fields = new Dictionary<string, string>(fields);
             //Map.Add(Id, this);
         }
-
-        /// <summary>
-        /// Initializes a document with given data and type.
-        /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="type"></param>
-        public DocumentModel(IDictionary<KeyModel, string> fields, DocumentType type, string id = null) : base(id)
-        {
-            DocumentType = type ?? throw new ArgumentNullException();
-            Fields = fields.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value);
-
-            //Map.Add(Id, this);
-        }
-
-
     }
 }

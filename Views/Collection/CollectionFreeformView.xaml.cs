@@ -70,11 +70,6 @@ namespace Dash
             return xOuterGrid;
         }
 
-        public override AutoSuggestBox GetTagBox()
-        {
-            return TagKeyBox;
-        }
-
         public override Canvas GetSelectionCanvas()
         {
             return SelectionCanvas;

@@ -16,14 +16,14 @@ namespace Dash
         public RemoveFirstCharOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("ABDD7B87-DFDC-4684-B0FA-26379DBA8407", "Remove first char occurence");
+        private static readonly KeyController TypeKey = new KeyController("Remove first char occurence", new Guid("ABDD7B87-DFDC-4684-B0FA-26379DBA8407"));
 
         //Input keys
-        public static readonly KeyController SourceKey = new KeyController("F83B78FF-C629-4289-953F-42AD4EEB163C", "Source string");
-        public static readonly KeyController ToRemoveKey = new KeyController("8276AE8A-71FB-4191-8532-FA897011E399", "Char to Remove");
+        public static readonly KeyController SourceKey = new KeyController("Source string");
+        public static readonly KeyController ToRemoveKey = new KeyController("Char to Remove");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("47D9B9E6-070D-448D-BF6A-9C51A3E88C4E", "Computed Result");
+        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

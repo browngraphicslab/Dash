@@ -30,7 +30,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("API", "8e8eb4d9-92d7-462d-8039-e4337d696d6a");
+        private static readonly KeyController TypeKey = new KeyController("API", new Guid("8e8eb4d9-92d7-462d-8039-e4337d696d6a"));
 
         public override FieldControllerBase GetDefaultController()
         {

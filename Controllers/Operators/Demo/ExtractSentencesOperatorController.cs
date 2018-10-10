@@ -31,7 +31,7 @@ namespace Dash
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
                 new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
-                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Text, true))
+                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Key, true))
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
@@ -50,15 +50,14 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Sentence Analyzer", "D9EE3561-0A30-4DA9-B11A-859CABCF237B");
+        private static readonly KeyController TypeKey = new KeyController("Sentence Analyzer", new Guid("D9EE3561-0A30-4DA9-B11A-859CABCF237B"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
-            var textFieldKeyId = (inputs[TextField] as TextController).Data;
-            var textFieldKey = ContentController<FieldModel>.GetController<KeyController>(textFieldKeyId);
+            var textFieldKey = inputs[TextField] as KeyController;
 
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
