@@ -138,7 +138,7 @@ namespace Dash
 
         private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"kno-fb-ctx\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
         }
 
         private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)

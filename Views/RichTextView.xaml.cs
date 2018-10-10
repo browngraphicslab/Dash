@@ -574,8 +574,11 @@ namespace Dash
 
             if (e.Key == (VirtualKey)191)
             {
-                CreateActionMenu(sender as RichEditBox);
-                _isActionMenuOpen = true;
+                if (getReadableText() == "")
+                {
+                    CreateActionMenu(sender as RichEditBox);
+                    _isActionMenuOpen = true;
+                }
             }
 
             if (e.Key.Equals(VirtualKey.Down))

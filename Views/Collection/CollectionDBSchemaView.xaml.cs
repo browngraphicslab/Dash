@@ -182,7 +182,7 @@ namespace Dash
                     await CommitEdit(box.Text, dvm.DataDocument, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
                 }
 
-                AddDataBoxForKey(col.Key, dvm.DataDocument);
+                AddDataBoxForKey(col.Key, dvm.DocumentController);
             }
         }
 
