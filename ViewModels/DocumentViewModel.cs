@@ -16,7 +16,6 @@ namespace Dash
         private DocumentController _lastLayout = null;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private bool               _showLocalContext;
-        private bool               _decorationState = false;
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
 
@@ -65,7 +64,6 @@ namespace Dash
         private bool _isNotBackgroundPinned = true;
 
         public bool IsDimensionless = false;
-        public bool IsWidthless = false;
         public bool IsNotBackgroundPinned
         {
             get => _isNotBackgroundPinned;
@@ -96,7 +94,7 @@ namespace Dash
         }
         public double Width
         {
-            get => IsDimensionless || IsWidthless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
             set => LayoutDocument.SetWidth(value);
         }
         public double Height

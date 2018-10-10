@@ -164,7 +164,7 @@ namespace Dash
                         };
                         newPane = new SplitFrame()
                         {
-                            DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
+                            DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true, IsDimensionless= true }
                         };
                         var newManager = new SplitManager();
                         newManager.SetContent(newPane);

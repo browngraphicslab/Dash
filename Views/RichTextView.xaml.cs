@@ -819,6 +819,10 @@ namespace Dash
         {
             IsLoaded = true;
 
+            if (this.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data == "/" && this.xRichEditBox == FocusManager.GetFocusedElement())
+            {
+                CreateActionMenu(this.xRichEditBox);
+            }
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.

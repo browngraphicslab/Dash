@@ -156,14 +156,6 @@ namespace Dash
         protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             _lastViewModel = ViewModel;
-
-            if (ViewModel?.DocumentViewModels != null)
-            {
-                foreach (var dvm in ViewModel.DocumentViewModels)
-                {
-                    dvm.IsWidthless = false;
-                }
-            }
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)

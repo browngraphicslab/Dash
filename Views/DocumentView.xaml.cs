@@ -25,7 +25,6 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        private DocumentController _templateEditor;
         private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private Point _pointerPoint = new Point(0, 0);
@@ -88,7 +87,7 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (ViewModel?.IsDimensionless == true || ViewModel?.IsWidthless == true)
+            if (ViewModel?.IsDimensionless == true)
             {
                 Width = double.NaN;
                 Height = double.NaN;
@@ -156,8 +155,6 @@ namespace Dash
 
             void updateBindings()
             {
-                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-
                 UpdateRenderTransformBinding();
                 UpdateVisibilityBinding();
                 this.BindBackgroundColor();
@@ -286,8 +283,6 @@ namespace Dash
         {
             updateRenderTransformBinding(null, null);
             updateVisibilityBinding(null, null);
-
-            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
             this.BindBackgroundColor();
             ViewModel?.Load();
