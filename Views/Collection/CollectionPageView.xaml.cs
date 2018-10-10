@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -541,8 +542,11 @@ namespace Dash
 
         private void ScriptToggle_OnClick(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button)
+            if (sender is Button button && button.Content != null)
             {
+                var shouldCollapse = button.Content.Equals("Hide Script");
+                xScriptRow.Height = new GridLength(shouldCollapse ? 0 : 80);
+                button.Content = shouldCollapse ? "Show Script" : "Hide Script";
             }
         }
     }

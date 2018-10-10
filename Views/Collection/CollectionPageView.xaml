@@ -46,7 +46,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="30"/>
-                <RowDefinition Height="80" />
+                <RowDefinition x:Name="xScriptRow" Height="80" />
             </Grid.RowDefinitions>
             <Button
                 Grid.Row="1"
