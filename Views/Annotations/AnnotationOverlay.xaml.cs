@@ -48,12 +48,17 @@ namespace Dash
                 _currAnnotationType = value;
                 OnPropertyChanged();
 
-                //XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
-                //XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                if (XInkCanvas != null)
+                {
+                    XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
+                    XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                }
             }
         }
 
         public List<int> PageEndIndices { get; set; }
+
+        private InkCanvas XInkCanvas { get; }
 
         public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
         {
@@ -64,12 +69,17 @@ namespace Dash
 
             AnnotationManager = new AnnotationManager(this);
 
-            //XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
-            //XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            //XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            //XInkCanvas.InkPresenter.IsInputEnabled = false;
-            //XInkCanvas.IsHitTestVisible = false;
-            //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                XInkCanvas = new InkCanvas();
+                XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+                XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+                XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+                XInkCanvas.InkPresenter.IsInputEnabled = false;
+                XInkCanvas.IsHitTestVisible = false;
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            }
+
             Loaded   += onLoaded;
             Unloaded += onUnloaded;
 
@@ -254,10 +264,10 @@ namespace Dash
 
         private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (!_maskInkUpdates)
+            if (!_maskInkUpdates && XInkCanvas != null)
             {
-                //XInkCanvas.InkPresenter.StrokeContainer.Clear();
-                //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+                XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
         }
 
@@ -404,16 +414,22 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
         {
-            //_maskInkUpdates = true;
-            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            //_maskInkUpdates = false;
+            if (XInkCanvas != null)
+            {
+                _maskInkUpdates = true;
+                _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                _maskInkUpdates = false;
+            }
         }
 
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            //_maskInkUpdates = true;
-            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            //_maskInkUpdates = false;
+            if (XInkCanvas != null)
+            {
+                _maskInkUpdates = true;
+                _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                _maskInkUpdates = false;
+            }
         }
 
         #endregion
