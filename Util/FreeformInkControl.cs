@@ -79,10 +79,15 @@ namespace Dash
 
         private void MakeFlyout()
         {
-            _pasteFlyout = new MenuFlyout();
-            var paste = new MenuFlyoutItem {Text = "Paste"};
-            paste.Click += PasteOnClick;
-            _pasteFlyout.Items?.Add(paste);
+
+            if (_inkSelectionMode == InkSelectionMode.Ink)
+            {
+                _pasteFlyout = new MenuFlyout();
+                var paste = new MenuFlyoutItem { Text = "Paste" };
+                paste.Click += PasteOnClick;
+                _pasteFlyout.Items?.Add(paste);
+            }
+            
         }
 
         
@@ -260,8 +265,12 @@ namespace Dash
 
         private void TargetCanvasOnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (_pasteFlyout == null) MakeFlyout();
-            _pasteFlyout.ShowAt(TargetInkCanvas, e.GetPosition(TargetInkCanvas));
+
+            if (_inkSelectionMode == InkSelectionMode.Ink)
+            {
+                if (_pasteFlyout == null) MakeFlyout();
+                _pasteFlyout.ShowAt(TargetInkCanvas, e.GetPosition(TargetInkCanvas));
+            }
         }
 
         // Handle unprocessed pointer events from modifed input.
