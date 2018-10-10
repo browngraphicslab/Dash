@@ -29,6 +29,15 @@ namespace Dash
         public InkManager()
         {
             _mainToolbar.ActiveToolChanged += MainToolbarOnActiveToolChanged;
+            _mainToolbar.InkAttributesChanged += _mainToolbar_InkAttributesChanged;
+        }
+
+        private void _mainToolbar_InkAttributesChanged(object sender, EventArgs e)
+        {
+            foreach (InkSubToolbar tb in _toolbars)
+            {
+                tb.DrawingAttributes = _mainToolbar.DrawingAttributes;
+            }
         }
 
         private void MainToolbarOnActiveToolChanged(object sender, EventArgs eventArgs)

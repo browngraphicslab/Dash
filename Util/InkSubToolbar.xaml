@@ -15,6 +15,7 @@
                     HorizontalAlignment="Center"
                     TargetInkCanvas="{Binding Canvas}"
                     InitialControls="None"
+                    InkDrawingAttributesChanged="XInkToolbar_OnInkDrawingAttributesChanged"
                     ActiveToolChanged="InkToolbar_OnActiveToolChanged">
             <InkToolbarEraserButton/>
             <InkToolbarBallpointPenButton/>
