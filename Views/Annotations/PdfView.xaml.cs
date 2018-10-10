@@ -579,18 +579,19 @@ namespace Dash
             
             try
             {
-                _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
+                if (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://"))
+                {
+                    _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
+                }
+                else
+                {
+                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
+
+                }
             }
             catch (ArgumentException)
             {
-                try
-                {
-                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
-                }
-                catch (ArgumentException)
-                {
-                    return;
-                }
+                return;
             }
 
             var reader = new PdfReader(await _file.OpenStreamForReadAsync());
