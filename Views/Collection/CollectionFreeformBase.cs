@@ -1087,12 +1087,19 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                XInkCanvas = new InkCanvas()
+                {
+                    Width = 60000,
+                    Height = 60000
+                };
 
-            InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
-            Canvas.SetLeft(XInkCanvas, -30000);
-            Canvas.SetTop(XInkCanvas, -30000);
-            GetInkHostCanvas().Children.Add(XInkCanvas);
+                InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+                Canvas.SetLeft(XInkCanvas, -30000);
+                Canvas.SetTop(XInkCanvas, -30000);
+                GetInkHostCanvas().Children.Add(XInkCanvas);
+            }
         }
 
         bool loadingPermanentTextbox;
