@@ -58,10 +58,7 @@ namespace Dash
                     primaryKey = primaryKey ?? key;
                     prototype.GetDataDocument().SetField<TextController>(key, "<" +key.Name + ">", true);
                     listOfColumns.Add(key);
-                    var newDataBoxCol = new DataBox(new DocumentReferenceController(prototype.GetDataDocument(), key), 0, 35 * count++, double.NaN, double.NaN).Document;
-                    CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
-                    prototype.AddToListField(KeyStore.DataKey, newDataBoxCol);
-                    newDataBoxCol.SetTitle(key.Name);
+                    CollectionDBSchemaView.AddDataBoxForKey(key, prototype);
                 }
                 var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;

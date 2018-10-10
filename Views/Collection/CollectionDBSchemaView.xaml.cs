@@ -273,7 +273,7 @@ namespace Dash
             }
         }
 
-        static private void AddDataBoxForKey(KeyController key, DocumentController dvm)
+        static public void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
             var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
             var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
