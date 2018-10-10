@@ -538,5 +538,12 @@ namespace Dash
                 sender.AddFieldBinding(TextBlock.TextProperty, binding);
             }
         }
+
+        private void ScriptToggle_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+            }
+        }
     }
 }

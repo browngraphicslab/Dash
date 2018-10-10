@@ -173,6 +173,7 @@
     <Compile Include="Controllers\Operators\DateOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentPathOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
+    <Compile Include="Controllers\Operators\QuerySnapshotOperator.cs" />
     <Compile Include="Controllers\Operators\KeyOperator.cs" />
     <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
     <Compile Include="Browser\CollapseRequest.cs" />
