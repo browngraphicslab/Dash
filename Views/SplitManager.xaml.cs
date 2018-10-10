@@ -2,6 +2,7 @@
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -32,16 +33,16 @@ namespace Dash
             {
                 switch (child)
                 {
-                    case SplitFrame frame:
-                        yield return frame;
-                        break;
-                    case SplitManager manager:
-                        foreach (var childFrame in manager.GetChildFrames())
-                        {
-                            yield return childFrame;
-                        }
+                case SplitFrame frame:
+                    yield return frame;
+                    break;
+                case SplitManager manager:
+                    foreach (var childFrame in manager.GetChildFrames())
+                    {
+                        yield return childFrame;
+                    }
 
-                        break;
+                    break;
                 }
             }
         }
@@ -77,141 +78,202 @@ namespace Dash
             SplitFrame newPane = null;
             switch (args.Direction)
             {
-                case SplitFrame.SplitDirection.Down:
-                case SplitFrame.SplitDirection.Up:
-                    if (_allowedSplits != SplitMode.Horizontal)//Make new nested split manager and move split frame to new manager
+            case SplitFrame.SplitDirection.Down:
+            case SplitFrame.SplitDirection.Up:
+                if (_allowedSplits != SplitMode.Horizontal)//Make new nested split manager and move split frame to new manager
+                {
+                    if (CurSplitMode == SplitMode.Content)
                     {
-                        if (CurSplitMode == SplitMode.Content)
-                        {
-                            sender.SplitCompleted += WrapFrameInManager;
-                        }
-
-                        bool up = args.Direction == SplitFrame.SplitDirection.Up;
-                        var row = CurSplitMode == SplitMode.Content ? 0 : Grid.GetRow(sender.GetFirstAncestorOfType<SplitManager>());
-                        CurSplitMode = SplitMode.Vertical;
-                        var splitter = new GridSplitter
-                        {
-                            ResizeDirection = GridSplitter.GridResizeDirection.Rows,
-                            ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
-                        };
-                        newPane = new SplitFrame()
-                        {
-                            DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
-                        };
-                        var newManager = new SplitManager();
-                        newManager.SetContent(newPane);
-                        newManager._allowedSplits = SplitMode.Horizontal;
-                        var height = 0.0;
-                        if (args.AutoSize)
-                        {
-                            var count = 0;
-                            foreach (var child in XContentGrid.Children)
-                            {
-                                if (child is SplitManager || child is SplitFrame)
-                                {
-                                    height += XContentGrid.RowDefinitions[Grid.GetRow(child as FrameworkElement)]
-                                        .Height.Value;
-                                    count++;
-                                }
-                            }
-
-                            height /= count;
-                        }
-                        if (up)
-                        {
-                            XContentGrid.RowDefinitions.Insert(row + 1,
-                                new RowDefinition { Height = new GridLength(height, GridUnitType.Star) }); //Content row
-                            XContentGrid.RowDefinitions.Insert(row + 1,
-                                new RowDefinition { Height = new GridLength(10) }); //Splitter row
-                            Grid.SetRow(splitter, row + 1);
-                            Grid.SetRow(newManager, row + 2);
-                            UpdateRows(2, row + 1);
-                            XContentGrid.Children.Add(splitter);
-                            XContentGrid.Children.Add(newManager);
-                        }
-                        else
-                        {
-                            XContentGrid.RowDefinitions.Insert(row,
-                                new RowDefinition() { Height = new GridLength(10) }); //Splitter row
-                            XContentGrid.RowDefinitions.Insert(row,
-                                new RowDefinition { Height = new GridLength(height, GridUnitType.Star) }); //Content row
-                            Grid.SetRow(newManager, row);
-                            Grid.SetRow(splitter, row + 1);
-                            UpdateRows(2, row);
-                            XContentGrid.Children.Add(splitter);
-                            XContentGrid.Children.Add(newManager);
-                        }
-
+                        sender.SplitCompleted += WrapFrameInManager;
                     }
 
-                    break;
-                case SplitFrame.SplitDirection.Left:
-                case SplitFrame.SplitDirection.Right:
-                    if (_allowedSplits != SplitMode.Vertical)//Make new nested split manager and move split frame to new manager
+                    bool up = args.Direction == SplitFrame.SplitDirection.Up;
+                    var row = CurSplitMode == SplitMode.Content ? 0 : Grid.GetRow(sender.GetFirstAncestorOfType<SplitManager>());
+                    CurSplitMode = SplitMode.Vertical;
+                    var splitter = new GridSplitter
                     {
-                        if (CurSplitMode == SplitMode.Content)
+                        ResizeDirection = GridSplitter.GridResizeDirection.Rows,
+                        ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext,
+                    };
+                    newPane = new SplitFrame()
+                    {
+                        DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
+                    };
+                    var newManager = new SplitManager();
+                    newManager.SetContent(newPane);
+                    newManager._allowedSplits = SplitMode.Horizontal;
+                    var height = 0.0;
+                    if (args.AutoSize)
+                    {
+                        var count = 0;
+                        foreach (var child in XContentGrid.Children)
                         {
-                            sender.SplitCompleted += WrapFrameInManager;
-                        }
-
-                        bool left = args.Direction == SplitFrame.SplitDirection.Left;
-                        var col = CurSplitMode == SplitMode.Content ? 0 : Grid.GetColumn(sender.GetFirstAncestorOfType<SplitManager>());
-                        CurSplitMode = SplitMode.Horizontal;
-                        var splitter = new GridSplitter
-                        {
-                            ResizeDirection = GridSplitter.GridResizeDirection.Columns,
-                            ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
-                        };
-                        newPane = new SplitFrame()
-                        {
-                            DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
-                        };
-                        var newManager = new SplitManager();
-                        newManager.SetContent(newPane);
-                        newManager._allowedSplits = SplitMode.Vertical;
-                        var width = 0.0;
-                        if (args.AutoSize)
-                        {
-                            var count = 0;
-                            foreach (var child in XContentGrid.Children)
+                            if (child is SplitManager || child is SplitFrame)
                             {
-                                if (child is SplitManager || child is SplitFrame)
-                                {
-                                    width += XContentGrid.ColumnDefinitions[Grid.GetColumn(child as FrameworkElement)]
-                                        .Width.Value;
-                                    count++;
-                                }
+                                height += XContentGrid.RowDefinitions[Grid.GetRow(child as FrameworkElement)]
+                                    .Height.Value;
+                                count++;
                             }
+                        }
 
-                            width /= count;
-                        }
-                        if (left)
+                        height /= count;
+                    }
+                    if (up)
+                    {
+                        XContentGrid.RowDefinitions.Insert(row + 1,
+                            new RowDefinition { Height = new GridLength(height, GridUnitType.Star) }); //Content row
+                        XContentGrid.RowDefinitions.Insert(row + 1,
+                            new RowDefinition { Height = new GridLength(10) }); //Splitter row
+                        Grid.SetRow(splitter, row + 1);
+                        Grid.SetRow(newManager, row + 2);
+                        UpdateRows(2, row + 1);
+                        XContentGrid.Children.Add(splitter);
+                        XContentGrid.Children.Add(newManager);
+                        splitter.RightTapped += (s, rtargs) =>
+                            {
+                                xCollapseFlyoutUpDown.ShowAt(splitter);
+                                xCollapseTop.Click += (o, eventArgs) =>
+                                {
+                                    XContentGrid.RowDefinitions[Grid.GetRow(newManager)].Height =
+                                        new GridLength(5);
+                                    XContentGrid.RowDefinitions[row].Height = new GridLength(1, GridUnitType.Star);
+                                };
+                                xCollapseBottom.Click += (o, eventArgs) =>
+                                {
+                                    XContentGrid.RowDefinitions[row].Height = new GridLength(5);
+                                    XContentGrid.RowDefinitions[Grid.GetRow(newManager)].Height =
+                                        new GridLength(1, GridUnitType.Star);
+                                };
+                            };
+                    }
+                    else
+                    {
+                        XContentGrid.RowDefinitions.Insert(row,
+                            new RowDefinition() { Height = new GridLength(10) }); //Splitter row
+                        XContentGrid.RowDefinitions.Insert(row,
+                            new RowDefinition { Height = new GridLength(height, GridUnitType.Star) }); //Content row
+                        Grid.SetRow(newManager, row);
+                        Grid.SetRow(splitter, row + 1);
+                        UpdateRows(2, row);
+                        XContentGrid.Children.Add(splitter);
+                        XContentGrid.Children.Add(newManager);
+                        splitter.RightTapped += (s, rtargs) =>
                         {
-                            XContentGrid.ColumnDefinitions.Insert(col + 1,
-                                new ColumnDefinition { Width = new GridLength(width, GridUnitType.Star) }); //Content col
-                            XContentGrid.ColumnDefinitions.Insert(col + 1,
-                                new ColumnDefinition { Width = new GridLength(10) }); //Splitter col
-                            Grid.SetColumn(splitter, col + 1);
-                            Grid.SetColumn(newManager, col + 2);
-                            UpdateCols(2, col + 1);
-                            XContentGrid.Children.Add(splitter);
-                            XContentGrid.Children.Add(newManager);
-                        }
-                        else
-                        {
-                            XContentGrid.ColumnDefinitions.Insert(col,
-                                new ColumnDefinition() { Width = new GridLength(10) }); //Splitter col
-                            XContentGrid.ColumnDefinitions.Insert(col,
-                                new ColumnDefinition { Width = new GridLength(width, GridUnitType.Star) }); //Content col
-                            Grid.SetColumn(newManager, col);
-                            Grid.SetColumn(splitter, col + 1);
-                            UpdateCols(2, col);
-                            XContentGrid.Children.Add(splitter);
-                            XContentGrid.Children.Add(newManager);
-                        }
+                            xCollapseFlyoutUpDown.ShowAt(splitter);
+                            xCollapseTop.Click += (o, eventArgs) =>
+                            {
+                                XContentGrid.RowDefinitions[row].Height =
+                                    new GridLength(5);
+                                XContentGrid.RowDefinitions[row + 2].Height = new GridLength(1, GridUnitType.Star);
+                            };
+                            xCollapseBottom.Click += (o, eventArgs) =>
+                            {
+                                XContentGrid.RowDefinitions[row + 2].Height = new GridLength(5);
+                                XContentGrid.RowDefinitions[row].Height = new GridLength(1, GridUnitType.Star);
+                            };
+                        };
                     }
 
-                    break;
+                }
+
+                break;
+            case SplitFrame.SplitDirection.Left:
+            case SplitFrame.SplitDirection.Right:
+                if (_allowedSplits != SplitMode.Vertical)//Make new nested split manager and move split frame to new manager
+                {
+                    if (CurSplitMode == SplitMode.Content)
+                    {
+                        sender.SplitCompleted += WrapFrameInManager;
+                    }
+
+                    bool left = args.Direction == SplitFrame.SplitDirection.Left;
+                    var col = CurSplitMode == SplitMode.Content ? 0 : Grid.GetColumn(sender.GetFirstAncestorOfType<SplitManager>());
+                    CurSplitMode = SplitMode.Horizontal;
+                    var splitter = new GridSplitter
+                    {
+                        ResizeDirection = GridSplitter.GridResizeDirection.Columns,
+                        ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext
+                    };
+                    newPane = new SplitFrame()
+                    {
+                        DataContext = new DocumentViewModel(args.SplitDocument) { Undecorated = true }
+                    };
+                    var newManager = new SplitManager();
+                    newManager.SetContent(newPane);
+                    newManager._allowedSplits = SplitMode.Vertical;
+                    var width = 0.0;
+                    if (args.AutoSize)
+                    {
+                        var count = 0;
+                        foreach (var child in XContentGrid.Children)
+                        {
+                            if (child is SplitManager || child is SplitFrame)
+                            {
+                                width += XContentGrid.ColumnDefinitions[Grid.GetColumn(child as FrameworkElement)]
+                                    .Width.Value;
+                                count++;
+                            }
+                        }
+
+                        width /= count;
+                    }
+                    if (left)
+                    {
+                        XContentGrid.ColumnDefinitions.Insert(col + 1,
+                            new ColumnDefinition { Width = new GridLength(width, GridUnitType.Star) }); //Content col
+                        XContentGrid.ColumnDefinitions.Insert(col + 1,
+                            new ColumnDefinition { Width = new GridLength(10) }); //Splitter col
+                        Grid.SetColumn(splitter, col + 1);
+                        Grid.SetColumn(newManager, col + 2);
+                        UpdateCols(2, col + 1);
+                        XContentGrid.Children.Add(splitter);
+                        XContentGrid.Children.Add(newManager);
+                        splitter.RightTapped += (s, rtargs) =>
+                        {
+                            xCollapseFlyoutLeftRight.ShowAt(splitter);
+                            xCollapseLeft.Click += (o, eventArgs) =>
+                            {
+                                XContentGrid.ColumnDefinitions[col].Width =
+                                    new GridLength(5);
+                                XContentGrid.ColumnDefinitions[col + 2].Width = new GridLength(1, GridUnitType.Star);
+                            };
+                            xCollapseRight.Click += (o, eventArgs) =>
+                            {
+                                XContentGrid.ColumnDefinitions[col + 2].Width = new GridLength(5);
+                                XContentGrid.ColumnDefinitions[col].Width = new GridLength(1, GridUnitType.Star);
+                            };
+                        };
+                    }
+                    else
+                    {
+                        XContentGrid.ColumnDefinitions.Insert(col,
+                            new ColumnDefinition() { Width = new GridLength(10) }); //Splitter col
+                        XContentGrid.ColumnDefinitions.Insert(col,
+                            new ColumnDefinition { Width = new GridLength(width, GridUnitType.Star) }); //Content col
+                        Grid.SetColumn(newManager, col);
+                        Grid.SetColumn(splitter, col + 1);
+                        UpdateCols(2, col);
+                        XContentGrid.Children.Add(splitter);
+                        XContentGrid.Children.Add(newManager);
+                        splitter.RightTapped += (s, rtargs) =>
+                        {
+                            xCollapseFlyoutLeftRight.ShowAt(splitter);
+                            xCollapseLeft.Click += (o, eventArgs) =>
+                            {
+                                XContentGrid.RowDefinitions[col + 2].Height = new GridLength(5);
+                                XContentGrid.RowDefinitions[col].Height = new GridLength(1, GridUnitType.Star);
+                            };
+                            xCollapseRight.Click += (o, eventArgs) =>
+                            {
+                                XContentGrid.RowDefinitions[col].Height =
+                                    new GridLength(5);
+                                XContentGrid.RowDefinitions[col + 2].Height = new GridLength(1, GridUnitType.Star);
+                            };
+                        };
+                    }
+                }
+
+                break;
             }
 
             return newPane;
