@@ -179,7 +179,7 @@ namespace Dash
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController == null) { continue; }
-                    var pos = new Point(colPoint.X + (counter * (defaultLength + 5)), colPoint.Y + 10);
+                    var pos = new Point(10 + colPoint.X + (counter * (defaultLength + 5)), colPoint.Y + 10);
                     docController.SetWidth(defaultLength);
                     docController.SetHeight(defaultLength);
                     Actions.DisplayDocument(ViewModel, docController, pos);
@@ -219,28 +219,20 @@ namespace Dash
                 if (docController == null) { return false; }
                 double imageHeight = docController.GetHeight();
                 double imageWidth = docController.GetWidth();
-                var colRect = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformBounds(new Rect(point.X, point.Y, imageWidth, imageHeight));
-                
+                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+
                 // add adornment
-<<<<<<< HEAD
-                var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
-                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 1.2 * colRect.Width, 1.4 * colRect.Height);
-                adorn.SetGroup(docController.Title);
-=======
-                var adornFormPoint = new Point(colRect.X, colRect.Y);
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray,
-                    BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 1.2 * colRect.Width, 1.3 * colRect.Height);
->>>>>>> origin/amenu_rtf_templates
+                    BackgroundShape.AdornmentShape.RoundedRectangle, colPoint, 40 + imageWidth, 60 + imageHeight);
                 ViewModel.AddDocument(adorn);
                 //// add image
-                var pos = new Point(colRect.Left + 0.1 * colRect.Width, colRect.Top + 0.1 * colRect.Height);
+                var pos = new Point(20 + colPoint.X, 20 + colPoint.Y);
                 Actions.DisplayDocument(ViewModel, docController, pos);
-                docController.SetWidth(colRect.Width);
-                docController.SetHeight(colRect.Height);
+
                 // add caption
-                var where = new Point(colRect.X, colRect.Top + 1.1 * colRect.Height);
+                var where = new Point(colPoint.X, colPoint.Y + 30 + imageHeight);
                 var postitNote = new RichTextNote("{\\rtf1\\ansi\\deff0\\pard\\qc{" + docController.Title + "}\\par}").Document;
-                postitNote.SetWidth(1.2 * colRect.Width);
+                postitNote.SetWidth(40 + imageWidth);
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
 

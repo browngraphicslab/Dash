@@ -587,6 +587,20 @@ namespace Dash
                 }
             }
 
+            if (e.Key.Equals(VirtualKey.Back))
+            {
+                if (_isActionMenuOpen)
+                {
+                    ActionMenu actionMenu =
+                        (ActionMenu)MainPage.Instance.xCanvas.Children.FirstOrDefault(fe => fe is ActionMenu);
+                    if (actionMenu != null)
+                    {
+                        MainPage.Instance.xCanvas.Children.Remove(actionMenu);
+                        _isActionMenuOpen = false;
+                    }
+                }
+            }
+
             if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
