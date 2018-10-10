@@ -1247,5 +1247,12 @@ namespace Dash
                 e.Handled = true;
             }
         }
+
+        //this won't work
+
+        private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            xMenuFlyout_Opening(sender, e);
+        }
     }
 }
