@@ -46,6 +46,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
 
+            xDataGrid.MaxWidth = xDataGrid.MaxHeight = 50;
             xDataGrid.AutoGenerateColumns = false;
             xDataGrid.CanUserSortColumns = true;
             xDataGrid.CanUserResizeColumns = true;
@@ -129,7 +130,8 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                xDataGrid.UpdateLayout();
+                xDataGrid.MaxWidth = xDataGrid.MaxHeight = double.PositiveInfinity;
+                //xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
                 
                 var keys = InitializeDocs().ToList();
