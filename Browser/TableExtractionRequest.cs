@@ -59,6 +59,7 @@ namespace Dash
                 }
                 var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                cnote.GetDataDocument().SetTitle("Table " + rows.Count());
                 cnote.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, prototype, true);
                 cnote.SetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns, listOfColumns, true);
 
