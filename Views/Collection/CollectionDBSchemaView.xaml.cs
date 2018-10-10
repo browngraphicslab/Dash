@@ -46,7 +46,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
 
-            xDataGrid.MaxWidth = xDataGrid.MaxHeight = 50;
+            xDataGrid.MaxWidth = xDataGrid.MaxHeight = 0;
             xDataGrid.AutoGenerateColumns = false;
             xDataGrid.CanUserSortColumns = true;
             xDataGrid.CanUserResizeColumns = true;
