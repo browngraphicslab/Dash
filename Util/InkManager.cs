@@ -10,25 +10,33 @@ using Dash.Annotations;
 
 namespace Dash
 {
-    public sealed class InkManager : INotifyPropertyChanged
+    public sealed class InkManager 
     {
-        private InkCanvas _currentInkCanvas;
-        private InkSubToolbar _toolBar;
+        private InkSubToolbar _mainToolbar = new InkSubToolbar();
+        private List<InkSubToolbar> _toolbars = new List<InkSubToolbar>();
         private bool _onMainPage = false;
 
-        public InkCanvas CurrentInkCanvas
-        {
-            get => _currentInkCanvas;
-            set
-            {
-                _currentInkCanvas = value;
-                OnPropertyChanged();
-            }
-        }
+        //public InkCanvas CurrentInkCanvas
+        //{
+        //    get => _currentInkCanvas;
+        //    set
+        //    {
+        //        _currentInkCanvas = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
 
         public InkManager()
         {
-            _toolBar = new InkSubToolbar(this);
+            _mainToolbar.ActiveToolChanged += MainToolbarOnActiveToolChanged;
+        }
+
+        private void MainToolbarOnActiveToolChanged(object sender, EventArgs eventArgs)
+        {
+            foreach (InkSubToolbar tb in _toolbars)
+            {
+                tb.ActiveTool = _mainToolbar.ActiveTool;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -43,16 +51,16 @@ namespace Dash
         {
             if (!_onMainPage)
             {
-                MainPage.Instance.xCanvas.Children.Add(_toolBar);
+                MainPage.Instance.xCanvas.Children.Add(_mainToolbar);
                 _onMainPage = true;
-                // hack until i figure it out lol
-                if (SplitFrame.ActiveFrame.ViewModel.Content is CollectionView collection)
-                {
-                    if (collection.CurrentView is CollectionFreeformBase cfv)
-                    {
-                        CurrentInkCanvas = cfv.XInkCanvas;
-                    }
-                }
+                //// hack until i figure it out lol
+                //if (SplitFrame.ActiveFrame.ViewModel.Content is CollectionView collection)
+                //{
+                //    if (collection.CurrentView is CollectionFreeformBase cfv)
+                //    {
+                //        CurrentInkCanvas = cfv.XInkCanvas;
+                //    }
+                //}
             }
         }
 
@@ -60,9 +68,14 @@ namespace Dash
         {
             if (_onMainPage)
             {
-                MainPage.Instance.xCanvas.Children.Remove(_toolBar);
+                MainPage.Instance.xCanvas.Children.Remove(_mainToolbar);
                 _onMainPage = false;
             }
+        }
+
+        public void AddInkCanvas(InkCanvas canvas)
+        {
+            _toolbars.Add(new InkSubToolbar {Canvas = canvas});
         }
     }
 }
