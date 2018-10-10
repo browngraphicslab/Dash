@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -19,7 +20,7 @@ namespace Dash.Controllers.Operators
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("SumOperator", "20d9d82d-8374-4fcd-ae7c-d6239f545e07");
+        private static readonly KeyController TypeKey = new KeyController("SumOperator", new Guid("20d9d82d-8374-4fcd-ae7c-d6239f545e07"));
 
         public override FieldControllerBase GetDefaultController() => new Sum();
 

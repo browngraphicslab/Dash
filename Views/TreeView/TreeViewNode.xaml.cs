@@ -47,6 +47,7 @@ namespace Dash.Views.TreeView
         {
             get
             {
+                //TODO DBUpdate: This shouldn't be necessary
                 try
                 {
                     return DataContext as DocumentViewModel;

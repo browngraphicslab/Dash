@@ -456,7 +456,7 @@ namespace Dash
                 }
                 catch (Exception)
                 {
-                    var theDoc = ContentController<DashShared.FieldModel>.GetController<DocumentController>(htmlAddress);
+                    var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(htmlAddress);
                     if (theDoc != null)
                     {
                         var regDef = theDoc.GetDataDocument().GetRegionDefinition() ?? theDoc;
@@ -1019,7 +1019,7 @@ namespace Dash
             {
                 if (newkey != null)
                 {
-                    HeaderFieldKey = KeyController.IsPresent(newkey) ? new KeyController(newkey) : new KeyController(newkey, Guid.NewGuid().ToString());
+                    HeaderFieldKey = new KeyController(newkey);
                 }
                 var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
                 xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";

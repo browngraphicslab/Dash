@@ -11,8 +11,6 @@ namespace Dash
 
         public BoolController(BoolModel boolFieldModel) : base(boolFieldModel) { }
 
-        public override void Init() { }
-
         /// <summary>
         ///     The <see cref="BoolFieldModel" /> associated with this <see cref="Dash.BoolController" />,
         ///     You should only set values on the controller, never directly on the model!

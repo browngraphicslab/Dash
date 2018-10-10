@@ -49,14 +49,14 @@ namespace Dash
                 ?.GetDereferencedField<TextController>(ExtractSentencesOperatorController.TextField, null)?.Data;
             if (keyId != null)
             {
-                XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(keyId)?.Name ?? string.Empty;
+                XTextFieldBox.Text = RESTClient.Instance.Fields.GetController<KeyController>(keyId)?.Name ?? string.Empty;
             }
         }
 
         private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
-            XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
+            XTextFieldBox.Text = RESTClient.Instance.Fields.GetController<KeyController>(tfmc.Data).Name;
 
         }
 

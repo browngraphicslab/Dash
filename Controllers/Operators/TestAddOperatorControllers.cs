@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -23,7 +24,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Test Add four param 2", "0DB9818C-75C4-4EE6-A237-8DBCDCA7C28F");
+        private static readonly KeyController TypeKey = new KeyController("Test Add four param 2", new Guid("0DB9818C-75C4-4EE6-A237-8DBCDCA7C28F"));
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -70,7 +71,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Test Add one param 1", "DABC33AD-193C-4434-AF77-33CA87F26BB5");
+        private static readonly KeyController TypeKey = new KeyController("Test Add one param 1", new Guid("DABC33AD-193C-4434-AF77-33CA87F26BB5"));
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -112,7 +113,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Test Add inheritance-based ambiguity 2", "21509C51-0134-421B-A1A7-4833DCAFCDC4");
+        private static readonly KeyController TypeKey = new KeyController("Test Add inheritance-based ambiguity 2", new Guid("21509C51-0134-421B-A1A7-4833DCAFCDC4"));
 
         public override FieldControllerBase GetDefaultController() => new TestAddOperatorControllerInheritanceA();
 
@@ -153,7 +154,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Test Add inheritance-based ambiguity 1", "BC3963BC-9AFC-4122-823F-2427FE54B336");
+        private static readonly KeyController TypeKey = new KeyController("Test Add inheritance-based ambiguity 1", new Guid("BC3963BC-9AFC-4122-823F-2427FE54B336"));
 
         public override FieldControllerBase GetDefaultController() => new TestAddOperatorControllerInheritanceB();
 

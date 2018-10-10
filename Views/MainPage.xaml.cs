@@ -140,7 +140,7 @@ namespace Dash
 
         private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"kno-fb-ctx\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
         }
 
         private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
@@ -162,60 +162,54 @@ namespace Dash
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            Task Success(IEnumerable<DocumentModel> mainPages)
-            {
-                var doc = mainPages.FirstOrDefault();
-                if (doc != null)
-                {
-                    MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-                }
-                else
-                {
-                    MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
-                    MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
-                    MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
-                }
-                LoadSettings();
-
-                //get current presentations if any and set data context of pres view to pres view model
-                var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
-                xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
-
-                var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                DocumentController lastWorkspace;
-                if (col.Count == 0)
-                {
-                    var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
-                    col.Add(documentController);
-                    lastWorkspace = documentController;
-                    lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                    lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
-                }
-                else
-                {
-                    lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                }
-
-                XMainSplitter.SetContent(lastWorkspace);
-
-                var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
-                xMainTreeView.DataContext = treeContext;
-                xMainTreeView.SetUseActiveFrame(true);
-                //xMainTreeView.ToggleDarkMode(true);
-
-                SetupMapView(lastWorkspace);
-
-                if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
-
-                InkManager = new InkManager();
-
-                return Task.CompletedTask;
-            }
-
             await DotNetRPC.Init();
 
-            await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
-                new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
+            var docs = await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
+                new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType));
+            var doc = docs.FirstOrDefault();
+            if (doc != null)
+            {
+                MainDocument = RESTClient.Instance.Fields.GetController<DocumentController>(doc.Id);
+            }
+            else
+            {
+                MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
+                MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
+            }
+
+            LoadSettings();
+
+            //get current presentations if any and set data context of pres view to pres view model
+            var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
+            xPresentationView.DataContext = presentations != null ? new PresentationViewModel(presentations) : new PresentationViewModel();
+
+            var col = MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            DocumentController lastWorkspace;
+            if (col.Count == 0)
+            {
+                var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                col.Add(documentController);
+                lastWorkspace = documentController;
+                lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
+            }
+            else
+            {
+                lastWorkspace = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            }
+
+            XMainSplitter.SetContent(lastWorkspace);
+            
+            var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
+            xMainTreeView.DataContext = treeContext;
+            xMainTreeView.SetUseActiveFrame(true);
+            //xMainTreeView.ToggleDarkMode(true);
+
+            SetupMapView(lastWorkspace);
+
+            if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+            InkManager = new InkManager();
 
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();
@@ -441,7 +435,7 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
@@ -534,7 +528,7 @@ namespace Dash
                     xPresentationView.xSettingsIn.Completed += (sender, o) =>
                     {
                         var isChecked = xPresentationView.xShowLinesButton.IsChecked;
-                        if (isChecked != null && (bool)isChecked) xPresentationView.ShowLines();
+                        if (isChecked ?? false) xPresentationView.ShowLines();
                     };
                 }
                 else

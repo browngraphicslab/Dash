@@ -11,83 +11,74 @@ namespace Dash
         ///     Adds a document to the server.
         /// </summary>
         /// <param name="newDocument"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        void AddDocument(T newDocument, Action<T> success, Action<Exception> error);
+        Task AddDocument(Controller<T> newDocument);
 
         /// <summary>
         ///     Updates a document on the server.
         /// </summary>
         /// <param name="documentToUpdate"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        void UpdateDocument(T documentToUpdate, Action<T> success,  Action<Exception> error);
+        Task UpdateDocument(Controller<T> documentToUpdate);
 
         /// <summary>
         ///     Gets a document from the server.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error);
+        Task<T> GetDocument(string id);
 
         /// <summary>
         /// Gets documents from the server with the given ids
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error);
+        /// <param name="ids"></param>
+        Task<List<T>> GetDocuments(IEnumerable<string> ids);
 
         /// <summary>
         /// Gets documents from the server with the given ids but only returns the entities of type V
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success,Action<Exception> error) where V : EntityBase;
+        /// <param name="ids"></param>
+        Task<List<U>> GetDocuments<U>(IEnumerable<string> ids) where U : EntityBase;
+
+        FieldControllerBase GetController(string id);
+        IList<FieldControllerBase> GetControllers(IEnumerable<string> ids);
+        V GetController<V>(string id) where V : FieldControllerBase;
+        IList<V> GetControllers<V>(IEnumerable<string> ids) where V : FieldControllerBase;
+
+        Task<FieldControllerBase> GetControllerAsync(string id);
+        Task<IList<FieldControllerBase>> GetControllersAsync(IEnumerable<string> ids);
+        Task<V> GetControllerAsync<V>(string id) where V : FieldControllerBase;
+        Task<IList<V>> GetControllersAsync<V>(IEnumerable<string> ids) where V : FieldControllerBase;
+        Task<IList<FieldControllerBase>> GetControllersByQueryAsync(IQuery<T> query);
+        Task<IList<V>> GetControllersByQueryAsync<V>(IQuery<T> query) where V : FieldControllerBase;
 
         /// <summary>
         ///     Deletes a document from the server.
         /// </summary>
         /// <param name="document"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        void DeleteDocument(T document, Action success, Action<Exception> error);
+        Task DeleteDocument(T document);
 
         /// <summary>
         ///     Deletes all input documents from the server.
         /// </summary>
         /// <param name="documents"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        void DeleteDocuments(IEnumerable<T> documents, Action success, Action<Exception> error);
+        Task DeleteDocuments(IEnumerable<T> documents);
 
         /// <summary>
         ///     Deletes all documents from the server.
         /// </summary>
-        /// <param name="document"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        void DeleteAllDocuments(Action success, Action<Exception> error);
+        Task DeleteAllDocuments();
 
         /// <summary>
         /// method to make an arbitrary query for a subset of document T's
         /// </summary>
         /// <param name="query"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
         /// <returns></returns>
-        Task GetDocumentsByQuery(IQuery<T> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error);
+        Task<List<T>> GetDocumentsByQuery(IQuery<T> query);
 
         /// <summary>
         /// method to make an arbitrary query for a subset of document T's but only returns the types V
         /// </summary>
         /// <param name="query"></param>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
         /// <returns></returns>
-        Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase;
+        Task<List<U>> GetDocumentsByQuery<U>(IQuery<T> query) where U : EntityBase;
 
         /// <summary>
         /// Close the connection to the endpoint
@@ -102,7 +93,7 @@ namespace Dash
         /// <param name="model"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        void HasDocument(T model, Action<bool> success, Action<Exception> error);
+        Task<bool> HasDocument(T model);
 
         bool CheckAllDocuments(IEnumerable<T> documents);
 

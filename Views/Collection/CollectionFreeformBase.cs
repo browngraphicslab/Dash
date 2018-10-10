@@ -82,8 +82,6 @@ namespace Dash
 
         public abstract Grid GetOuterGrid();
 
-        public abstract AutoSuggestBox GetTagBox();
-
         public abstract Canvas GetSelectionCanvas();
 
         public abstract Rectangle GetDropIndicationRectangle();
@@ -164,14 +162,6 @@ namespace Dash
         protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             _lastViewModel = ViewModel;
-
-            if (ViewModel?.DocumentViewModels != null)
-            {
-                foreach (var dvm in ViewModel.DocumentViewModels)
-                {
-                    dvm.IsWidthless = false;
-                }
-            }
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -635,56 +625,6 @@ namespace Dash
             //    return true;
             //}
             return false;
-        }
-
-        public void ShowTagKeyBox()
-        {
-            GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Visible;
-            var mousePos = Util.PointTransformFromVisual(this.RootPointerPos(), Window.Current.Content, GetOuterGrid());
-            GetTagBox().RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
-        }
-
-        public void HideTagKeyBox()
-        {
-            GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-        }
-
-        protected void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
-                var names = keys.Where(k => !k.Name.StartsWith("_"));
-                GetTagBox().ItemsSource = names;
-            }
-        }
-
-        protected void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            sender.Text = ((KeyController)args.SelectedItem).Name;
-        }
-
-        protected void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args.ChosenSuggestion != null)
-            {
-                TagKey = (KeyController)args.ChosenSuggestion;
-            } else
-            {
-                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
-                var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
-
-                if (key == null)
-                {
-                    TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
-                } else
-                {
-                    TagKey = key;
-                }
-            }
-            TagMode = true;
-
-            HideTagKeyBox();
         }
 
         #endregion
@@ -1213,14 +1153,20 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
 
-            InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
-            MainPage.Instance.InkManager.AddInkCanvas(XInkCanvas);
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                XInkCanvas = new InkCanvas()
+                {
+                    Width = 60000,
+                    Height = 60000
+                };
 
-            Canvas.SetLeft(XInkCanvas, -30000);
-            Canvas.SetTop(XInkCanvas, -30000);
-            GetInkHostCanvas().Children.Add(XInkCanvas);
+                InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+                Canvas.SetLeft(XInkCanvas, -30000);
+                Canvas.SetTop(XInkCanvas, -30000);
+                GetInkHostCanvas().Children.Add(XInkCanvas);
+            }
         }
 
         bool loadingPermanentTextbox;

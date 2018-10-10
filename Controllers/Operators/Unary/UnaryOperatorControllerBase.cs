@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -11,13 +12,13 @@ namespace Dash
         protected UnaryOperatorControllerBase(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("606DC55B-3D0B-4058-AB94-690A60C58183", "Unary Base");
+        private static readonly KeyController TypeKey = new KeyController("Unary Base", new Guid("606DC55B-3D0B-4058-AB94-690A60C58183"));
 
         //Input keys
-        public static readonly KeyController InKey = new KeyController("A4C5F8BC-1DB6-436E-B5B0-03296140B798", "In");
+        public static readonly KeyController InKey = new KeyController("In");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("1124B2E1-8BF9-489F-B416-6F26D31DDE5A", "Computed Result");
+        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

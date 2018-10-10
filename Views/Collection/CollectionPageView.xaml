@@ -45,10 +45,21 @@
         <Grid Grid.Column="2" x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition />
-                <RowDefinition Height="80" />
+                <RowDefinition Height="30"/>
+                <RowDefinition x:Name="xScriptRow" Height="80" />
             </Grid.RowDefinitions>
+            <Button
+                Grid.Row="1"
+                x:Name="ScriptToggle"
+                Width="100"
+                Height="30"
+                HorizontalAlignment="Right"
+                Background="{StaticResource DashDarkBlueBrush}"
+                Content="Hide Script"
+                Foreground="White"
+                Click="ScriptToggle_OnClick"/>
             <ContentPresenter x:Name="XDocDisplay"></ContentPresenter>
-            <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
+            <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" FontSize="18" HorizontalAlignment="Stretch"
                                  PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
                                  IsSpellCheckEnabled="False" AcceptsReturn="True"
                                  FontFamily="Consolas" IsColorFontEnabled="True" AllowDrop="True" Drop="XTextBox_OnDrop">

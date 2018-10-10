@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace Dash
         private Scope _funcScope;
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Function", "1573E918-19E0-47A9-BB9D-0531233277C9");
+        private static readonly KeyController TypeKey = new KeyController("Function", new Guid("1573E918-19E0-47A9-BB9D-0531233277C9"));
 
 
         //Output keys

@@ -1,4 +1,6 @@
-﻿namespace Dash
+﻿using System;
+
+namespace Dash
 {
     [OperatorType(Op.Name.less_than, Op.Name.operator_less_than)]
     public class LessThanOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
@@ -8,7 +10,7 @@
         public LessThanOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("BEF33148-2A18-445D-B0A0-C41E46A495B3", "Less Than");
+        private static readonly KeyController TypeKey = new KeyController("Less Than", new Guid("BEF33148-2A18-445D-B0A0-C41E46A495B3"));
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new BoolController(left.Data < right.Data);
 

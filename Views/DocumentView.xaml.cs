@@ -26,7 +26,6 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        private DocumentController _templateEditor;
         private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private Point _pointerPoint = new Point(0, 0);
@@ -89,7 +88,7 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (ViewModel?.IsDimensionless == true || ViewModel?.IsWidthless == true)
+            if (ViewModel?.IsDimensionless == true)
             {
                 Width = double.NaN;
                 Height = double.NaN;
@@ -157,8 +156,6 @@ namespace Dash
 
             void updateBindings()
             {
-                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-
                 UpdateRenderTransformBinding();
                 UpdateVisibilityBinding();
                 this.BindBackgroundColor();
@@ -296,8 +293,6 @@ namespace Dash
         {
             updateRenderTransformBinding(null, null);
             updateVisibilityBinding(null, null);
-
-            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
             this.BindBackgroundColor();
             ViewModel?.Load();
@@ -1044,6 +1039,12 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpen_OnClick;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = SplitFrame.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Folder }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpenCollapsed_OnClick;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Delete",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Trash }
             });
@@ -1120,6 +1121,22 @@ namespace Dash
                 (cpresent.Content is CollectionView collectionView2))
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
+            }
+        }
+
+        private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var frame = SplitFrame.GetFrameWithDoc(ViewModel.DocumentController, true);
+                if (frame != null)
+                {
+                    frame.Delete();
+                }
+                else
+                {
+                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
+                }
             }
         }
 

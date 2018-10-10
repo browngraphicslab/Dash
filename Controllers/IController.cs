@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -7,14 +8,13 @@ namespace Dash
     /// <summary>
     /// The Base class for all controllers which communicate with the server
     /// </summary>
-    public abstract class IController<T> : IControllerBase where T:EntityBase
+    public abstract class Controller<T> where T:EntityBase
     {   
         // == CONSTRUCTOR ==
-        public IController(T model)
+        protected Controller(T model)
         {
             Debug.Assert(model != null);
             Model = model;
-            ContentController<T>.AddController(this);
         }
 
         // == FIELDS ==
@@ -28,13 +28,6 @@ namespace Dash
 
         public string Id => Model.Id;
 
-        // == METHODS ==
-        /// <summary>
-        /// Method which should store all the initlization methods for the controller. 
-        /// Anything that gets other controllers' references should be put in here instead of the constructor
-        /// </summary>
-        public abstract void Init();/// <summary>
-
         /// <summary>
         /// Overrides default controller behavior with '==' operator to use underlying .Equals method.
         /// Note: generally, you should just use .Equals() for code clarity and to guarantee behavior.
@@ -42,7 +35,7 @@ namespace Dash
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <returns></returns>
-        public static bool operator ==(IController<T> c1, IController<T> c2)
+        public static bool operator ==(Controller<T> c1, Controller<T> c2)
         {
             if (ReferenceEquals(c1, null))
             {
@@ -62,7 +55,7 @@ namespace Dash
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <returns></returns>
-        public static bool operator !=(IController<T> c1, IController<T> c2)
+        public static bool operator !=(Controller<T> c1, Controller<T> c2)
         {
             return c1 == null ? !(c2 == null) : !(c1.Equals(c2));
         }
@@ -70,44 +63,37 @@ namespace Dash
         /// <summary>
         /// Pushes local changes in the controller's underlying model to the server.
         /// </summary>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        public virtual void UpdateOnServer(UndoCommand undoEvent, Action<T> success = null, Action<Exception> error = null)
+        /// <param name="undoEvent"></param>
+        public void UpdateOnServer(UndoCommand undoEvent)
         {
             if(undoEvent != null)
             {
                 UndoManager.EventOccured(undoEvent);
             }
 
-            error = error ?? ((e) => throw e);
-            _serverEndpoint.UpdateDocument(Model, success, error);
+            _serverEndpoint.UpdateDocument(this);
         }
 
         /// <summary>
         /// Deletes the given controller's underlying model from the server.
         /// </summary>
-        /// <param name="success"></param>
-        /// <param name="error"></param>
-        public virtual void DeleteOnServer(Action success = null, Action<Exception> error = null)
+        public void DeleteOnServer()
         {
-            error = error ?? ((e) => throw e);
-            _serverEndpoint.DeleteDocument(Model, success, error);
+            _serverEndpoint.DeleteDocument(Model);
         }
 
         /// <summary>
         /// Saves the given controllers' underlying model on the server.
         /// This should only be called the first time you make the model, otherwise use "UpdateOnServer" to save;
         /// </summary>
-        public virtual void SaveOnServer(Action<T> success = null, Action<Exception> error = null)
+        public void SaveOnServer()
         {
-            error = error ?? ((e) => throw e);
-            _serverEndpoint.AddDocument(Model, success, error);
+            _serverEndpoint.AddDocument(this);
         }
 
-        public virtual void IsOnServer(Action<bool> success = null, Action<Exception> error = null)
+        public Task<bool> IsOnServer()
         {
-            error = error ?? ((e) => throw e);
-            _serverEndpoint.HasDocument(Model, success, error);
+            return _serverEndpoint.HasDocument(Model);
         }
     }
 }

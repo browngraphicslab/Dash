@@ -238,7 +238,7 @@ namespace Dash
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
             if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1) {
-                webBoxView.Freeze();
+                webBoxView?.Freeze();
             }
         }
         

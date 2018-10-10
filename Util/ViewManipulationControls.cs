@@ -134,6 +134,7 @@ namespace Dash
             }
 
         }
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>

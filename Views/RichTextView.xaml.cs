@@ -393,7 +393,7 @@ namespace Dash
             _target = getHyperlinkTargetForSelection();
             if (_target != null)
             {
-                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
+                var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(_target);
                 if (theDoc != null)
                 {
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
@@ -527,7 +527,15 @@ namespace Dash
                     var fullText = GetParsedText();
                     (currMenu as ActionMenu).FilterString = fullText;
                 }
+            };
 
+            sender.LostFocus += delegate
+            {
+                var menus = MainPage.Instance.xCanvas.Children.Where(fe => fe is ActionMenu).Cast<ActionMenu>();
+                foreach (var actionMenu in menus)
+                {
+                    MainPage.Instance.xCanvas.Children.Remove(actionMenu);
+                }
             };
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
@@ -585,8 +593,11 @@ namespace Dash
 
             if (e.Key == (VirtualKey)191)
             {
-                CreateActionMenu(sender as RichEditBox);
-                _isActionMenuOpen = true;
+                if (getReadableText() == "")
+                {
+                    CreateActionMenu(sender as RichEditBox);
+                    _isActionMenuOpen = true;
+                }
             }
 
             if (e.Key.Equals(VirtualKey.Down))
@@ -838,6 +849,10 @@ namespace Dash
         {
             IsLoaded = true;
 
+            if (this.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data == "/" && this.xRichEditBox == FocusManager.GetFocusedElement())
+            {
+                CreateActionMenu(this.xRichEditBox);
+            }
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
@@ -883,7 +898,7 @@ namespace Dash
 
             // possibly reuse any existing hyperlink region
             var target = getHyperlinkTargetForSelection();
-            var theDoc = target == null ? null : ContentController<FieldModel>.GetController<DocumentController>(target);
+            var theDoc = target == null ? null : RESTClient.Instance.Fields.GetController<DocumentController>(target);
 
 
             // get the document controller for the target hyperlink (region) document

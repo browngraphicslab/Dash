@@ -437,7 +437,7 @@ namespace Dash
                 {
                     var referenceDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
                     if (referenceDoc?.DocumentController == oldToNewDoc.Key) // if reference pointed to a doc that got copied
-                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value);  // then update the reference to point to the new doc
+                       referenceDoc.DocumentController = oldToNewDoc.Value;  // then update the reference to point to the new doc
                 }
             }
             return copy;
@@ -464,7 +464,6 @@ namespace Dash
             if (oldToNewDocMappings.ContainsKey(doc))
                 return oldToNewDocMappings[doc];
 
-            //TODO tfs: why do we make a delegate in copy?
             var copy = doc.GetPrototype()?.MakeDelegate() ??
                             new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), doc.DocumentType);
             oldToNewDocMappings.Add(doc, copy);

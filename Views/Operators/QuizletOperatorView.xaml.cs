@@ -111,7 +111,7 @@ namespace Dash
             KeyController outputKey = null;
             if (outputKeyId != null)
             {
-                outputKey = ContentController<FieldModel>.GetController<KeyController>(outputKeyId);
+                outputKey = RESTClient.Instance.Fields.GetController<KeyController>(outputKeyId);
             }
             return outputKey;
         }
