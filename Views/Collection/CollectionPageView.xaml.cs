@@ -545,7 +545,7 @@ namespace Dash
             if (sender is Button button && button.Content != null)
             {
                 var shouldCollapse = button.Content.Equals("Hide Script");
-                xScriptRow.Height = new GridLength(shouldCollapse ? 0 : 80);
+                this.xTextBox.Visibility = shouldCollapse ? Visibility.Collapsed : Visibility.Visible;
                 button.Content = shouldCollapse ? "Show Script" : "Hide Script";
             }
         }
