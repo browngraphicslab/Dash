@@ -17,7 +17,7 @@ namespace Dash
 		public static KeyController RegionTypeKey                        = new KeyController("RegionType", new Guid("8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC"));
 		public static KeyController TitleKey                             = new KeyController("Title", new Guid("0C074CB4-6D05-4363-A867-C0A061C1573F"));
 		public static KeyController CaptionKey                           = new KeyController("Caption", new Guid("D01D6702-A3AD-4546-9BFB-C5263F8D5599"));
-		public static KeyController PrototypeKey                         = new KeyController("_Prototype", new Guid("866A6CC9-0B8D-49A3-B45F-D7954631A682"));
+		public static KeyController PrototypeKey                         = new KeyController("Prototype", new Guid("866A6CC9-0B8D-49A3-B45F-D7954631A682"));
         public static KeyController CollectionItemLayoutPrototypeKey     = new KeyController("CollectionItemLayoutPrototype", new Guid("7C6F72BA-EC97-4DA5-8ACE-5F4F1118F185"));    // layout prototype shared by each item in a collection -- set using TableExtraction, used in CollectionPageView
         public static KeyController LayoutPrototypeKey                   = new KeyController("LayoutPrototype", new Guid("77805171-247D-4485-A257-1751619C2C45"));                  // layout prototype used by a document - set using TableExtraction, used in CollectionDBSchema
         public static KeyController ColumnSortingKey                     = new KeyController("ColumnSort", new Guid("852DBACD-791C-422B-8B8E-5EC5E7E8DCA2"));                       // list containing column name and direction to sort a schema table

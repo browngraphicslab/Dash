@@ -42,6 +42,12 @@ namespace Dash
             {
                 var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Stacking, 200, 200).Document;
                 prototype.GetDataDocument().SetTitle("Prototype Row Record");
+                prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
+
+                foreach (var c in rows.FirstOrDefault())
+                {
+                    prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
+                }
                 
                 var listOfColumns = new List<KeyController>();
                 int count = 0;
