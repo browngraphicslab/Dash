@@ -8,6 +8,18 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
+    
+    <UserControl.Resources>
+        <MenuFlyout x:Name="xCollapseFlyoutUpDown">
+            <MenuFlyoutItem x:Name="xCollapseTop">Collapse Top</MenuFlyoutItem>
+            <MenuFlyoutItem x:Name="xCollapseBottom">Collapse Bottom</MenuFlyoutItem>
+        </MenuFlyout>
+
+        <MenuFlyout x:Name="xCollapseFlyoutLeftRight">
+            <MenuFlyoutItem x:Name="xCollapseLeft">Collapse Left</MenuFlyoutItem>
+            <MenuFlyoutItem x:Name="xCollapseRight">Collapse Right</MenuFlyoutItem>
+        </MenuFlyout>
+    </UserControl.Resources>
 
     <Grid x:Name="XContentGrid">
     </Grid>
