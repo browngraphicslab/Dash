@@ -334,29 +334,36 @@ namespace Dash
 
         private static async Task CreateDragDropBitmap(DocumentView docView, DragStartingEventArgs args, Rect dragBounds)
         {
-            // render the MainPage's entire xOuterGrid into a bitmap
-            var rtb        = new RenderTargetBitmap();
-            await rtb.RenderAsync(MainPage.Instance.xOuterGrid);
-            var buf        = (await rtb.GetPixelsAsync()).ToArray();
-            var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
-            miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
+            try
+            {
+                // render the MainPage's entire xOuterGrid into a bitmap
+                var rtb = new RenderTargetBitmap();
+                await rtb.RenderAsync(MainPage.Instance.xOuterGrid);
+                var buf = (await rtb.GetPixelsAsync()).ToArray();
+                var miniBitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
+                miniBitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
 
-            // copy out the bitmap rectangle that contains all the documents being dragged
-            var rect         = MainPage.Instance.xOuterGrid.GetBoundingRect(MainPage.Instance.xOuterGrid);
-            var scaling      = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-            var parentBitmap = new WriteableBitmap((int)(dragBounds.Width * scaling), (int)(dragBounds.Height * scaling));
-            parentBitmap.Blit(new Point(rect.Left - dragBounds.X * scaling, rect.Top - dragBounds.Y * scaling),
-                              miniBitmap, 
-                              new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
-                              Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
+                // copy out the bitmap rectangle that contains all the documents being dragged
+                var rect = MainPage.Instance.xOuterGrid.GetBoundingRect(MainPage.Instance.xOuterGrid);
+                var hackFactor = 1 / (MainPage.Instance.xOuterGrid.ActualWidth * 2 / rtb.PixelWidth); // apparently bitmaps aren't created over 4096 pixels in width.  this is a fudge factor for when the window width is greater than 2048.
+                var scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel * hackFactor;
+                var parentBitmap = new WriteableBitmap((int)(dragBounds.Width * scaling), (int)(dragBounds.Height * scaling));
+                parentBitmap.Blit(new Point(rect.Left - dragBounds.X * scaling, rect.Top - dragBounds.Y * scaling),
+                                  miniBitmap,
+                                  new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
+                                  Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
 
-            // Convert the dragged documents' bitmap into a software bitmap that can be used for the Drag/Drop UI
-            // and offset it to pick correlate properly with the cursor.
-            var finalBitmap = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
-                                                                  parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
-            var docViewTL   = docView.TransformToVisual(Window.Current.Content).TransformPoint(new Point());
-            var cursorPt    = args.GetPosition(Window.Current.Content);
-            args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, new Point(cursorPt.X - (2 * dragBounds.X - docViewTL.X), cursorPt.Y - (2 * dragBounds.Y - docViewTL.Y)));
+                // Convert the dragged documents' bitmap into a software bitmap that can be used for the Drag/Drop UI
+                // and offset it to pick correlate properly with the cursor.
+                var finalBitmap = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
+                                                                      parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
+                var docViewTL = docView.TransformToVisual(Window.Current.Content).TransformPoint(new Point());
+                var cursorPt = args.GetPosition(Window.Current.Content);
+                args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, new Point(cursorPt.X - (2 * dragBounds.X - docViewTL.X), cursorPt.Y - (2 * dragBounds.Y - docViewTL.Y)));
+            } catch (System.OutOfMemoryException)
+            {
+
+            }
         }
 
         #endregion

@@ -46,6 +46,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
 
+            xDataGrid.MaxWidth = xDataGrid.MaxHeight = 0;
             xDataGrid.AutoGenerateColumns = false;
             xDataGrid.CanUserSortColumns = true;
             xDataGrid.CanUserResizeColumns = true;
@@ -129,7 +130,8 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                xDataGrid.UpdateLayout();
+                xDataGrid.MaxWidth = xDataGrid.MaxHeight = double.PositiveInfinity;
+                //xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
                 
                 var keys = InitializeDocs().ToList();
@@ -180,7 +182,7 @@ namespace Dash
                     await CommitEdit(box.Text, dvm.DataDocument, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
                 }
 
-                AddDataBoxForKey(col.Key, dvm);
+                AddDataBoxForKey(col.Key, dvm.DataDocument);
             }
         }
 
@@ -267,15 +269,15 @@ namespace Dash
 
                 foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
                 {
-                    AddDataBoxForKey(key, dvm);
+                    AddDataBoxForKey(key, dvm.DocumentController);
                     dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, schemaColumns.Copy(), true);
                 }
             }
         }
 
-        private void AddDataBoxForKey(KeyController key, DocumentViewModel dvm)
+        static public void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
-            var proto = dvm.DocumentController.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm.DocumentController;
+            var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
             var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
 
             foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
