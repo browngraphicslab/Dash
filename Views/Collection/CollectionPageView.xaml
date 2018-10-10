@@ -45,12 +45,13 @@
         <Grid Grid.Column="2" x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition />
-                <RowDefinition Height="80" />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition x:Name="xScriptRow" Height="Auto" />
             </Grid.RowDefinitions>
             <ContentPresenter x:Name="XDocDisplay"></ContentPresenter>
-            <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
+            <local:ActionTextBox x:Name="xTextBox" Grid.Row="2" FontSize="18" HorizontalAlignment="Stretch"
                                  PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
-                                 IsSpellCheckEnabled="False" AcceptsReturn="True"
+                                 IsSpellCheckEnabled="False" AcceptsReturn="True" Visibility="Collapsed"
                                  FontFamily="Consolas" IsColorFontEnabled="True" AllowDrop="True" Drop="XTextBox_OnDrop">
             </local:ActionTextBox>
         </Grid>
@@ -69,15 +70,14 @@
         </localMicrosoft:GridSplitter>
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
+                <RowDefinition Height="0" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="40" />
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
             <Rectangle Grid.Row="0" Fill="{StaticResource DashDarkBlueBrush}"/>
-            <TextBlock Grid.Row="0" Foreground="White" FontSize="16">Documents:</TextBlock>
+            <TextBlock Grid.Row="0" Foreground="White" FontSize="16" Visibility="Collapsed">Documents:</TextBlock>
             <ListView
                 Grid.Row="1"
                 x:Name="xThumbs" 
@@ -123,12 +123,32 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Rectangle Grid.Row="3" Fill="{StaticResource DashDarkBlueBrush}" />
-            <Button x:Name="templateButton" Grid.Row="2" Foreground="White" FontSize="16" Content="Generate Template" HorizontalAlignment="Stretch" Background="{StaticResource DashDarkBlueBrush}" Click="TemplateButton_OnClick" VerticalAlignment="Center"/>
-            <TextBlock
-                CanDrag="True" Grid.Row="3" FontSize="16" HorizontalAlignment="Stretch"
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition>
+
+                    </ColumnDefinition>
+                    <ColumnDefinition>
+
+                    </ColumnDefinition>
+                </Grid.ColumnDefinitions>
+            <Button x:Name="templateButton" Foreground="White" Margin="2"  FontSize="10" Content="Use Template" HorizontalAlignment="Stretch" Background="{StaticResource DashDarkBlueBrush}" Click="TemplateButton_OnClick" VerticalAlignment="Center"/>
+            <TextBlock Visibility="Collapsed"
+                CanDrag="True" Grid.Column="0" FontSize="12" HorizontalAlignment="Stretch"
                 TextAlignment="Center" VerticalAlignment="Center" Foreground="White"
                 DragStarting="ApplyScript_OnDragStarting">Apply Script</TextBlock>
+            <Button
+                Grid.Column="1"
+                x:Name="ScriptToggle"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                Background="{StaticResource DashDarkBlueBrush}"
+                Content="Show Script"
+                Foreground="White"
+                Margin="2"
+                FontSize="10"
+                Click="ScriptToggle_OnClick"/>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

@@ -135,6 +135,8 @@ namespace Dash
 
             search,
             intersect_by_value,
+            query,
+            q,
 
             // misc
             map,
@@ -193,7 +195,7 @@ namespace Dash
             // HELP
 
             help,
-            print,
+            print
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

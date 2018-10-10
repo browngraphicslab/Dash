@@ -175,6 +175,7 @@
     <Compile Include="Controllers\Operators\DateOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentPathOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
+    <Compile Include="Controllers\Operators\QuerySnapshotOperator.cs" />
     <Compile Include="Controllers\Operators\KeyOperator.cs" />
     <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
     <Compile Include="Browser\CollapseRequest.cs" />
@@ -201,6 +202,10 @@
     <Compile Include="Util\Parser2\SearchGrammarParser.cs" />
     <Compile Include="Util\Parser2\SearchGrammarVisitor.cs" />
     <Compile Include="Converters\IsNullToVisibilityConverter.cs" />
+    <Compile Include="Util\InkManager.cs" />
+    <Compile Include="Util\InkSubToolbar.xaml.cs">
+      <DependentUpon>InkSubToolbar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
       <DependentUpon>ActionMenu.xaml</DependentUpon>
@@ -1053,6 +1058,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Popups\NewTemplatePopup.xaml">
+        <SubType>Designer</SubType>
+        <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\InkSubToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

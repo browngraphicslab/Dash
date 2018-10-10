@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.FontIcons;
 using System.Diagnostics;
+using Windows.Devices.Input;
 using Dash.Views.Collection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -71,6 +72,12 @@ namespace Dash
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
+            //if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            //{
+            //    if (!SelectionManager.IsSelected(docview))
+            //        SelectionManager.Select(docview, false);
+            //    SelectionManager.TryInitiateDragDrop(docview, args, null);
+            //}
             if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed ) 
             {
                 docview.ManipulationMode = ManipulationModes.All;

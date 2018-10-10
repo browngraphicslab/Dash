@@ -50,5 +50,6 @@
     <uap:Capability Name="videosLibrary" />-->
     <rescap:Capability Name="runFullTrust" />
     <rescap:Capability Name="broadFileSystemAccess" />
+     <DeviceCapability Name="microphone"/>
   </Capabilities>
 </Package>

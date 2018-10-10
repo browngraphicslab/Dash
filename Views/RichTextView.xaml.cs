@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
@@ -67,8 +68,26 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
-                _manipulator = !e.IsRightPressed() ? null : new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
-                DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    if (!SelectionManager.IsSelected(docView))
+                    {
+                        SelectionManager.Select(docView, false);
+                        var selection = xRichEditBox.Document.Selection;
+                        string boxText;
+                        xRichEditBox.Document.GetText(TextGetOptions.None, out boxText);
+                        var lenght = boxText.Length - 1;
+                        selection.StartPosition = lenght;
+                        selection.EndPosition = lenght;
+                        xRichEditBox.Focus(FocusState.Keyboard);
+                        MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
+                    }
+                       
+                    SelectionManager.TryInitiateDragDrop(docView, e, null);
+                }
+                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                DocumentView.FocusedDocument = docView;
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
@@ -508,7 +527,15 @@ namespace Dash
                     var fullText = GetParsedText();
                     (currMenu as ActionMenu).FilterString = fullText;
                 }
+            };
 
+            sender.LostFocus += delegate
+            {
+                var menus = MainPage.Instance.xCanvas.Children.Where(fe => fe is ActionMenu).Cast<ActionMenu>();
+                foreach (var actionMenu in menus)
+                {
+                    MainPage.Instance.xCanvas.Children.Remove(actionMenu);
+                }
             };
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
@@ -566,8 +593,11 @@ namespace Dash
 
             if (e.Key == (VirtualKey)191)
             {
-                CreateActionMenu(sender as RichEditBox);
-                _isActionMenuOpen = true;
+                if (getReadableText() == "")
+                {
+                    CreateActionMenu(sender as RichEditBox);
+                    _isActionMenuOpen = true;
+                }
             }
 
             if (e.Key.Equals(VirtualKey.Down))
@@ -819,6 +849,10 @@ namespace Dash
         {
             IsLoaded = true;
 
+            if (this.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data == "/" && this.xRichEditBox == FocusManager.GetFocusedElement())
+            {
+                CreateActionMenu(this.xRichEditBox);
+            }
             if (Text != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.

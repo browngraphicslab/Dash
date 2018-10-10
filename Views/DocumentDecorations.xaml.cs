@@ -39,6 +39,7 @@ namespace Dash
         private DocumentController currEditLink;
         public WrapPanel XTagContainer => xTagContainer;
         private DocumentController _currentLink;
+        public bool touchActivated = false;
       
 
         private bool optionClick;
@@ -526,6 +527,8 @@ namespace Dash
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
+            if (e.Pointer.PointerDeviceType.Equals(Windows.Devices.Input.PointerDeviceType.Touch))
+                touchActivated = true;
             if (doc.ViewModel != null)
             {
                 VisibilityState = Visibility.Visible;
@@ -535,9 +538,13 @@ namespace Dash
         private void SelectedDocView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
-            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed()))
+            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed() && !e.Pointer.PointerDeviceType.Equals(Windows.Devices.Input.PointerDeviceType.Touch)))
+            {
                 VisibilityState = Visibility.Collapsed;
-            SuggestGrid.Visibility = Visibility.Collapsed;
+                SuggestGrid.Visibility = Visibility.Collapsed;
+            }
+
+            touchActivated = false;
         }
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -579,6 +586,8 @@ namespace Dash
                 args.Data.RequestedOperation =
                     DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
+
+            //touchActivated = false;
         }
 
         //private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -636,7 +645,7 @@ namespace Dash
 
             optionClick = false;
 
-            if (!this.IsLeftBtnPressed())
+            if (!this.IsLeftBtnPressed() && touchActivated == false)
                 VisibilityState = Visibility.Collapsed;
         }
 
@@ -1018,7 +1027,7 @@ namespace Dash
                 {
                     foreach (var d in SelectedDocs.Where(sd => sd.ViewModel != null).Select(sd => sd.ViewModel.DataDocument))
                     {
-                        var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        var dvalue = d?.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
                         if (dvalue != xHeaderText.Text)
                         {
                             xHeaderText.Text = "...";

@@ -114,9 +114,9 @@ namespace Dash
                     xPlayStopButton.Label = "Play";
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
 
-                    _startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
-                    _startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
-                    SplitFrame.OpenInActiveFrame(_startCollection);
+                    //_startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
+                    //_startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
+                    //SplitFrame.OpenInActiveFrame(_startCollection);
                 }
                 else
                 {

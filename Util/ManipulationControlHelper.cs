@@ -6,7 +6,7 @@ namespace Dash
 {
     public class ManipulationControlHelper
     {
-        private DocumentView _manipulationDocumentTarget = null;
+        public DocumentView _manipulationDocumentTarget = null;
         private int          _numMovements = 0;
 
         public ManipulationControlHelper(FrameworkElement eventElement, PointerRoutedEventArgs pointer, bool drillDown, bool useCache = false)

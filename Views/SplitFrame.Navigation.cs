@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -20,7 +22,7 @@ namespace Dash
             var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
             if (frames.Count == 0)
             {
-                return ActiveFrame.TrySplit(SplitDirection.Right, doc, true);
+                return ActiveFrame.TrySplit(SplitDirection.Left, doc, true);
             }
             else
             {
@@ -35,6 +37,14 @@ namespace Dash
                         area = curArea;
                         frame = curFrame;
                     }
+                }
+
+                if (frame.ActualWidth < MainPage.Instance.ActualWidth / 2)
+                {
+                    var columns = frame.GetFirstAncestorOfType<SplitManager>().GetFirstAncestorOfType<SplitManager>().Columns;
+                    var frameCol = Grid.GetColumn(frame.GetFirstAncestorOfType<SplitManager>());
+                    columns[frameCol].Width = new GridLength(1, GridUnitType.Star);
+                    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
                 }
 
                 return frame.OpenDocument(doc);

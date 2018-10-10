@@ -149,7 +149,8 @@ namespace Dash
 
             using (UndoManager.GetBatchHandle())
             {
-                cview.ViewModel.ContainerDocument.CreateSnapshot();
+                var snapshot = cview.ViewModel.ContainerDocument.CreateSnapshot();
+                MainPage.Instance.xMainTreeView.ViewModel.AddDocument(snapshot);
             }
         }
 

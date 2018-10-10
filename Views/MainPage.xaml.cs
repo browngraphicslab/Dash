@@ -70,6 +70,8 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
+        public InkManager InkManager { get; set; }
+
         public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
@@ -138,7 +140,7 @@ namespace Dash
 
         private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"kno-fb-ctx\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
         }
 
         private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
@@ -198,7 +200,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-
+            
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -207,6 +209,7 @@ namespace Dash
             SetupMapView(lastWorkspace);
 
             if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+            InkManager = new InkManager();
 
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();

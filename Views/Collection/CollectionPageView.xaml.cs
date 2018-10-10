@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -536,6 +537,16 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                 };
                 sender.AddFieldBinding(TextBlock.TextProperty, binding);
+            }
+        }
+
+        private void ScriptToggle_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Content != null)
+            {
+                var shouldCollapse = button.Content.Equals("Hide Script");
+                this.xTextBox.Visibility = shouldCollapse ? Visibility.Collapsed : Visibility.Visible;
+                button.Content = shouldCollapse ? "Show Script" : "Hide Script";
             }
         }
     }

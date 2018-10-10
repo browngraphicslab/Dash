@@ -34,8 +34,8 @@
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
             </Grid.ContextFlyout>
-            
-            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
+
+            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" Holding="XContent_OnHolding" IsHoldingEnabled="True">
                 <ContentPresenter.RenderTransform>
                     <MatrixTransform x:Name="xContentTransform"/>
                 </ContentPresenter.RenderTransform>
