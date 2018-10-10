@@ -180,7 +180,7 @@ namespace Dash
                     await CommitEdit(box.Text, dvm.DataDocument, col.Key, args.Row.GetIndex());//TODO This index might be wrong with sorting/filtering, etc.
                 }
 
-                AddDataBoxForKey(col.Key, dvm);
+                AddDataBoxForKey(col.Key, dvm.DataDocument);
             }
         }
 
@@ -267,15 +267,15 @@ namespace Dash
 
                 foreach (var dvm in ViewModel.DocumentViewModels.Where((dvm) => dvm.DocumentController.DocumentType.Equals(CollectionBox.DocumentType)))
                 {
-                    AddDataBoxForKey(key, dvm);
+                    AddDataBoxForKey(key, dvm.DocumentController);
                     dvm.LayoutDocument.SetField(KeyStore.SchemaDisplayedColumns, schemaColumns.Copy(), true);
                 }
             }
         }
 
-        private void AddDataBoxForKey(KeyController key, DocumentViewModel dvm)
+        static private void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
-            var proto = dvm.DocumentController.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm.DocumentController;
+            var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
             var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
 
             foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
