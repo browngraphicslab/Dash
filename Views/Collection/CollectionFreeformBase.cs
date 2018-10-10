@@ -1270,7 +1270,6 @@ namespace Dash
                     previewTextBuffer += text;
                     if (text.Length > 0)
                     {
-                        Debug.WriteLine("loading new active textbox");
                         LoadNewActiveTextBox(text, where);
                     }
                 }
