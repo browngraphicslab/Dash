@@ -508,7 +508,15 @@ namespace Dash
                     var fullText = GetParsedText();
                     (currMenu as ActionMenu).FilterString = fullText;
                 }
+            };
 
+            sender.LostFocus += delegate
+            {
+                var menus = MainPage.Instance.xCanvas.Children.Where(fe => fe is ActionMenu).Cast<ActionMenu>();
+                foreach (var actionMenu in menus)
+                {
+                    MainPage.Instance.xCanvas.Children.Remove(actionMenu);
+                }
             };
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
