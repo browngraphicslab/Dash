@@ -1,11 +1,13 @@
-﻿using DashShared;
+﻿using System;
+using System.Diagnostics;
+using DashShared;
 
 namespace Dash
 {
     /// <summary>
     /// A Field Model which holds text data
     /// </summary>
-   [FieldModelTypeAttribute(TypeInfo.Text)]
+    [FieldModelTypeAttribute(TypeInfo.Text)]
     public class TextModel : FieldModel
     {
 
@@ -23,5 +25,9 @@ namespace Dash
         /// </summary>
         public string Data;
 
+        public override string ToString()
+        {
+            return $"TextModel: {Data}";
+        }
     }
 }

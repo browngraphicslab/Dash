@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -42,7 +43,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("Intersect by value", "9B073C2B-8B11-4939-818F-903A067D412E");
+            new KeyController("Intersect by value", new Guid("9B073C2B-8B11-4939-818F-903A067D412E"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -55,16 +56,16 @@ namespace Dash
 
             //TODO actually optimize this, right now it's just a prood of concept.  
             //optimizing this will be VERY important as we can definitly go from O(n*n) to O(n) 
-            foreach(var obj in set1)
-            {
-                foreach (var obj2 in set2)
-                {
-                    if (obj.Model.ValueEquals(obj2.Model))
-                    {
-                        returnSet.Add(obj);
-                    }
-                }
-            }
+            //foreach(var obj in set1)
+            //{
+            //    foreach (var obj2 in set2)
+            //    {
+            //        if (obj.Model.ValueEquals(obj2.Model))
+            //        {
+            //            returnSet.Add(obj);
+            //        }
+            //    }
+            //}
 
             outputs[IntersectionKey] = returnSet;
             return Task.CompletedTask;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Dash
         public DebugPrintOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DebugPrint", "57A955CF-81BD-4B5F-A510-753BC4E9B983");
+        private static readonly KeyController TypeKey = new KeyController("DebugPrint", new Guid("57A955CF-81BD-4B5F-A510-753BC4E9B983"));
 
         //Input keys
         public static readonly KeyController InputKey = new KeyController("Input");

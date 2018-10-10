@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -40,7 +41,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("PointType", "45C9F1AB-1E61-453E-B3DB-A17A81A2C428");
+        private static readonly KeyController TypeKey = new KeyController("PointType", new Guid("45C9F1AB-1E61-453E-B3DB-A17A81A2C428"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

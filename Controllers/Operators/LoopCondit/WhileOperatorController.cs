@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -17,7 +18,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("While", "CC159893-283C-4307-A4E8-A98E75C8EA1E");
+        private static readonly KeyController TypeKey = new KeyController("While", new Guid("CC159893-283C-4307-A4E8-A98E75C8EA1E"));
 
         //Input keys
         //public static readonly KeyController BinaryKey 

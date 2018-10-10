@@ -25,7 +25,7 @@ namespace Dash.Controllers.Operators
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Text to Date Time", "7d871c16-c815-404a-b75b-70cdd84b7daf");
+        private static readonly KeyController TypeKey = new KeyController("Text to Date Time", new Guid("7d871c16-c815-404a-b75b-70cdd84b7daf"));
 
         public override FieldControllerBase GetDefaultController()
         {

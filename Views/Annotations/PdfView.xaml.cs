@@ -625,17 +625,17 @@ namespace Dash
                 _currentPageCount = (int)PDFdoc.PageCount;
             }
 
-            await Task.Run(() =>
-            {
+            //await Task.Run(() =>
+            //{
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
-                    var size = page.GetPageSize();
-                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
+                    //var size = page.GetPageSize();
+                    //strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
-                    processor.ProcessPageContent(page);
+                    //processor.ProcessPageContent(page);
                 }
-            });
+            //});
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;

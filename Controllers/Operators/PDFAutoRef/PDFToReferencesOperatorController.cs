@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Dash
         public PdfToReferencesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Extract title references from a pdf", "CF845204-1472-41F6-9939-64E88521B0CB");
+        private static readonly KeyController TypeKey = new KeyController("Extract title references from a pdf", new Guid("CF845204-1472-41F6-9939-64E88521B0CB"));
 
         //Input keys
         public static readonly KeyController PdfKey = new KeyController("PDFDoc");

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -9,10 +10,10 @@ namespace Dash
     public class VariableAssignOperatorController : OperatorController
     {
 
-        public static readonly KeyController VariableKey = new KeyController("20859151-FBBC-4267-8008-E91A2CD3D61A", "Variable");
-        public static readonly KeyController AssignmentKey = new KeyController("B9230797-EFE1-4231-9AD7-9F5C401F44D0", "Assignment");
+        public static readonly KeyController VariableKey = new KeyController("Variable");
+        public static readonly KeyController AssignmentKey = new KeyController("Assignment");
 
-        public static readonly KeyController OutputKey = new KeyController("E0B86647-5A1C-40B4-B4AD-0A738EB85CA9", "Output");
+        public static readonly KeyController OutputKey = new KeyController("Output");
 
         public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
@@ -21,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("D0BA93CC-9585-4E36-BE05-C15C586AF9FD", "VariableAssign");
+        private static readonly KeyController TypeKey = new KeyController("VariableAssign", new Guid("D0BA93CC-9585-4E36-BE05-C15C586AF9FD"));
 
         public override FieldControllerBase GetDefaultController()
         {

@@ -55,7 +55,6 @@ namespace Dash
             xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
             xDataGrid.LoadingRow += XDataGrid_LoadingRow;
             xDataGrid.ColumnReordered += XDataGridOnColumnReordered;
-            xDataGrid.CanUserSortColumns = true;
             xDataGrid.Sorting += XDataGrid_Sorting;
 
             XNewColumnEntry.AddKeyHandler(VirtualKey.Enter, args =>
@@ -85,7 +84,7 @@ namespace Dash
                 _sortColumn.SortDirection = DataGridSortDirection.Ascending;
                 break;
             }
-            ViewModel.ContainerDocument.SetField<ListController<TextController>>(KeyStore.ColumnSortingKey, new List<string>(new string[] { _sortColumn.Key.Name, _sortColumn.SortDirection.ToString() }), true);
+            //ViewModel.ContainerDocument.SetField<ListController<TextController>>(KeyStore.ColumnSortingKey, new List<string>(new string[] { _sortColumn.Key.Name, _sortColumn.SortDirection?.ToString() ?? "" }), true);
             UpdateSort();
         }
 
@@ -100,7 +99,7 @@ namespace Dash
                 this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.OrderByDescending<DocumentViewModel, string>((dvm) => dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key, null)?.ToString() ?? "");
                 break;
             default:
-                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels;
+                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.ToArray();
                 break;
             }
         }

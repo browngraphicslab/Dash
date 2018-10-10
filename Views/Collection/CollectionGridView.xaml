@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True" >
-    <Grid x:Name="Grid" Background="Transparent">
+    <Grid x:Name="Grid" Background="White">
         <GridView x:Name="xGridView"
                 ScrollViewer.VerticalScrollMode="Enabled"
                 VirtualizingStackPanel.VirtualizationMode="Standard"

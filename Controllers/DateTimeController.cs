@@ -35,11 +35,6 @@ namespace Dash.Controllers
         //END CONSTRUCTORS
 
         /*
-         * Initialization method
-         */
-        public override void Init() { }
-
-        /*
          * Effectively a conditional mutator for the instance's Data field, where 'value' must be of type DateTime 
          */
         public override bool TrySetValue(object value)

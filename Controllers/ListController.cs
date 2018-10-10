@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -43,7 +45,7 @@ namespace Dash
         /*
          * Wrapper to retrieve the list items stored in the ListController.
          */
-        private List<T> _typedData = new List<T>();
+        private List<T> _typedData;
         public List<T> TypedData
         {
             get => _typedData;
@@ -113,17 +115,65 @@ namespace Dash
 
         #region // OVERLOADED CONSTRUCTORS, INITIALIZATION //
 
-        // List model
-        public ListController(ListModel model, bool readOnly = false) : base(model) => IsReadOnly = readOnly;
+        private bool _initialized = true;
 
         // Parameterless
-        public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(false);
+        public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            _typedData = new List<T>();
+            ConstructorHelper(false);
+        }
 
         // IEnumerable<T> (list of items)
-        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            foreach (var field in list)
+            {
+                field.FieldModelUpdated += ContainedFieldUpdated;
+            }
+            _typedData = new List<T>(list);
+            ConstructorHelper(readOnly);
+        }
 
         // T (item)
-        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            item.FieldModelUpdated += ContainedFieldUpdated;
+            _typedData = new List<T> {item};
+            ConstructorHelper(readOnly);
+        }
+
+        private ListController(ListModel model) : base(model)
+        {
+            _initialized = false;
+        }
+
+        public static ListController<T> CreateFromServer(ListModel model)
+        {
+            Debug.Assert(!model.SubTypeInfo.Equals(TypeInfo.None));
+            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
+            return new ListController<T>(model);
+        }
+
+        public override async Task InitializeAsync()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
+
+            var fields = await RESTClient.Instance.Fields.GetControllersAsync<T>(ListModel.Data);
+            List<T> list = fields as List<T> ?? new List<T>(fields);
+
+            // furthermore, confirms the type of the list in the model matches the type of this list controller
+            foreach (var field in list)
+            {
+                field.FieldModelUpdated += ContainedFieldUpdated;
+            }
+            _typedData = list;
+        }
 
         /*
          * Factors out code common to all constructors - sets the readonly status, saves to database and calls the custom initialization
@@ -133,18 +183,6 @@ namespace Dash
             IsReadOnly = readOnly;
             Indexed = true;
             SaveOnServer();
-            Init();
-        }
-
-        public override void Init()
-        {
-            // ensures that the list isn't initialized with a type of none
-            Debug.Assert(!((ListModel)Model).SubTypeInfo.Equals(TypeInfo.None));
-
-            TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
-
-            // furthermore, confirms the type of the list in the model matches the type of this list controller
-            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
         #endregion
@@ -350,11 +388,6 @@ namespace Dash
             TypedData.Add(element);
             ListModel.Data.Add(element.Id );
             return true;
-        }
-        
-        public static explicit operator ListController<T>(FieldUpdatedEventArgs v)
-        {
-            throw new NotImplementedException();
         }
 
         public override void AddRange(IEnumerable<FieldControllerBase> elements)

@@ -26,10 +26,6 @@ namespace Dash
         }
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="PdfFieldModel" /> associated with this <see cref="PdfController" />,

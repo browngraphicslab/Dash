@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -24,7 +25,7 @@ namespace Dash.Controllers.Operators.Point
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("XCoordinate", "1ec86c4f-a5d8-418f-ab50-e525cf38d498");
+        private static readonly KeyController TypeKey = new KeyController("XCoordinate", new Guid("1ec86c4f-a5d8-418f-ab50-e525cf38d498"));
 
         public override FieldControllerBase GetDefaultController()
         {

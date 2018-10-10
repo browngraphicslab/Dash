@@ -161,13 +161,13 @@ namespace Dash
         private void xHeaderListOnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             // Set the content of the DataPackage to the models of the key controllers
-            var items = e.Items.Select(item => (item as KeyController)?.Model).ToList();
-            var serializedItems = JsonConvert.SerializeObject(items);
-            e.Data.SetText(serializedItems);
-            // we want to move items between lists
-            e.Data.RequestedOperation = DataPackageOperation.Move;
-            e.Data.Properties[_headerDragKey] = true;
-            _dragSourceHeaderList = sender;
+            //var items = e.Items.Select(item => (item as KeyController)?.Model).ToList();
+            //var serializedItems = JsonConvert.SerializeObject(items);
+            //e.Data.SetText(serializedItems);
+            //// we want to move items between lists
+            //e.Data.RequestedOperation = DataPackageOperation.Move;
+            //e.Data.Properties[_headerDragKey] = true;
+            //_dragSourceHeaderList = sender;
         }
 
         private void xHeaderListOnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
@@ -205,16 +205,16 @@ namespace Dash
         private void xHeaderListOnDragOver(object sender, DragEventArgs e)
         {
             // if it was dragged from another list view in this importer
-            if (e.DataView.Properties.ContainsKey(_headerDragKey))
-            {
-                _dragTargetHeaderList = sender;
-                if (!ReferenceEquals(_dragTargetHeaderList, _dragSourceHeaderList))
-                {
-                    e.AcceptedOperation = DataPackageOperation.Move;
-                    return;
-                }
-            }
-            e.AcceptedOperation = DataPackageOperation.None;
+            //if (e.DataView.Properties.ContainsKey(_headerDragKey))
+            //{
+            //    _dragTargetHeaderList = sender;
+            //    if (!ReferenceEquals(_dragTargetHeaderList, _dragSourceHeaderList))
+            //    {
+            //        e.AcceptedOperation = DataPackageOperation.Move;
+            //        return;
+            //    }
+            //}
+            //e.AcceptedOperation = DataPackageOperation.None;
         }
 
         private void xHeaderListManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
