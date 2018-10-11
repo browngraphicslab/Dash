@@ -130,6 +130,17 @@ namespace Dash
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
 
+            var binding3 = doc == null ? null : new FieldBinding<BoolController>
+            {
+                Converter = new BoolInverter(),
+                Document = doc,
+                Key = KeyStore.IsButtonKey,
+                Mode = BindingMode.OneWay,
+                Tag = "IsButton binding in DocumentView",
+                FallbackValue = true
+            };
+            LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
+
             if (ViewModel?.IsDimensionless == true)
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -550,14 +561,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Ensures the menu flyout is shown on right tap.
-        /// </summary>
-        public void ForceLeftTapped()
-        {
-            TappedHandler(false);
-        }
-
         // this action is used to remove template editor in sync with document
         public Action FadeOutBegin;
 
@@ -688,6 +691,13 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
+            if (ViewModel.IsButton && !this.IsRightBtnPressed())
+            {
+                foreach (var link in ViewModel.DataDocument.GetLinks(null))
+                    new AnnotationManager(this).FollowRegion(ViewModel.DocumentController,
+                        this.GetAncestorsOfType<ILinkHandler>(), new Point(), link.GetDataDocument().GetLinkTag()?.Data ?? "Annotation");
+                return true;
+            }
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -811,7 +821,18 @@ namespace Dash
             }
         }
 
-
+        
+        private void MenuFlyoutItemToggleAsButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var docView in SelectionManager.GetSelectedSiblings(this))
+                {
+                    docView.ViewModel.IsButton = !docView.ViewModel.IsButton;
+                    SetZLayer();
+                }
+            }
+        }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -1103,6 +1124,12 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = ViewModel.LayoutDocument.GetIsButton() ? "Remove Button Behavior" : "Add Button Behavior",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
             if (ViewModel.Content is RichTextView)
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()

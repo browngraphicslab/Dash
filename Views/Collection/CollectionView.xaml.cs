@@ -136,13 +136,18 @@ namespace Dash
             });
             contextMenu.Items.Add(new MenuFlyoutSeparator());
 
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             contextMenu.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Iconify",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
             });
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => Iconify();
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Buttonize",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => Buttonize();
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             contextMenu.Items.Add(new MenuFlyoutSubItem()
@@ -247,6 +252,16 @@ namespace Dash
             SetView(CollectionViewType.Icon);
             ViewModel.ContainerDocument.SetWidth(double.NaN);
             ViewModel.ContainerDocument.SetHeight(double.NaN);
+        }
+        public void Buttonize()
+        {
+            var newdoc = new RichTextNote(ViewModel.ContainerDocument.Title,
+                ViewModel.ContainerDocument.GetPosition() ?? new Point()).Document;
+            newdoc.Link(ViewModel.ContainerDocument, LinkBehavior.Follow, "Button");
+            newdoc.SetIsButton(true);
+            var thisView = this.GetFirstAncestorOfType<DocumentView>();
+            thisView.ParentCollection?.ViewModel.AddDocument(newdoc);
+            thisView.DeleteDocument();
         }
         public void SetView(CollectionViewType viewType)
         {

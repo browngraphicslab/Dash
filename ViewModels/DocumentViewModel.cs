@@ -74,6 +74,11 @@ namespace Dash
             get => DocumentController.GetIsAdornment();
             set => DocumentController.SetIsAdornment(value);
         }
+        public bool IsButton
+        {
+            get => DocumentController.GetIsButton();
+            set => DocumentController.SetIsButton(value);
+        }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
         /// </summary>

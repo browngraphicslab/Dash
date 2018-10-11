@@ -32,6 +32,7 @@ namespace Dash
 		public static KeyController SourceUriKey                         = new KeyController("SourceUriKeys", new Guid("26594498-FF15-438D-A577-2C8506F4ECEF"));
 		public static KeyController SourceTitleKey                       = new KeyController("SourceTitle", new Guid("E16A6779-2F91-4660-8510-E1FD906A6A5E"));
 		public static KeyController IsAdornmentKey                       = new KeyController("IsAdornment", new Guid("FF3329BD-AA78-46E4-9A42-47CAB1E62123"));
+		public static KeyController IsButtonKey                          = new KeyController("IsButton", new Guid("AC726B5B-B862-45C3-A603-9D2E54079656"));
 		public static KeyController DocumentTextKey                      = new KeyController("DocumentText", new Guid("D5156A8F-9093-420B-96B7-507DD949360D"));
 		public static KeyController TextWrappingKey                      = new KeyController("TextWrapping", new Guid("FF488D09-BBB7-4158-A5E4-0C4530DF2F56"));
 		public static KeyController BackgroundColorKey                   = new KeyController("BackgroundColor", new Guid("6B597D2A-1A52-446F-901A-B9ED0BBE33E1"));
