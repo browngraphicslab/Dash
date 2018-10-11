@@ -59,7 +59,10 @@ namespace Dash
 		public static KeyController OperatorKey                          = new KeyController("_Operator", new Guid("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A"));
 		public static KeyController OperatorCacheKey                     = new KeyController("_OperatorCache", new Guid("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041"));
 		public static KeyController CollectionViewTypeKey                = new KeyController("Collection View Type", new Guid("EFC44F1C-3EB0-4111-8840-E694AB9DCB80"));
-		public static KeyController InkDataKey                           = new KeyController("_InkData", new Guid("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6"));
+        public static KeyController CollectionOpenViewTypeKey            = new KeyController("Collection Open View Type", new Guid("5BCDDFA4-0465-4D6B-9C10-1373E12EB229")); // the view type of the collection when opened from its iconic form
+        public static KeyController CollectionOpenWidthKey               = new KeyController("Collection Open Width", new Guid("6D145205-F236-4492-B51D-CE4A34DA8696")); // the width of the collection when opened from its iconic form
+        public static KeyController CollectionOpenHeightKey              = new KeyController("Collection Open Height", new Guid("DE66CED9-BC52-447C-A40C-6659FD382441")); // the height of the collection when opened from its iconic form
+        public static KeyController InkDataKey                           = new KeyController("_InkData", new Guid("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6"));
 		public static KeyController ParsedFieldsKey                      = new KeyController("_ParsedFields", new Guid("385D06F3-96A7-4ADF-B806-50DAB4488FD6"));
 		public static KeyController WebContextKey                        = new KeyController("_WebContext", new Guid("EFD56382-F8BA-45D2-86D3-085974EF4D9D"));
 		public static KeyController DateModifiedKey                      = new KeyController("DateModified", new Guid("CAAD33A3-DE94-42CF-A54A-F85C5F04940E"));

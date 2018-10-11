@@ -560,6 +560,9 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
+    <Compile Include="Views\Collection\CollectionIconView.xaml.cs">
+      <DependentUpon>CollectionIconView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionStackView.xaml.cs">
       <DependentUpon>CollectionStackView.xaml</DependentUpon>
     </Compile>
@@ -1058,8 +1061,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Popups\NewTemplatePopup.xaml">
-        <SubType>Designer</SubType>
-        <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\InkSubToolbar.xaml">
       <SubType>Designer</SubType>
@@ -1138,6 +1141,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionIconView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

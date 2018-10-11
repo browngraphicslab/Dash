@@ -347,8 +347,7 @@ namespace Dash
 
                 // copy out the bitmap rectangle that contains all the documents being dragged
                 var rect = MainPage.Instance.xOuterGrid.GetBoundingRect(MainPage.Instance.xOuterGrid);
-                var hackFactor = 1 / (MainPage.Instance.xOuterGrid.ActualWidth * 2 / rtb.PixelWidth); // apparently bitmaps aren't created over 4096 pixels in width.  this is a fudge factor for when the window width is greater than 2048.
-                var scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel * hackFactor;
+                var scaling = rtb.PixelWidth / MainPage.Instance.xOuterGrid.ActualWidth; // apparently bitmaps aren't created over 4096 pixels in width.  this is a fudge factor for when the window width is greater than 2048.
                 var parentBitmap = new WriteableBitmap((int)(dragBounds.Width * scaling), (int)(dragBounds.Height * scaling));
                 parentBitmap.Blit(new Point(rect.Left - dragBounds.X * scaling, rect.Top - dragBounds.Y * scaling),
                                   miniBitmap,

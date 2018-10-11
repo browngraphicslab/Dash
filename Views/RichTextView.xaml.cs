@@ -177,7 +177,7 @@ namespace Dash
                     var docView = getDocView();
                     if (!SelectionManager.IsSelected(docView))
                         using (UndoManager.GetBatchHandle())
-                            docView.DeleteDocument();
+                            docView?.DeleteDocument();
                 }
                 else if (readableText.StartsWith("#"))
                 {

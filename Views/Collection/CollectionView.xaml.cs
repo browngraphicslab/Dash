@@ -19,7 +19,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Stacking, Schema, TreeView, Timeline, Graph }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Stacking, Schema, TreeView, Timeline, Graph, Icon }
 
         CollectionViewModel _lastViewModel = null;
         CollectionViewType  _viewType;
@@ -137,6 +137,14 @@ namespace Dash
             contextMenu.Items.Add(new MenuFlyoutSeparator());
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Iconify",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => Iconify();
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             contextMenu.Items.Add(new MenuFlyoutSubItem()
             {
                 Text = "View As",
@@ -234,8 +242,15 @@ namespace Dash
         }
 
         #region Menu
+        public void Iconify() 
+        {
+            SetView(CollectionViewType.Icon);
+            ViewModel.ContainerDocument.SetWidth(double.NaN);
+            ViewModel.ContainerDocument.SetHeight(double.NaN);
+        }
         public void SetView(CollectionViewType viewType)
         {
+            var initialViewType = _viewType;
             _viewType = viewType;
             if (CurrentView?.UserControl != null)
                 CurrentView.UserControl.Loaded -= CurrentView_Loaded;
@@ -244,6 +259,16 @@ namespace Dash
             case CollectionViewType.Freeform:
                 if (CurrentView is CollectionFreeformView) return;
                 CurrentView = new CollectionFreeformView();
+                break;
+            case CollectionViewType.Icon:
+                if (CurrentView is CollectionIconView) return;
+                if (CurrentView != null && CurrentView.ViewModel.ViewType != CollectionViewType.Icon)
+                {
+                    ViewModel.ContainerDocument.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CurrentView.ViewModel.ViewType.ToString(), true);
+                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey,  ViewModel.ContainerDocument.GetWidth(), true);
+                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, ViewModel.ContainerDocument.GetHeight(), true);
+                }
+                CurrentView = new CollectionIconView();
                 break;
             case CollectionViewType.Stacking:
                 if (CurrentView is CollectionStackView) return;
@@ -282,6 +307,12 @@ namespace Dash
             }
             CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             CurrentView.UserControl.Loaded += CurrentView_Loaded;
+
+            if (initialViewType == CollectionViewType.Icon && CurrentView?.ViewModel?.ViewType != CollectionViewType.Icon)
+            {
+                ViewModel.ContainerDocument.SetWidth(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey).Data);
+                ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey).Data);
+            }
 
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
