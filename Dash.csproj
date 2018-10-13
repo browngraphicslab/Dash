@@ -819,6 +819,7 @@
     <Compile Include="Views\SplitManager.xaml.cs">
       <DependentUpon>SplitManager.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Splitting\SplitFrame.cs" />
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
