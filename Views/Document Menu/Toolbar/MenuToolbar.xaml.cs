@@ -1161,12 +1161,12 @@ namespace Dash
 
         private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
         {
-            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Left, SplitFrame.ActiveFrame.DocumentController, true);
+            SplitFrame.ActiveFrame.Split(SplitDirection.Right, autosize: true);
         }
 
         private void XSplitHorizontal_OnClick(object sender, RoutedEventArgs e)
         {
-            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Down, SplitFrame.ActiveFrame.DocumentController, true);
+            SplitFrame.ActiveFrame.Split(SplitDirection.Down, autosize: true);
         }
 
         private void XCloseSplit_OnClick(object sender, RoutedEventArgs e)

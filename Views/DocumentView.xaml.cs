@@ -1060,7 +1060,7 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpen_OnClick;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = SplitFrame.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
+                Text = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Folder }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpenCollapsed_OnClick;
@@ -1155,7 +1155,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                var frame = SplitFrame.GetFrameWithDoc(ViewModel.DocumentController, true);
+                var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true);
                 if (frame != null)
                 {
                     frame.Delete();

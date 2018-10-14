@@ -48,8 +48,7 @@ namespace Dash
                     {
                         var w = int.Parse(split[0]);
                         var h = int.Parse(split[1]);
-                        MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                            async () =>
+                        await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                             {
                                 if (CollapseRequest.LastFrame != null)
                                 {

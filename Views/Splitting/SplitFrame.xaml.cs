@@ -20,13 +20,18 @@ namespace Dash
 
         public DocumentView Document => XDocView;
 
-        public static event Action<SplitFrame> ActiveDocumentChanged; 
+        public static event Action<SplitFrame> ActiveDocumentChanged;
 
+        private static SplitFrame _activeFrame;
         public static SplitFrame ActiveFrame
         {
             get => _activeFrame;
             set
             {
+                if (_activeFrame == value)
+                {
+                    return;
+                }
                 _activeFrame?.SetActive(false);
                 _activeFrame = value;
                 _activeFrame.SetActive(true);
@@ -62,61 +67,21 @@ namespace Dash
             return doc;
         }
 
-        public static SplitFrame GetFrameWithDoc(DocumentController doc, bool matchDataDoc)
-        {
-            if (matchDataDoc)
-            {
-                var dataDoc = doc.GetDataDocument();
-                return MainPage.Instance.MainSplitter.GetChildFrames()
-                    .FirstOrDefault(sf => sf.ViewModel.DataDocument.Equals(dataDoc));
-            }
-            else
-            {
-                return MainPage.Instance.MainSplitter.GetChildFrames()
-                    .FirstOrDefault(sf => sf.ViewModel.LayoutDocument.Equals(doc));
-            }
-        }
-
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
-        public enum SplitDirection
+        private enum DragSplitMode
         {
-            Left, Right, Up, Down, None
-        }
-
-        public enum SplitMode
-        {
-            VerticalSplit, HorizontalSplit,
             VerticalCollapsePrevious, VerticalCollapseNext,
             HorizontalCollapsePrevious, HorizontalCollapseNext,
             None
         }
+        private DragSplitMode CurrentSplitMode { get; set; } = DragSplitMode.None;
 
-        public SplitMode CurrentSplitMode { get; private set; } = SplitMode.None;
-
-        public DocumentController DocumentController => (DataContext as DocumentViewModel)?.DocumentController;
-
-        public class SplitEventArgs
-        {
-            public DocumentController SplitDocument { get; }
-            public bool AutoSize { get; }
-            public SplitDirection Direction { get; }
-            public bool Handled { get; set; }
-
-            public SplitEventArgs(SplitDirection dir, DocumentController splitDocument, bool autoSize)
-            {
-                Direction = dir;
-                SplitDocument = splitDocument;
-                AutoSize = autoSize;
-            }
-
-        }
-
-        public event Action<SplitFrame> SplitCompleted;
+        public DocumentController DocumentController => ViewModel?.DocumentController;
 
         public SplitFrame()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             if (ActiveFrame == null)
             {
@@ -125,9 +90,10 @@ namespace Dash
 
             XPathView.UseDataDocument = true;
 
-            _pointerMoved = new PointerEventHandler(UserControl_PointerMoved);
-            _draggedOver = new DragEventHandler(UserControl_DragOver);
-            this.AddHandler(DragOverEvent, _draggedOver, true);
+            _pointerMoved = UserControl_PointerMoved;
+            _draggedOver = UserControl_DragOver;
+            AddHandler(DragOverEvent, _draggedOver, true);
+            AddHandler(TappedEvent, new TappedEventHandler((sender, args) => ActiveFrame = this), true);
         }
 
         private static SolidColorBrush InactiveBrush { get; } = new SolidColorBrush(Colors.Black);
@@ -139,31 +105,9 @@ namespace Dash
             XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
-        public DocumentController TrySplit(SplitDirection direction, DocumentController splitDoc, bool autoSize = false)
+        public DocumentController Split(SplitDirection dir, DocumentController doc = null, bool autosize = false)
         {
-            if (splitDoc.GetHorizontalAlignment() != HorizontalAlignment.Stretch || splitDoc.GetVerticalAlignment() != VerticalAlignment.Stretch)
-            {
-                splitDoc = splitDoc.GetViewCopy();
-                splitDoc.SetWidth(double.NaN);
-                splitDoc.SetHeight(double.NaN);
-            }
-            foreach (var splitManager in this.GetAncestorsOfType<SplitManager>())
-            {
-                if (splitManager.DocViewTrySplit(this, new SplitEventArgs(direction, splitDoc, autoSize)) is SplitFrame newFrame)
-                {
-                    ActiveFrame = newFrame;
-                    break;
-                }
-            }
-
-            if (autoSize)
-            {
-                SplitCompleted?.Invoke(this);
-            }
-
-            CurrentSplitMode = (direction == SplitDirection.Left || direction == SplitDirection.Right) ? SplitMode.HorizontalSplit : SplitMode.VerticalSplit;
-
-            return splitDoc;
+            return this.GetFirstAncestorOfTypeFast<SplitManager>()?.Split(this, dir, doc, autosize);
         }
 
         private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -174,20 +118,33 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle > 135 || angle < -150)
             {
-                TrySplit(SplitDirection.Left, DocumentController);
+                Split(SplitDirection.Right, DocumentController);
+                var pane = (SplitPane) Parent;
+                var currentDef = SplitPane.GetSplitLocation(this);
+                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                var nextDef = currentDef.Parent.Children[index + 1];
+                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
+                XTopRightResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
             else if (angle <= 135 && angle > 60)
             {
-                TrySplit(SplitDirection.Down, DocumentController);
+                Split(SplitDirection.Up, DocumentController);
+                var pane = (SplitPane) Parent;
+                var currentDef = SplitPane.GetSplitLocation(this);
+                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                var prevDef = currentDef.Parent.Children[index - 1];
+                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
+                XTopRightResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
             else if (angle <= 60 && angle > -45)
             {
-                CurrentSplitMode = SplitMode.HorizontalCollapseNext;
+                CurrentSplitMode = DragSplitMode.HorizontalCollapseNext;
             }
             else
             {
-                CurrentSplitMode = SplitMode.VerticalCollapsePrevious;
+                CurrentSplitMode = DragSplitMode.VerticalCollapsePrevious;
             }
+
         }
 
         private void BottomLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -198,149 +155,107 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle < 30 && angle > -45)
             {
-                TrySplit(SplitDirection.Right, DocumentController);
+                Split(SplitDirection.Left, DocumentController);
+
+                var pane = (SplitPane) Parent;
+                var currentDef = SplitPane.GetSplitLocation(this);
+                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                var prevDef = currentDef.Parent.Children[index - 1];
+                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
+                XBottomLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
             else if (angle <= -45 && angle > -120)
             {
-                TrySplit(SplitDirection.Up, DocumentController);
+                Split(SplitDirection.Down, DocumentController);
+
+                var pane = (SplitPane) Parent;
+                var currentDef = SplitPane.GetSplitLocation(this);
+                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                var nextDef = currentDef.Parent.Children[index + 1];
+                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
+                XBottomLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
             else if (angle <= -120 || angle > 135)
             {
-                CurrentSplitMode = SplitMode.HorizontalCollapsePrevious;
+                CurrentSplitMode = DragSplitMode.HorizontalCollapsePrevious;
             }
             else
             {
-                CurrentSplitMode = SplitMode.VerticalCollapseNext;
+                CurrentSplitMode = DragSplitMode.VerticalCollapseNext;
             }
         }
 
-        private void ResizeColumns(int offset, double diff)
-        {
-            var sms = this.GetAncestorsOfType<SplitManager>();
-            var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Horizontal);
-            var parent = sms.First();
-            var cols = splitManager.Columns;
-            var col = splitManager == parent ? Grid.GetColumn(this) : Grid.GetColumn(parent);
-            diff = cols[col].ActualWidth - diff < 0 ? cols[col].ActualWidth : diff;
-            diff = cols[col + offset].ActualWidth + diff < 0 ? -cols[col + offset].ActualWidth : diff;
-            cols[col].Width = new GridLength(cols[col].ActualWidth - diff, GridUnitType.Star);
-            cols[col + offset].Width = new GridLength(cols[col + offset].ActualWidth + diff, GridUnitType.Star);
-        }
-
-        private void ResizeRows(int offset, double diff)
-        {
-            var sms = this.GetAncestorsOfType<SplitManager>();
-            var splitManager = sms.First(sm => sm.CurSplitMode == SplitManager.SplitMode.Vertical);
-            var parent = sms.First();
-            var rows = splitManager.Rows;
-            var row = splitManager == parent ? Grid.GetRow(this) : Grid.GetRow(parent);
-            diff = rows[row].ActualHeight - diff < 0 ? rows[row].ActualHeight : diff;
-            diff = rows[row + offset].ActualHeight + diff < 0 ? -rows[row + offset].ActualHeight : diff;
-            rows[row].Height = new GridLength(rows[row].ActualHeight - diff, GridUnitType.Star);
-            rows[row + offset].Height = new GridLength(rows[row + offset].ActualHeight + diff, GridUnitType.Star);
-        }
-
-        private void TopRightOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            if (CurrentSplitMode == SplitMode.HorizontalSplit)
-            {
-                ResizeColumns(2, -e.Delta.Translation.X);
-            }
-            else if (CurrentSplitMode == SplitMode.VerticalSplit)
-            {
-                ResizeRows(-2, e.Delta.Translation.Y);
-            }
-        }
-
-        private void BottomLeftOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            if (CurrentSplitMode == SplitMode.HorizontalSplit)
-            {
-                ResizeColumns(-2, e.Delta.Translation.X);
-            }
-            else if (CurrentSplitMode == SplitMode.VerticalSplit)
-            {
-                ResizeRows(2, -e.Delta.Translation.Y);
-            }
-        }
+        private ManipulationDeltaEventHandler _manipulationDeltaHandler;
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            if (_manipulationDeltaHandler != null)
+            {
+                XTopRightResizer.ManipulationDelta -= _manipulationDeltaHandler;
+                XBottomLeftResizer.ManipulationDelta -= _manipulationDeltaHandler;
+            }
             switch (CurrentSplitMode)
             {
-            case SplitMode.VerticalSplit:
-            case SplitMode.HorizontalSplit:
-                SplitCompleted?.Invoke(this);
-                break;
-            case SplitMode.VerticalCollapsePrevious:
+            case DragSplitMode.VerticalCollapsePrevious:
+            case DragSplitMode.HorizontalCollapsePrevious:
                 {
-                    var parent = this.GetFirstAncestorOfType<SplitManager>();
-                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
+                    var parent = this.GetFirstAncestorOfType<SplitPane>();
+                    var splitDef = SplitPane.GetSplitLocation(this);
+                    bool vertical = CurrentSplitMode == DragSplitMode.VerticalCollapsePrevious;
+                    if (splitDef.Parent != null &&
+                       (vertical && splitDef.Parent.Mode == SplitMode.Vertical ||
+                        !vertical && splitDef.Parent.Mode == SplitMode.Horizontal))
                     {
-                        int index = Grid.GetRow(parent);
-                        splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index - 2 : index);
+                        bool previous = (vertical ? e.Cumulative.Translation.Y : e.Cumulative.Translation.X) < 0;
+                        if (previous)
+                        {
+                            var index = splitDef.Parent.Children.IndexOf(splitDef);
+                            parent.RemoveSplit(splitDef.Parent.Children[index - 1], SplitDefinition.JoinOption.JoinNext);
+                        }
+                        else
+                        {
+                            parent.RemoveSplit(splitDef, SplitDefinition.JoinOption.JoinPrevious);
+                        }
                     }
 
                     break;
                 }
-            case SplitMode.HorizontalCollapsePrevious:
+            case DragSplitMode.VerticalCollapseNext:
+            case DragSplitMode.HorizontalCollapseNext:
                 {
-                    var parent = this.GetFirstAncestorOfType<SplitManager>();
-                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
+                    var parent = this.GetFirstAncestorOfType<SplitPane>();
+                    var splitDef = SplitPane.GetSplitLocation(this);
+                    bool vertical = CurrentSplitMode == DragSplitMode.VerticalCollapseNext;
+                    if (splitDef.Parent != null &&
+                       (vertical && splitDef.Parent.Mode == SplitMode.Vertical ||
+                        !vertical && splitDef.Parent.Mode == SplitMode.Horizontal))
                     {
-                        int index = Grid.GetColumn(parent);
-                        splitManager.DeleteFrame(e.Cumulative.Translation.X < 0 ? index - 2 : index);
+                        bool previous = (vertical ? e.Cumulative.Translation.Y : e.Cumulative.Translation.X) < 0;
+                        if (previous)
+                        {
+                            parent.RemoveSplit(splitDef, SplitDefinition.JoinOption.JoinNext);
+                        }
+                        else
+                        {
+                            var index = splitDef.Parent.Children.IndexOf(splitDef);
+                            parent.RemoveSplit(splitDef.Parent.Children[index + 1], SplitDefinition.JoinOption.JoinPrevious);
+                        }
                     }
 
                     break;
                 }
-            case SplitMode.VerticalCollapseNext:
-                {
-                    var parent = this.GetFirstAncestorOfType<SplitManager>();
-                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Vertical)
-                    {
-                        int index = Grid.GetRow(parent);
-                        splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
-                    }
-
-                    break;
-                }
-            case SplitMode.HorizontalCollapseNext:
-                {
-                    var parent = this.GetFirstAncestorOfType<SplitManager>();
-                    var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-                    if (splitManager?.CurSplitMode == SplitManager.SplitMode.Horizontal)
-                    {
-                        int index = Grid.GetColumn(parent);
-                        splitManager.DeleteFrame(e.Cumulative.Translation.Y < 0 ? index : index + 2);
-                    }
-
-                    break;
-                }
-            default:
-                throw new ArgumentOutOfRangeException();
             }
-            CurrentSplitMode = SplitMode.None;
+            CurrentSplitMode = DragSplitMode.None;
         }
 
         public void Delete()
         {
             var parent = this.GetFirstAncestorOfType<SplitManager>();
-            var splitManager = parent?.GetFirstAncestorOfType<SplitManager>();
-            splitManager?.DeleteFrame(parent);
-        }
-
-        private void XDocView_DocumentSelected(DocumentView obj)
-        {
-            ActiveFrame = this;
+            parent?.Delete(this);
         }
 
         private SolidColorBrush Yellow = new SolidColorBrush(Color.FromArgb(127, 255, 215, 0));
         private SolidColorBrush Transparent = new SolidColorBrush(Colors.Transparent);
-        private static SplitFrame _activeFrame;
 
         private void DropTarget_OnDragEnter(object sender, DragEventArgs e)
         {
@@ -380,42 +295,42 @@ namespace Dash
             {
                 doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
             }
-            TrySplit(dir, doc, true);
+            Split(dir, doc, true);
         }
 
         private async void XRightDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
             e.Handled = true;
-            await DropHandler(e, SplitDirection.Left);
+            await DropHandler(e, SplitDirection.Right);
         }
 
         private async void XLeftDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
             e.Handled = true;
-            await DropHandler(e, SplitDirection.Right);
+            await DropHandler(e, SplitDirection.Left);
         }
 
         private async void XBottomDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
             e.Handled = true;
-            await DropHandler(e, SplitDirection.Up);
+            await DropHandler(e, SplitDirection.Down);
         }
 
         private async void XTopDropTarget_OnDrop(object sender, DragEventArgs e)
         {
             (sender as Rectangle).Fill = Transparent;
             e.Handled = true;
-            await DropHandler(e, SplitDirection.Down);
+            await DropHandler(e, SplitDirection.Up);
         }
 
         private List<DocumentController> _history = new List<DocumentController>();
         private List<DocumentController> _future = new List<DocumentController>();
 
         private DocumentViewModel _oldViewModel;
-        private bool _changingView = false; 
+        private bool _changingView = false;
         private void SplitFrame_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (Equals(ViewModel, _oldViewModel))
@@ -476,8 +391,8 @@ namespace Dash
             ActiveDocumentChanged?.Invoke(frame);
         }
 
-        PointerEventHandler _pointerMoved ;
-        DragEventHandler    _draggedOver ;
+        private readonly PointerEventHandler _pointerMoved;
+        private readonly DragEventHandler    _draggedOver;
 
         private void UserControl_DragOver(object sender, DragEventArgs e)
         {

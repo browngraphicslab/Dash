@@ -844,7 +844,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
-            var frame = SplitFrame.GetFrameWithDoc(target, true);
+            var frame = MainSplitter.GetFrameWithDoc(target, true);
             if (frame != null)
             {
                 frame.Delete();

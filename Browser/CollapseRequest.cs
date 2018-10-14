@@ -50,7 +50,7 @@ namespace Dash
                         }
 
                         if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
-                            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Right, pdfDoc, true);
+                            SplitFrame.ActiveFrame.Split(SplitDirection.Left, pdfDoc, true);
                         else LastFrame.OpenDocument(pdfDoc);
                         LastFrame = SplitFrame.ActiveFrame;
                     }

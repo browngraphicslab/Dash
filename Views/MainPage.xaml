@@ -55,6 +55,7 @@
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
 
+        <!--<local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>-->
         <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
 
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 15, 15, 0" Spacing="10" Grid.Column="2">
