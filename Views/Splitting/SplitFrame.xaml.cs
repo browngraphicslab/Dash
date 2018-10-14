@@ -42,7 +42,7 @@ namespace Dash
 
         public DocumentController OpenDocument(DocumentController doc)
         {
-            if (ViewModel.DataDocument.Equals(doc.GetDataDocument()))
+            if (doc.GetDataDocument().Equals(ViewModel?.DataDocument))
             {
                 return ViewModel.DocumentController;
             }

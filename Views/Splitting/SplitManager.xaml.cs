@@ -57,7 +57,10 @@ namespace Dash
 
         private SplitFrame MakeFrame(DocumentController doc)
         {
-            return new SplitFrame() { DataContext = new DocumentViewModel(doc.GetViewCopy()) };
+            var frame = new SplitFrame();
+            frame.OpenDocument(doc);
+            return frame
+
         }
 
         public DocumentController Split(SplitFrame frame, SplitDirection dir, DocumentController doc, bool autoSize)

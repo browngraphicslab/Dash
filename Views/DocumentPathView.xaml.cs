@@ -113,7 +113,7 @@ namespace Dash
             var doc = (DocumentController) tb.DataContext;
             Debug.Assert(doc != null);
 
-            SplitFrame.ActiveFrame.OpenDocument(doc);
+            this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(doc);
         }
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
