@@ -524,10 +524,6 @@ namespace Dash
         {
             foreach (var kvp in _fields)
             {
-                if (kvp.Key == KeyStore.DelegatesKey)
-                {
-                    continue;
-                }
                 yield return kvp.Key;
                 yield return kvp.Value;
             }
@@ -544,10 +540,10 @@ namespace Dash
                 generateDocumentFieldUpdatedEvents(updateArgs, new Context());
             }
             //TODO RefCount
-            if (key != KeyStore.DelegatesKey)
+            ReferenceField(field);
+            ReferenceField(key);
+            if (key != KeyStore.DelegatesKey && key != KeyStore.PrototypeKey && key != KeyStore.DocumentContextKey)
             {
-                ReferenceField(field);
-                ReferenceField(key);
                 if (IsReferenced)
                 {
                     field.FieldModelUpdated += TriggerDocumentFieldUpdated;
@@ -560,10 +556,10 @@ namespace Dash
 
         private void ReleaseContainedField(KeyController key, FieldControllerBase field)
         {
-            if (key != KeyStore.DelegatesKey)
+            ReleaseField(key);
+            ReleaseField(field);
+            if (key != KeyStore.DelegatesKey && key != KeyStore.PrototypeKey && key != KeyStore.DocumentContextKey)
             {
-                ReleaseField(key);
-                ReleaseField(field);
                 if (IsReferenced)
                 {
                     Debug.Assert(_fieldHandlerDictionary.ContainsKey(key));
