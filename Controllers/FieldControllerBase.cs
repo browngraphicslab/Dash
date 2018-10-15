@@ -124,6 +124,13 @@ namespace Dash
         /// <returns>A string that is a script that will evaluate to this field</returns>
         public abstract string ToScriptString(DocumentController thisDoc = null);
 
+        private bool _fromServer;
+
+        public void MarkFromServer()
+        {
+            _fromServer = true;
+        }
+
         protected sealed override void SaveOnServer()
         {
             base.SaveOnServer();
@@ -151,8 +158,12 @@ namespace Dash
             ++_refCount;
             if (_refCount == 1)
             {
-                SaveOnServer();
                 RefInit();
+                if (!_fromServer)
+                {
+                    SaveOnServer();
+                }
+                _fromServer = false;
             }
         }
 
@@ -160,8 +171,8 @@ namespace Dash
         {
             if (_refCount == 1)
             {
-                RefDestroy();
                 DeleteOnServer();
+                RefDestroy();
             }
 
             --_refCount;

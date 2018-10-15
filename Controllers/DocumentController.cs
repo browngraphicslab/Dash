@@ -47,7 +47,7 @@ namespace Dash
 
         public static DocumentController CreateFromServer(DocumentModel model)
         {
-            return new DocumentController(model.DocumentType, model);
+            return new DocumentController(model);
         }
 
         public override async Task InitializeAsync()
@@ -69,11 +69,9 @@ namespace Dash
             _initializing = false;
         }
 
-        private DocumentController(DocumentType type,
-            DocumentModel model) : base(model)
+        private DocumentController(DocumentModel model) : base(model)
         {
             _initialized = false;
-            DocumentType = type;
         }
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type, string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Id, kv => kv.Value.Id), type, id))
@@ -869,12 +867,12 @@ namespace Dash
                 return false;
             }
 
-            if (!proto._fields.ContainsKey(key))
+            if (!proto._fields.TryGetValue(key, out var value))
                 return false;
 
-            proto._fields.Remove(key, out var value);
 
             ReleaseContainedField(key, value);
+            proto._fields.Remove(key);
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
 

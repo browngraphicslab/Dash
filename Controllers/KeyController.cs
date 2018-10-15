@@ -15,27 +15,31 @@ namespace Dash
 
         public static KeyController Get(string name)
         {
+            var id = UtilShared.GetDeterministicGuid(name);
+            var idString = id.ToString().ToUpper();
             if (_nameDictionary.TryGetValue(name, out var key))
             {
+                Debug.Assert(idString == key.Id);
                 return key;
             }
 
-            key = new KeyController(name, Guid.NewGuid());
+            key = RESTClient.Instance.Fields.GetController<KeyController>(idString);
+            if (key != null)
+            {
+                Debug.Assert(key.Id == idString);
+                _nameDictionary[name] = key;
+                return key;
+            }
+
+
+            key = new KeyController(name, id);
             _nameDictionary[name] = key;
             return key;
         }
 
         public static KeyController Get(string name, Guid id)
         {
-            if (_nameDictionary.TryGetValue(name, out var key))
-            {
-                Debug.Assert(id.ToString().ToUpper() == key.Id);
-                return key;
-            }
-
-            key = new KeyController(name, id);
-            _nameDictionary[name] = key;
-            return key;
+            return Get(name);
         }
 
         public string Name

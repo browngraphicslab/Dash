@@ -14,7 +14,6 @@ namespace Dash
         {
             FieldKey = key;
             DocumentReference = documentReference;
-            DocumentChanged();
         }
 
         public static PointerReferenceController CreateFromServer(PointerReferenceModel model)
@@ -40,7 +39,6 @@ namespace Dash
             DocumentReference = await RESTClient.Instance.Fields.GetControllerAsync<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
             await base.InitializeAsync();
-            DocumentChanged();
         }
 
         private DocumentController _lastDoc = null;
@@ -68,16 +66,16 @@ namespace Dash
 
         protected override void RefInit()
         {
-            base.RefInit();
             ReferenceField(DocumentReference);
             DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
+            base.RefInit();
         }
 
         protected override void RefDestroy()
         {
             base.RefDestroy();
-            ReleaseField(DocumentReference);
             DocumentReference.FieldModelUpdated -= DocumentReferenceOnFieldModelUpdated;
+            ReleaseField(DocumentReference);
         }
 
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);

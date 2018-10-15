@@ -1,6 +1,7 @@
 ﻿using System;
 using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Dash.Converters;
 
@@ -40,11 +41,9 @@ namespace Dash
             if (IsReferenced)
             {
                 _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            }
 
-            _lastDoc = GetDocumentController(null);
-            if (IsReferenced)
-            {
+                _lastDoc = GetDocumentController(null);
+
                 _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
             }
 
@@ -55,14 +54,17 @@ namespace Dash
         {
             base.RefInit();
             ReferenceField(FieldKey);
-            _lastDoc.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            Debug.Assert(_lastDoc == null);
+            _lastDoc = GetDocumentController(null);
+            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         protected override void RefDestroy()
         {
-            base.RefDestroy();
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc = null;
             ReleaseField(FieldKey);
-            _lastDoc.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            base.RefDestroy();
         }
 
         public KeyController FieldKey { get; protected set; }

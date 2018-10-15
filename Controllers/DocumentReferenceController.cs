@@ -35,7 +35,6 @@ namespace Dash
             Debug.Assert(key != null);
             _documentController = doc;
             FieldKey = key;
-            DocumentChanged();
         }
 
         public static DocumentReferenceController CreateFromServer(DocumentReferenceModel model)
@@ -61,7 +60,6 @@ namespace Dash
             await base.InitializeAsync();
             _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
             Debug.Assert(_documentController != null);
-            DocumentChanged();
         }
 
         public override FieldControllerBase Copy()
