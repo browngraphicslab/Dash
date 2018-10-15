@@ -53,9 +53,12 @@ namespace Dash
                                 if (CollapseRequest.LastFrame != null)
                                 {
                                     var gsplit = CollapseRequest.LastFrame.GetFirstAncestorOfType<SplitManager>();
-                                    var scol = Grid.GetColumn(gsplit);
-                                    var maingrid = gsplit.GetFirstAncestorOfType<Grid>();
-                                    maingrid.ColumnDefinitions[scol].Width = new Windows.UI.Xaml.GridLength(w);
+                                    if (gsplit != null)
+                                    {
+                                        var scol     = Grid.GetColumn(gsplit);
+                                        var maingrid = gsplit.GetFirstAncestorOfType<Grid>();
+                                        maingrid.ColumnDefinitions[scol].Width = new Windows.UI.Xaml.GridLength(w);
+                                    }
                                 }
                             });
                     }

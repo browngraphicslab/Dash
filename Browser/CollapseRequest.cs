@@ -49,17 +49,12 @@ namespace Dash
                         if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
                             SplitFrame.ActiveFrame.Split(SplitDirection.Left, dockedPdfView, true);
                         else LastFrame.OpenDocument(dockedPdfView);
-                        LastFrame = SplitFrame.ActiveFrame;
+                        LastFrame = MainPage.Instance.MainSplitter.GetFrameWithDoc(Recent[uri], false);
                     }
                     else
                     {
-                        LastFrame = SplitFrame.ActiveFrame;
-                        if (LastFrame != null)
-                            LastFrame.Delete();
+                        LastFrame?.Delete();
                         LastFrame = null;
-                        //var thisPdfDoc = MainPage.Instance.MainSplitter.GetChildFrames().FirstOrDefault(fr =>
-                        //    fr.DocumentController.GetField<BoolController>(KeyStore.AbstractInterfaceKey) != null);
-                        //thisPdfDoc?.Delete();
                     }
                 });
         }
