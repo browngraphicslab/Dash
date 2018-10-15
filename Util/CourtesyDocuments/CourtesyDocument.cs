@@ -273,6 +273,16 @@ namespace Dash
         {
             document.SetField<BoolController>(KeyStore.IsButtonKey, button, true);
         }
+        public static bool GetAreContentsHitTestVisible(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, null);
+            return data?.Data != false;
+        }
+        public static void SetAreContentsHitTestVisible(this DocumentController document, bool adornment)
+        {
+            document.SetField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, adornment, true);
+        }
+
         public static bool    GetIsAdornment(this DocumentController document)
         {
             var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);

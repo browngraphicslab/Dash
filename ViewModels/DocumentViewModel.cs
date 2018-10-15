@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Media;
 using Windows.Foundation;
 using static Dash.DocumentController;
 using Point = Windows.Foundation.Point;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -64,10 +65,16 @@ namespace Dash
         private bool _isNotBackgroundPinned = true;
         
         public bool IsDimensionless = false;
-        public bool IsNotBackgroundPinned
+        public bool AreContentsHitTestVisible
         {
-            get => _isNotBackgroundPinned;
-            set => SetProperty(ref _isNotBackgroundPinned, value);
+            get => DocumentController.GetAreContentsHitTestVisible();
+            set {
+                DocumentController.SetAreContentsHitTestVisible(value);
+                foreach (var rtv in Content.GetDescendantsOfType<RichEditBox>())
+                {
+                    rtv.IsHitTestVisible = DocumentController.GetAreContentsHitTestVisible();
+                }
+            }
         }
         public bool IsAdornmentGroup
         {
