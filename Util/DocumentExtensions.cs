@@ -5,6 +5,7 @@ using System.Linq;
 using Windows.Foundation;
 using Dash.Controllers;
 using System;
+using Windows.UI.Xaml;
 
 namespace Dash
 {
@@ -63,20 +64,18 @@ namespace Dash
         public static DocumentController CreateSnapshot(this DocumentController collection, bool copyData = false)
         {
             var docs = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            if (docs == null)
+            if (docs != null)
             {
-                return null;
-            }
-
-            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform,
-                    double.NaN, double.NaN,
+                var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN,
                     copyData ? docs.Select(doc => doc.GetDataCopy()) : docs.Select(doc => doc.GetViewCopy())).Document;
 
-            var snapshots = collection.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.SnapshotsKey);
-            snapshots.Add(snap);
-            snap.GetDataDocument().SetTitle(collection.Title + $"_snapshot{snapshots.Count}");
-            snap.SetFitToParent(true);
-            return snap;
+                var snapshots = collection.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.SnapshotsKey);
+                snapshots.Add(snap);
+                snap.GetDataDocument().SetTitle(collection.Title + $"_snapshot{snapshots.Count}");
+                snap.SetFitToParent(true);
+                return snap;
+            }
+            return null;
         }
 
         /// <summary>

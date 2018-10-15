@@ -40,6 +40,11 @@ namespace Dash
             Document.Tag = "Collection Note Layout" + count++;
 
             dataDocument.SetField(KeyStore.InkDataKey, new InkController(), true);
+            if (double.IsNaN(width) && double.IsNaN(height))
+            {
+                Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                Document.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
+            }
 
             // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
             //Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);

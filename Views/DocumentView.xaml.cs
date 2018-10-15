@@ -539,10 +539,18 @@ namespace Dash
             }
 
             ViewModel.Position = newPos;
-            ViewModel.Width = newSize.Width;
+            if (newSize.Width != ViewModel.ActualSize.X)
+            {
+                ViewModel.Width = newSize.Width;
+            }
 
             if (delta.Y != 0 || this.IsShiftPressed() || isImage)
-                ViewModel.Height = newSize.Height;
+            {
+                if (newSize.Height != ViewModel.ActualSize.Y)
+                {
+                    ViewModel.Height = newSize.Height;
+                }
+            }
         }
 
         // Controls functionality for the Right-click context menu
@@ -1209,6 +1217,10 @@ namespace Dash
             ViewModel.IsNotBackgroundPinned = !ViewModel.IsNotBackgroundPinned;
             xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE840 : 0xE77A);
             e.Handled = true;
+            foreach (var rtv in this.GetDescendantsOfType<RichEditBox>())
+            {
+                rtv.IsHitTestVisible = ViewModel.IsNotBackgroundPinned;
+            }
         }
 
         /// <summary>

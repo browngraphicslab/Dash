@@ -21,8 +21,7 @@ namespace Dash.Views.Collection
         public CollectionStackView()
         {
             this.InitializeComponent();
-        }
-        
+        }        
 
         public void SetDropIndicationFill(Brush fill)
         {

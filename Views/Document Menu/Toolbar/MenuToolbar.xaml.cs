@@ -527,8 +527,17 @@ namespace Dash
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
+                {
+                    d.ViewModel.LayoutDocument.SetWidth(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey,null)?.Data ?? 
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.X);
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
-                else d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                }
+                else
+                {
+                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, d.ViewModel.LayoutDocument.GetWidth(), true);
+                    d.ViewModel.LayoutDocument.SetWidth(double.NaN);
+                    d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                }
                 d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
             }
         }
@@ -538,8 +547,17 @@ namespace Dash
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
+                {
+                    d.ViewModel.LayoutDocument.SetHeight(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.Y);
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
-                else d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
+                }
+                else
+                {
+                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, d.ViewModel.LayoutDocument.GetHeight(), true);
+                    d.ViewModel.LayoutDocument.SetHeight(double.NaN);
+                    d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
+                }
                 d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
             }
         }

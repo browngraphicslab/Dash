@@ -62,7 +62,7 @@ namespace Dash
 
         private SolidColorBrush _searchHighlightBrush;
         private bool _isNotBackgroundPinned = true;
-
+        
         public bool IsDimensionless = false;
         public bool IsNotBackgroundPinned
         {
@@ -99,12 +99,12 @@ namespace Dash
         }
         public double Width
         {
-            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
         {
-            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetHeight();
             set => LayoutDocument.SetHeight(value);
         }
         public Point Scale

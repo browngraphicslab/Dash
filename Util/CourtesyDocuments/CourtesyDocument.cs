@@ -208,31 +208,6 @@ namespace Dash
             Document = GetLayoutPrototype(documentType, prototypeId, abstractInterface).MakeDelegate();
             Document.SetFields(fields, true);
         }
-
-        #region GettersAndSetters
-
-        protected static NumberController GetHeightField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.HeightFieldKey)
-                .DereferenceToRoot<NumberController>(context);
-        }
-
-        protected static NumberController GetWidthField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.WidthFieldKey)
-                .DereferenceToRoot<NumberController>(context);
-        }
-
-        protected static PointController  GetPositionField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.PositionFieldKey)
-                .DereferenceToRoot<PointController>(context);
-        }
-
-        #endregion
     }
 
     public enum LinkBehavior {
@@ -475,7 +450,7 @@ namespace Dash
 
         public static double GetWidth(this DocumentController document)
         {
-            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 0;
+            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? double.NaN;
         }
 
         public static void SetHeight(this DocumentController document, double height)
@@ -485,7 +460,7 @@ namespace Dash
 
         public static double GetHeight(this DocumentController document)
         {
-            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? 0;
+            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
         
     }

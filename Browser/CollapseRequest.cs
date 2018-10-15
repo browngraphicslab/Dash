@@ -30,32 +30,30 @@ namespace Dash
                     {
 
                         var uri    = new Uri(url);
-                        var pdfDoc = Recent.ContainsKey(uri) ? Recent[uri] : null;
-                        if (pdfDoc == null)
+                        var dockedPdfView = Recent.ContainsKey(uri) ? Recent[uri] : null;
+                        if (dockedPdfView == null)
                         { 
                             var note = new RichTextNote("PDF HEADER");
                             note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
                             note.Document.SetHeight(45);
-                            var layout = await new PdfToDashUtil().UriToDoc(uri);
-                            layout.SetHeight(MainPage.Instance.ActualHeight - 45);
-                            layout.SetWidth(double.NaN);
-                            layout.SetField<BoolController>(KeyStore.AbstractInterfaceKey, true, true);
-                            layout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
-                            var docs = new List<DocumentController>(new DocumentController[] { note.Document, layout });
-                            var coll = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, double.NaN, double.NaN, docs);
-                            coll.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
-                            coll.Document.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
-                            pdfDoc = coll.Document;
-                            Recent.Add(uri, pdfDoc);
+                            var pdfLayout = await new PdfToDashUtil().UriToDoc(uri);
+                            pdfLayout.SetHeight(MainPage.Instance.ActualHeight - 45);
+                            pdfLayout.SetWidth(double.NaN);
+                            pdfLayout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                            pdfLayout.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Top);
+                            var docs = new List<DocumentController>(new DocumentController[] { note.Document, pdfLayout });
+                            dockedPdfView = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, double.NaN, double.NaN, docs).Document;
+                            Recent.Add(uri, dockedPdfView);
                         }
 
                         if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
-                            SplitFrame.ActiveFrame.Split(SplitDirection.Left, pdfDoc, true);
-                        else LastFrame.OpenDocument(pdfDoc);
+                            SplitFrame.ActiveFrame.Split(SplitDirection.Left, dockedPdfView, true);
+                        else LastFrame.OpenDocument(dockedPdfView);
                         LastFrame = SplitFrame.ActiveFrame;
                     }
                     else
                     {
+                        LastFrame = SplitFrame.ActiveFrame;
                         if (LastFrame != null)
                             LastFrame.Delete();
                         LastFrame = null;
