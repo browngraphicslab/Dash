@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
@@ -24,7 +26,6 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        private DocumentController _templateEditor;
         private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private Point _pointerPoint = new Point(0, 0);
@@ -129,6 +130,17 @@ namespace Dash
             };
             xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
 
+            var binding3 = doc == null ? null : new FieldBinding<BoolController>
+            {
+                Converter = new BoolInverter(),
+                Document = doc,
+                Key = KeyStore.IsButtonKey,
+                Mode = BindingMode.OneWay,
+                Tag = "IsButton binding in DocumentView",
+                FallbackValue = true
+            };
+            LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
+
             if (ViewModel?.IsDimensionless == true)
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -155,8 +167,6 @@ namespace Dash
 
             void updateBindings()
             {
-                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-
                 UpdateRenderTransformBinding();
                 UpdateVisibilityBinding();
                 this.BindBackgroundColor();
@@ -211,7 +221,16 @@ namespace Dash
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
+
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    if(!SelectionManager.IsSelected(this))
+                        SelectionManager.Select(this, false);
+                    SelectionManager.TryInitiateDragDrop(this, e, null);
+                }
+
                 e.Handled = true;
+                
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
                     e.Handled = false;
@@ -285,8 +304,6 @@ namespace Dash
         {
             updateRenderTransformBinding(null, null);
             updateVisibilityBinding(null, null);
-
-            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
 
             this.BindBackgroundColor();
             ViewModel?.Load();
@@ -544,14 +561,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Ensures the menu flyout is shown on right tap.
-        /// </summary>
-        public void ForceLeftTapped()
-        {
-            TappedHandler(false);
-        }
-
         // this action is used to remove template editor in sync with document
         public Action FadeOutBegin;
 
@@ -682,6 +691,13 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public bool TappedHandler(bool wasHandled)
         {
+            if (ViewModel.IsButton && !this.IsRightBtnPressed())
+            {
+                foreach (var link in ViewModel.DataDocument.GetLinks(null))
+                    new AnnotationManager(this).FollowRegion(ViewModel.DocumentController,
+                        this.GetAncestorsOfType<ILinkHandler>(), new Point(), link.GetDataDocument().GetLinkTag()?.Data ?? "Annotation");
+                return true;
+            }
             if (!wasHandled)
             {
                 FocusedDocument = this;
@@ -805,7 +821,18 @@ namespace Dash
             }
         }
 
-
+        
+        private void MenuFlyoutItemToggleAsButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var docView in SelectionManager.GetSelectedSiblings(this))
+                {
+                    docView.ViewModel.IsButton = !docView.ViewModel.IsButton;
+                    SetZLayer();
+                }
+            }
+        }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -925,6 +952,7 @@ namespace Dash
                     }
                     curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
                     curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
+                    curLayout.SetField(KeyStore.LayoutPrototypeKey, draggedLayout, true);
 
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
@@ -1032,6 +1060,12 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpen_OnClick;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Folder }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpenCollapsed_OnClick;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Delete",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Trash }
             });
@@ -1090,6 +1124,21 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = ViewModel.LayoutDocument.GetIsButton() ? "Remove Button Behavior" : "Add Button Behavior",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
+            if (ViewModel.Content is RichTextView)
+            {
+                xMenuFlyout.Items.Add(new MenuFlyoutItem()
+                {
+                    Text = "Add to Action Menu",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.PlusCircle }
+                });
+                (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAddToActionMenu_Click;
+            }
 
             if (ViewModel.Content is CollectionView collectionView)
             {
@@ -1099,6 +1148,37 @@ namespace Dash
                 (cpresent.Content is CollectionView collectionView2))
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
+            }
+        }
+
+        private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true);
+                if (frame != null)
+                {
+                    frame.Delete();
+                }
+                else
+                {
+                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
+                }
+            }
+        }
+
+        private async void MenuFlyoutItemAddToActionMenu_Click(object sender, RoutedEventArgs e)
+        {
+            (string name, string desc) = await MainPage.Instance.PromptNewTemplate();
+            if (!(name == string.Empty && desc == string.Empty))
+            {
+                var copy = ViewModel.DocumentController.GetCopy();
+                copy.SetTitle(name);
+                copy.SetField<TextController>(KeyStore.CaptionKey, desc, true);
+                var templates = MainPage.Instance.MainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
+                templates.Add(copy);
+                MainPage.Instance.MainDocument.GetDataDocument().SetField(KeyStore.TemplateListKey, templates, true);
             }
         }
 
@@ -1210,6 +1290,13 @@ namespace Dash
 
                 e.Handled = true;
             }
+        }
+
+        //this won't work
+
+        private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            xMenuFlyout_Opening(sender, e);
         }
     }
 }

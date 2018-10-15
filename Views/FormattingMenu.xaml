@@ -42,18 +42,6 @@
                 SelectionChanged="FontFamilyComboBox_SelectionChanged"
                 VerticalAlignment="Center"/>
             <!--Font size combo box-->
-            <TextBox 
-                Name="xFontSizeTextBox" 
-                Height="18" 
-                Foreground="Transparent" 
-                HorizontalAlignment="Stretch" 
-                Margin="-4,0,41,0" 
-                Grid.Column="1" 
-                VerticalAlignment="Center" 
-                Background="White"
-                Opacity="1" 
-                Canvas.ZIndex="2" 
-                TextChanged="XFontSizeTextBox_OnTextChanged"/>
             <ComboBox 
                 Name="xFontSizeComboBox" 
                 Style="{StaticResource ComboBoxStyler}"  
@@ -63,7 +51,19 @@
                 Grid.Column="1" 
                 SelectionChanged="FontSizeComboBox_SelectionChanged" 
                 VerticalAlignment="Center" Canvas.ZIndex="0" 
-                Foreground="Black"/>
+                Foreground="Transparent"/>
+            <TextBox 
+                Name="xFontSizeTextBox" 
+                Height="18" 
+                Foreground="Black" 
+                HorizontalAlignment="Stretch" 
+                Margin="-4,0,41,0" 
+                Grid.Column="1" 
+                VerticalAlignment="Center" 
+                Background="White"
+                Opacity="1" 
+                Canvas.ZIndex="2" 
+                TextChanged="XFontSizeTextBox_OnTextChanged"/>
         </Grid>
 
       

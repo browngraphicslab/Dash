@@ -14,6 +14,7 @@ namespace Dash
         public static readonly KeyController UrlKey = new KeyController("Url");
         public static readonly KeyController ParametersKey = new KeyController("Parameters");
         public static readonly KeyController MethodKey = new KeyController("Method");
+        public static readonly KeyController AuthKey = new KeyController("Authentication");
 
 
         public static readonly KeyController ResultKey = new KeyController("Result");
@@ -40,7 +41,8 @@ namespace Dash
         {
             new KeyValuePair<KeyController, IOInfo>(UrlKey, new IOInfo(TypeInfo.Text, true)),
             new KeyValuePair<KeyController, IOInfo>(ParametersKey, new IOInfo(TypeInfo.Document, true)),
-            new KeyValuePair<KeyController, IOInfo>(MethodKey, new IOInfo(TypeInfo.Text, false)),
+            new KeyValuePair<KeyController, IOInfo>(AuthKey, new IOInfo(TypeInfo.Document, false)),
+            new KeyValuePair<KeyController, IOInfo>(MethodKey, new IOInfo(TypeInfo.Text, false))
 
         };
 
@@ -57,11 +59,12 @@ namespace Dash
             var url = (TextController)inputs[UrlKey];
             var parameters = (DocumentController)inputs[ParametersKey];
             var method = inputs[MethodKey] as TextController;
-            var result = await Execute(url, parameters, method);
+            var authentication = inputs[AuthKey] as DocumentController;
+            var result = await Execute(url, parameters, method, authentication);
             outputs[ResultKey] = result;
         }
 
-        public async Task<FieldControllerBase> Execute(TextController url, DocumentController parameters, TextController method = null)
+        public async Task<FieldControllerBase> Execute(TextController url, DocumentController parameters, TextController method = null, DocumentController authentication = null)
         {
             var httpMethod = HttpMethod.Get;
             if (method != null && method.Data.ToLower() == "post")
@@ -71,9 +74,33 @@ namespace Dash
 
             var request = new Request(httpMethod, new Uri(url.Data));
 
+            var headers = new Dictionary<string, string>();
+
+            if (authentication != null)
+            {
+                var type = authentication.GetField<TextController>(new KeyController("auth_type"))?.Data;
+                if (type != null)
+                {
+                    switch (type.ToLower())
+                    {
+                    case "basic":
+                        var user = authentication.GetField<TextController>(new KeyController("user"))?.Data;
+                        var password = authentication.GetField<TextController>(new KeyController("password"))?.Data;
+                        if (user != null && password != null)
+                        {
+                            var s = $"{user}:{password}";
+                            headers["Authorization"] =
+                                $"Basic {Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(s))}";
+                        }
+                        break;
+                    }
+                }
+            }
+
             var param = parameters.EnumDisplayableFields().Select(kvp => new KeyValuePair<string, string>(kvp.Key.Name, kvp.Value.ToString()));
             var content = new HttpFormUrlEncodedContent(param);
             request.SetMessageBody(content);
+            request.SetHeaders(headers);
             var response = await request.TrySetResponse();
             //var request = new Request(httpMethod, uri).SetHeaders(headers)
             //    .SetMessageBody(new HttpFormUrlEncodedContent(parameters));

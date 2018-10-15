@@ -31,10 +31,11 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
 	        //add field binding for content of content presenter
-	        ContentPresenter contentPresenter = new ContentPresenter();
-			BindContent(contentPresenter, documentController, context);
-
-	        return contentPresenter;
+	  //      var contentPresenter = new ContentPresenter();
+			//BindContent(contentPresenter, documentController, context);
+            return new DataFieldToMakeViewConverter(documentController, context).ConvertDataToXaml(
+                documentController.GetDereferencedField(KeyStore.DataKey, null), null);
+            //return contentPresenter;
 
         }
 
@@ -47,7 +48,7 @@ namespace Dash
 				Key = KeyStore.DataKey,
 				Document = docController,
 				Converter = converter,
-				Mode = BindingMode.TwoWay,
+				Mode = BindingMode.OneWay,
 				Context = context,
                 ValueType = BindingValueType.Field
 			};

@@ -289,6 +289,15 @@ namespace Dash
             document.SetField<TextController>(KeyStore.TitleKey, title, true);
         }
 
+        public static bool GetIsButton(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<BoolController>(KeyStore.IsButtonKey, null);
+            return data?.Data == true;
+        }
+        public static void SetIsButton(this DocumentController document, bool button)
+        {
+            document.SetField<BoolController>(KeyStore.IsButtonKey, button, true);
+        }
         public static bool    GetIsAdornment(this DocumentController document)
         {
             var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);

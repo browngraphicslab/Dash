@@ -17,7 +17,10 @@ namespace Dash
 		public static KeyController RegionTypeKey                        = new KeyController("RegionType", new Guid("8E64FAF2-1ED2-4F4D-9616-0EB3B2F4D1EC"));
 		public static KeyController TitleKey                             = new KeyController("Title", new Guid("0C074CB4-6D05-4363-A867-C0A061C1573F"));
 		public static KeyController CaptionKey                           = new KeyController("Caption", new Guid("D01D6702-A3AD-4546-9BFB-C5263F8D5599"));
-		public static KeyController PrototypeKey                         = new KeyController("_Prototype", new Guid("866A6CC9-0B8D-49A3-B45F-D7954631A682"));
+		public static KeyController PrototypeKey                         = new KeyController("Prototype", new Guid("866A6CC9-0B8D-49A3-B45F-D7954631A682"));
+        public static KeyController CollectionItemLayoutPrototypeKey     = new KeyController("CollectionItemLayoutPrototype", new Guid("7C6F72BA-EC97-4DA5-8ACE-5F4F1118F185"));    // layout prototype shared by each item in a collection -- set using TableExtraction, used in CollectionPageView
+        public static KeyController LayoutPrototypeKey                   = new KeyController("LayoutPrototype", new Guid("77805171-247D-4485-A257-1751619C2C45"));                  // layout prototype used by a document - set using TableExtraction, used in CollectionDBSchema
+        public static KeyController ColumnSortingKey                     = new KeyController("ColumnSort", new Guid("852DBACD-791C-422B-8B8E-5EC5E7E8DCA2"));                       // list containing column name and direction to sort a schema table
 		public static KeyController DelegatesKey                         = new KeyController("_Delegates", new Guid("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB"));
 		public static KeyController UserSetWidthKey                      = new KeyController("_userSetWidth", new Guid("7D3E7CDB-D0C7-4316-BA3B-3C032F24B5AA"));
 		public static KeyController WidthFieldKey                        = new KeyController("Width", new Guid("5B329D99-96BF-4703-8E28-9B7B1C1B837E"));
@@ -29,6 +32,7 @@ namespace Dash
 		public static KeyController SourceUriKey                         = new KeyController("SourceUriKeys", new Guid("26594498-FF15-438D-A577-2C8506F4ECEF"));
 		public static KeyController SourceTitleKey                       = new KeyController("SourceTitle", new Guid("E16A6779-2F91-4660-8510-E1FD906A6A5E"));
 		public static KeyController IsAdornmentKey                       = new KeyController("IsAdornment", new Guid("FF3329BD-AA78-46E4-9A42-47CAB1E62123"));
+		public static KeyController IsButtonKey                          = new KeyController("IsButton", new Guid("AC726B5B-B862-45C3-A603-9D2E54079656"));
 		public static KeyController DocumentTextKey                      = new KeyController("DocumentText", new Guid("D5156A8F-9093-420B-96B7-507DD949360D"));
 		public static KeyController TextWrappingKey                      = new KeyController("TextWrapping", new Guid("FF488D09-BBB7-4158-A5E4-0C4530DF2F56"));
 		public static KeyController BackgroundColorKey                   = new KeyController("BackgroundColor", new Guid("6B597D2A-1A52-446F-901A-B9ED0BBE33E1"));
@@ -56,7 +60,10 @@ namespace Dash
 		public static KeyController OperatorKey                          = new KeyController("_Operator", new Guid("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A"));
 		public static KeyController OperatorCacheKey                     = new KeyController("_OperatorCache", new Guid("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041"));
 		public static KeyController CollectionViewTypeKey                = new KeyController("Collection View Type", new Guid("EFC44F1C-3EB0-4111-8840-E694AB9DCB80"));
-		public static KeyController InkDataKey                           = new KeyController("_InkData", new Guid("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6"));
+        public static KeyController CollectionOpenViewTypeKey            = new KeyController("Collection Open View Type", new Guid("5BCDDFA4-0465-4D6B-9C10-1373E12EB229")); // the view type of the collection when opened from its iconic form
+        public static KeyController CollectionOpenWidthKey               = new KeyController("Collection Open Width", new Guid("6D145205-F236-4492-B51D-CE4A34DA8696")); // the width of the collection when opened from its iconic form
+        public static KeyController CollectionOpenHeightKey              = new KeyController("Collection Open Height", new Guid("DE66CED9-BC52-447C-A40C-6659FD382441")); // the height of the collection when opened from its iconic form
+        public static KeyController InkDataKey                           = new KeyController("_InkData", new Guid("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6"));
 		public static KeyController ParsedFieldsKey                      = new KeyController("_ParsedFields", new Guid("385D06F3-96A7-4ADF-B806-50DAB4488FD6"));
 		public static KeyController WebContextKey                        = new KeyController("_WebContext", new Guid("EFD56382-F8BA-45D2-86D3-085974EF4D9D"));
 		public static KeyController DateModifiedKey                      = new KeyController("DateModified", new Guid("CAAD33A3-DE94-42CF-A54A-F85C5F04940E"));
@@ -85,12 +92,7 @@ namespace Dash
 		public static KeyController BackgroundImageOpacityKey            = new KeyController("_Background Image Opacity", new Guid("0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC"));
 		public static KeyController SettingsUpwardPanningKey             = new KeyController("_Infinite Upward Panning Enabled", new Guid("3B354602-794D-4FC0-A289-1EBA7EC23FD1"));
 		public static KeyController SettingsMarkdownModeKey              = new KeyController("_Markdown vs RTF", new Guid("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED"));
-		public static KeyController TemplateEditorKey                    = new KeyController("_Template Document", new Guid("35624019-4C59-45AD-B44D-77830FD41EA3"));
 		public static KeyController ActivationKey                        = new KeyController("_Document Template activation phase", new Guid("9BA4DB7E-304A-4F0F-8704-C4E4B970C7B9"));
-		public static KeyController UseVerticalAlignmentKey              = new KeyController("Use Vertical Alignment for TemplateBox View", new Guid("3F94F0DD-9412-4571-A89B-4694F83AF534"));
-		public static KeyController UseHorizontalAlignmentKey            = new KeyController("Use Horizontal Alignment for TemplateBox View", new Guid("D58E7E8E-D1C1-476F-ADC3-DF61B1F62239"));
-		public static KeyController TemplateStyleKey                     = new KeyController("Style of Template View", new Guid("F228E21B-A1A9-42EA-A17F-31CD503395A5"));
-	    public static KeyController TemplateKey                          = new KeyController("Template For Document", new Guid("BDD32D9A-439F-4263-9EF7-1E021AF53481"));
 		public static KeyController TemplateListKey                      = new KeyController("List of templates for the Mainpage", new Guid("8AC168A0-F540-455F-8DB7-553B58E8E11E"));
 		public static KeyController RowInfoKey                           = new KeyController("List of grid row sizes", new Guid("70F35A73-89D3-40D0-941D-D964F6CB5A8D"));
 		public static KeyController ColumnInfoKey                        = new KeyController("List of grid column sizes", new Guid("CC243D8B-8150-4C48-8DE7-F1E5EB59E3DC"));
@@ -121,8 +123,8 @@ namespace Dash
 		public static KeyController ExpectedKey                          = new KeyController("Inputs Expected", new Guid("999EF787-80A7-4277-B0E4-DD36FBB48857"));
 		public static KeyController FeedbackKey                          = new KeyController("Feedback", new Guid("EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9"));
 		public static KeyController CollectionFitToParentKey             = new KeyController("CollectionFitToParent", new Guid("61CA156E-F959-4607-A2F3-BFEFA5D00B64"));
-		public static readonly KeyController HorizontalAlignmentKey      = new KeyController("_Horizontal Alignment", new Guid("B43231DA-5A22-45A3-8476-005A62396686"));
-		public static readonly KeyController VerticalAlignmentKey        = new KeyController("_Vertical Alignment", new Guid("227B9887-BC09-40E4-A3F0-AD204D00E48D"));
+		public static readonly KeyController HorizontalAlignmentKey      = new KeyController("Horizontal Alignment", new Guid("B43231DA-5A22-45A3-8476-005A62396686"));
+		public static readonly KeyController VerticalAlignmentKey        = new KeyController("Vertical Alignment", new Guid("227B9887-BC09-40E4-A3F0-AD204D00E48D"));
 		public static readonly KeyController SnapshotImage               = new KeyController("SnapshotImage", new Guid("1D3D649D-A29D-41DF-8608-3822D8546EEA"));
 		public static KeyController AutoPlayKey                          = new KeyController("Is the mediaelementplayer autoplaying", new Guid("092983DC-266E-4F91-8935-1BE5CFE86A78"));
 		public static KeyController GoToRegionKey                        = new KeyController("GotoRegion", new Guid("5A19BC33-4A83-4961-A230-4A0F8C949022"));
@@ -140,6 +142,7 @@ namespace Dash
 		public static KeyController LinkTagKey                           = new KeyController("List of tags", new Guid("72371594-582C-46FE-BE81-9F2B95C5FD50"));
 		public static KeyController SelectedSchemaRow                    = new KeyController("SelectedElement", new Guid("B9B5742B-E4C7-45BD-AD6E-F3C254E45027"));
 		public static KeyController SchemaDisplayedColumns               = new KeyController("_Displayed Columns", new Guid("7424AFD5-D43B-449F-AD04-B48E686621AB"));
+	    public static KeyController JoinInfoKey                          = new KeyController("Join Information", new Guid("08A0A6F9-6AC1-4B03-89CD-E7127646D9DB"));
 
 
 

@@ -52,7 +52,7 @@ namespace Dash
 
         public override Task<FieldControllerBase> Execute(Scope scope)
         {
-            return Task.FromResult<FieldControllerBase>(new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType));
+            return Task.FromResult<FieldControllerBase>(new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType, scope));
         }
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();

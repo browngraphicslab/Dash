@@ -24,6 +24,7 @@ using Point = Windows.Foundation.Point;
 using System.Web;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
+using Windows.Storage.Pickers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -68,6 +69,8 @@ namespace Dash
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
+
+        public InkManager InkManager { get; set; }
 
         public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
@@ -125,6 +128,25 @@ namespace Dash
             {
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
+
+            JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
+            JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
+        }
+
+        public void Query(string search)
+        {
+            JavaScriptHack.Navigate(new Uri("https://www.google.com/search?q=" + search.Replace(' ', '+')));
+        }
+
+        private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+        }
+
+        private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
+        {
+            var value = e.Value as string;
+            Debug.WriteLine("val = " + value);
         }
 
         private void HideLinkInputBox()
@@ -178,7 +200,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-
+            
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -187,6 +209,7 @@ namespace Dash
             SetupMapView(lastWorkspace);
 
             if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+            InkManager = new InkManager();
 
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();
@@ -336,20 +359,7 @@ namespace Dash
 
                 }
             }
-
-            var dvm = SplitFrame.ActiveFrame.DataContext as DocumentViewModel;
-            var parColl = SelectionManager.GetSelectedDocs()?.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformBase>();
-            var coll = parColl ?? (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
-            // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            // bcz: needs to be in keyUp because when typing in a new textBox inside a nested collection, no one catches the KeyDown event and putting this in KeyDown
-            //       would cause a collection to be created when typing a 'c'
-            // bcz: needs to be in keyDown because of potential conflicts when releasing the ctrl key before the 'c' key which causes this to 
-            //       create a collection around a PDF when you're just copying text
-            if (!(FocusManager.GetFocusedElement() is RichEditBox) && coll != null && !coll.IsMarqueeActive && !(FocusManager.GetFocusedElement() is TextBox))
-            {
-                coll.TriggerActionFromSelection(e.VirtualKey, false);
-            }
-
+            
             e.Handled = true;
         }
 
@@ -745,7 +755,7 @@ namespace Dash
             }
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
-            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth/origHeight : 1;
+            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
             docCopy.SetWidth(size?.X ?? 150);
             docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
@@ -834,7 +844,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
-            var frame = SplitFrame.GetFrameWithDoc(target, true);
+            var frame = MainSplitter.GetFrameWithDoc(target, true);
             if (frame != null)
             {
                 frame.Delete();
@@ -943,47 +953,17 @@ namespace Dash
             ToolTipService.SetToolTip(xSearchButton, search);
         }
 
-        private void ActionMenuTest_OnTapped(object sender, TappedRoutedEventArgs e)
+        public async Task<(string, string)> PromptNewTemplate()
         {
-            ActionMenu GetMenu()
-            {
-                ActionMenu menu = new ActionMenu
-                {
-                    Width = 400,
-                    Height = 500,
-                    UseFilterBox = false
-                };
-                ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-                menu.AddGroup("BASIC", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Text", "Plain text", () => Debug.WriteLine("Text"), source),
-                    new ActionViewModel("Page", "Page", () => Debug.WriteLine("Page"), source),
-                    new ActionViewModel("To-do List", "Track tasks", () => Debug.WriteLine("Todo list"), null),
-                    new ActionViewModel("Header", "Header", () => Debug.WriteLine("Header"), null),
-                });
-                menu.AddGroup("DATABASE", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), null),
-                });
-                menu.AddGroup("TEST1", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), source),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), null),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
-                });
-                menu.AddGroup("TEST2", new List<ActionViewModel>
-                {
-                    new ActionViewModel("Table", "Database Table", () => Debug.WriteLine("Table"), null),
-                    new ActionViewModel("Board", "Board", () => Debug.WriteLine("Board"), source),
-                    new ActionViewModel("Calendar", "Calendar", () => Debug.WriteLine("Calendar"), source),
-                });
-                return menu;
-            }
+            var templatePopup = new NewTemplatePopup();
+            SetUpPopup(templatePopup);
 
-            xCanvas.Children.Clear();
-            xCanvas.Children.Add(GetMenu());
+            var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
         }
     }
+
+
 }

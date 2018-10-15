@@ -368,6 +368,7 @@ namespace Dash
 
         private bool AddHelper(T element)
         {
+            Debug.Assert(element != null);
             if (AvoidDuplicates) if (TypedData.Contains(element)) return false; // Conditionally avoid duplicate addition
 
             element.FieldModelUpdated += ContainedFieldUpdated;

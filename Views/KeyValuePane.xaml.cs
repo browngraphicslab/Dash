@@ -181,7 +181,7 @@ namespace Dash
                 }
                 catch (DSLException e)
                 {
-                    fmController = new TextController(e.GetHelpfulString());
+                    fmController = null;
                 }
 
                 activeContextDoc.SetField(key, fmController, true);
@@ -278,22 +278,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        public void Expand_Value(object sender)
-        {
-            var valuebox = sender as KeyValueScriptView;
-            var index = ListItemSource.IndexOf(valuebox.ViewModel);
-            if (xKeyListView.ContainerFromIndex(index) is ListViewItem key)
-                key.Style = Resources["ExpandBox"] as Style;
-        }
-
-        public void Collapse_Value(object sender)
-        {
-            var valuebox = sender as KeyValueScriptView;
-            var index = ListItemSource.IndexOf(valuebox.ViewModel);
-            if (xKeyListView.ContainerFromIndex(index) is ListViewItem key)
-                key.Style = Resources["CollapseBox"] as Style;
-        }
+        
 
         private void XFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {

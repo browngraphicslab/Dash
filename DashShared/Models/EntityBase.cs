@@ -15,11 +15,12 @@ namespace DashShared
 
         }
 
+        private string _id;
         /// <summary>
         /// Object unique identifier
         /// </summary>
         [JsonProperty("id")] // serialized as id (for documentdb)
-        public string Id { get; protected set; }
+        public string Id { get => _id; protected set => _id = value.ToUpper(); }
 
         /// <summary>
         /// Pretty print the key for debugging purposes

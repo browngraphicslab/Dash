@@ -38,8 +38,9 @@ namespace Dash
             OnFieldModelUpdated(null);
         }
 
+        private static string _hackId;
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out var id) ? id : UtilShared.GetDeterministicGuid(name).ToString())
+        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out _hackId) ? _hackId : UtilShared.GetDeterministicGuid(name).ToString())
         {
         }
 
@@ -59,9 +60,12 @@ namespace Dash
         /// <param name="guid"></param>
         public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
-            SaveOnServer();
             Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
-            _nameDictionary[name] = Id;
+            if (!_nameDictionary.ContainsKey(name))
+            {
+                SaveOnServer();
+                _nameDictionary[name] = Id;
+            }
         }
 
         public KeyController() : this(Guid.NewGuid().ToString())

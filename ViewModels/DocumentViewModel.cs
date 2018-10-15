@@ -16,7 +16,6 @@ namespace Dash
         private DocumentController _lastLayout = null;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private bool               _showLocalContext;
-        private bool               _decorationState = false;
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
 
@@ -74,6 +73,11 @@ namespace Dash
         {
             get => DocumentController.GetIsAdornment();
             set => DocumentController.SetIsAdornment(value);
+        }
+        public bool IsButton
+        {
+            get => DocumentController.GetIsButton();
+            set => DocumentController.SetIsButton(value);
         }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model

@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -24,7 +25,7 @@ namespace Dash
         public CollectionViewModel OldViewModel = null;
         private DSL _dsl;
         private OuterReplScope _scope;
-        private DocumentController newDoc;
+        private DocumentController _newDoc;
 
         public CollectionPageView()
         {
@@ -76,7 +77,7 @@ namespace Dash
                 {
                     if (CurPage != null)
                     {
-                        newDoc.SetField(KeyStore.DocumentContextKey, CurPage.DataDocument, true);
+                        _newDoc.SetField(KeyStore.DocumentContextKey, CurPage.DataDocument, true);
                     }
                 }
                 else
@@ -209,7 +210,7 @@ namespace Dash
         {
             int ind = xThumbs.SelectedIndex;
             Debug.WriteLine("selected index:" + ind);
-            if (ViewModel.DocumentViewModels.Count > 0)
+            if (ViewModel != null && ViewModel.DocumentViewModels.Count > 0)
             {
                 CurPage = xThumbs.SelectedItem as DocumentViewModel;
                 _scope = new OuterReplScope();
@@ -512,12 +513,16 @@ namespace Dash
                 var point = new Point(where, viewModel.Position.Y);
                 parentCollection.ViewModel.AddDocument(CurPage.DocumentController.GetKeyValueAlias(point));
             }
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform,Double.NaN,Double.NaN);
-            cnote.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            cnote.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
-            newDoc = cnote.Document;
-            newDoc.SetFitToParent(true);
-            XDocDisplay.Content = new DocumentView() {DataContext = new DocumentViewModel(newDoc)};
+            _newDoc = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.CollectionItemLayoutPrototypeKey, null);
+            if (_newDoc == null)
+            {
+                var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN);
+                cnote.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                cnote.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
+                _newDoc = cnote.Document;
+                _newDoc.SetFitToParent(true);
+            }
+            XDocDisplay.Content = new DocumentView() {DataContext = new DocumentViewModel(_newDoc) { IsDimensionless = true } };
 
         }
 
@@ -532,6 +537,16 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                 };
                 sender.AddFieldBinding(TextBlock.TextProperty, binding);
+            }
+        }
+
+        private void ScriptToggle_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Content != null)
+            {
+                var shouldCollapse = button.Content.Equals("Hide Script");
+                this.xTextBox.Visibility = shouldCollapse ? Visibility.Collapsed : Visibility.Visible;
+                button.Content = shouldCollapse ? "Show Script" : "Hide Script";
             }
         }
     }

@@ -73,14 +73,16 @@ namespace Dash
             //size = new Point(rect.Width, rect.Height);
             if (size.X > 0 && size.Y > 0)
             {
-                await rtb.RenderAsync(_xWebView, (int)size.X, (int)size.Y);
-                var buf = await rtb.GetPixelsAsync();
+                try
+                {
+                    await rtb.RenderAsync(_xWebView, (int)size.X, (int)size.Y);
+                    var buf = await rtb.GetPixelsAsync();
 
-                var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
-                var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
-                await Util.SaveSoftwareBitmapToFile(sb, localFile);
-                LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
-
+                    var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
+                    var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
+                    await Util.SaveSoftwareBitmapToFile(sb, localFile);
+                    LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
+                } catch (Exception) { }
                 _xWebView.Visibility = Visibility.Collapsed;
                 xCacheBitmap.Visibility = Visibility.Visible;
                 if (xTextBlock != null)
@@ -236,7 +238,7 @@ namespace Dash
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
             if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1) {
-                webBoxView.Freeze();
+                webBoxView?.Freeze();
             }
         }
         
