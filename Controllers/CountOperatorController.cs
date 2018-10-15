@@ -11,12 +11,12 @@ namespace Dash
     public sealed class CountOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController InputKey = new KeyController("Element With Length");
+        public static readonly KeyController InputKey = KeyController.Get("Element With Length");
 
         //Output keys
-        public static readonly KeyController LengthKey = new KeyController("Computed Length");
+        public static readonly KeyController LengthKey = KeyController.Get("Computed Length");
         
-        public CountOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public CountOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public CountOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
@@ -33,7 +33,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Length", new Guid("D8368297-5417-40D8-902F-7F1D431EF227"));
+        private static readonly KeyController TypeKey = KeyController.Get("Length", new Guid("D8368297-5417-40D8-902F-7F1D431EF227"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -12,16 +12,16 @@ namespace Dash
     {
         public PdfDocTextOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public PdfDocTextOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public PdfDocTextOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DocumentTextPDF", new Guid("A0E5EC85-8B9A-4B06-B355-66869F3A4486"));
+        private static readonly KeyController TypeKey = KeyController.Get("DocumentTextPDF", new Guid("A0E5EC85-8B9A-4B06-B355-66869F3A4486"));
 
         //Input keys
-        public static readonly KeyController DocumentKey = new KeyController("Document");
+        public static readonly KeyController DocumentKey = KeyController.Get("Document");
 
         //Output keys
-        public static readonly KeyController DocumentTextKey = new KeyController("DocumentTextPDF");
+        public static readonly KeyController DocumentTextKey = KeyController.Get("DocumentTextPDF");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

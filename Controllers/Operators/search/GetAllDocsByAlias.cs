@@ -14,10 +14,10 @@ namespace Dash
     public class GetAllDocsByAlias : OperatorController
     {
         //Input keys
-        public static readonly KeyController IdKey = new KeyController("Id");
+        public static readonly KeyController IdKey = KeyController.Get("Id");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public GetAllDocsByAlias() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -38,7 +38,7 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Alias", new Guid("DB543B75-15D3-467A-A9DE-9F262F496C25"));
+        private static readonly KeyController TypeKey = KeyController.Get("Alias", new Guid("DB543B75-15D3-467A-A9DE-9F262F496C25"));
 
         /// <inheritdoc />
         /// <summary>

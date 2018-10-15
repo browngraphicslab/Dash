@@ -9,18 +9,18 @@ namespace Dash.Controllers.Operators
     [OperatorType(Op.Name.sum)]
     public sealed class Sum : OperatorController
     {
-        public static readonly KeyController InputlistKey = new KeyController("Inputlist");
+        public static readonly KeyController InputlistKey = KeyController.Get("Inputlist");
 
-        public static readonly KeyController SumKey = new KeyController("Resultlist");
+        public static readonly KeyController SumKey = KeyController.Get("Resultlist");
 
-        public Sum() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public Sum() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public Sum(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("SumOperator", new Guid("20d9d82d-8374-4fcd-ae7c-d6239f545e07"));
+        private static readonly KeyController TypeKey = KeyController.Get("SumOperator", new Guid("20d9d82d-8374-4fcd-ae7c-d6239f545e07"));
 
         public override FieldControllerBase GetDefaultController() => new Sum();
 

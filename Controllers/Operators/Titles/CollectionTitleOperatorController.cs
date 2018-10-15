@@ -15,11 +15,10 @@ namespace Dash
         }
         public CollectionTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Collection Title", new Guid("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE"));
+        private static readonly KeyController TypeKey = KeyController.Get("Collection Title", new Guid("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE"));
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 
@@ -28,7 +27,7 @@ namespace Dash
        // public static readonly KeyController CollectionDocsKey = new KeyController(new Guid("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2"), "Collection Docs");
 
         //Output keys
-        public static readonly KeyController ComputedTitle = new KeyController("Computed Title");
+        public static readonly KeyController ComputedTitle = KeyController.Get("Computed Title");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

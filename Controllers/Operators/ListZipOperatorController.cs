@@ -11,13 +11,13 @@ namespace Dash
     public sealed class ListZipOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListAKey = new KeyController("List A");
-        public static readonly KeyController ListBKey = new KeyController("List B");
+        public static readonly KeyController ListAKey = KeyController.Get("List A");
+        public static readonly KeyController ListBKey = KeyController.Get("List B");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ListZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ListZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ListZipOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("List zip", new Guid("B4F07219-AA26-4E71-965E-CBDF6D44708E"));
+        private static readonly KeyController TypeKey = KeyController.Get("List zip", new Guid("B4F07219-AA26-4E71-965E-CBDF6D44708E"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

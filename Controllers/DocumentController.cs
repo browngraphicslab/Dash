@@ -78,8 +78,6 @@ namespace Dash
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type, string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Id, kv => kv.Value.Id), type, id))
         {
-            SaveOnServer();
-
             //TODO RefCount
             //_fields = new Dictionary<KeyController, FieldControllerBase>(fields);
             SetFields(fields, true);
@@ -524,13 +522,15 @@ namespace Dash
 
         protected override IEnumerable<FieldControllerBase> GetReferencedFields()
         {
-            //TODO RefCount: Make Documents reference keys as well as values
-            return _fields.Values;
-            //foreach (var kvp in _fields)
-            //{
-            //    yield return kvp.Key;
-            //    yield return kvp.Value;
-            //}
+            foreach (var kvp in _fields)
+            {
+                if (kvp.Key == KeyStore.DelegatesKey)
+                {
+                    continue;
+                }
+                yield return kvp.Key;
+                yield return kvp.Value;
+            }
         }
 
         private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldHandlerDictionary = new Dictionary<KeyController, FieldUpdatedHandler>();
@@ -544,28 +544,33 @@ namespace Dash
                 generateDocumentFieldUpdatedEvents(updateArgs, new Context());
             }
             //TODO RefCount
-            //if (key != KeyStore.DelegatesKey)
-            //{
+            if (key != KeyStore.DelegatesKey)
+            {
                 ReferenceField(field);
+                ReferenceField(key);
                 if (IsReferenced)
                 {
                     field.FieldModelUpdated += TriggerDocumentFieldUpdated;
                     Debug.Assert(!_fieldHandlerDictionary.ContainsKey(key));
                     _fieldHandlerDictionary[key] = TriggerDocumentFieldUpdated;
                 }
-            //}
+            }
 
         }
 
         private void ReleaseContainedField(KeyController key, FieldControllerBase field)
         {
-            ReleaseField(field);
-            if (IsReferenced)
+            if (key != KeyStore.DelegatesKey)
             {
-                Debug.Assert(_fieldHandlerDictionary.ContainsKey(key));
-                var handler = _fieldHandlerDictionary[key];
-                field.FieldModelUpdated -= handler;
-                _fieldHandlerDictionary.Remove(key);
+                ReleaseField(key);
+                ReleaseField(field);
+                if (IsReferenced)
+                {
+                    Debug.Assert(_fieldHandlerDictionary.ContainsKey(key));
+                    var handler = _fieldHandlerDictionary[key];
+                    field.FieldModelUpdated -= handler;
+                    _fieldHandlerDictionary.Remove(key);
+                }
             }
         }
 

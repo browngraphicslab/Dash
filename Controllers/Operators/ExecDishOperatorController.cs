@@ -13,14 +13,14 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("Script");
+        public static readonly KeyController ScriptKey = KeyController.Get("Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public ExecDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
+            
         }
 
 
@@ -38,7 +38,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Exec", new Guid("F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0"));
+        private static readonly KeyController TypeKey = KeyController.Get("Exec", new Guid("F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0"));
 
         public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

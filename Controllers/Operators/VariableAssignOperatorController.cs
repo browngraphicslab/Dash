@@ -10,19 +10,19 @@ namespace Dash
     public class VariableAssignOperatorController : OperatorController
     {
 
-        public static readonly KeyController VariableKey = new KeyController("Variable");
-        public static readonly KeyController AssignmentKey = new KeyController("Assignment");
+        public static readonly KeyController VariableKey = KeyController.Get("Variable");
+        public static readonly KeyController AssignmentKey = KeyController.Get("Assignment");
 
-        public static readonly KeyController OutputKey = new KeyController("Output");
+        public static readonly KeyController OutputKey = KeyController.Get("Output");
 
-        public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public VariableAssignOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("VariableAssign", new Guid("D0BA93CC-9585-4E36-BE05-C15C586AF9FD"));
+        private static readonly KeyController TypeKey = KeyController.Get("VariableAssign", new Guid("D0BA93CC-9585-4E36-BE05-C15C586AF9FD"));
 
         public override FieldControllerBase GetDefaultController()
         {

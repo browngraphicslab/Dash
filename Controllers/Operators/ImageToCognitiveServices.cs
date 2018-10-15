@@ -19,14 +19,13 @@ namespace Dash.Controllers.Operators
 
         public ImageToCognitiveServices() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Image Cog Services");
+        private static readonly KeyController TypeKey = KeyController.Get("Image Cog Services");
 
-        public static readonly KeyController ImageKey = new KeyController("Image");
-        public static readonly KeyController DescriptorKey = new KeyController("Descriptor");
+        public static readonly KeyController ImageKey = KeyController.Get("Image");
+        public static readonly KeyController DescriptorKey = KeyController.Get("Descriptor");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

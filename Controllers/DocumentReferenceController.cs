@@ -36,7 +36,6 @@ namespace Dash
             _documentController = doc;
             FieldKey = key;
             DocumentChanged();
-            SaveOnServer();
         }
 
         public static DocumentReferenceController CreateFromServer(DocumentReferenceModel model)
@@ -123,6 +122,18 @@ namespace Dash
         {
             yield return DocumentController;
             yield return FieldKey;
+        }
+
+        protected override void RefInit()
+        {
+            base.RefInit();
+            ReferenceField(DocumentController);
+        }
+
+        protected override void RefDestroy()
+        {
+            base.RefDestroy();
+            ReleaseField(DocumentController);
         }
     }
 }

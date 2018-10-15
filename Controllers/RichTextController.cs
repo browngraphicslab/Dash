@@ -10,12 +10,10 @@ namespace Dash
     {
         public RichTextController() : base(new RichTextModel())
         {
-            SaveOnServer();
         }
 
         public RichTextController(RichTextModel.RTD data) : base(new RichTextModel(data))
         {
-            SaveOnServer();
         }
 
         public RichTextController(RichTextModel richTextFieldModel) : base(richTextFieldModel)

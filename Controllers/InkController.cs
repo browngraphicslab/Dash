@@ -18,14 +18,12 @@ namespace Dash
 
         public InkController() : base(new InkModel())
         {
-            SaveOnServer();
             UpdateStrokesFromList(new List<InkStroke>(), false);
         }
 
         public InkController(string inkData) : base(new InkModel(inkData))
         {
             UpdateStrokesFromData(inkData);
-            SaveOnServer();
         }
 
         public InkController(InkModel inkFieldModel) : base(inkFieldModel)

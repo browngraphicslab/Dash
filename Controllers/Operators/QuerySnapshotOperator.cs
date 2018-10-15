@@ -14,14 +14,14 @@ namespace Dash.Controllers.Operators
     [OperatorType(Op.Name.query, Op.Name.q)]
     public sealed class QuerySnapshotOperator : OperatorController
     {
-        public static readonly KeyController QueryKey = new KeyController("Query");
+        public static readonly KeyController QueryKey = KeyController.Get("Query");
 
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
-        public QuerySnapshotOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public QuerySnapshotOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("QuerySnapshotOperator", new Guid("1cbb88a1-acb8-41ae-ab7f-2001bc8463fb"));
+        private static readonly KeyController TypeKey = KeyController.Get("QuerySnapshotOperator", new Guid("1cbb88a1-acb8-41ae-ab7f-2001bc8463fb"));
 
         public override FieldControllerBase GetDefaultController() => new QuerySnapshotOperator();
 

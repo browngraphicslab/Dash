@@ -9,15 +9,14 @@ namespace Dash.Controllers.Operators.Point
     [OperatorType(Op.Name.y)]
     public class YOperator : OperatorController
     {
-        public static readonly KeyController PointKey = new KeyController("Point");
+        public static readonly KeyController PointKey = KeyController.Get("Point");
 
 
-        public static readonly KeyController YCoordKey = new KeyController("YCoord");
+        public static readonly KeyController YCoordKey = KeyController.Get("YCoord");
 
 
         public YOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public YOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -25,7 +24,7 @@ namespace Dash.Controllers.Operators.Point
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("YCoordinate", new Guid("098a1b23-20a1-4623-8460-2d848280b1b2"));
+        private static readonly KeyController TypeKey = KeyController.Get("YCoordinate", new Guid("098a1b23-20a1-4623-8460-2d848280b1b2"));
 
         public override FieldControllerBase GetDefaultController()
         {

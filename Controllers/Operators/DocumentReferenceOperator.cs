@@ -9,16 +9,15 @@ namespace Dash
     [OperatorType(Op.Name.dref)]
     public class DocumentReferenceOperator : OperatorController
     {
-        public static readonly KeyController DocumentKey = new KeyController("Document");
-        public static readonly KeyController KeyKey = new KeyController("Key");
+        public static readonly KeyController DocumentKey = KeyController.Get("Document");
+        public static readonly KeyController KeyKey = KeyController.Get("Key");
 
 
-        public static readonly KeyController ReferenceKey = new KeyController("Reference");
+        public static readonly KeyController ReferenceKey = KeyController.Get("Reference");
 
 
         public DocumentReferenceOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public DocumentReferenceOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -26,7 +25,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DocumentReference", new Guid("a4c20265-528d-4ff4-9066-a431c2711a73"));
+        private static readonly KeyController TypeKey = KeyController.Get("DocumentReference", new Guid("a4c20265-528d-4ff4-9066-a431c2711a73"));
 
         public override FieldControllerBase GetDefaultController()
         {

@@ -10,11 +10,11 @@ namespace Dash
     public class UnionOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController AKey = new KeyController("Input A");
-        public static readonly KeyController BKey = new KeyController("Input B");
+        public static readonly KeyController AKey = KeyController.Get("Input A");
+        public static readonly KeyController BKey = KeyController.Get("Input B");
 
         //Output keys
-        public static readonly KeyController UnionKey = new KeyController("Union");
+        public static readonly KeyController UnionKey = KeyController.Get("Union");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -34,12 +34,11 @@ namespace Dash
 
         public UnionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
 
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Union operator", new Guid("CAEA115E-BE19-4796-B225-51AC4122C168"));
+        private static readonly KeyController TypeKey = KeyController.Get("Union operator", new Guid("CAEA115E-BE19-4796-B225-51AC4122C168"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

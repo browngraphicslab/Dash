@@ -15,17 +15,16 @@ namespace Dash
 
         public LinkDescriptionTextOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Link Description Text", new Guid("6A81D1DC-E26D-43E5-856E-E4634A46354D"));
+        private static readonly KeyController TypeKey = KeyController.Get("Link Description Text", new Guid("6A81D1DC-E26D-43E5-856E-E4634A46354D"));
 
         //Input keys
         public static readonly KeyController DescriptionText = KeyStore.DocumentTextKey;
 
         //Output keys
-        public static readonly KeyController ShowDescription = new KeyController("Show Description");
+        public static readonly KeyController ShowDescription = KeyController.Get("Show Description");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

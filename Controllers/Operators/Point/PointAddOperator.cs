@@ -9,16 +9,15 @@ namespace Dash.Controllers.Operators.Point
     [OperatorType(Op.Name.operator_add)]
     public class PointAddOperator : OperatorController
     {
-        public static readonly KeyController AKey = new KeyController("A");
-        public static readonly KeyController BKey = new KeyController("B");
+        public static readonly KeyController AKey = KeyController.Get("A");
+        public static readonly KeyController BKey = KeyController.Get("B");
 
 
-        public static readonly KeyController OutputKey = new KeyController("Output");
+        public static readonly KeyController OutputKey = KeyController.Get("Output");
 
 
         public PointAddOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public PointAddOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -27,7 +26,7 @@ namespace Dash.Controllers.Operators.Point
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("PointAdd", new Guid("59e828b8-0e30-4bd3-904b-9919f89cc4be"));
+        private static readonly KeyController TypeKey = KeyController.Get("PointAdd", new Guid("59e828b8-0e30-4bd3-904b-9919f89cc4be"));
 
         public override FieldControllerBase GetDefaultController()
         {

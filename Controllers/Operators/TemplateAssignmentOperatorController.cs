@@ -12,13 +12,13 @@ namespace Dash
     public sealed class TemplateAssignmentOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController DocKey = new KeyController("Document Reference");
-        public static readonly KeyController TemplateKey = new KeyController("Template");
+        public static readonly KeyController DocKey = KeyController.Get("Document Reference");
+        public static readonly KeyController TemplateKey = KeyController.Get("Template");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public TemplateAssignmentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public TemplateAssignmentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public TemplateAssignmentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -37,7 +37,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Apply Template", new Guid("53F162D1-3D49-4872-B0E2-2A1FBEB463E4"));
+        private static readonly KeyController TypeKey = KeyController.Get("Apply Template", new Guid("53F162D1-3D49-4872-B0E2-2A1FBEB463E4"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

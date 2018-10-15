@@ -12,20 +12,20 @@ namespace Dash
     {
         public ContainsOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public ContainsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ContainsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override FieldControllerBase GetDefaultController() => new ContainsOperatorController();
 
         // input keys
-        public static readonly KeyController InputStringKey = new KeyController("Input String");
-        public static readonly KeyController ContainerStringKey = new KeyController("Container String");
+        public static readonly KeyController InputStringKey = KeyController.Get("Input String");
+        public static readonly KeyController ContainerStringKey = KeyController.Get("Container String");
 
         // output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Contains", new Guid("03CB1DD8-238B-467E-8BE6-C64164DB875B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Contains", new Guid("03CB1DD8-238B-467E-8BE6-C64164DB875B"));
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

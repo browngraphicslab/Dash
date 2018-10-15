@@ -9,24 +9,24 @@ namespace Dash
     [OperatorType(Op.Name.join)]
     public sealed class JoinOperator : OperatorController
     {
-        public static readonly KeyController SourceTableKey = new KeyController("TableOne");
-        public static readonly KeyController TargetTableKey = new KeyController("TableTwo");
-        public static readonly KeyController SourceKeyKey = new KeyController("KeyOne");
-        public static readonly KeyController TargetKeyKey = new KeyController("KeyTwo");
-        public static readonly KeyController ScopeKey = new KeyController("Scope");
-        public static readonly KeyController InPlaceKey = new KeyController("InPlace");
+        public static readonly KeyController SourceTableKey = KeyController.Get("TableOne");
+        public static readonly KeyController TargetTableKey = KeyController.Get("TableTwo");
+        public static readonly KeyController SourceKeyKey = KeyController.Get("KeyOne");
+        public static readonly KeyController TargetKeyKey = KeyController.Get("KeyTwo");
+        public static readonly KeyController ScopeKey = KeyController.Get("Scope");
+        public static readonly KeyController InPlaceKey = KeyController.Get("InPlace");
 
-        public static readonly KeyController GencollectionKey = new KeyController("GenCollection");
+        public static readonly KeyController GencollectionKey = KeyController.Get("GenCollection");
 
 
-        public JoinOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public JoinOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public JoinOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Join Tables", new Guid("50b36009-0a53-4790-b6fe-0a9007db4d92"));
+        private static readonly KeyController TypeKey = KeyController.Get("Join Tables", new Guid("50b36009-0a53-4790-b6fe-0a9007db4d92"));
 
         public override FieldControllerBase GetDefaultController()
         {

@@ -11,14 +11,14 @@ namespace Dash
     public sealed class SubstringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController StringKey = new KeyController("String");
-        public static readonly KeyController StartingIndexKey = new KeyController("Index");
-        public static readonly KeyController LengthKey = new KeyController("Length");
+        public static readonly KeyController StringKey = KeyController.Get("String");
+        public static readonly KeyController StartingIndexKey = KeyController.Get("Index");
+        public static readonly KeyController LengthKey = KeyController.Get("Length");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public SubstringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public SubstringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public SubstringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
@@ -37,7 +37,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Substring extraction 1", new Guid("A41EC14D-6E29-43D0-A9CF-C6751F5D732B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Substring extraction 1", new Guid("A41EC14D-6E29-43D0-A9CF-C6751F5D732B"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -62,13 +62,13 @@ namespace Dash
     public sealed class DefaultSubstringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController StringKey = new KeyController("String");
-        public static readonly KeyController StartingIndexKey = new KeyController("Index");
+        public static readonly KeyController StringKey = KeyController.Get("String");
+        public static readonly KeyController StartingIndexKey = KeyController.Get("Index");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public DefaultSubstringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public DefaultSubstringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public DefaultSubstringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
@@ -86,7 +86,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Substring extraction 2", new Guid("F03BF0D6-411D-4788-B359-AB26B882202A"));
+        private static readonly KeyController TypeKey = KeyController.Get("Substring extraction 2", new Guid("F03BF0D6-411D-4788-B359-AB26B882202A"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

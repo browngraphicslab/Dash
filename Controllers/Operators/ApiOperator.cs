@@ -11,18 +11,17 @@ namespace Dash
     [OperatorType(Op.Name.api)]
     public class ApiOperator : OperatorController
     {
-        public static readonly KeyController UrlKey = new KeyController("Url");
-        public static readonly KeyController ParametersKey = new KeyController("Parameters");
-        public static readonly KeyController MethodKey = new KeyController("Method");
-        public static readonly KeyController AuthKey = new KeyController("Authentication");
+        public static readonly KeyController UrlKey = KeyController.Get("Url");
+        public static readonly KeyController ParametersKey = KeyController.Get("Parameters");
+        public static readonly KeyController MethodKey = KeyController.Get("Method");
+        public static readonly KeyController AuthKey = KeyController.Get("Authentication");
 
 
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
 
         public ApiOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public ApiOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -30,7 +29,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("API", new Guid("8e8eb4d9-92d7-462d-8039-e4337d696d6a"));
+        private static readonly KeyController TypeKey = KeyController.Get("API", new Guid("8e8eb4d9-92d7-462d-8039-e4337d696d6a"));
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -78,14 +77,14 @@ namespace Dash
 
             if (authentication != null)
             {
-                var type = authentication.GetField<TextController>(new KeyController("auth_type"))?.Data;
+                var type = authentication.GetField<TextController>(KeyController.Get("auth_type"))?.Data;
                 if (type != null)
                 {
                     switch (type.ToLower())
                     {
                     case "basic":
-                        var user = authentication.GetField<TextController>(new KeyController("user"))?.Data;
-                        var password = authentication.GetField<TextController>(new KeyController("password"))?.Data;
+                        var user = authentication.GetField<TextController>(KeyController.Get("user"))?.Data;
+                        var password = authentication.GetField<TextController>(KeyController.Get("password"))?.Data;
                         if (user != null && password != null)
                         {
                             var s = $"{user}:{password}";

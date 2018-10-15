@@ -1019,7 +1019,7 @@ namespace Dash
             {
                 if (newkey != null)
                 {
-                    HeaderFieldKey = new KeyController(newkey);
+                    HeaderFieldKey = KeyController.Get(newkey);
                 }
                 var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
                 xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";

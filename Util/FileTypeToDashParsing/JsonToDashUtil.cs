@@ -264,7 +264,7 @@ namespace Dash
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
             // bcz: if jToken.Path is "", then it seems to cause problems later on because the key doesn't have a name (I think it gets filtered out of the KeyValue pane list)
-            return new KeyController(GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path));
+            return KeyController.Get(GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)

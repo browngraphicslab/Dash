@@ -18,15 +18,15 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("While", new Guid("CC159893-283C-4307-A4E8-A98E75C8EA1E"));
+        private static readonly KeyController TypeKey = KeyController.Get("While", new Guid("CC159893-283C-4307-A4E8-A98E75C8EA1E"));
 
         //Input keys
         //public static readonly KeyController BinaryKey 
-        public static readonly KeyController BoolKey = new KeyController("Bool");
-        public static readonly KeyController BlockKey = new KeyController("Block");
+        public static readonly KeyController BoolKey = KeyController.Get("Bool");
+        public static readonly KeyController BlockKey = KeyController.Get("Block");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

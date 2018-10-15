@@ -7,10 +7,10 @@ namespace Dash
     {
         public LessThanOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public LessThanOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public LessThanOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Less Than", new Guid("BEF33148-2A18-445D-B0A0-C41E46A495B3"));
+        private static readonly KeyController TypeKey = KeyController.Get("Less Than", new Guid("BEF33148-2A18-445D-B0A0-C41E46A495B3"));
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new BoolController(left.Data < right.Data);
 

@@ -7,10 +7,10 @@ namespace Dash
     {
         public InverseEqualityOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public InverseEqualityOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public InverseEqualityOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Not Equal To", new Guid("C15646FF-8D78-4258-B0A1-A71212427159"));
+        private static readonly KeyController TypeKey = KeyController.Get("Not Equal To", new Guid("C15646FF-8D78-4258-B0A1-A71212427159"));
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

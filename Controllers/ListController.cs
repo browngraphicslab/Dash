@@ -177,7 +177,6 @@ namespace Dash
         {
             IsReadOnly = readOnly;
             Indexed = true;
-            SaveOnServer();
         }
 
         protected override IEnumerable<FieldControllerBase> GetReferencedFields()

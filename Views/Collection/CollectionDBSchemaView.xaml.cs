@@ -398,7 +398,7 @@ namespace Dash
         {
             if (!string.IsNullOrWhiteSpace(XNewColumnEntry.Text))
             {
-                var key = new KeyController(XNewColumnEntry.Text);
+                var key = KeyController.Get(XNewColumnEntry.Text);
                 if (!Keys.Contains(key))
                 {
                     AddKey(key);

@@ -17,14 +17,14 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController HtmlInputKey =
-            new KeyController("Html Input");
+            KeyController.Get("Html Input");
 
         public static readonly KeyController ScriptKey =
-            new KeyController("Script");
+            KeyController.Get("Script");
 
         // Output Keys
         public static readonly KeyController OutputDocumentKey =
-            new KeyController("Output Document");
+            KeyController.Get("Output Document");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
 
@@ -61,7 +61,6 @@ namespace Dash
 
         public ExecuteHtmlJavaScriptController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
 
@@ -70,7 +69,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Execute html javascript", new Guid("D0286E73-D9F6-4341-B901-5ECC27AC76BC"));
+        private static readonly KeyController TypeKey = KeyController.Get("Execute html javascript", new Guid("D0286E73-D9F6-4341-B901-5ECC27AC76BC"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

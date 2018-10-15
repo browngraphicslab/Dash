@@ -11,13 +11,13 @@ namespace Dash
     public sealed class ToStringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController InputKey = new KeyController("Input");
+        public static readonly KeyController InputKey = KeyController.Get("Input");
 
         //Output keys
-        public static readonly KeyController ResultStringKey = new KeyController("String");
+        public static readonly KeyController ResultStringKey = KeyController.Get("String");
 
 
-        public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ToStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("To String", new Guid("C9A561E8-D4A1-4C38-A0BD-D9EE3531DACE"));
+        private static readonly KeyController TypeKey = KeyController.Get("To String", new Guid("C9A561E8-D4A1-4C38-A0BD-D9EE3531DACE"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -151,6 +151,7 @@ namespace Dash
             ++_refCount;
             if (_refCount == 1)
             {
+                SaveOnServer();
                 RefInit();
             }
         }
@@ -160,6 +161,7 @@ namespace Dash
             if (_refCount == 1)
             {
                 RefDestroy();
+                DeleteOnServer();
             }
 
             --_refCount;

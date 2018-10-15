@@ -54,12 +54,14 @@ namespace Dash
         protected override void RefInit()
         {
             base.RefInit();
+            ReferenceField(FieldKey);
             _lastDoc.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         protected override void RefDestroy()
         {
             base.RefDestroy();
+            ReleaseField(FieldKey);
             _lastDoc.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 

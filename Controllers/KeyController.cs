@@ -11,7 +11,32 @@ namespace Dash
     public class KeyController : FieldModelController<KeyModel>
     {
 
-        private static Dictionary<string, string> _nameDictionary = new Dictionary<string, string>();
+        private static Dictionary<string, KeyController> _nameDictionary = new Dictionary<string, KeyController>();
+
+        public static KeyController Get(string name)
+        {
+            if (_nameDictionary.TryGetValue(name, out var key))
+            {
+                return key;
+            }
+
+            key = new KeyController(name, Guid.NewGuid());
+            _nameDictionary[name] = key;
+            return key;
+        }
+
+        public static KeyController Get(string name, Guid id)
+        {
+            if (_nameDictionary.TryGetValue(name, out var key))
+            {
+                Debug.Assert(id.ToString().ToUpper() == key.Id);
+                return key;
+            }
+
+            key = new KeyController(name, id);
+            _nameDictionary[name] = key;
+            return key;
+        }
 
         public string Name
         {
@@ -40,42 +65,20 @@ namespace Dash
 
         private static string _hackId;
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : this(name, _nameDictionary.TryGetValue(name, out _hackId) ? _hackId : UtilShared.GetDeterministicGuid(name).ToString())
-        {
-        }
-
-        private KeyController(string name, string id) : base(new KeyModel(name, id))
-        {
-            if (!_nameDictionary.ContainsKey(name))
-            {
-                _nameDictionary[name] = id;
-                SaveOnServer();
-            }
-        }
 
         /// <summary>
         /// Use this contructor only if you really need to give this key a specific ID, otherwise use the constructor where you just pass in a name
         /// </summary>
         /// <param name="name"></param>
         /// <param name="guid"></param>
-        public KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
-        {
-            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == Id);
-            if (!_nameDictionary.ContainsKey(name))
-            {
-                SaveOnServer();
-                _nameDictionary[name] = Id;
-            }
-        }
-
-        public KeyController() : this(Guid.NewGuid().ToString())
+        private KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
         }
 
         public KeyController(KeyModel model) : base(model)
         {
-            Debug.Assert(!_nameDictionary.ContainsKey(model.Name) || _nameDictionary[model.Name] == model.Id);
-            _nameDictionary[model.Name] = model.Id;
+            Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
+            _nameDictionary[model.Name] = this;
         }
 
         public override string ToString()

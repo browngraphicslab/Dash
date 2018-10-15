@@ -11,13 +11,13 @@ namespace Dash
     public sealed class ElementAccessOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("List");
-        public static readonly KeyController IndexKey = new KeyController("Index");
+        public static readonly KeyController ListKey = KeyController.Get("List");
+        public static readonly KeyController IndexKey = KeyController.Get("Index");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ElementAccessOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ElementAccessOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ElementAccessOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Element Access", new Guid("4B1577D2-BD3E-457B-BA74-F7ED46F2A0F7"));
+        private static readonly KeyController TypeKey = KeyController.Get("Element Access", new Guid("4B1577D2-BD3E-457B-BA74-F7ED46F2A0F7"));
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)

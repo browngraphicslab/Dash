@@ -80,7 +80,7 @@ namespace Dash
         /// </summary>
         protected virtual void DeleteOnServer()
         {
-            _serverEndpoint.DeleteDocument(Model);
+            _serverEndpoint.DeleteDocument(this);
         }
 
         /// <summary>

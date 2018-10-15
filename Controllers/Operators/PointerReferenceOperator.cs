@@ -9,16 +9,15 @@ namespace Dash
     [OperatorType(Op.Name.pref)]
     public class PointerReferenceOperator : OperatorController
     {
-        public static readonly KeyController DocumentReferenceKey = new KeyController("DocumentReference");
-        public static readonly KeyController KeyKey = new KeyController("Key");
+        public static readonly KeyController DocumentReferenceKey = KeyController.Get("DocumentReference");
+        public static readonly KeyController KeyKey = KeyController.Get("Key");
 
 
-        public static readonly KeyController ReferenceKey = new KeyController("Reference");
+        public static readonly KeyController ReferenceKey = KeyController.Get("Reference");
 
 
         public PointerReferenceOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public PointerReferenceOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -26,7 +25,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Pointer Operator", new Guid("00cc0a39-9024-45ad-ad6e-6e6a6f320156"));
+        private static readonly KeyController TypeKey = KeyController.Get("Pointer Operator", new Guid("00cc0a39-9024-45ad-ad6e-6e6a6f320156"));
 
         public override FieldControllerBase GetDefaultController()
         {

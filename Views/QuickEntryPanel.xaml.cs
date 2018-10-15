@@ -117,7 +117,7 @@ namespace Dash.Views
                 DocumentController target = docSpec.Equals("d") ? doc.ViewModel.DataDocument : doc.ViewModel.LayoutDocument;
                 string keyInput = split[1].Replace("_", " ");
 
-                var val = target.GetDereferencedField(new KeyController(keyInput), null);
+                var val = target.GetDereferencedField(KeyController.Get(keyInput), null);
                 if (val == null)
                 {
                     xValueBox.SelectionLength = 0;
@@ -196,7 +196,7 @@ namespace Dash.Views
 
                 string key = components[1].Replace("_", " ");
 
-                target.SetField(new KeyController(key), computedValue, true);
+                target.SetField(KeyController.Get(key), computedValue, true);
             }
 
             _mostRecentPrefix = xKeyBox.Text.Substring(0, 2);

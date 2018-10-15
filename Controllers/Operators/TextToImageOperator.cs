@@ -15,18 +15,18 @@ namespace Dash.Controllers.Operators
         {
         }
 
-        public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Text To Image", new Guid("5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1"));
+        private static readonly KeyController TypeKey = KeyController.Get("Text To Image", new Guid("5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1"));
 
 
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("Text");
+        public static readonly KeyController TextKey = KeyController.Get("Text");
 
         //Output keys
-        public static readonly KeyController ImageKey = new KeyController("Image");
+        public static readonly KeyController ImageKey = KeyController.Get("Image");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

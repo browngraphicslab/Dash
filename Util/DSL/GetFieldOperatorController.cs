@@ -15,19 +15,19 @@ namespace Dash
         public GetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("GetField", new Guid("6277A484-644D-4BC4-8D3C-7F7DFCBA6517"));
+        private static readonly KeyController TypeKey = KeyController.Get("GetField", new Guid("6277A484-644D-4BC4-8D3C-7F7DFCBA6517"));
 
         //Input keys
-        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
-        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
+        public static readonly KeyController KeyNameKey = KeyController.Get("KeyName");
+        public static readonly KeyController InputDocumentKey = KeyController.Get("InputDoc");
 
         //Output keys
-        public static readonly KeyController ResultFieldKey = new KeyController("ResultField");
+        public static readonly KeyController ResultFieldKey = KeyController.Get("ResultField");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -48,7 +48,7 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
-                var field = doc.GetDereferencedField(new KeyController(keyName), null);
+                var field = doc.GetDereferencedField(KeyController.Get(keyName), null);
                 if (field != null)
                 {
                     outputs[ResultFieldKey] = field;
@@ -74,7 +74,7 @@ namespace Dash
                 sb.Append(keyName.Substring(prevIndex));
 
                 var newKeyName = sb.ToString();
-                outputs[ResultFieldKey] = doc.GetDereferencedField(new KeyController(newKeyName), null) ?? doc.GetDataDocument().GetDereferencedField(new KeyController(newKeyName), null);
+                outputs[ResultFieldKey] = doc.GetDereferencedField(KeyController.Get(newKeyName), null) ?? doc.GetDataDocument().GetDereferencedField(KeyController.Get(newKeyName), null);
             }
 
             

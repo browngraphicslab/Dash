@@ -10,14 +10,13 @@ namespace Dash
     public sealed class PointOperator : OperatorController
     {
 
-        public static readonly KeyController XKey = new KeyController("X");
-        public static readonly KeyController YKey = new KeyController("Y");
+        public static readonly KeyController XKey = KeyController.Get("X");
+        public static readonly KeyController YKey = KeyController.Get("Y");
 
-        public static readonly KeyController PointKey = new KeyController("Point");
+        public static readonly KeyController PointKey = KeyController.Get("Point");
 
         public PointOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public PointOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -41,7 +40,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("PointType", new Guid("45C9F1AB-1E61-453E-B3DB-A17A81A2C428"));
+        private static readonly KeyController TypeKey = KeyController.Get("PointType", new Guid("45C9F1AB-1E61-453E-B3DB-A17A81A2C428"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

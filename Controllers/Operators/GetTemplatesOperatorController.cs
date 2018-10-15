@@ -13,9 +13,9 @@ namespace Dash
         //Input keys
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public GetTemplatesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public GetTemplatesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public GetTemplatesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -30,7 +30,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Access Template List", new Guid("6CD6E948-800D-4536-9985-154D7A0347DC"));
+        private static readonly KeyController TypeKey = KeyController.Get("Access Template List", new Guid("6CD6E948-800D-4536-9985-154D7A0347DC"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

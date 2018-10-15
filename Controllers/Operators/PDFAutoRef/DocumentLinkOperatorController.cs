@@ -11,20 +11,20 @@ namespace Dash
     public sealed class DocumentLinkOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController SourceDocKey = new KeyController("Source Doc");
-        public static readonly KeyController SourceStartIndKey = new KeyController("Source Start Index");
-        public static readonly KeyController SourceEndIndKey = new KeyController("Source End Index");
+        public static readonly KeyController SourceDocKey = KeyController.Get("Source Doc");
+        public static readonly KeyController SourceStartIndKey = KeyController.Get("Source Start Index");
+        public static readonly KeyController SourceEndIndKey = KeyController.Get("Source End Index");
 
-        public static readonly KeyController TargetDocKey = new KeyController("Target Doc");
-        public static readonly KeyController TargetStartIndKey = new KeyController("Target Start Index");
-        public static readonly KeyController TargetEndIndKey = new KeyController("Target End Index");
+        public static readonly KeyController TargetDocKey = KeyController.Get("Target Doc");
+        public static readonly KeyController TargetStartIndKey = KeyController.Get("Target Start Index");
+        public static readonly KeyController TargetEndIndKey = KeyController.Get("Target End Index");
 
-        public static readonly KeyController LinkTypeKey = new KeyController("Link Type");
+        public static readonly KeyController LinkTypeKey = KeyController.Get("Link Type");
 
         //Output keys
-        public static readonly KeyController SuccessKey = new KeyController("Success");
+        public static readonly KeyController SuccessKey = KeyController.Get("Success");
 
-        public DocumentLinkOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public DocumentLinkOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public DocumentLinkOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
@@ -50,7 +50,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Text Link Documents", new Guid("3830D32F-FC05-427B-9761-A47DFCEA503B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Text Link Documents", new Guid("3830D32F-FC05-427B-9761-A47DFCEA503B"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -47,7 +47,7 @@ namespace Dash
                     {
                         return new Result()
                         {
-                            new SearchPair(new KeyController(funcName),
+                            new SearchPair(KeyController.Get(funcName),
                                 new StringSearchModel("Was contained in " + func))
                         };
                     }
@@ -116,7 +116,7 @@ namespace Dash
 
                 return new Result()
                 {
-                    new SearchPair(new KeyController("Negation"), new StringSearchModel("Negation"))
+                    new SearchPair(KeyController.Get("Negation"), new StringSearchModel("Negation"))
                 };
             };
         }

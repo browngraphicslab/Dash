@@ -17,32 +17,32 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController InputCollection =
-            new KeyController("Input Collection");
+            KeyController.Get("Input Collection");
 
         /// <summary>
         /// This key contains a list of key ids which correspond to the keys which are
         /// going to be used as columns in the output
         /// </summary>
         public static readonly KeyController ColumnVariables =
-            new KeyController("Column Variables");
+            KeyController.Get("Column Variables");
 
         /// <summary>
         /// The key contains a text field model controller which is the name
         /// of variables column in the output
         /// </summary>
         public static readonly KeyController VariableName =
-            new KeyController("Variable Name");
+            KeyController.Get("Variable Name");
 
         /// <summary>
         /// This key contaisn a text field model controller which is the name
         /// of the values column in the output
         /// </summary>
         public static readonly KeyController ValueName =
-            new KeyController("Value Name");
+            KeyController.Get("Value Name");
 
         // Output Keys
         public static readonly KeyController OutputCollection =
-            new KeyController("Output Collection");
+            KeyController.Get("Output Collection");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
@@ -64,7 +64,6 @@ namespace Dash
 
         public MeltOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public MeltOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -72,7 +71,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Melt", new Guid("871A8ADC-5D15-4B31-9BE7-6256D9C961EE"));
+        private static readonly KeyController TypeKey = KeyController.Get("Melt", new Guid("871A8ADC-5D15-4B31-9BE7-6256D9C961EE"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -88,8 +87,8 @@ namespace Dash
             var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
 
             var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
-            var variableKey = new KeyController(variableName.Data);
-            var valueKey = new KeyController(valueName.Data);
+            var variableKey = KeyController.Get(variableName.Data);
+            var valueKey = KeyController.Get(valueName.Data);
 
             var outputDocs = new List<DocumentController>();
 

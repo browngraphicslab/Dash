@@ -7,10 +7,10 @@ namespace Dash
     {
         public AddOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Add", new Guid("5C121004-6C32-4BB7-9CBF-C4A6573376EF"));
+        private static readonly KeyController TypeKey = KeyController.Get("Add", new Guid("5C121004-6C32-4BB7-9CBF-C4A6573376EF"));
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

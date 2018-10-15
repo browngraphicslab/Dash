@@ -16,14 +16,14 @@ namespace Dash
     {
 
         // Input Keys
-        public static readonly KeyController InputCollection = new KeyController("Input Collection");
-        public static readonly KeyController TextField = new KeyController("Text Field");
+        public static readonly KeyController InputCollection = KeyController.Get("Input Collection");
+        public static readonly KeyController TextField = KeyController.Get("Text Field");
 
         // Output Keys
-        public static readonly KeyController OutputCollection = new KeyController("Output");
+        public static readonly KeyController OutputCollection = KeyController.Get("Output");
 
         // Helper Key
-        public static readonly KeyController KeyWords = new KeyController("KeyWords");
+        public static readonly KeyController KeyWords = KeyController.Get("KeyWords");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
@@ -45,11 +45,10 @@ namespace Dash
 
         public ExtractKeywordsOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Keyword Operator", new Guid("8EA60017-CF8E-4885-B712-7C38906C299F"));
+        private static readonly KeyController TypeKey = KeyController.Get("Keyword Operator", new Guid("8EA60017-CF8E-4885-B712-7C38906C299F"));
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
