@@ -57,6 +57,12 @@ namespace Dash
                    $"({DocumentReference.ToScriptString(thisDoc)}, {FieldKey.ToScriptString(thisDoc)})";
         }
 
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield return DocumentReference;
+            yield return FieldKey;
+        }
+
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
 
         public override DocumentController GetDocumentController(Context context) => DocumentReference?.DereferenceToRoot<DocumentController>(context);

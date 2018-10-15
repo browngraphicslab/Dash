@@ -68,10 +68,12 @@ namespace Dash
             foreach (var d in _typedData)
             {
                 d.FieldModelUpdated -= ContainedFieldUpdated;
+                ReleaseField(d);
             }
             foreach (var d in targetList)
             {
                 d.FieldModelUpdated += ContainedFieldUpdated;
+                ReferenceField(d);
             }
             _typedData = targetList;
             // updates the data of the list model @database
@@ -185,6 +187,11 @@ namespace Dash
             SaveOnServer();
         }
 
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            return TypedData;
+        }
+
         #endregion
 
         #region // ACCESSORS //
@@ -232,9 +239,14 @@ namespace Dash
             index = CheckedIndex(index, TypedData);
 
             var prevElement = TypedData[index]; // for undo and event args
+            prevElement.FieldModelUpdated -= ContainedFieldUpdated;
+            ReleaseField(prevElement);
 
             TypedData[index] = value;
             ListModel.Data[index] = value.Id;
+
+            value.FieldModelUpdated += ContainedFieldUpdated;
+            ReferenceField(value);
 
             var newEvent = new UndoCommand(() => SetIndex(index, value, false), () => SetIndex(index, prevElement, false));
             UpdateOnServer(withUndo ? newEvent : null);
@@ -371,11 +383,13 @@ namespace Dash
             Debug.Assert(element != null);
             if (AvoidDuplicates) if (TypedData.Contains(element)) return false; // Conditionally avoid duplicate addition
 
-            element.FieldModelUpdated += ContainedFieldUpdated;
-
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
             TypedData.Add(element);
             ListModel.Data.Add(element.Id );
+
+            element.FieldModelUpdated += ContainedFieldUpdated;
+            ReferenceField(element);
+
             return true;
         }
 
@@ -443,6 +457,9 @@ namespace Dash
             TypedData.Insert(index, element);
             ListModel.Data.Insert(index, element.Id);
 
+            element.FieldModelUpdated += ContainedFieldUpdated;
+            ReferenceField(element);
+
             var newEvent = new UndoCommand(() => InsertManager(index, element, false), () => RemoveManager(element, false));
             UpdateOnServer(withUndo ? newEvent : null);
 
@@ -482,6 +499,7 @@ namespace Dash
         private bool RemoveHelper(T element)
         {
             element.FieldModelUpdated -= ContainedFieldUpdated;
+            ReleaseField(element);
 
             var removed = TypedData.Remove(element);
             ListModel.Data.Remove(element.Id);
@@ -513,9 +531,10 @@ namespace Dash
         {
             var element = TypedData[index];
             element.FieldModelUpdated -= ContainedFieldUpdated;
+            ReleaseField(element);
 
-            TypedData.Remove(element);
-            ListModel.Data.Remove(element.Id);
+            TypedData.RemoveAt(index);
+            ListModel.Data.RemoveAt(index);
 
             return element;
         }
@@ -536,6 +555,7 @@ namespace Dash
             foreach (var element in TypedData)
             {
                 element.FieldModelUpdated -= ContainedFieldUpdated;
+                ReleaseField(element);
             }
             TypedData.Clear();
             ListModel.Data.Clear();

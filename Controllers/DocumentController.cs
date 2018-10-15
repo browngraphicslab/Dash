@@ -501,6 +501,15 @@ namespace Dash
             }
         }
 
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            foreach (var kvp in _fields)
+            {
+                yield return kvp.Key;
+                yield return kvp.Value;
+            }
+        }
+
         // == CYCLE CHECKING ==
         #region Cycle Checking
         private List<KeyController> GetRelevantKeys(KeyController key, Context c)
@@ -614,17 +623,12 @@ namespace Dash
         /// </summary>
         public DocumentController GetPrototype()
         {
-            // if there is no prototype return null
-            if (!_fields.ContainsKey(KeyStore.PrototypeKey))
-                return null;
+            if (_fields.TryGetValue(KeyStore.PrototypeKey, out var prototype))
+            {
+                return prototype as DocumentController;
+            }
 
-            // otherwise try to convert the field associated with the prototype key into a DocumentController
-            var documentController =
-                _fields[KeyStore.PrototypeKey] as DocumentController;
-
-
-            // if the field contained a DocumentController return its data, otherwise return null
-            return documentController;
+            return null;
         }
 
 
@@ -792,6 +796,9 @@ namespace Dash
 
             proto._fields.Remove(key, out var value);
 
+            ReleaseField(key);
+            ReleaseField(value);
+
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
 
             return true;
@@ -808,7 +815,6 @@ namespace Dash
         /// <returns></returns>
         public FieldControllerBase GetField(KeyController key, bool ignorePrototype = false)
         {
-            // TODO this should cause an operator to execute and return the proper value
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
 
@@ -865,9 +871,18 @@ namespace Dash
                 //}
 
                 //field.SaveOnServer();
+                if (doc == proto)
+                {
+                    doc.ReleaseField(oldField);
+                }
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field.Id;
+                doc.ReferenceField(field);
+                if (doc != proto || oldField == null)//Adding a new field to this document so we need to reference it
+                {
+                    doc.ReferenceField(key);
+                }
                 if (!doc.Equals(this))
                 {
                     doc.UpdateOnServer(null);

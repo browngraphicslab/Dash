@@ -177,6 +177,7 @@ namespace Dash
                 MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
+            FieldControllerBase.MakeRoot(MainDocument);
 
             LoadSettings();
 

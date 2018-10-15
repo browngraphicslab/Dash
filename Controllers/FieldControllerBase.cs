@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -140,9 +141,11 @@ namespace Dash
             base.DeleteOnServer();
         }
 
+        #region Reference Counting
+
         private int _refCount = 0;
 
-        public void AddRef()
+        private void AddReference()
         {
             if (_refCount++ == 0)
             {
@@ -150,7 +153,7 @@ namespace Dash
             }
         }
 
-        public void Release()
+        private void ReleaseReference()
         {
             if (--_refCount == 0)
             {
@@ -159,15 +162,63 @@ namespace Dash
             Debug.Assert(_refCount >= 0);
         }
 
+        protected void ReferenceField(FieldControllerBase field)
+        {
+            //TODO RefCount: This assert is probably really slow
+            Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            if (IsReferenced && field != null)
+            {
+                field.AddReference();
+            }
+        }
+
+        protected void ReleaseField(FieldControllerBase field)
+        {
+            //TODO RefCount: This assert is probably really slow
+            Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            if (IsReferenced && field != null)
+            {
+                field.ReleaseReference();
+            }
+        }
+
+        protected virtual IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield break;
+        }
+
         protected bool IsReferenced => _refCount > 0;
 
         protected virtual void RefInit()
         {
+            foreach (var fieldControllerBase in GetReferencedFields())
+            {
+                if (fieldControllerBase == null)
+                {
+                    continue;
+                }
+                fieldControllerBase.AddReference();
+            }
         }
 
         protected virtual void RefDestroy()
         {
+            foreach (var fieldControllerBase in GetReferencedFields())
+            {
+                if (fieldControllerBase == null)
+                {
+                    continue;
+                }
+                fieldControllerBase.ReleaseReference();
+            }
         }
+
+        public static void MakeRoot(FieldControllerBase field)
+        {
+            field.AddReference();
+        }
+
+        #endregion
 
     }
 }

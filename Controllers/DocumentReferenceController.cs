@@ -18,11 +18,13 @@ namespace Dash
 
         private void SetDocumentController(DocumentController doc, bool withUndo)
         {
+            ReleaseField(_documentController);
             var oldDoc = _documentController;
             var newDoc = doc;
             _documentController = doc;
             (Model as DocumentReferenceModel).DocumentId = doc.Id;
             UndoCommand command = withUndo ? new UndoCommand(() => SetDocumentController(newDoc, false), () => SetDocumentController(oldDoc, false)) : null;
+            ReferenceField(doc);
             UpdateOnServer(command);
             DocumentChanged();
         }
@@ -115,6 +117,12 @@ namespace Dash
             }
 
             return DocAndKeyToString(DocumentController, FieldKey);
+        }
+
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield return DocumentController;
+            yield return FieldKey;
         }
     }
 }
