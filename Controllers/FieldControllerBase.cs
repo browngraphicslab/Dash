@@ -182,7 +182,7 @@ namespace Dash
         protected void ReferenceField(FieldControllerBase field)
         {
             //TODO RefCount: This assert is probably really slow
-            Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            //Debug.Assert(field == null || GetReferencedFields().Contains(field));
             if (IsReferenced && field != null)
             {
                 field.AddReference();
@@ -192,7 +192,7 @@ namespace Dash
         protected virtual void ReleaseField(FieldControllerBase field)
         {
             //TODO RefCount: This assert is probably really slow
-            Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            //Debug.Assert(field == null || GetReferencedFields().Contains(field));
             if (IsReferenced && field != null)
             {
                 field.ReleaseReference();
