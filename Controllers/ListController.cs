@@ -67,13 +67,11 @@ namespace Dash
             // can simply reassign list, as below, but only if first all the necessary event handlers are removed and added
             foreach (var d in _typedData)
             {
-                d.FieldModelUpdated -= ContainedFieldUpdated;
-                ReleaseField(d);
+                ReleaseContainedField(d);
             }
             foreach (var d in targetList)
             {
-                d.FieldModelUpdated += ContainedFieldUpdated;
-                ReferenceField(d);
+                ReferenceContainedField(d);
             }
             _typedData = targetList;
             // updates the data of the list model @database
@@ -129,10 +127,6 @@ namespace Dash
         // IEnumerable<T> (list of items)
         public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
-            foreach (var field in list)
-            {
-                field.FieldModelUpdated += ContainedFieldUpdated;
-            }
             _typedData = new List<T>(list);
             ConstructorHelper(readOnly);
         }
@@ -140,7 +134,6 @@ namespace Dash
         // T (item)
         public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
-            item.FieldModelUpdated += ContainedFieldUpdated;
             _typedData = new List<T> {item};
             ConstructorHelper(readOnly);
         }
@@ -170,11 +163,11 @@ namespace Dash
             List<T> list = fields as List<T> ?? new List<T>(fields);
 
             // furthermore, confirms the type of the list in the model matches the type of this list controller
+            _typedData = list;
             foreach (var field in list)
             {
-                field.FieldModelUpdated += ContainedFieldUpdated;
+                ReferenceContainedField(field);
             }
-            _typedData = list;
         }
 
         /*
@@ -190,6 +183,41 @@ namespace Dash
         protected override IEnumerable<FieldControllerBase> GetReferencedFields()
         {
             return TypedData;
+        }
+
+        private void ReferenceContainedField(T field)
+        {
+            ReferenceField(field);
+            if (IsReferenced)
+            {
+                field.FieldModelUpdated += ContainedFieldUpdated;
+            }
+        }
+
+        private void ReleaseContainedField(T field)
+        {
+            if (IsReferenced)
+            {
+                field.FieldModelUpdated -= ContainedFieldUpdated;
+            }
+
+            ReleaseField(field);
+        }
+
+        protected override void RefInit()
+        {
+            foreach (var fieldControllerBase in TypedData)
+            {
+                ReferenceContainedField(fieldControllerBase);
+            }
+        }
+
+        protected override void RefDestroy()
+        {
+            foreach (var fieldControllerBase in TypedData)
+            {
+                ReleaseContainedField(fieldControllerBase);
+            }
         }
 
         #endregion
@@ -239,14 +267,12 @@ namespace Dash
             index = CheckedIndex(index, TypedData);
 
             var prevElement = TypedData[index]; // for undo and event args
-            prevElement.FieldModelUpdated -= ContainedFieldUpdated;
-            ReleaseField(prevElement);
+            ReleaseContainedField(prevElement);
 
             TypedData[index] = value;
             ListModel.Data[index] = value.Id;
 
-            value.FieldModelUpdated += ContainedFieldUpdated;
-            ReferenceField(value);
+            ReferenceContainedField(value);
 
             var newEvent = new UndoCommand(() => SetIndex(index, value, false), () => SetIndex(index, prevElement, false));
             UpdateOnServer(withUndo ? newEvent : null);
@@ -387,8 +413,7 @@ namespace Dash
             TypedData.Add(element);
             ListModel.Data.Add(element.Id );
 
-            element.FieldModelUpdated += ContainedFieldUpdated;
-            ReferenceField(element);
+            ReferenceContainedField(element);
 
             return true;
         }
@@ -457,8 +482,7 @@ namespace Dash
             TypedData.Insert(index, element);
             ListModel.Data.Insert(index, element.Id);
 
-            element.FieldModelUpdated += ContainedFieldUpdated;
-            ReferenceField(element);
+            ReferenceContainedField(element);
 
             var newEvent = new UndoCommand(() => InsertManager(index, element, false), () => RemoveManager(element, false));
             UpdateOnServer(withUndo ? newEvent : null);
@@ -498,8 +522,7 @@ namespace Dash
 
         private bool RemoveHelper(T element)
         {
-            element.FieldModelUpdated -= ContainedFieldUpdated;
-            ReleaseField(element);
+            ReleaseContainedField(element);
 
             var removed = TypedData.Remove(element);
             ListModel.Data.Remove(element.Id);
@@ -530,8 +553,7 @@ namespace Dash
         private T RemoveAtHelper(int index)
         {
             var element = TypedData[index];
-            element.FieldModelUpdated -= ContainedFieldUpdated;
-            ReleaseField(element);
+            ReleaseContainedField(element);
 
             TypedData.RemoveAt(index);
             ListModel.Data.RemoveAt(index);
@@ -554,8 +576,7 @@ namespace Dash
             var prevList = TypedData;
             foreach (var element in TypedData)
             {
-                element.FieldModelUpdated -= ContainedFieldUpdated;
-                ReleaseField(element);
+                ReleaseContainedField(element);
             }
             TypedData.Clear();
             ListModel.Data.Clear();

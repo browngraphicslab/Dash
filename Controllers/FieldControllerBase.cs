@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Microsoft.Office.Interop.Word;
+using Task = System.Threading.Tasks.Task;
 
 namespace Dash
 {
@@ -147,7 +148,8 @@ namespace Dash
 
         private void AddReference()
         {
-            if (_refCount++ == 0)
+            ++_refCount;
+            if (_refCount == 1)
             {
                 RefInit();
             }
@@ -155,10 +157,12 @@ namespace Dash
 
         private void ReleaseReference()
         {
-            if (--_refCount == 0)
+            if (_refCount == 1)
             {
                 RefDestroy();
             }
+
+            --_refCount;
             Debug.Assert(_refCount >= 0);
         }
 
@@ -172,7 +176,7 @@ namespace Dash
             }
         }
 
-        protected void ReleaseField(FieldControllerBase field)
+        protected virtual void ReleaseField(FieldControllerBase field)
         {
             //TODO RefCount: This assert is probably really slow
             Debug.Assert(field == null || GetReferencedFields().Contains(field));
@@ -191,26 +195,10 @@ namespace Dash
 
         protected virtual void RefInit()
         {
-            foreach (var fieldControllerBase in GetReferencedFields())
-            {
-                if (fieldControllerBase == null)
-                {
-                    continue;
-                }
-                fieldControllerBase.AddReference();
-            }
         }
 
         protected virtual void RefDestroy()
         {
-            foreach (var fieldControllerBase in GetReferencedFields())
-            {
-                if (fieldControllerBase == null)
-                {
-                    continue;
-                }
-                fieldControllerBase.ReleaseReference();
-            }
         }
 
         public static void MakeRoot(FieldControllerBase field)

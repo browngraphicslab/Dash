@@ -80,6 +80,8 @@ namespace Dash
         {
             SaveOnServer();
 
+            //TODO RefCount
+            //_fields = new Dictionary<KeyController, FieldControllerBase>(fields);
             SetFields(fields, true);
             DocumentType = DocumentType;
         }
@@ -210,7 +212,8 @@ namespace Dash
                 if (path.Length == 1)
                 {
                     return refDoc; // found <DocName=a>
-                } else
+                }
+                else
                     foreach (var e in refDoc.EnumFields())
                         if (e.Key.Name == path[1])
                         {
@@ -254,7 +257,8 @@ namespace Dash
                             SetField(key, new NumberController(num), true, false);
                         else SetField(key, new TextController(fieldStr), true, false);
                     }
-                } else if (lookupOperator(strings[0]) != null)
+                }
+                else if (lookupOperator(strings[0]) != null)
                 {
                     var opModel = lookupOperator(strings[0]);
                     var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);
@@ -266,7 +270,8 @@ namespace Dash
                         if (docRef != null)
                         {
                             opModel.SetField(opFieldController.Inputs[count++].Key, docRef, true);
-                        } else
+                        }
+                        else
                         {
                             var target = opFieldController.Inputs[count++];
                             if (target.Value.Type == TypeInfo.Number)
@@ -274,16 +279,20 @@ namespace Dash
                                 var res = 0.0;
                                 if (double.TryParse(a.Trim(' '), out res))
                                     opModel.SetField(target.Key, new NumberController(res), true);
-                            } else if (target.Value.Type == TypeInfo.Text)
+                            }
+                            else if (target.Value.Type == TypeInfo.Text)
                             {
                                 opModel.SetField(target.Key, new TextController(a), true);
-                            } else if (target.Value.Type == TypeInfo.Image)
+                            }
+                            else if (target.Value.Type == TypeInfo.Image)
                             {
                                 opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
-                            } else if (target.Value.Type == TypeInfo.Video)
+                            }
+                            else if (target.Value.Type == TypeInfo.Video)
                             {
                                 opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
-                            } else if (target.Value.Type == TypeInfo.Audio)
+                            }
+                            else if (target.Value.Type == TypeInfo.Audio)
                             {
                                 opModel.SetField(target.Key, new AudioController(new Uri(a)), true);
                             }
@@ -299,7 +308,8 @@ namespace Dash
                     }
                     SetField(key, new DocumentReferenceController(opModel, opFieldController.Outputs.First().Key), true, false);
                 }
-            } else
+            }
+            else
             {
                 if (curField != null && !(curField is ReferenceController))
                     if (curField is NumberController nc)
@@ -310,19 +320,22 @@ namespace Dash
                                 SetField(key, new NumberController(num), true);
                             else nc.Data = num;
                         else return false;
-                    } else if (curField is TextController tc)
+                    }
+                    else if (curField is TextController tc)
                     {
                         if (copy)
                             SetField(key, new TextController(textInput), true);
                         else tc.Data = textInput;
-                    } else if (curField is ImageController ic)
+                    }
+                    else if (curField is ImageController ic)
                     {
                         try
                         {
                             if (copy)
                                 SetField(key, new ImageController(new Uri(textInput)), true);
                             else ic.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             ic.Data = null;
                         }
@@ -349,45 +362,53 @@ namespace Dash
                     else if (curField is DateTimeController)
                     {
                         return curField.TrySetValue(new DateTimeToStringConverter().ConvertXamlToData(textInput));
-                    } else if (curField is VideoController vc)
+                    }
+                    else if (curField is VideoController vc)
                     {
                         try
                         {
                             if (copy)
                                 SetField(key, new VideoController(new Uri(textInput)), true);
                             else vc.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             vc.Data = null;
                         }
-                    } else if (curField is AudioController ac)
+                    }
+                    else if (curField is AudioController ac)
                     {
                         try
                         {
                             if (copy)
                                 SetField(key, new AudioController(new Uri(textInput)), true);
                             else ac.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             ac.Data = null;
                         }
-                    } else if (curField is DocumentController)
+                    }
+                    else if (curField is DocumentController)
                     {
                         Debug.WriteLine("Warning: changing document field into a text field");
                         SetField(key, new TextController(textInput), true);
                         //TODO tfs: fix this 
                         //throw new NotImplementedException();
                         //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
-                    } else if (curField is ListController<DocumentController> lc)
+                    }
+                    else if (curField is ListController<DocumentController> lc)
                     {
                         if (copy)
                             SetField(key, new ListController<DocumentController>(new DocumentCollectionToStringConverter().ConvertXamlToData(textInput)), true);
                         else lc.TypedData =
                             new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
-                    } else if (curField is RichTextController rtc)
+                    }
+                    else if (curField is RichTextController rtc)
                     {
                         rtc.Data = new RichTextModel.RTD(textInput);
-                    } else
+                    }
+                    else
                     {
                         return false;
                     }
@@ -463,7 +484,7 @@ namespace Dash
         /// </summary>
         /// <param name="key">the key for the list field being modified</param>
         /// <param name="value">the value being added to the list</param>
-        public void AddToListField<T>(KeyController key, T value, int? index = null) where T: FieldControllerBase
+        public void AddToListField<T>(KeyController key, T value, int? index = null) where T : FieldControllerBase
         {
             if (index is int intIndex)
             {
@@ -503,10 +524,64 @@ namespace Dash
 
         protected override IEnumerable<FieldControllerBase> GetReferencedFields()
         {
-            foreach (var kvp in _fields)
+            //TODO RefCount: Make Documents reference keys as well as values
+            return _fields.Values;
+            //foreach (var kvp in _fields)
+            //{
+            //    yield return kvp.Key;
+            //    yield return kvp.Value;
+            //}
+        }
+
+        private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldHandlerDictionary = new Dictionary<KeyController, FieldUpdatedHandler>();
+        private void ReferenceContainedField(KeyController key, FieldControllerBase field)
+        {
+            var reference = new DocumentFieldReference(this, key);
+
+            void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
-                yield return kvp.Key;
-                yield return kvp.Value;
+                var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
+                generateDocumentFieldUpdatedEvents(updateArgs, new Context());
+            }
+            //TODO RefCount
+            //if (key != KeyStore.DelegatesKey)
+            //{
+                ReferenceField(field);
+                if (IsReferenced)
+                {
+                    field.FieldModelUpdated += TriggerDocumentFieldUpdated;
+                    Debug.Assert(!_fieldHandlerDictionary.ContainsKey(key));
+                    _fieldHandlerDictionary[key] = TriggerDocumentFieldUpdated;
+                }
+            //}
+
+        }
+
+        private void ReleaseContainedField(KeyController key, FieldControllerBase field)
+        {
+            ReleaseField(field);
+            if (IsReferenced)
+            {
+                Debug.Assert(_fieldHandlerDictionary.ContainsKey(key));
+                var handler = _fieldHandlerDictionary[key];
+                field.FieldModelUpdated -= handler;
+                _fieldHandlerDictionary.Remove(key);
+            }
+        }
+
+        protected override void RefInit()
+        {
+            foreach (var fieldControllerBase in _fields)
+            {
+                ReferenceContainedField(fieldControllerBase.Key, fieldControllerBase.Value);
+            }
+        }
+
+        protected override void RefDestroy()
+        {
+            foreach (var fieldControllerBase in _fields)
+            {
+                ReleaseContainedField(fieldControllerBase.Key, fieldControllerBase.Value);
             }
         }
 
@@ -555,7 +630,8 @@ namespace Dash
                 if (c.DocContextList.Contains(doc))
                 {
                     c2 = c;
-                } else
+                }
+                else
                 {
                     c2 = new Context(c);
                     c2.AddDocumentContext(doc);
@@ -690,7 +766,8 @@ namespace Dash
                     var mappedField = f.Value.CopyIfMapped(mapping);
                     if (mappedField != null)
                         SetField(f.Key, mappedField, true);
-                } else if (f.Value is ListController<DocumentController> listDocs)
+                }
+                else if (f.Value is ListController<DocumentController> listDocs)
                 {
                     var newListDocs = new ListController<DocumentController>();
                     foreach (var l in listDocs.TypedData)
@@ -796,8 +873,7 @@ namespace Dash
 
             proto._fields.Remove(key, out var value);
 
-            ReleaseField(key);
-            ReleaseField(value);
+            ReleaseContainedField(key, value);
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
 
@@ -871,18 +947,16 @@ namespace Dash
                 //}
 
                 //field.SaveOnServer();
-                if (doc == proto)
+                if (doc == proto && oldField != null)
                 {
-                    doc.ReleaseField(oldField);
+                    doc.ReleaseContainedField(key, oldField);
                 }
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field.Id;
-                doc.ReferenceField(field);
-                if (doc != proto || oldField == null)//Adding a new field to this document so we need to reference it
-                {
-                    doc.ReferenceField(key);
-                }
+
+                doc.ReferenceContainedField(key, field);
+
                 if (!doc.Equals(this))
                 {
                     doc.UpdateOnServer(null);
@@ -893,12 +967,13 @@ namespace Dash
                 var reference = new DocumentFieldReference(doc, key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
 
-                if (key.Equals(KeyStore.PrototypeKey))
-                    ; // need to see if any prototype operators need to be run
-                else if (key.Equals(KeyStore.DocumentContextKey))
-                    ; // do we need to watch anything when the DocumentContext field is set?
-                else
-                    setupFieldChangedListeners(key, field, oldField, new Context(doc));
+                //TODO RefCount
+                //if (key.Equals(KeyStore.PrototypeKey))
+                //    ; // need to see if any prototype operators need to be run
+                //else if (key.Equals(KeyStore.DocumentContextKey))
+                //    ; // do we need to watch anything when the DocumentContext field is set?
+                //else
+                //    setupFieldChangedListeners(key, field, oldField, new Context(doc));
 
                 return (true, updateArgs, new Context(doc));
             }
@@ -950,7 +1025,8 @@ namespace Dash
                 {
                     return true;
                 }
-            } else
+            }
+            else
             {
                 var f = new TDefault();
                 if (f.TrySetValue(v))
@@ -1159,7 +1235,8 @@ namespace Dash
                     {
                         return;
                     }
-                } else
+                }
+                else
                 {
                     inputs[opFieldInput.Key] = field;
                 }
@@ -1249,7 +1326,8 @@ namespace Dash
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
                 return KeyStore.TypeRenderer[DocumentType](this, context);
-            } else
+            }
+            else
 
                 return makeAllViewUI(context);
         }
@@ -1341,37 +1419,6 @@ namespace Dash
                 _fieldUpdatedDictionary[key] -= handler;
             }
         }
-        /// <summary>
-        /// Adds listeners to the field model updated event which fire the document model updated event
-        /// </summary>
-        /// <summary>
-        /// Adds listeners to the field model updated event which fire the document model updated event
-        /// </summary>
-        void setupFieldChangedListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
-        {
-            var reference = new DocumentFieldReference(this, key);
-            ///<summary>
-            /// Generates a DocumentFieldUpdated event when a fieldModelUpdated event has been fired for a field in this document.
-            ///</summary>
-            void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-            {
-                var refSender = sender as ReferenceController;
-                var proto =this.GetPrototypeWithFieldKey(reference.FieldKey);
-                //if (new Context(proto).IsCompatibleWith(c))
-                {
-                    var newContext = new Context(c);
-                    if (newContext.DocContextList.Count(d => d.IsDelegateOf(this)) == 0)  // don't add This if a delegate of This is already in the Context.
-                        newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
-
-                    var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                    generateDocumentFieldUpdatedEvents(updateArgs, newContext);
-                }
-            };
-            if (newField != null && key != KeyStore.DelegatesKey /*&& key.Name != "_Cache Access Key"*/)
-            {
-                newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
-            }
-        }
 
 
         static string spaces = "";
@@ -1386,7 +1433,8 @@ namespace Dash
             try
             {
                 spaces = spaces.Substring(2);
-            } catch (Exception)
+            }
+            catch (Exception)
             {
 
             }
