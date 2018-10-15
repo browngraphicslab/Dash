@@ -59,7 +59,7 @@ namespace Dash
         {
             var frame = new SplitFrame();
             frame.OpenDocument(doc);
-            return frame
+            return frame;
 
         }
 
