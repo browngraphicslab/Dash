@@ -16,7 +16,6 @@
                 ItemsSource="{Binding DocumentViewModels}"
                 CanDragItems="True"
                 DragItemsStarting="XGridView_OnDragItemsStarting"  
-                DragItemsCompleted="XGridView_OnDragItemsCompleted"  
                 ManipulationMode="All"
                 IsHitTestVisible="{Binding IsSelected}"
                 SelectionMode="Single"

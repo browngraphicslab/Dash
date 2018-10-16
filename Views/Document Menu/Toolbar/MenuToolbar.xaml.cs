@@ -204,7 +204,7 @@ namespace Dash
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             xAreContentsHitTestVisibleIcon.Text = ((char)0xE840).ToString();
-            foreach (var d in SelectionManager.GetSelectedDocs())
+            foreach (var d in args.SelectedViews)
             {
                 xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
             }
