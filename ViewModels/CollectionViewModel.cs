@@ -733,7 +733,6 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("DROP ");
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
@@ -773,24 +772,24 @@ namespace Dash
                 else
                 {
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving));
+                    AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, this));
                 }
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
 
-        private async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving)
+        public static async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel)
         {
-            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
+            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null && collectionViewModel != null)  // dropping a DataBox
             {
-                RouteDataBoxReferencesThroughCollection(ContainerDocument, docsToAdd);
+                RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
             }
 
             if (isMoving && dragModel is DragDocumentModel dragDocModel)
             {
                 for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
                 {
-                    if (dragDocModel.DraggedDocCollectionViews[i] == this)
+                    if (dragDocModel.DraggedDocCollectionViews[i] == collectionViewModel)
 
                     {
                         docsToAdd.Remove(dragDocModel.DraggedDocuments[i]);
@@ -820,7 +819,7 @@ namespace Dash
             }
             for (int i = 0; i < docsToAdd.Count; i++)
             {
-                if (ViewType == CollectionView.CollectionViewType.Freeform && !docsToAdd[i].DocumentType.Equals(RichTextBox.DocumentType))
+                if (collectionViewModel?.ViewType == CollectionView.CollectionViewType.Freeform && !docsToAdd[i].DocumentType.Equals(RichTextBox.DocumentType))
                 {
                     if (docsToAdd[i].GetHorizontalAlignment() == HorizontalAlignment.Stretch)
                         docsToAdd[i].SetHorizontalAlignment(HorizontalAlignment.Left);
