@@ -188,11 +188,9 @@ namespace Dash
             DocumentController lastWorkspace;
             if (col.Count == 0)
             {
-                var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 col.Add(documentController);
                 lastWorkspace = documentController;
-                lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
             }
             else
             {
@@ -746,8 +744,7 @@ namespace Dash
 
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
-            if (doc.DocumentType.Equals(CollectionBox.DocumentType) &&
-                double.IsNaN(doc.GetWidth()) && double.IsNaN(doc.GetHeight()))
+            if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 docCopy.SetWidth(400);
                 docCopy.SetHeight(300);
@@ -844,7 +841,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
-            var frame = SplitFrame.GetFrameWithDoc(target, true);
+            var frame = MainSplitter.GetFrameWithDoc(target, true);
             if (frame != null)
             {
                 frame.Delete();

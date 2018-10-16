@@ -559,6 +559,15 @@
                     </AppBarToggleButton>
                     <AppBarButton 
                     Height="60"
+                    x:Name="xAreContentsHitTestVisible"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Click="FreezeContents"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <TextBlock x:Name="xAreContentsHitTestVisibleIcon" Text="&#xE77A;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
+                    Height="60"
                     x:Name="xMakeInstance"
                     Style="{StaticResource AppBarButtonStyler}" 
                     Click="MakeInstance"

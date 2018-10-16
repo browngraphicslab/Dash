@@ -812,13 +812,15 @@
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SplitFrame.Navigation.cs" />
-    <Compile Include="Views\SplitFrame.xaml.cs">
+    <Compile Include="Views\Splitting\SplitDefinition.cs" />
+    <Compile Include="Views\Splitting\SplitFrame.Navigation.cs" />
+    <Compile Include="Views\Splitting\SplitFrame.xaml.cs">
       <DependentUpon>SplitFrame.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SplitManager.xaml.cs">
+    <Compile Include="Views\Splitting\SplitManager.xaml.cs">
       <DependentUpon>SplitManager.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Splitting\SplitPane.cs" />
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
@@ -1404,11 +1406,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SplitFrame.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Views\Splitting\SplitFrame.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\SplitManager.xaml">
+    <Page Include="Views\Splitting\SplitManager.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

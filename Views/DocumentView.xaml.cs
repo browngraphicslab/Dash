@@ -119,24 +119,23 @@ namespace Dash
                 };
             this.AddFieldBinding(VisibilityProperty, binding);
 
-            var binding2 = doc == null ? null : new FieldBinding<BoolController>
-            {
-                Converter = new BoolToVisibilityConverter(),
-                Document = doc,
-                Key = KeyStore.IsAdornmentKey,
-                Mode = BindingMode.OneWay,
-                Tag = "IsAdornment binding in DocumentView",
-                FallbackValue = Visibility.Collapsed
-            };
-            xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
+            //var binding2 = doc == null ? null : new FieldBinding<BoolController>
+            //{
+            //    Converter = new BoolToVisibilityConverter(),
+            //    Document = doc,
+            //    Key = KeyStore.AreContentsHitTestVisibleKey,
+            //    Mode = BindingMode.OneWay,
+            //    Tag = "AreContentsVisible binding in DocumentView",
+            //    FallbackValue = Visibility.Collapsed
+            //};
+            //xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
 
             var binding3 = doc == null ? null : new FieldBinding<BoolController>
             {
-                Converter = new BoolInverter(),
                 Document = doc,
-                Key = KeyStore.IsButtonKey,
+                Key = KeyStore.AreContentsHitTestVisibleKey,
                 Mode = BindingMode.OneWay,
-                Tag = "IsButton binding in DocumentView",
+                Tag = "AreContentsHitTestVisible binding in DocumentView",
                 FallbackValue = true
             };
             LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
@@ -246,7 +245,7 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                if (this.IsRightBtnPressed() && this.ViewModel.IsNotBackgroundPinned)
+                if (this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                         e.Handled = true;
@@ -539,10 +538,18 @@ namespace Dash
             }
 
             ViewModel.Position = newPos;
-            ViewModel.Width = newSize.Width;
+            if (newSize.Width != ViewModel.ActualSize.X)
+            {
+                ViewModel.Width = newSize.Width;
+            }
 
             if (delta.Y != 0 || this.IsShiftPressed() || isImage)
-                ViewModel.Height = newSize.Height;
+            {
+                if (newSize.Height != ViewModel.ActualSize.Y)
+                {
+                    ViewModel.Height = newSize.Height;
+                }
+            }
         }
 
         // Controls functionality for the Right-click context menu
@@ -713,10 +720,7 @@ namespace Dash
             MainPage.Instance.xPresentationView.TryHighlightMatches(this);
 
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
-            if (ViewModel?.IsAdornmentGroup == false)
-            {
-                ToFront();
-            }
+            ToFront();
 
             //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             if (!wasHandled) // (ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
@@ -932,7 +936,7 @@ namespace Dash
 
         public void This_Drop(object sender, DragEventArgs e)
         {
-            if (ViewModel.IsAdornmentGroup)
+            if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
                 return;
 
             var dragModel = e.DataView.GetDragModel();
@@ -1060,7 +1064,7 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpen_OnClick;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = SplitFrame.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
+                Text = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Folder }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpenCollapsed_OnClick;
@@ -1155,14 +1159,14 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                var frame = SplitFrame.GetFrameWithDoc(ViewModel.DocumentController, true);
+                var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true);
                 if (frame != null)
                 {
                     frame.Delete();
                 }
                 else
                 {
-                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
+                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController.GetViewCopy());
                 }
             }
         }
@@ -1195,20 +1199,12 @@ namespace Dash
             //Debug.Write("dispose DocumentView");
         }
 
-        private void xBackgroundPin_PointerPressed(object sender, PointerRoutedEventArgs e)
+        public bool AreContentsHitTestVisible
         {
-            e.Handled = true;
-        }
-        private void xBackgroundPin_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void xBackgroundPin_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            ViewModel.IsNotBackgroundPinned = !ViewModel.IsNotBackgroundPinned;
-            xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE840 : 0xE77A);
-            e.Handled = true;
+            get => ViewModel.AreContentsHitTestVisible;
+            set => ViewModel.AreContentsHitTestVisible = !ViewModel.DocumentController.GetAreContentsHitTestVisible();
+                //xBackgroundPin.Text = "" + (char)(!ViewModel.DocumentController.GetAreContentsHitTestVisible() ? 0xE840 : 0xE77A);
+            
         }
 
         /// <summary>

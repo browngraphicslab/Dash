@@ -12,18 +12,16 @@
     DataContextChanged="SplitFrame_OnDataContextChanged">
 
     <Grid x:Name="Grid">
-        <local:DocumentView x:Name="XDocView" DocumentSelected="XDocView_DocumentSelected"/>
+        <local:DocumentView x:Name="XDocView" />
         <Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
                  Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="TopRightOnManipulationStarted"
-                 ManipulationDelta="TopRightOnManipulationDelta"
                  ManipulationCompleted="OnManipulationCompleted"/>
         <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                  Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="BottomLeftOnManipulationStarted"
-                 ManipulationDelta="BottomLeftOnManipulationDelta"
                  ManipulationCompleted="OnManipulationCompleted"/>
         <Rectangle x:Name="XRightDropTarget" Width="15" Canvas.ZIndex="1" Fill="#10101010" HorizontalAlignment="Right"
                    Visibility="Collapsed"
@@ -45,7 +43,7 @@
                    DragEnter="DropTarget_OnDragEnter"
                    DragLeave="DropTarget_OnDragLeave"
                    Drop="XBottomDropTarget_OnDrop" AllowDrop="True"/>
-        <local:DocumentPathView x:Name="XPathView" Canvas.ZIndex="2" Margin="10 0 0 10" HorizontalAlignment="Left" VerticalAlignment="Bottom"></local:DocumentPathView>
+        <local:DocumentPathView x:Name="XPathView" Canvas.ZIndex="2" Margin="15 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom"></local:DocumentPathView>
     </Grid>
 
 </UserControl>

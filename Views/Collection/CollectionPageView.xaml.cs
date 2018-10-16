@@ -471,7 +471,7 @@ namespace Dash
 
                 i++;
             }
-            args.Data.SetDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
+            args.Data.SetDragModel(new DragDocumentModel(new CollectionNote(new Point(), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
@@ -517,8 +517,6 @@ namespace Dash
             if (_newDoc == null)
             {
                 var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN);
-                cnote.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                cnote.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
                 _newDoc = cnote.Document;
                 _newDoc.SetFitToParent(true);
             }

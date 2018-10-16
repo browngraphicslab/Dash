@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Media;
 using Windows.Foundation;
 using static Dash.DocumentController;
 using Point = Windows.Foundation.Point;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -62,12 +63,18 @@ namespace Dash
 
         private SolidColorBrush _searchHighlightBrush;
         private bool _isNotBackgroundPinned = true;
-
+        
         public bool IsDimensionless = false;
-        public bool IsNotBackgroundPinned
+        public bool AreContentsHitTestVisible
         {
-            get => _isNotBackgroundPinned;
-            set => SetProperty(ref _isNotBackgroundPinned, value);
+            get => DocumentController.GetAreContentsHitTestVisible();
+            set {
+                DocumentController.SetAreContentsHitTestVisible(value);
+                foreach (var rtv in Content.GetDescendantsOfType<RichEditBox>())
+                {
+                    rtv.IsHitTestVisible = DocumentController.GetAreContentsHitTestVisible();
+                }
+            }
         }
         public bool IsAdornmentGroup
         {
@@ -99,12 +106,12 @@ namespace Dash
         }
         public double Width
         {
-            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
         {
-            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetHeight();
             set => LayoutDocument.SetHeight(value);
         }
         public Point Scale
@@ -142,9 +149,7 @@ namespace Dash
             get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
             private set  {
                 _content = value; // content will be recomputed when someone accesses Content
-                OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
-                //create render transform for content zooming/panning!
-                _content.RenderTransform = new CompositeTransform();
+                OnPropertyChanged(); // let everyone know that _content has changed
             }
         }
 

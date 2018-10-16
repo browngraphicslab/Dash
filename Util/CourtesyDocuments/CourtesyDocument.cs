@@ -208,31 +208,6 @@ namespace Dash
             Document = GetLayoutPrototype(documentType, prototypeId, abstractInterface).MakeDelegate();
             Document.SetFields(fields, true);
         }
-
-        #region GettersAndSetters
-
-        protected static NumberController GetHeightField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.HeightFieldKey)
-                .DereferenceToRoot<NumberController>(context);
-        }
-
-        protected static NumberController GetWidthField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.WidthFieldKey)
-                .DereferenceToRoot<NumberController>(context);
-        }
-
-        protected static PointController  GetPositionField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.PositionFieldKey)
-                .DereferenceToRoot<PointController>(context);
-        }
-
-        #endregion
     }
 
     public enum LinkBehavior {
@@ -298,6 +273,16 @@ namespace Dash
         {
             document.SetField<BoolController>(KeyStore.IsButtonKey, button, true);
         }
+        public static bool GetAreContentsHitTestVisible(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, null);
+            return data?.Data != false;
+        }
+        public static void SetAreContentsHitTestVisible(this DocumentController document, bool adornment)
+        {
+            document.SetField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, adornment, true);
+        }
+
         public static bool    GetIsAdornment(this DocumentController document)
         {
             var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);
@@ -475,7 +460,7 @@ namespace Dash
 
         public static double GetWidth(this DocumentController document)
         {
-            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 0;
+            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? double.NaN;
         }
 
         public static void SetHeight(this DocumentController document, double height)
@@ -485,7 +470,7 @@ namespace Dash
 
         public static double GetHeight(this DocumentController document)
         {
-            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? 0;
+            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
         
     }
