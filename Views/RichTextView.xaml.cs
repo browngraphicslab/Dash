@@ -18,6 +18,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
+using System.Threading.Tasks;
+using System.Windows;
+using Windows.UI.Xaml.Documents;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -517,6 +520,7 @@ namespace Dash
                     Y = pos.Y + 20
                 }
             };
+
             menu.ActionCommitted += Menu_ActionCommitted;
 
             sender.TextChanged += delegate
@@ -538,7 +542,6 @@ namespace Dash
                 }
             };
 
-            ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
 
             //menu.AddGroup("DATABASE", new List<ActionViewModel>
             //    {
@@ -561,7 +564,34 @@ namespace Dash
 
             var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
             cfv?.AddToMenu(menu);
+
+            ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
+            menu.AddAction("BASIC",new ActionViewModel("Title","Add title",AddHeader,source));
+            menu.AddAction("BASIC", new ActionViewModel("Center", "Align text to center",SetCenter, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
+            _isActionMenuOpen = true;
+        }
+
+        private Task<bool> AddHeader(Point point)
+        {
+            Text = new RichTextModel.RTD("TITLE\n");
+            xRichEditBox.Document.Selection.StartPosition = 0;
+            xRichEditBox.Document.Selection.EndPosition = Text.ToString().Length;
+            xRichEditBox.Document.Selection.CharacterFormat.Size = 20;
+            this.Bold(true);
+            xRichEditBox.Document.Selection.StartPosition = Text.ToString().Length+1;
+            xRichEditBox.Document.Selection.EndPosition = Text.ToString().Length+2;
+            xRichEditBox.Document.Selection.CharacterFormat.Size = 12;
+            return Task.FromResult(false);
+        }
+
+        private Task<bool> SetCenter(Point point)
+        {
+            Text = new RichTextModel.RTD("text");
+            xRichEditBox.TextAlignment = TextAlignment.Center;
+            xRichEditBox.Document.Selection.StartPosition = 0;
+            xRichEditBox.Document.Selection.EndPosition = Text.ToString().Length;
+            return Task.FromResult(false);
         }
 
         private void Menu_ActionCommitted(bool removeTextBox)
@@ -585,7 +615,6 @@ namespace Dash
         {
             //handles batching for undo typing
             //TypeTimer.typeEvent();
-
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
                 getDataDoc().CaptureNeighboringContext();
@@ -593,10 +622,17 @@ namespace Dash
 
             if (e.Key == (VirtualKey)191)
             {
-                if (getReadableText() == "")
+                if (!_isActionMenuOpen)
                 {
-                    CreateActionMenu(sender as RichEditBox);
-                    _isActionMenuOpen = true;
+                    var rt = getReadableText();
+                    if (rt == "" || rt == "#")
+                    {
+                        CreateActionMenu(sender as RichEditBox);
+                    }
+                }
+                else
+                {
+                    CloseActionMenu();
                 }
             }
 
@@ -614,6 +650,14 @@ namespace Dash
                 else
                 {
                     processMarkdown();
+                }
+            }
+
+            if (e.Key.Equals(VirtualKey.Back))
+            {
+                if (_isActionMenuOpen)
+                {
+                    CloseActionMenu();
                 }
             }
 
@@ -706,7 +750,20 @@ namespace Dash
                 }
             }
             else
-                ;
+            {
+
+            }       
+        }
+
+        private void CloseActionMenu()
+        {
+            ActionMenu actionMenu =
+                (ActionMenu)MainPage.Instance.xCanvas.Children.FirstOrDefault(fe => fe is ActionMenu);
+            if (actionMenu != null)
+            {
+                MainPage.Instance.xCanvas.Children.Remove(actionMenu);
+                _isActionMenuOpen = false;
+            }
         }
 
         private void CloseAndInputActionMenu()
@@ -719,6 +776,7 @@ namespace Dash
                 var pos = transformToVisual.TransformPoint(new Point(0, ActualHeight));
                 //var colPos = this.Get
                 actionMenu.InvokeAction(GetParsedText(), pos);
+                _isActionMenuOpen = false;
             }
         }
 

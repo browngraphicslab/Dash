@@ -107,6 +107,7 @@ namespace Dash
             menu.AddAction("BASIC", new ActionViewModel("To-Do List", "Track your tasks!", AddToDoList, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Image", "Add many images",  AddMultipleImages, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Collection", "Collection",AddCollection,source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
@@ -136,11 +137,21 @@ namespace Dash
             return Task.FromResult(true);
         }
 
+        
+
         private Task<bool> AddTextNote(Point point)
         {
             var postitNote = new RichTextNote().Document;
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
+            return Task.FromResult(true);
+        }
+
+        private Task<bool> AddCollection(Point point)
+        {
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Icon, 200, 75).Document;
+            Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
 

@@ -69,6 +69,8 @@ namespace Dash
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
             return rtv?.GetRegionDocument();
         }
+
+        public static RichTextView _rtv { get; set; } = null;
         public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
             RichTextView rtv = null;
@@ -87,7 +89,7 @@ namespace Dash
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
             SetupTextBinding(rtv, docController, key, context);
-
+            _rtv = rtv;
             return rtv;
         }
 

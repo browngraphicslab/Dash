@@ -25,10 +25,12 @@ namespace Dash
         }
 
         static int rcount = 1;
+        private RichTextView rtv;
         DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
         {
             size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
-            return new RichTextBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
+            var rtb = new RichTextBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
+            return rtb;
         }
 
         public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size = new Size(), string urlSource=null) :
