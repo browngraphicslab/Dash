@@ -136,6 +136,14 @@ namespace Dash
             });
             contextMenu.Items.Add(new MenuFlyoutSeparator());
 
+            var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.AreContentsHitTestVisible == true;
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = unfrozen ? "Freeze Contents" : "Unfreeze Contents",
+                Icon = new FontIcons.FontAwesome { Icon = unfrozen ? FontAwesomeIcon.Lock : FontAwesomeIcon.Unlock }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => FreezeContents(!unfrozen);
+
             contextMenu.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Iconify",
@@ -252,6 +260,13 @@ namespace Dash
             SetView(CollectionViewType.Icon);
             ViewModel.ContainerDocument.SetWidth(double.NaN);
             ViewModel.ContainerDocument.SetHeight(double.NaN);
+        }
+        public void FreezeContents(bool unfrozen)
+        {
+            foreach (var child in ViewModel.DocumentViewModels)
+            {
+                child.AreContentsHitTestVisible = unfrozen;
+            }
         }
         public void Buttonize()
         {

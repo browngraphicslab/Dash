@@ -557,17 +557,11 @@ namespace Dash
         {
             return AdornmentWithPosition(BackgroundShape.AdornmentShape.Elliptical, new Point(0, 0));
         }
-
-        // TODO remove this method or match it up with the methods in Actions.cs
-        public static DocumentController BlankCollectionWithPosition(Point where = new Point())
-        {
-            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
-        }
+        
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            return BlankCollectionWithPosition(new Point());
+            return new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs

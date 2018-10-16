@@ -47,15 +47,11 @@ namespace Dash
                 return ViewModel.DocumentController;
             }
 
-            if (!double.IsNaN(doc.GetWidth()) || !double.IsNaN(doc.GetHeight()) ||
-                doc.GetHorizontalAlignment() != HorizontalAlignment.Stretch ||
-                doc.GetVerticalAlignment() != VerticalAlignment.Stretch)
+            if (!double.IsNaN(doc.GetWidth()) || !double.IsNaN(doc.GetHeight()))
             {
                 doc = doc.GetViewCopy();
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
-                doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                doc.SetVerticalAlignment(VerticalAlignment.Stretch);
             }
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {

@@ -222,7 +222,7 @@ namespace Dash
                 }
 
                 var splitLoc = GetSplitLocation(child) ?? split;
-                child.Measure(new Size(split.ActualWidth, splitLoc.ActualHeight));
+                child.Measure(new Size(splitLoc.ActualWidth, splitLoc.ActualHeight));
             }
 
             foreach (var kvp in _resizerMap)

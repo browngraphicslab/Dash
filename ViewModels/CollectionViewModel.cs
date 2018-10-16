@@ -124,15 +124,16 @@ namespace Dash
                 foreach (var d in DocumentViewModels)
                 {
                     var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
-                    var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
-                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth())&& !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth()) && !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-                    if (!halin && !autoWidth)
+                    var valin = d.LayoutDocument.GetVerticalAlignment()   == VerticalAlignment.Stretch;
+                    if (!halin)
+                    {
                         rl.Union(d.Bounds);
-                    if (!valin && !autoHeight)
+                    }
+
+                    if (!valin)
+                    {
                         rr.Union(d.Bounds);
-                    else if (!valin && autoHeight)
-                        rr.Union(new Point(d.Bounds.Left, d.Bounds.Top));
+                    }
                 }
                 var r = !rl.IsEmpty && !rr.IsEmpty ? new Rect(rl.Left, rr.Top, rl.Width, rr.Height) : Rect.Empty;
                 if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
@@ -771,7 +772,6 @@ namespace Dash
                 }
                 else
                 {
-
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving));
                 }
@@ -811,14 +811,26 @@ namespace Dash
                             var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
                             overlay?.EmbeddedDocsList.Remove(dragDocModel.DraggedDocuments[i]);
                         }
-                        else
+                        else 
                         {
                             dragDocModel.DraggedDocCollectionViews[i].RemoveDocument(dragDocModel.DraggedDocuments[i]);
                         }
-
                     }
                 }
-
+            }
+            for (int i = 0; i < docsToAdd.Count; i++)
+            {
+                if (ViewType == CollectionView.CollectionViewType.Freeform && !docsToAdd[i].DocumentType.Equals(RichTextBox.DocumentType))
+                {
+                    if (docsToAdd[i].GetHorizontalAlignment() == HorizontalAlignment.Stretch)
+                        docsToAdd[i].SetHorizontalAlignment(HorizontalAlignment.Left);
+                    if (docsToAdd[i].GetVerticalAlignment() == VerticalAlignment.Stretch)
+                        docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
+                    if (double.IsNaN(docsToAdd[i].GetWidth()))
+                        docsToAdd[i].SetWidth(300);
+                    if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
+                        docsToAdd[i].SetFitToParent(true);
+                }
             }
 
             return docsToAdd;

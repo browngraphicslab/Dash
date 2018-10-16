@@ -143,7 +143,7 @@ namespace Dash
 		public static KeyController SelectedSchemaRow                    = KeyController.Get("SelectedElement", new Guid("B9B5742B-E4C7-45BD-AD6E-F3C254E45027"));
 		public static KeyController SchemaDisplayedColumns               = KeyController.Get("_Displayed Columns", new Guid("7424AFD5-D43B-449F-AD04-B48E686621AB"));
 	    public static KeyController JoinInfoKey                          = KeyController.Get("Join Information", new Guid("08A0A6F9-6AC1-4B03-89CD-E7127646D9DB"));
-
+	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible", new Guid("1F7E0A85-F5C3-483D-BB66-2A138CA8105E"));
 
 
 		public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
