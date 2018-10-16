@@ -149,9 +149,7 @@ namespace Dash
             get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
             private set  {
                 _content = value; // content will be recomputed when someone accesses Content
-                OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
-                //create render transform for content zooming/panning!
-                _content.RenderTransform = new CompositeTransform();
+                OnPropertyChanged(); // let everyone know that _content has changed
             }
         }
 
