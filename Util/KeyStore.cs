@@ -144,10 +144,11 @@ namespace Dash
 		public static KeyController SchemaDisplayedColumns               = new KeyController("_Displayed Columns", new Guid("7424AFD5-D43B-449F-AD04-B48E686621AB"));
 	    public static KeyController JoinInfoKey                          = new KeyController("Join Information", new Guid("08A0A6F9-6AC1-4B03-89CD-E7127646D9DB"));
 	    public static KeyController AreContentsHitTestVisibleKey         = new KeyController("AreContentsHitTestVisible", new Guid("1F7E0A85-F5C3-483D-BB66-2A138CA8105E"));
+        public static KeyController ImageStretchKey                      = new KeyController("ImageStretc", new Guid("3B25E910-F33B-46B2-9349-00DE53EA18F0"));
 
 
 
-		public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
+        public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
 			TypeRenderer[type] = makeViewFunc;
 			RegionCreator[type] = makeRegionFunc;

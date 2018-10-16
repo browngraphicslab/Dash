@@ -52,10 +52,20 @@ namespace Dash
                 doc = doc.GetViewCopy();
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
+                doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             }
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 doc.SetFitToParent(false);
+            }
+            var openViewType = doc.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data;
+            if (openViewType != null)
+            {
+                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey, openViewType, true);
+                doc.SetWidth(double.NaN);
+                doc.SetHeight(double.NaN);
+                doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                doc.SetVerticalAlignment(VerticalAlignment.Stretch);
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true };
@@ -276,22 +286,32 @@ namespace Dash
 
         private async Task DropHandler(DragEventArgs e, SplitDirection dir)
         {
-            var docs = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, XDocView);
-            if (docs.Count == 0)
+            e.Handled = true;
+            var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, XDocView, new Point());
+            if (docsToAdd.Count != 0)
             {
-                return;
-            }
+                var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
 
-            DocumentController doc;
-            if (docs.Count == 1)
-            {
-                doc = docs[0];
+                var dragModel        = e.DataView.GetDragModel();
+                var dragDocModel     = dragModel as DragDocumentModel;
+                var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
+                var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
+                var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
+                var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
+                var isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
+
+                e.AcceptedOperation = isSettingContext ? DataPackageOperation.None :
+                                      isLinking ? DataPackageOperation.Link :
+                                      isMoving ? DataPackageOperation.Move :
+                                      isCopying ? DataPackageOperation.Copy :
+                                      DataPackageOperation.None;
+
+                var docs = await CollectionViewModel.AddDroppedDocuments(this, docsToAdd, dragModel, isMoving, null);
+                var doc = docs.Count == 1 ? docs[0] :  new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
+
+                Split(dir, doc, true);
+                e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
-            else
-            {
-                doc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
-            }
-            Split(dir, doc, true);
         }
 
         private async void XRightDropTarget_OnDrop(object sender, DragEventArgs e)
