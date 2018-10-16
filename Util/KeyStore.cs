@@ -146,6 +146,8 @@ namespace Dash
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible", new Guid("1F7E0A85-F5C3-483D-BB66-2A138CA8105E"));
 
 
+        public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
+
 		public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
 			TypeRenderer[type] = makeViewFunc;

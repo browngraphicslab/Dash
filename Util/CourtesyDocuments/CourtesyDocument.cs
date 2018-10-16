@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -9,6 +10,7 @@ using Dash.Converters;
 using DashShared;
 using static Dash.AnchorableAnnotation;
 using Windows.UI.Xaml.Media;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -273,6 +275,24 @@ namespace Dash
         {
             document.SetField<BoolController>(KeyStore.IsButtonKey, button, true);
         }
+
+        public static void ToggleButton(this DocumentController document)
+        {
+            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.TappedScriptKey);
+            int i = 0;
+
+            for(; i < scripts.Count; ++i)
+            {
+                var operatorController = scripts[i];
+                if (operatorController is FollowLinksOperator)
+                {
+                    scripts.RemoveAt(i);
+                    return;
+                }
+            }
+            scripts.Add(new FollowLinksOperator());
+        }
+
         public static bool GetAreContentsHitTestVisible(this DocumentController document)
         {
             var data = document.GetDereferencedField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, null);
@@ -337,6 +357,11 @@ namespace Dash
         {
             var hiddenField = document.GetFieldOrCreateDefault<BoolController>(KeyStore.HiddenKey);
             hiddenField.Data = !hiddenField.Data;
+        }
+
+        public static ListController<OperatorController> GetScripts(this DocumentController document, KeyController scriptKey)
+        {
+            return document.GetField<ListController<OperatorController>>(scriptKey);
         }
 
         public static List<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
