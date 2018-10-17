@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -352,15 +353,17 @@ namespace Dash
                     if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
                         xRichEditBox.Document.Selection.EndPosition)
                     {
-                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        Debug.WriteLine("changing font of unselected text");
+                        UpdateFontFamilyDisplay();xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
                         var end = text.Length;
-                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.SetRange(end, end+1);
                         xRichEditBox.Document.Selection.CharacterFormat.Size =
                             (float)Convert.ToDouble(selectedFontSize.ToString());
                         xRichEditBox.Document.Selection.SetRange(end, end);
                     }
                     else
                     {
+                        Debug.WriteLine("changing font of selected text");
                         xRichEditBox.Document.Selection.CharacterFormat.Size =
                             (float)Convert.ToDouble(selectedFontSize.ToString());
                     }
@@ -375,6 +378,7 @@ namespace Dash
         {
             if (!_fontSizeTextChanged)
             {
+                Debug.WriteLine("font size changing");
                 var selectedFontSize = xFontSizeTextBox.Text;
 
                 if (!double.TryParse(selectedFontSize, out double fontSize))

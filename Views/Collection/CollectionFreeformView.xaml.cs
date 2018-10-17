@@ -106,7 +106,7 @@ namespace Dash
             menu.AddAction("BASIC", new ActionViewModel("Text", "Add a new text box!", AddTextNote, source));
             menu.AddAction("BASIC", new ActionViewModel("To-Do List", "Track your tasks!", AddToDoList, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Image", "Add many images",  AddMultipleImages, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)", "Add one or more images",  AddMultipleImages, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Collection", "Collection",AddCollection,source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
@@ -188,7 +188,7 @@ namespace Dash
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController == null) { continue; }
-                    var pos = new Point(colPoint.X + (counter * (defaultLength + 5)), colPoint.Y);
+                    var pos = new Point(10 + colPoint.X + (counter * (defaultLength + 5)), colPoint.Y+10);
                     docController.SetWidth(defaultLength);
                     docController.SetHeight(defaultLength);
                     Actions.DisplayDocument(ViewModel, docController, pos);

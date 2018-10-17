@@ -39,6 +39,11 @@ namespace Dash
             dataDocument.Tag = "Collection Note Data " + count;
             Document.Tag = "Collection Note Layout" + count++;
 
+            if (viewtype == CollectionView.CollectionViewType.Icon)
+            {
+                Document.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CollectionView.CollectionViewType.Freeform.ToString(), true);
+            }
+
             dataDocument.SetField(KeyStore.InkDataKey, new InkController(), true);
             if (double.IsNaN(width) && double.IsNaN(height))
             {
