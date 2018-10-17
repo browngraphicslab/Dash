@@ -960,6 +960,17 @@ namespace Dash
 
             return results;
         }
+
+        public async Task<(KeyController, List<KeyController>)> PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys)
+        {
+            var tablePopup = new JoinGroupMenuPopup(comparisonKeys, diffKeys);
+            SetUpPopup(tablePopup);
+
+            var results = await tablePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
+        }
     }
 
 
