@@ -180,7 +180,9 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            Debug.Write("Dragging a copy into workspace...");
             var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument);
+            dragModel.DragCopy = true;
             // get the sender's view docs and set the key for the drag to a static const
             args.Data.SetDragModel(dragModel);
 

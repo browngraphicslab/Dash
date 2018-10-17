@@ -96,6 +96,12 @@ namespace Dash
             case "Pdf Box":
                 DocIcon = (string)Application.Current.Resources["PdfDocumentIcon"];
                 break;
+            case "Audio Box":
+                DocIcon = (string)Application.Current.Resources["AudioIcon"];
+                break;
+            case "Video Box":
+                DocIcon = (string)Application.Current.Resources["VideoIcon"];
+                break;
             default:
                 DocIcon = (string)Application.Current.Resources["DocumentIcon"];
                 break;

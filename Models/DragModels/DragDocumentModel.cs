@@ -32,6 +32,8 @@ namespace Dash
         /// </summary>
         public bool MakeCollection { get; set; } = false;
 
+        public bool DragCopy { get; set; } = false;
+
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
 
         public DragDocumentModel(DocumentController draggedDocument)
@@ -102,13 +104,15 @@ namespace Dash
                     docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
                 }
             }
-            else if (MainPage.Instance.IsShiftPressed())
+            else if (MainPage.Instance.IsShiftPressed() || DragCopy)
             {
                 // ...otherwise, create a view copy
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
                    docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
                 }
+
+                DragCopy = false;
             }
             else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {

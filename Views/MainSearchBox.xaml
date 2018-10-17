@@ -74,7 +74,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock 
-                            x:Name="xCollDragIcon"
+                            x:Name="xCollIcon"
                             Grid.Column="0"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
