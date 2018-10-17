@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System;
+using System.Diagnostics;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
@@ -362,6 +363,7 @@ namespace Dash
                 {
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
+                Debug.WriteLine("RES:"+res);
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 DocumentController parent = res.Node.Parent?.ViewDocument;
                 if (parent != null) newVm.DocumentCollection = parent;
@@ -411,7 +413,7 @@ namespace Dash
             int len = docTitle.Length > 10 ? 10 : docTitle.Length - 1;
             string suffix = len < docTitle.Length - 1 ? "..." : "";
             docTitle = docTitle.Substring(1, len) + suffix;
-            var titles = result.FormattedKeyRef.Select(key => docTitle + key).ToList();
+            var titles = result.FormattedKeyRef.Select(key => "Title:" +docTitle +", Key:"+ key).ToList();
             return new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
         }
 

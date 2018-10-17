@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Windows.UI.Xaml;
 using Dash.Annotations;
 
 // ReSharper disable once CheckNamespace
@@ -12,6 +14,7 @@ namespace Dash
         private string _currentTitle;
         private string _currentContext;
         private int _currentIndex;
+        private string _docIcon;
         public List<string> Titles { get; }
         public List<string> ContextualTexts { get; }
         public DocumentController ViewDocument { get; }
@@ -25,6 +28,7 @@ namespace Dash
             private set
             {
                 _currentTitle = value;
+                Debug.WriteLine("current title: "+_currentTitle);
                 OnPropertyChanged();
             }
         }
@@ -34,7 +38,8 @@ namespace Dash
             get => _currentContext;
             private set
             {
-                _currentContext = value;
+                _currentContext = "Value: "+ value;
+                Debug.WriteLine("current context: " + _currentContext);
                 OnPropertyChanged();
             }
         }
@@ -45,6 +50,16 @@ namespace Dash
             private set
             {
                 _currentIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string DocIcon
+        {
+            get => _docIcon;
+            private set
+            {
+                _docIcon = value;
                 OnPropertyChanged();
             }
         }
@@ -60,7 +75,31 @@ namespace Dash
 
             CurrentIndex = 0;
 
-            if (Titles.Any()) UpdateText();
+            if (Titles.Any())
+            {
+                UpdateText();
+            }
+
+            var type = viewDoc.GetDocType();
+            Debug.WriteLine(type);
+            switch (type)
+            {
+            case "Image Box":
+                DocIcon = (string)Application.Current.Resources["ImageIcon"];
+                break;
+            case "Rich Text Box":
+                DocIcon = (string)Application.Current.Resources["DocumentIcon"];
+                break;
+            case "Collection Box":
+                DocIcon = (string)Application.Current.Resources["CollectionIcon"];
+                break;
+            case "Pdf Box":
+                DocIcon = (string)Application.Current.Resources["PdfDocumentIcon"];
+                break;
+            default:
+                DocIcon = (string)Application.Current.Resources["DocumentIcon"];
+                break;
+            }
         }
 
         private void UpdateText()

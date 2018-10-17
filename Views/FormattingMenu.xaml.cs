@@ -354,7 +354,7 @@ namespace Dash
                     {
                         xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
                         var end = text.Length;
-                        xRichEditBox.Document.Selection.SetRange(0, end);
+                        xRichEditBox.Document.Selection.SetRange(end, end+1);
                         xRichEditBox.Document.Selection.CharacterFormat.Size =
                             (float)Convert.ToDouble(selectedFontSize.ToString());
                         xRichEditBox.Document.Selection.SetRange(end, end);
