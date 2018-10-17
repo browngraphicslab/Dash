@@ -145,7 +145,7 @@
             <x:String x:Key="ImageDocumentIcon">&#xf1c5;</x:String>
             <x:String x:Key="VideoDocumentIcon">&#xf1c8;</x:String>
             <x:String x:Key="AudioDocumentIcon">&#xf1c7;</x:String>
-            <x:String x:Key="PdfDocumentIcon">&#xf1c1;</x:String> 
+            <x:String x:Key="PdfDocumentIcon">&#xf1c1;</x:String>
             <x:String x:Key="TextIcon">&#xf15c;</x:String>
             <x:String x:Key="DefaultIcon">&#xf1c3;</x:String>
             <x:String x:Key="SaveIcon">&#xf0c7;</x:String>
@@ -174,8 +174,8 @@
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
                 <Setter Property="BorderThickness" Value="0"></Setter>
             </Style>
-            
-            
+
+
 
             <!-- change to default appl-->
             <Style TargetType="RichTextBlock">
@@ -1003,7 +1003,7 @@
             </Setter.Value>
             
             </Setter>-->
-            
+
             </Style>
 
 
@@ -1341,7 +1341,7 @@
             <Style TargetType="SymbolIcon">
                 <Setter Property="RequestedTheme" Value="Dark"></Setter>
             </Style>
-            
+
 
 
             <!-- blue (default) button with white text -->
@@ -1902,25 +1902,25 @@
                 </Setter>
             </Style>
 
-        <!-- schema list view -->
-        <Style TargetType="ListView" x:Key="xSchemaListView">
-            <Setter Property="ItemContainerStyle">
-                <Setter.Value>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Left" />
-                        <Setter Property="VerticalContentAlignment" Value="Center" />
-                        <Setter Property="Margin" Value="0,0,0,0" />
-                        <Setter Property="Padding" Value="0,0,0,0" />
-                        <Setter Property="MinWidth" Value="0" />
-                        <Setter Property="MinHeight" Value="0" />
-                    </Style>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="CanDragItems" Value="True"></Setter>
-            <Setter Property="CanReorderItems" Value="True"></Setter>
-            <Setter Property="AllowDrop" Value="True"></Setter>
-            <Setter Property="ShowsScrollingPlaceholders" Value="False"></Setter>
-        </Style>
+            <!-- schema list view -->
+            <Style TargetType="ListView" x:Key="xSchemaListView">
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="Margin" Value="0,0,0,0" />
+                            <Setter Property="Padding" Value="0,0,0,0" />
+                            <Setter Property="MinWidth" Value="0" />
+                            <Setter Property="MinHeight" Value="0" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="CanDragItems" Value="True"></Setter>
+                <Setter Property="CanReorderItems" Value="True"></Setter>
+                <Setter Property="AllowDrop" Value="True"></Setter>
+                <Setter Property="ShowsScrollingPlaceholders" Value="False"></Setter>
+            </Style>
 
             <!--Collection Grid View-->
             <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">
@@ -1971,18 +1971,18 @@
                 </Setter>
             </Style>
 
-        <!-- CONVERTERS-->
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
-        <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
-        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
-        <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
-        <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
-        <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
-        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
-        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
-        <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
+            <!-- CONVERTERS-->
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
+            <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+            <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
+            <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
+            <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
+            <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
+            <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
+            <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
+            <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
+            <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
 
             <!-- MISC. STYLES-->
             <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">
@@ -2105,7 +2105,7 @@
                 <Setter Property="Fill" Value="{StaticResource DashDarkBlueBrush}" />
                 <Setter Property="Width" Value="25" />
                 <Setter Property="Height" Value="25" />
-                
+
             </Style>
 
             <Style x:Name="AppBarButtonStyler" TargetType="AppBarButton">
@@ -2538,8 +2538,8 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            
-            
+
+
 
             <Style x:Name="TextBoxStyler" TargetType="TextBox">
                 <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
@@ -2773,10 +2773,10 @@
                     </Setter.Value>
                 </Setter>
             </Style>
-            
-            
 
-            <!--Custom Themes--> 
+
+
+            <!--Custom Themes-->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource MainTextColor}" />
@@ -2820,9 +2820,7 @@
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
-        
-        
+
+
     </Application.Resources>
 </Application>
-  
-  

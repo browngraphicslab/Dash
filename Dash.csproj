@@ -159,6 +159,7 @@
     <Content Include="ChromeExt2\content.js" />
     <Content Include="ChromeExt2\popup.html" />
     <Content Include="ChromeExt2\popup.js" />
+    <Content Include="DashCommands.xml" />
     <Content Include="HtmlAgilityPack.UWP.csproj" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -188,6 +189,7 @@
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="DashVoiceCommand.cs" />
     <Compile Include="Popups\NewTemplatePopup.xaml.cs">
       <DependentUpon>NewTemplatePopup.xaml</DependentUpon>
     </Compile>
