@@ -152,7 +152,7 @@ namespace Dash
             if (currView == null)
             {
                 var tb = new TextBlock();
-                var binding = new FieldBinding<FieldControllerBase>()
+                var binding = new FieldBinding<FieldControllerBase, TextController>()
                 {
                     Document = _docController,
                     Key = _key,

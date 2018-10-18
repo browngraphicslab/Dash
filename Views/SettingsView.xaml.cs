@@ -249,7 +249,7 @@ namespace Dash
         #region SETTINGS AND BINDING PROCESSING
 
         //TODO Maybe handler should be removed in favor of having SettingsView have events for when the settings are changed.
-        private void AddSettingsBinding<T>(FrameworkElement element, DependencyProperty prop, KeyController key, IValueConverter converter = null, string tag = null, DependencyPropertyChangedCallback handler = null, BindingMode mode = BindingMode.TwoWay) where T : FieldControllerBase
+        private void AddSettingsBinding<T>(FrameworkElement element, DependencyProperty prop, KeyController key, IValueConverter converter = null, string tag = null, DependencyPropertyChangedCallback handler = null, BindingMode mode = BindingMode.TwoWay) where T : FieldControllerBase, new()
         {
             var binding = new FieldBinding<T>
             {
