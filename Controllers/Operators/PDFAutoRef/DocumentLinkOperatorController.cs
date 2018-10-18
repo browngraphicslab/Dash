@@ -50,7 +50,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Text Link Documents", new Guid("3830D32F-FC05-427B-9761-A47DFCEA503B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Text Link Documents");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

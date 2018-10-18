@@ -24,7 +24,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("String to Key", new Guid("2071d5ac-4c84-4cfd-bd2c-1a09a1fe02b3"));
+        private static readonly KeyController TypeKey = KeyController.Get("String to Key");
 
         public override FieldControllerBase GetDefaultController()
         {

@@ -36,7 +36,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Intersection operator", new Guid("5B93D353-AE02-4E20-9E2D-D38C01BC5F20"));
+        private static readonly KeyController TypeKey = KeyController.Get("Intersection operator");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

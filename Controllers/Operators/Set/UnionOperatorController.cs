@@ -38,7 +38,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Union operator", new Guid("CAEA115E-BE19-4796-B225-51AC4122C168"));
+        private static readonly KeyController TypeKey = KeyController.Get("Union operator");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -42,7 +42,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            KeyController.Get("Intersect by value", new Guid("9B073C2B-8B11-4939-818F-903A067D412E"));
+            KeyController.Get("Intersect by value");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

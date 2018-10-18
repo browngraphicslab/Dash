@@ -26,7 +26,7 @@ namespace Dash.Controllers.Operators.Point
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = KeyController.Get("PointAdd", new Guid("59e828b8-0e30-4bd3-904b-9919f89cc4be"));
+        private static readonly KeyController TypeKey = KeyController.Get("PointAdd");
 
         public override FieldControllerBase GetDefaultController()
         {

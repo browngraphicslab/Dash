@@ -24,7 +24,7 @@ namespace Dash.Controllers.Operators.Point
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("XCoordinate", new Guid("1ec86c4f-a5d8-418f-ab50-e525cf38d498"));
+        private static readonly KeyController TypeKey = KeyController.Get("XCoordinate");
 
         public override FieldControllerBase GetDefaultController()
         {

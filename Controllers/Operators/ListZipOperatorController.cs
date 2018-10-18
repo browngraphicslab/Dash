@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("List zip", new Guid("B4F07219-AA26-4E71-965E-CBDF6D44708E"));
+        private static readonly KeyController TypeKey = KeyController.Get("List zip");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

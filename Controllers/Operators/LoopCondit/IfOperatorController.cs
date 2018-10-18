@@ -18,7 +18,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("If", new Guid("144E6E9D-E430-443E-85A9-29F87CE99DF5"));
+        private static readonly KeyController TypeKey = KeyController.Get("If");
 
         //Input keys
         //public static readonly KeyController BinaryKey 

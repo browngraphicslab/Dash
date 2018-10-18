@@ -18,7 +18,7 @@ namespace Dash
         public DebugPrintOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("DebugPrint", new Guid("57A955CF-81BD-4B5F-A510-753BC4E9B983"));
+        private static readonly KeyController TypeKey = KeyController.Get("DebugPrint");
 
         //Input keys
         public static readonly KeyController InputKey = KeyController.Get("Input");

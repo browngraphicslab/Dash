@@ -18,7 +18,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Collection Title", new Guid("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE"));
+        private static readonly KeyController TypeKey = KeyController.Get("Collection Title");
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 

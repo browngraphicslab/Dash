@@ -22,7 +22,7 @@ namespace Dash
             throw new NotImplementedException();
         }
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("SetField", new Guid("8EAF5DD0-6E8E-4102-BDF2-E82F3BC6BCC3"));
+        private static readonly KeyController TypeKey = KeyController.Get("SetField");
 
         //Input keys
 

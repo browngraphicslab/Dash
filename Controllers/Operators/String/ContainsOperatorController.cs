@@ -25,7 +25,7 @@ namespace Dash
 
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Contains", new Guid("03CB1DD8-238B-467E-8BE6-C64164DB875B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Contains");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

@@ -15,7 +15,7 @@ namespace Dash
     /// </summary>
     public class TextingBox : CourtesyDocument
     {
-        public static KeyController TextAlignmentKey = KeyController.Get("Font Alignment", new Guid("3BD4572A-C6C9-4710-8E74-831204D2C17D"));
+        public static KeyController TextAlignmentKey = KeyController.Get("Font Alignment");
         public static DocumentType  DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
         public static string DefaultText = "Default Text";

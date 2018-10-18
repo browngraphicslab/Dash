@@ -10,7 +10,7 @@ namespace Dash
         public LessThanEqualsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Less Than Equals", new Guid("99DD70C8-A755-4C62-BE3F-839F62302C5D"));
+        private static readonly KeyController TypeKey = KeyController.Get("Less Than Equals");
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new BoolController(left.Data <= right.Data);
 

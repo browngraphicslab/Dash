@@ -10,7 +10,7 @@ namespace Dash
         public EqualityOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Equal To", new Guid("850C513F-F38D-4279-B9D4-EED858BCAA6A"));
+        private static readonly KeyController TypeKey = KeyController.Get("Equal To");
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

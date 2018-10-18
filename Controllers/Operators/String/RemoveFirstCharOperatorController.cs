@@ -16,7 +16,7 @@ namespace Dash
         public RemoveFirstCharOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Remove first char occurence", new Guid("ABDD7B87-DFDC-4684-B0FA-26379DBA8407"));
+        private static readonly KeyController TypeKey = KeyController.Get("Remove first char occurence");
 
         //Input keys
         public static readonly KeyController SourceKey = KeyController.Get("Source string");

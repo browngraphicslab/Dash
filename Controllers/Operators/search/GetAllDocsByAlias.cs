@@ -38,7 +38,7 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Alias", new Guid("DB543B75-15D3-467A-A9DE-9F262F496C25"));
+        private static readonly KeyController TypeKey = KeyController.Get("Alias");
 
         /// <inheritdoc />
         /// <summary>

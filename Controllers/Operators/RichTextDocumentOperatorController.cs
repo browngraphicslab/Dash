@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = KeyController.Get("Doc Text", new Guid("A0BB0580-31E8-441E-907A-8A9C74224964"));
+        private static KeyController TypeKey = KeyController.Get("Doc Text");
         private static RichEditBox richEditBox = new RichEditBox();
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

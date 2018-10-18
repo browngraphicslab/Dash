@@ -22,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Concat", new Guid("F69DF9CF-5B51-482D-AE1E-40B3266930CB"));
+        private static readonly KeyController TypeKey = KeyController.Get("Concat");
 
         public override FieldControllerBase GetDefaultController()
         {

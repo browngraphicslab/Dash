@@ -20,7 +20,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Search", new Guid("EA5FD353-F99A-4F99-B0BC-5D2C88A51019"));
+        private static readonly KeyController TypeKey = KeyController.Get("Search");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new SearchOperatorBox(rfmc);
 

@@ -163,6 +163,11 @@ namespace Dash
                 {
                     SaveOnServer();
                 }
+                else
+                {
+                    //TODO tfs: This shouldn't technically be necessary
+                    UpdateOnServer(null);
+                }
                 _fromServer = false;
             }
         }

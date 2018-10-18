@@ -20,7 +20,7 @@ namespace Dash.Controllers.Operators
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("SumOperator", new Guid("20d9d82d-8374-4fcd-ae7c-d6239f545e07"));
+        private static readonly KeyController TypeKey = KeyController.Get("SumOperator");
 
         public override FieldControllerBase GetDefaultController() => new Sum();
 

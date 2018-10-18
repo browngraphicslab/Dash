@@ -22,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Document Append", new Guid("4DAD9DE7-DAF8-4EB6-8EA4-8AA5F8D00121"));
+        private static readonly KeyController TypeKey = KeyController.Get("Document Append");
 
         public override FieldControllerBase GetDefaultController()
         {

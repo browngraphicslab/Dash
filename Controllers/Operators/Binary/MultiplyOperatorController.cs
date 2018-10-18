@@ -12,7 +12,7 @@ namespace Dash
         public MultiplyOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Multiply", new Guid("9F4CB18B-2B00-457F-AA36-69F5CFE70CC6"));
+        private static readonly KeyController TypeKey = KeyController.Get("Multiply");
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new NumberController(left.Data * right.Data);
 

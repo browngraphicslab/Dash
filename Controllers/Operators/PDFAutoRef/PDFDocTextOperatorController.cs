@@ -15,7 +15,7 @@ namespace Dash
         public PdfDocTextOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("DocumentTextPDF", new Guid("A0E5EC85-8B9A-4B06-B355-66869F3A4486"));
+        private static readonly KeyController TypeKey = KeyController.Get("DocumentTextPDF");
 
         //Input keys
         public static readonly KeyController DocumentKey = KeyController.Get("Document");

@@ -25,7 +25,7 @@ namespace Dash.Controllers.Operators
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Document from Path", new Guid("abdb37c9-324c-41a7-92f6-f093d38b3afe"));
+        private static readonly KeyController TypeKey = KeyController.Get("Document from Path");
 
         public override FieldControllerBase GetDefaultController()
         {

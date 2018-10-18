@@ -21,7 +21,7 @@ namespace Dash.Controllers.Operators
         public QuerySnapshotOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("QuerySnapshotOperator", new Guid("1cbb88a1-acb8-41ae-ab7f-2001bc8463fb"));
+        private static readonly KeyController TypeKey = KeyController.Get("QuerySnapshotOperator");
 
         public override FieldControllerBase GetDefaultController() => new QuerySnapshotOperator();
 

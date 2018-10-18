@@ -19,7 +19,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("For In", new Guid("D3C64EC0-B4D4-43BC-B055-4EF8B11A2B97"));
+        private static readonly KeyController TypeKey = KeyController.Get("For In");
 
         //Input keys
         public static readonly KeyController SubVarNameKey             = KeyController.Get("Invokable name of dummy variable");

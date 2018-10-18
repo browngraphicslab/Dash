@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("To String", new Guid("C9A561E8-D4A1-4C38-A0BD-D9EE3531DACE"));
+        private static readonly KeyController TypeKey = KeyController.Get("To String");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -19,7 +19,7 @@ namespace Dash
         public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Regex", new Guid("DF48D210-40A9-46A2-B32A-8F3C96C6CDD7"));
+        private static readonly KeyController TypeKey = KeyController.Get("Regex");
 
         //Input keys
         public static readonly KeyController TextKey = KeyController.Get("Text");

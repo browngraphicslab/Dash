@@ -37,7 +37,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = KeyController.Get("Substring extraction 1", new Guid("A41EC14D-6E29-43D0-A9CF-C6751F5D732B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Substring extraction 1");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -86,7 +86,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = KeyController.Get("Substring extraction 2", new Guid("F03BF0D6-411D-4788-B359-AB26B882202A"));
+        private static readonly KeyController TypeKey = KeyController.Get("Substring extraction 2");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

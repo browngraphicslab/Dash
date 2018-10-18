@@ -38,7 +38,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = KeyController.Get("List concatenation", new Guid("679ADBE0-AD2C-4776-9672-9AF9759FE37D"));
+        private static readonly KeyController TypeKey = KeyController.Get("List concatenation");
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)

@@ -47,7 +47,7 @@ namespace Dash
         private Scope _funcScope;
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Function", new Guid("1573E918-19E0-47A9-BB9D-0531233277C9"));
+        private static readonly KeyController TypeKey = KeyController.Get("Function");
 
 
         //Output keys

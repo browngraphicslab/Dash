@@ -25,7 +25,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Pointer Operator", new Guid("00cc0a39-9024-45ad-ad6e-6e6a6f320156"));
+        private static readonly KeyController TypeKey = KeyController.Get("Pointer Operator");
 
         public override FieldControllerBase GetDefaultController()
         {

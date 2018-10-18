@@ -12,7 +12,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            KeyController.Get("Divide", new Guid("E1127484-9AC5-45BE-AB55-5923DED25688"));
+            KeyController.Get("Divide");
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new NumberController(left.Data / right.Data);
 

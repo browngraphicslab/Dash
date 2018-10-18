@@ -12,7 +12,7 @@ namespace Dash
         protected UnaryOperatorControllerBase(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = KeyController.Get("Unary Base", new Guid("606DC55B-3D0B-4058-AB94-690A60C58183"));
+        private static readonly KeyController TypeKey = KeyController.Get("Unary Base");
 
         //Input keys
         public static readonly KeyController InKey = KeyController.Get("In");
