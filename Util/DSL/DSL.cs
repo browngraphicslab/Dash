@@ -39,7 +39,7 @@ namespace Dash
             }
             catch (DSLException e)
             {
-                if (!catchErrors) throw;
+                if (!catchErrors) return Task.FromResult<FieldControllerBase>(null);
 
                 if (e is ScriptExecutionException exception) return Task.FromResult<FieldControllerBase>(exception.Error.GetErrorDoc()); 
                 return Task.FromResult<FieldControllerBase>(new TextController(e.GetHelpfulString()));
@@ -55,11 +55,7 @@ namespace Dash
             }
             catch (DSLException e)
             {
-                if (catchErrors)
-                {
-                    return new TextController(e.GetHelpfulString());
-                }
-                throw e;
+                return catchErrors ? new TextController(e.GetHelpfulString()) : null;
             }
         }
 

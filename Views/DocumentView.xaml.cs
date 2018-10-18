@@ -157,34 +157,16 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
-            DataContextChanged += ContextChanged;
+            DataContextChanged += DocumentView_DataContextChanged;
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 25;
 
-            void updateBindings()
-            {
-                UpdateRenderTransformBinding();
-                UpdateVisibilityBinding();
-                this.BindBackgroundColor();
-                ViewModel?.Load();
-            }
-
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-            }
-
-            void ContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-            {
-                if (!Equals(args.NewValue, _oldViewModel))
-                {
-                    _oldViewModel?.UnLoad();
-                    updateBindings();
-                    _oldViewModel = ViewModel;
-                }
             }
 
             //int id = DOCID++;
@@ -260,49 +242,10 @@ namespace Dash
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
         }
 
-
-
-
-
-
-        void updateRenderTransformBinding(object sender, DependencyProperty dp)
+        private void UpdateBindings()
         {
-            var doc = ViewModel?.LayoutDocument;
-
-            var binding = !BindRenderTransform || doc == null
-                ? null
-                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
-                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
-                {
-                    Converter = new TransformGroupMultiConverter(),
-                    Context = new Context(doc),
-                    Mode = BindingMode.OneWay,
-                    Tag = "RenderTransform multi binding in DocumentView"
-                };
-            this.AddFieldBinding(RenderTransformProperty, binding);
-        }
-
-        void updateVisibilityBinding(object sender, DependencyProperty dp)
-        {
-            var doc = ViewModel?.LayoutDocument;
-
-            var binding = !BindVisibility || doc == null
-                ? null
-                : new FieldBinding<BoolController>
-                {
-                    Converter = new InverseBoolToVisibilityConverter(),
-                    Document = doc,
-                    Key = KeyStore.HiddenKey,
-                    Mode = BindingMode.OneWay,
-                    Tag = "Visibility binding in DocumentView",
-                    FallbackValue = false
-                };
-            this.AddFieldBinding(VisibilityProperty, binding);
-        }
-        void updateBindings()
-        {
-            updateRenderTransformBinding(null, null);
-            updateVisibilityBinding(null, null);
+            UpdateRenderTransformBinding();
+            UpdateVisibilityBinding();
 
             this.BindBackgroundColor();
             ViewModel?.Load();
@@ -311,11 +254,14 @@ namespace Dash
 
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs a)
         {
-            if (a.NewValue != _oldViewModel)
+            if (ViewModel != _oldViewModel)
             {
                 _oldViewModel?.UnLoad();
-                updateBindings();
                 _oldViewModel = ViewModel;
+                if (ViewModel != null)
+                {
+                    UpdateBindings();
+                }
             }
         }
 
@@ -960,7 +906,7 @@ namespace Dash
 
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
-                    updateBindings();
+                    UpdateBindings();
                     e.Handled = true;
                     return;
                 }
