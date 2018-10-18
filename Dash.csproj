@@ -592,6 +592,9 @@
       <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\SnapshotView.cs" />
+    <Compile Include="Views\Collection\SplitView\CollectionSplitView.xaml.cs">
+      <DependentUpon>CollectionSplitView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>
@@ -1181,6 +1184,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\MarqueeInfo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\SplitView\CollectionSplitView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

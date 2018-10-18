@@ -41,7 +41,7 @@ namespace Dash
         }
     }
 
-    public sealed class SplitDefinition : DependencyObject
+    public class SplitDefinition : DependencyObject
     {
         public static SplitMode GetOppositeMode(SplitMode mode)
         {

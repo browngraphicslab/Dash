@@ -101,14 +101,6 @@ namespace Dash
 		public static KeyController FontWeightKey                        = KeyController.Get("FontWeight");
 		public static KeyController FontSizeKey                          = KeyController.Get("FontSize");
 		public static KeyController PresentationItemsKey                 = KeyController.Get("_Presentation Items");
-		public static KeyController DockedDocumentsLeftKey               = KeyController.Get("_Documents docked on the left");
-		public static KeyController DockedDocumentsTopKey                = KeyController.Get("_Documents docked on the top");
-		public static KeyController DockedDocumentsRightKey              = KeyController.Get("_Documents docked on the right");
-		public static KeyController DockedDocumentsBottomKey             = KeyController.Get("_Documents docked on the bottom");
-		public static KeyController DockedLength                         = KeyController.Get("_Docked column/row length");
-		public static KeyController PdfRegionVerticalOffsetKey           = KeyController.Get("_Region on PDF vertical offset");
-		public static KeyController VisualRegionTopLeftPercentileKey     = KeyController.Get("_Top-left % of region");
-		public static KeyController VisualRegionBottomRightPercentileKey = KeyController.Get("_Bottom-right & of region");
 		public static KeyController SelectionRegionTopLeftKey            = KeyController.Get("_Selection Top Left");
 		public static KeyController SelectionRegionSizeKey               = KeyController.Get("_Selection Size");
 		public static KeyController SelectionIndicesListKey              = KeyController.Get("_Selected Indices");
@@ -145,6 +137,8 @@ namespace Dash
 	    public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible");
         public static KeyController ImageStretchKey                      = KeyController.Get("ImageStretch");
+        public static KeyController SplitModeKey                         = KeyController.Get("SplitMode");
+        public static KeyController SplitSizeKey                         = KeyController.Get("SplitSize");
 
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)

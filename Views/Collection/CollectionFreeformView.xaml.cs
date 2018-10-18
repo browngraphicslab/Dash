@@ -109,7 +109,7 @@ namespace Dash
             menu.AddAction("BASIC", new ActionViewModel("Add Image", "Add many images",  AddMultipleImages, source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
             foreach (var template in templates)
             {
                 var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,

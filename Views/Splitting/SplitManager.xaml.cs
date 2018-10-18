@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    public sealed partial class SplitManager : UserControl
+    public partial class SplitManager : UserControl
     {
         public SplitManager()
         {
@@ -17,7 +17,7 @@ namespace Dash
         {
             XSplitPane.Children.Clear();
             var frame = MakeFrame(doc);
-            var splitDef = new SplitDefinition();
+            var splitDef = GetSplitDefintion();
             SplitPane.SetSplitLocation(frame, splitDef);
             XSplitPane.SplitDefinition = splitDef;
             XSplitPane.Children.Add(frame);
@@ -63,6 +63,11 @@ namespace Dash
 
         }
 
+        protected virtual SplitDefinition GetSplitDefintion()
+        {
+            return new SplitDefinition();
+        }
+
         public DocumentController Split(SplitFrame frame, SplitDirection dir, DocumentController doc, bool autoSize)
         {
             SplitMode targetMode;
@@ -81,7 +86,7 @@ namespace Dash
             {
                 var offset = dir == SplitDirection.Up || dir == SplitDirection.Left ? 0 : 1;
                 var index = par.Children.IndexOf(split) + offset;
-                var newSplit = new SplitDefinition();
+                var newSplit = GetSplitDefintion();
                 if (autoSize)
                 {
                     newSplit.Size = split.Size / 2;
@@ -98,8 +103,8 @@ namespace Dash
             else
             {
                 split.Mode = targetMode;
-                var newSplit = new SplitDefinition();
-                var newSplit2 = new SplitDefinition();
+                var newSplit = GetSplitDefintion();
+                var newSplit2 = GetSplitDefintion();
                 if (!autoSize)
                 {
                     newSplit2.Size = 0;
