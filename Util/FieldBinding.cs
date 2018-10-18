@@ -405,7 +405,7 @@ namespace Dash
                 }
 
                 //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 1);
+              // Debug.Assert(refCount == 1);
             }  
              
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
