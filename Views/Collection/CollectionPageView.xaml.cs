@@ -33,6 +33,14 @@ namespace Dash
             xTextBox.AddKeyHandler(VirtualKey.Enter, EnterPressed);
 
             KeyDown += SelectionElement_KeyDown;
+
+            Loaded += (sender, args) =>
+            {
+                if (ViewModel?.DocumentViewModels.Count > 0)
+                {
+                    xThumbs.SelectedIndex = 0;
+                }
+            };
         }
 
         private async void EnterPressed(KeyRoutedEventArgs obj)
