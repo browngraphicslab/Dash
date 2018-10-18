@@ -70,7 +70,7 @@ namespace Dash
 
             if (ViewModel == null) return;
 
-            var loopBinding = new FieldBinding<BoolController, BoolController>()
+            var loopBinding = new FieldBinding<BoolController>()
             {
                 Document = MainPage.Instance.MainDocument.GetDataDocument(),
                 Key = KeyStore.PresLoopOnKey,
@@ -78,7 +78,7 @@ namespace Dash
             };
             xLoopButton.AddFieldBinding(ToggleButton.IsCheckedProperty, loopBinding);
 
-            var lineVisBinding = new FieldBinding<BoolController, BoolController>()
+            var lineVisBinding = new FieldBinding<BoolController>()
             {
                 Document = MainPage.Instance.MainDocument.GetDataDocument(),
                 Key = KeyStore.PresLinesVisibleKey,

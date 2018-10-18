@@ -172,7 +172,7 @@ namespace Dash
         }
     }
 
-    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase
+    public class FieldBinding<T> : FieldBinding<T, T> where T : FieldControllerBase, new()
     {
         public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "",
             [CallerFilePath] string path = "") : base(lineNumber, caller, path)
