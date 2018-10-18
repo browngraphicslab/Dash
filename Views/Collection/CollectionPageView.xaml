@@ -69,7 +69,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <ContentPresenter x:Name="XDocDisplay" Content="{Binding Content, Mode=OneWay}"/>
+            <local:DocumentView x:Name="XDocDisplay" />
             <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
                                  PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
                                  IsSpellCheckEnabled="False" AcceptsReturn="True" Visibility="Collapsed"
