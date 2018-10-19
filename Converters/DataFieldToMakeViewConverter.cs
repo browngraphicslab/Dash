@@ -14,6 +14,8 @@ namespace Dash.Converters
         private Context _context = null;
         private TypeInfo _lastType = TypeInfo.None;
         private FrameworkElement _lastElement = null;
+        private DocumentType _lastDocType = DocumentType.DefaultType;
+        private DocumentController _lastDocument = null;
 
         public DataFieldToMakeViewConverter(DocumentController docController, Context context = null)
         {
@@ -23,14 +25,12 @@ namespace Dash.Converters
 
         public override FrameworkElement ConvertDataToXaml(FieldControllerBase data, object parameter = null)
         {
-            //if (data is ListController<DocumentController> documentList)
-            //{
-            //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));
-            //}
-
             FrameworkElement currView = null;
 
-            if (_lastType == data?.TypeInfo && _lastType != TypeInfo.Document)
+            if (_lastType == data?.TypeInfo && 
+                (_lastType != TypeInfo.Document || 
+                 (_lastDocType.Equals((data as DocumentController).DocumentType) &&
+                  _lastDocument.Equals(data as DocumentController))))
             {
                 return _lastElement;
             }
@@ -70,6 +70,8 @@ namespace Dash.Converters
                 {
                     currView = dc.GetKeyValueAlias().MakeViewUI(_context);
                 }
+                _lastDocType = dc.DocumentType;
+                _lastDocument = dc;
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {
