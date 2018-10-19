@@ -6,10 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    AllowDrop="True"
+    Drop="UserControl_Drop"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name ="xRow" >
+    <Grid x:Name ="xRow" Background="Transparent" >
         
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"></ColumnDefinition>
@@ -28,7 +30,7 @@
                     <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="10" Margin="0, -2, 0 , 0"/>
 
                 </Grid>
-                <TextBlock FontWeight="SemiBold" Text="{Binding Key}"></TextBlock>
+                <TextBlock FontSize="36" FontWeight="SemiBold" Text="{Binding Key}"></TextBlock>
                 
             </StackPanel>
             

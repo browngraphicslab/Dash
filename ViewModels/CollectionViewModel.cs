@@ -733,7 +733,6 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("DROP ");
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
@@ -779,7 +778,7 @@ namespace Dash
             }
         }
 
-        private async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving)
+        public async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving)
         {
             if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
             {
