@@ -162,7 +162,7 @@ namespace Dash
                                   isCopying ? DataPackageOperation.Copy :
                                   DataPackageOperation.None;
             
-            var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement);
+            var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement, new Point());
             var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, null);
 
             e.DataView.ReportOperationCompleted(e.AcceptedOperation);

@@ -50,7 +50,8 @@ namespace Dash
 				Converter = converter,
 				Mode = BindingMode.OneWay,
 				Context = context,
-                ValueType = BindingValueType.Field
+                ValueType = BindingValueType.Field,
+                Tag = "BindContent is DataBox"
 			};
 			presenter.AddFieldBinding(ContentPresenter.ContentProperty, contentBinding);
 		}
