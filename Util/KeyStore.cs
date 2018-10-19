@@ -144,12 +144,12 @@ namespace Dash
 		public static KeyController SchemaDisplayedColumns               = KeyController.Get("_Displayed Columns", new Guid("7424AFD5-D43B-449F-AD04-B48E686621AB"));
 	    public static KeyController JoinInfoKey                          = KeyController.Get("Join Information", new Guid("08A0A6F9-6AC1-4B03-89CD-E7127646D9DB"));
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible", new Guid("1F7E0A85-F5C3-483D-BB66-2A138CA8105E"));
-
+        public static KeyController ImageStretchKey                      = KeyController.Get("ImageStretch", new Guid("3B25E910-F33B-46B2-9349-00DE53EA18F0"));
 
         public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
         public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
 
-		public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
+        public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
 			TypeRenderer[type] = makeViewFunc;
 			RegionCreator[type] = makeRegionFunc;

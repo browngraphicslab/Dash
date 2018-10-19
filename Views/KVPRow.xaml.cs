@@ -163,10 +163,10 @@ namespace Dash
                                   DataPackageOperation.None;
             
             var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement);
-            //var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving);
+            var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, null);
 
-            //e.DataView.ReportOperationCompleted(e.AcceptedOperation);
-            //ViewModel.Document.SetField(ViewModel.Key, docs.Count() == 1 ? docs.First() : docs, true);
+            e.DataView.ReportOperationCompleted(e.AcceptedOperation);
+            ViewModel.Document.SetField(ViewModel.Key, docs.Count() == 1 ? (FieldControllerBase) docs.First() : new ListController<DocumentController>(docs), true);
             e.Handled = true;
         }
     }

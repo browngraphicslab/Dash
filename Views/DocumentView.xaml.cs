@@ -1179,7 +1179,7 @@ namespace Dash
                 }
                 else
                 {
-                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
+                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController.GetViewCopy());
                 }
             }
         }

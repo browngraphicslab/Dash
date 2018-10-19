@@ -35,6 +35,8 @@ namespace Dash.Views.Collection
                 doc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null).Data, true);
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
+                doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                doc.SetVerticalAlignment(VerticalAlignment.Stretch);
                 SplitFrame.OpenInActiveFrame(doc);
             }
         }

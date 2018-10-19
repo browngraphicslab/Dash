@@ -30,7 +30,7 @@
                     <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" Foreground="White" FontSize="10" Margin="0, -2, 0 , 0"/>
 
                 </Grid>
-                <TextBlock FontSize="36" FontWeight="SemiBold" Text="{Binding Key}"></TextBlock>
+                <TextBlock FontWeight="SemiBold" Text="{Binding Key}"></TextBlock>
                 
             </StackPanel>
             

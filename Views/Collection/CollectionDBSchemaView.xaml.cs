@@ -280,19 +280,22 @@ namespace Dash
             var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
             var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
 
-            foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
+            if (docs != null)
             {
-                var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
-                if (key.Equals(fkey) == true)
+                foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
                 {
-                    return; // document already has a databox view of the added key
+                    var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
+                    if (key.Equals(fkey) == true)
+                    {
+                        return; // document already has a databox view of the added key
+                    }
                 }
-            }
 
-            var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
-            CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
-            proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
-            newDataBoxCol.SetTitle(key.Name);
+                var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
+                CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
+                proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
+                newDataBoxCol.SetTitle(key.Name);
+            }
         }
 
         private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)

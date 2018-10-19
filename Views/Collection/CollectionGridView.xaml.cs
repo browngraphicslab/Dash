@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Dash.FontIcons;
 using Windows.ApplicationModel.DataTransfer;
@@ -97,21 +98,10 @@ namespace Dash
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
-            if (dvm == null) return;
-
-            e.Data.SetDragModel(new DragDocumentModel(dvm.DocumentController));
-        }
-
-        private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            if (args.DropResult == DataPackageOperation.Move)
+            var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
+            if (dvm != null)
             {
-                var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
-                if (dvm != null)
-                {
-                    ViewModel.RemoveDocument(dvm.DocumentController);
-                }
+                e.Data.SetDragModel(new DragDocumentModel(dvm.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
             }
         }
 
