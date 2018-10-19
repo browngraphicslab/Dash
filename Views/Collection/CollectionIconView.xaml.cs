@@ -45,11 +45,16 @@ namespace Dash.Views.Collection
         {
             if (ViewModel != null)
             {
-                if (ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField(KeyStore.FolderPreviewKey,null) == null)
+                var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
+                if (containerDoc.GetDereferencedField(KeyStore.FolderPreviewKey,null) == null)
                 {
-                    ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(KeyStore.FolderPreviewKey, "<description>", true);
+                    containerDoc.SetField<TextController>(KeyStore.FolderPreviewKey, "<description>", true);
                 }
-                var db = new DataBox(new DocumentReferenceController(ViewModel.ContainerDocument.GetDataDocument(), KeyStore.FolderPreviewKey)).Document;
+                if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null) == null)
+                {
+                    containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
+                }
+                var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
             }
         }

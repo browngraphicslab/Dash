@@ -37,7 +37,7 @@ namespace Dash
             return AddModel(controller.Model);
         }
 
-        public Task UpdateDocument(Controller<FieldModel> controller)
+        public Task  UpdateDocument(Controller<FieldModel> controller)
         {
             return UpdateModel(controller.Model);
         }

@@ -75,7 +75,7 @@ namespace Dash.Converters
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {
-                currView = TextingBox.MakeView(_docController, _context);
+                currView = TextingBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             else if (data is RichTextController)
             {

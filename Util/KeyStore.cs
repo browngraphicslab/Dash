@@ -148,6 +148,7 @@ namespace Dash
 
         public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
         public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
+        public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
