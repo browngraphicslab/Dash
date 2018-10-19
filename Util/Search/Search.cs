@@ -17,7 +17,7 @@ namespace Dash
         // Checks the DataDocuments of all DocumentControllers in the Dash view for a specific Key-Value pair
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
-            return Parse((negate ? "!" : "") + key.Name + ":" + value);
+            return Parse((negate ? "!" : "") + "\"" + key.Name + "\":\"" + value + "\"");
         }
 
 
