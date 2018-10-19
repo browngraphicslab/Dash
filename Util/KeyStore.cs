@@ -9,7 +9,7 @@ namespace Dash
 	public class KeyStore
 	{
 		//NOTE: Underscore prefacing registers the field as invisible
-	    public static KeyController DocumentContextKey                   = KeyController.Get("_DocumentContext", new Guid("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC"));
+	    public static KeyController DocumentContextKey                   = KeyController.Get("DocumentContext", new Guid("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC"));
 		public static KeyController AbstractInterfaceKey                 = KeyController.Get("_AbstractInterface", new Guid("E579C81B-EE13-4B16-BB96-80688D30A73A"));
 		public static KeyController LayoutListKey                        = KeyController.Get("_LayoutList", new Guid("6546DD08-C753-4C34-924E-3C4016C4B95B"));
 		public static KeyController RegionsKey                           = KeyController.Get("Regions", new Guid("1B958E26-624B-4E9A-82C9-2E18609D6A39"));

@@ -280,8 +280,11 @@ namespace Dash
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
+            var parentIsFreeform = true;
             foreach (var doc in SelectedDocs)
             {
+                if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewModel.ViewType != CollectionView.CollectionViewType.Freeform)
+                    parentIsFreeform = false;
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
@@ -296,6 +299,8 @@ namespace Dash
                     GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
                 }
             }
+            this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
 
@@ -467,7 +472,6 @@ namespace Dash
                         //xURISource.Inlines.Add(hyperlink);
                     }
                 }
-                xURISource.Visibility = Visibility.Visible;
             }
             else
             {
@@ -476,9 +480,8 @@ namespace Dash
                 {// add a hyperlink that points to the source webpage.
 
                     xURISource.Text = "Authored by: " + author;
-                    xURISource.Visibility = Visibility.Visible;
                 }
-                else xURISource.Visibility = Visibility.Collapsed;
+                else xURISource.Text = "";
             }
         }
 
