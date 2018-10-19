@@ -12,6 +12,7 @@
     <StackPanel x:Name="Grid" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" 
                 ManipulationMode="All">
         <TextBlock x:Name="xFolderIcon"   HorizontalTextAlignment="Center" Foreground="DarkGoldenrod" Text="&#xE188;" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="38" FontFamily="Segoe MDL2 Assets" />
-        <TextBox x:Name="xFolderTitle" AcceptsReturn="True" FontSize="24" FontWeight="Bold" Foreground="Black"/>
+        <ContentPresenter x:Name="xFolderPreview" />
+        <!--<TextBox x:Name="xFolderTitle" AcceptsReturn="True" FontSize="24" FontWeight="Bold" Foreground="Black"/>-->
     </StackPanel>
 </UserControl>

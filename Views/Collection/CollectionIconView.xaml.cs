@@ -43,14 +43,12 @@ namespace Dash.Views.Collection
         {
             if (ViewModel != null)
             {
-                var binding = new FieldBinding<TextController>()
+                if (ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField(KeyStore.FolderPreviewKey,null) == null)
                 {
-                    Mode = BindingMode.TwoWay,
-                    Document = ViewModel.ContainerDocument,
-                    Key = KeyStore.DocumentTextKey,
-                    Tag = "icon name for collectionIconView"
-                };
-                xFolderTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                    ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(KeyStore.FolderPreviewKey, "<description>", true);
+                }
+                var db = new DataBox(new DocumentReferenceController(ViewModel.ContainerDocument.GetDataDocument(), KeyStore.FolderPreviewKey)).Document;
+                xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
             }
         }
 
