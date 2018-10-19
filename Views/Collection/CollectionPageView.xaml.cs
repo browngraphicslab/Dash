@@ -155,7 +155,7 @@ namespace Dash
         public void SetHackCaptionText(FieldControllerBase caption)
         {
             XDocDisplay.Content = caption is DocumentController ?
-                new DocumentView() { ViewModel = new DocumentViewModel(caption as DocumentController) { Undecorated= true, IsDimensionless = true} } :
+                new DocumentView() { ViewModel = new DocumentViewModel(caption as DocumentController) { IsDimensionless = true} } :
                 DataBox.MakeView(new DataBox(caption).Document, null);
         }
 
