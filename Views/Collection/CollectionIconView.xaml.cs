@@ -55,6 +55,7 @@ namespace Dash.Views.Collection
                     containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
                 }
                 var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
+
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
             }
         }

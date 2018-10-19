@@ -1316,6 +1316,8 @@ namespace Dash
         {
             //Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
             //Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
+            Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
+                                       " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
 
             // set up contexts information
             context = new Context(context);
