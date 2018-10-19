@@ -50,6 +50,8 @@ namespace Dash.Views.Collection
                     ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(KeyStore.FolderPreviewKey, "<description>", true);
                 }
                 var db = new DataBox(new DocumentReferenceController(ViewModel.ContainerDocument.GetDataDocument(), KeyStore.FolderPreviewKey)).Document;
+                //TODO Maybe just store the data box on the document?
+                FieldControllerBase.MakeRoot(db);
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
             }
         }
