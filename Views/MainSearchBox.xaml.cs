@@ -8,9 +8,11 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using Telerik.UI.Xaml.Controls.Chart;
 using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -181,8 +183,11 @@ namespace Dash
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             Debug.Write("Dragging a copy into workspace...");
-            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument);
-            dragModel.DragCopy = true;
+            var svm = (sender as FrameworkElement)?.DataContext as SearchResultViewModel;
+            var dragModel = new DragDocumentModel(svm?.ViewDocument)
+            {
+                DragCopy = true
+            };
             // get the sender's view docs and set the key for the drag to a static const
             args.Data.SetDragModel(dragModel);
 
@@ -353,14 +358,28 @@ namespace Dash
                     }
                 }
             }
+
+            var map = new Dictionary<DocumentController, List<SearchResult>>();
+            foreach (var searchResult in searchRes)
+            {
+                if (map.TryGetValue(searchResult.DataDocument, out var results))
+                {
+                    results.Add(searchResult);
+                }
+                else
+                {
+                    map[searchResult.DataDocument] = new List<SearchResult>() {searchResult};
+                }
+            }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return;
             //highlight doc results
             HighlightSearchResults(docs);
 
             var vmGroups = new List<SearchResultViewModel>();
-            foreach (SearchResult res in searchRes)
+            foreach (var resList in map)
             {
+                var res = resList.Value.First();
                 if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
@@ -376,7 +395,16 @@ namespace Dash
                 .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
-            foreach (SearchResultViewModel searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
+            Debug.WriteLine(first.Length);
+
+            foreach (SearchResultViewModel searchResultViewModel in first)
+            {
+                //if (!searchResultViewModel.IsCopy)
+                {
+                    Debug.WriteLine("svm is not copy");
+                    itemsSource?.Add(searchResultViewModel);
+                }
+            }
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs, bool animate = false)
@@ -411,12 +439,23 @@ namespace Dash
 
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)
         {
-            string docTitle = result.ViewDocument.ToString();
+            var view = result.ViewDocument;
+            Debug.WriteLine("View Copy: "+view.isCopy);
+            Debug.WriteLine("Number of Copies: " + view._copies);
+            string docTitle = view.ToString();
             int len = docTitle.Length > 10 ? 10 : docTitle.Length - 1;
             string suffix = len < docTitle.Length - 1 ? "..." : "";
             docTitle = docTitle.Substring(1, len) + suffix;
             var titles = result.FormattedKeyRef.Select(key => "Title:" +docTitle +", Key:"+ key).ToList();
-            return new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
+            var svm= new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
+            if (view.isCopy)
+            {
+                svm.IsCopy = true;
+            }
+
+            svm._copies = view._copies;
+            
+            return svm;
         }
 
         #endregion
@@ -425,7 +464,6 @@ namespace Dash
         {
             var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
             bool forward = e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0;
-
             if (forward) viewModel?.NextField();
             else viewModel?.PreviousField();
 

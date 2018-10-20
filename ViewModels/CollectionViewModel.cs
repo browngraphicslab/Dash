@@ -424,6 +424,11 @@ namespace Dash
 
                 PresentationView pres = MainPage.Instance.xPresentationView;
                 if (pres.ViewModel != null && pres.ViewModel.PinnedNodes.Contains(document)) pres.FullPinDelete(document);
+                var copied_doc = document._copyOf;
+                if (copied_doc != null)
+                {
+                    copied_doc._copies--;
+                }
             }
         }
 

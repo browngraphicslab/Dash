@@ -108,6 +108,15 @@
                             Height="32"
                             Width="35"
                             Margin="20, 11, 0, 0"/>
+                        <TextBlock x:Name="xCopyCount"
+                            Grid.Column = "0"
+                            Foreground ="Red"
+                            FontSize = "10"
+                            Text ="{Binding Copies}"
+                            Height ="32"
+                            Width ="35"
+                            Margin ="25,0,0,0"
+                        />
                         <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="1">
                             <TextBlock Text="{Binding CurrentTitle}" FontWeight="Medium"></TextBlock>
                             <TextBlock Text="{Binding CurrentContext}"></TextBlock>

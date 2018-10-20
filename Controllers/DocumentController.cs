@@ -28,6 +28,10 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
+        public bool isCopy = false;
+        public int _copies = 1;
+        public DocumentController _copyOf = null;
+
         public override string ToString()
         {
             string prefix = GetField<TextController>(KeyStore.CollectionViewTypeKey) == null ? "@" : "#";

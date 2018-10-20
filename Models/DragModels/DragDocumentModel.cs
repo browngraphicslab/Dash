@@ -13,20 +13,20 @@ namespace Dash
         /// <summary>
         /// Flags whether documents or their link buttons are being dragged.
         /// </summary>
-        public bool                     DraggingLinkButton = false;
-        public string                   DraggedLinkType = null; // type of link to be created
+        public bool DraggingLinkButton = false;
+        public string DraggedLinkType = null; // type of link to be created
 
         /// <summary>
         /// When DraggingLinkButton is false, this stores the collection views that contained each of the documents
         /// at the start of the drag.  When the documents are dropped, this allows us to remove the documents
         /// from where they were (in the case of a Move operation)
         /// </summary>
-        public List<CollectionViewModel>     DraggedDocCollectionViews;
+        public List<CollectionViewModel> DraggedDocCollectionViews;
 
-        public List<DocumentView>       DraggedDocumentViews;   // The Document views being dragged
+        public List<DocumentView> DraggedDocumentViews;   // The Document views being dragged
         public List<DocumentController> DraggedDocuments; // The Documents being dragged (they correspond to the DraggedDocumentViews when specified)
-        public List<Point>              DocOffsets; // offsets of documents from set of dragged documents
-        public Point                    Offset; // offset of dragged document from pointer
+        public List<Point> DocOffsets; // offsets of documents from set of dragged documents
+        public Point Offset; // offset of dragged document from pointer
         /// <summary>
         /// Flags whether the dropped set of documents should be wrapped in a collection
         /// </summary>
@@ -84,7 +84,7 @@ namespace Dash
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             Point? GetPosition(int i)
             {
-                return where == null ? where:
+                return where == null ? where :
                         new Point(where.Value.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
                                   where.Value.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
             }
@@ -109,7 +109,12 @@ namespace Dash
                 // ...otherwise, create a view copy
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                   docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
+                    var dragDoc = DraggedDocuments[i];
+                    var doc = dragDoc.GetViewCopy(GetPosition(i));
+                    dragDoc._copies++;
+                    doc.isCopy = true;
+                    doc._copyOf = dragDoc;
+                    docs.Add(doc);
                 }
 
                 DragCopy = false;
@@ -135,7 +140,7 @@ namespace Dash
                 }
             }
 
-            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(),  ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
+            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(), ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
         }
 
         //TODO do we want to create link here?

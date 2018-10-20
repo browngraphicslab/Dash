@@ -15,12 +15,16 @@ namespace Dash
         private string _currentContext;
         private int _currentIndex;
         private string _docIcon;
+        public bool IsCopy = false;
+        public int _copies = 1;
         public List<string> Titles { get; }
         public List<string> ContextualTexts { get; }
         public DocumentController ViewDocument { get; }
         public DocumentController DocumentCollection { get; set; }
         public bool IsLikelyUsefulContextText { get; }
         public int FieldCount { get; }
+
+        public int Copies => _copies;
 
         public string CurrentTitle
         {
