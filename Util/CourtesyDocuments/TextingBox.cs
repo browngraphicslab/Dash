@@ -34,25 +34,25 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "TextingBox Prototype Layout", fields);
         }
 
-        protected static void SetupBindings(EditableTextBlock element, DocumentController docController, Context context)
+        protected static void SetupBindings(EditableTextBlock element, DocumentController docController, KeyController key, Context context)
         {
             BindFontWeight(element, docController, context);
             BindFontSize(element, docController, context);
             BindTextAlignment(element, docController, context);
             BindBackgroundColor(element, docController, context);
-            SetupTextBinding(element, docController, context);
+            SetupTextBinding(element, docController, key, context);
         }
         /// <summary>
         /// Makes the view 
         /// </summary>
         /// <param name="isEditable"> Parameter used to determine if the textingbox will be editable upon double click, or just read-only </param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
             // the text field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
-            var textController = docController.GetField(KeyStore.DataKey);
+            var textController = docController.GetField(key);
             var text = textController.GetValue(null);
             // create the textblock
             //TODO Make TargetFieldController be a FieldReference to the field instead of just the field
@@ -61,19 +61,19 @@ namespace Dash
                 TargetFieldController = textController,
                 TargetDocContext = context
             };
-            SetupBindings(tb, docController, context);
+            SetupBindings(tb, docController, key, context);
 
             return tb;
         }
 
         #region Bindings
 
-        protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, Context context)
+        protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, KeyController key, Context context)
         {
             var binding = new FieldBinding<FieldControllerBase, TextController>()
             {
                 Document = docController,
-                Key = KeyStore.DataKey,
+                Key = key,
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 GetConverter = FieldConversion.GetFieldtoStringConverter,
