@@ -280,19 +280,22 @@ namespace Dash
             var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
             var docs = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
 
-            foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
+            if (docs != null)
             {
-                var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
-                if (key.Equals(fkey) == true)
+                foreach (var doc in docs.Where((doc) => doc.DocumentType.Equals(DataBox.DocumentType)))
                 {
-                    return; // document already has a databox view of the added key
+                    var fkey = (doc.GetField(KeyStore.DataKey) as ReferenceController).FieldKey;
+                    if (key.Equals(fkey) == true)
+                    {
+                        return; // document already has a databox view of the added key
+                    }
                 }
-            }
 
-            var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
-            CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
-            proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
-            newDataBoxCol.SetTitle(key.Name);
+                var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
+                CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
+                proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
+                newDataBoxCol.SetTitle(key.Name);
+            }
         }
 
         private void ColumnVisibility_Changed(object sender, RoutedEventArgs e)
@@ -398,7 +401,7 @@ namespace Dash
         {
             if (!string.IsNullOrWhiteSpace(XNewColumnEntry.Text))
             {
-                var key = new KeyController(XNewColumnEntry.Text);
+                var key = KeyController.Get(XNewColumnEntry.Text);
                 if (!Keys.Contains(key))
                 {
                     AddKey(key);
@@ -517,7 +520,7 @@ namespace Dash
                 IsDoubleTapEnabled = false
             };
             textblock.DataContextChanged += Textblock_DataContextChanged;
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = doc,
                 Key = Key,
@@ -535,7 +538,7 @@ namespace Dash
 
         private void Textblock_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = (sender.DataContext as DocumentViewModel).DataDocument,
                 Key = Key,

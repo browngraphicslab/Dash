@@ -11,17 +11,14 @@ namespace Dash
 
         public AudioController() : base(new AudioModel())
         {
-            SaveOnServer();
         }
 
         public AudioController(Uri path) : base(new AudioModel(path))
         {
-            SaveOnServer();
         }
 
         public AudioController(AudioModel audFieldModel) : base(audFieldModel)
         {
-            SaveOnServer();
         }
 
         public AudioModel AudioFieldModel => Model as AudioModel;

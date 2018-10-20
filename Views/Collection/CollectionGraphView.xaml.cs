@@ -102,9 +102,6 @@ namespace Dash
             set
             {
                 _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
             }
         }
 

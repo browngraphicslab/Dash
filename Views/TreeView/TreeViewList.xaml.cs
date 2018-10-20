@@ -114,14 +114,14 @@ namespace Dash.Views.TreeView
         private void TreeViewList_OnDragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
+            var dragModel = e.DataView.GetDragModel();
 
-            if (XListControl.Items == null)
+            if (XListControl.Items == null || dragModel == null)
             {
                 return;
             }
 
-            var dragModel = e.DataView.GetDragModel();
-            //TODO Prevent dragging a collection into itself
+            //TODO Prevent dragging a collection into itself 
             if (!dragModel.CanDrop(this))
             {
                 e.AcceptedOperation = DataPackageOperation.None;

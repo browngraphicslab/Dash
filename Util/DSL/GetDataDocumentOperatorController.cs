@@ -10,12 +10,12 @@ namespace Dash
     public sealed class GetDataDocumentOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController InputDocumentKey = new KeyController("InputDocument");
+        public static readonly KeyController InputDocumentKey = KeyController.Get("InputDocument");
 
         //Output keys
-        public static readonly KeyController ResultDataDocumentKey = new KeyController("ResultDataDocument");
+        public static readonly KeyController ResultDataDocumentKey = KeyController.Get("ResultDataDocument");
 
-        public GetDataDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public GetDataDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public GetDataDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) {}
         
@@ -33,7 +33,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Get Data Document", new Guid("420D6ED9-F09E-4912-B106-576567E00C83"));
+        private static readonly KeyController TypeKey = KeyController.Get("Get Data Document");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

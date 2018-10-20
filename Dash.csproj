@@ -175,6 +175,7 @@
     <Compile Include="Controllers\Operators\DateOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentPathOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
+    <Compile Include="Controllers\Operators\FollowLinksOperator.cs" />
     <Compile Include="Controllers\Operators\QuerySnapshotOperator.cs" />
     <Compile Include="Controllers\Operators\KeyOperator.cs" />
     <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
@@ -560,6 +561,9 @@
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Annotations\BoundsExtractionStrategy.cs" />
+    <Compile Include="Views\Collection\CollectionIconView.xaml.cs">
+      <DependentUpon>CollectionIconView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionStackView.xaml.cs">
       <DependentUpon>CollectionStackView.xaml</DependentUpon>
     </Compile>
@@ -673,7 +677,6 @@
     <Compile Include="Views\Collection\CollectionDBView.xaml.cs">
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\KeyFieldContainer.cs" />
     <Compile Include="Views\Floating.cs" />
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
@@ -809,13 +812,15 @@
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SplitFrame.Navigation.cs" />
-    <Compile Include="Views\SplitFrame.xaml.cs">
+    <Compile Include="Views\Splitting\SplitDefinition.cs" />
+    <Compile Include="Views\Splitting\SplitFrame.Navigation.cs" />
+    <Compile Include="Views\Splitting\SplitFrame.xaml.cs">
       <DependentUpon>SplitFrame.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SplitManager.xaml.cs">
+    <Compile Include="Views\Splitting\SplitManager.xaml.cs">
       <DependentUpon>SplitManager.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Splitting\SplitPane.cs" />
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
@@ -849,7 +854,7 @@
       <DependentUpon>CollectionGridView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
-    <Compile Include="Controllers\IController.cs" />
+    <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Controllers\FieldModelController.cs" />
     <Compile Include="Controllers\ImageController.cs" />
@@ -862,7 +867,6 @@
     <Compile Include="Models\ListModel.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
-    <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
     <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
@@ -1058,8 +1062,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Popups\NewTemplatePopup.xaml">
-        <SubType>Designer</SubType>
-        <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\InkSubToolbar.xaml">
       <SubType>Designer</SubType>
@@ -1138,6 +1142,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionIconView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1397,11 +1405,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SplitFrame.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Views\Splitting\SplitFrame.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\SplitManager.xaml">
+    <Page Include="Views\Splitting\SplitManager.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

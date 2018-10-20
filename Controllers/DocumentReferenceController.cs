@@ -23,7 +23,9 @@ namespace Dash
             _documentController = doc;
             (Model as DocumentReferenceModel).DocumentId = doc.Id;
             UndoCommand command = withUndo ? new UndoCommand(() => SetDocumentController(newDoc, false), () => SetDocumentController(oldDoc, false)) : null;
+            ReferenceField(doc);
             UpdateOnServer(command);
+            ReleaseField(oldDoc);
             DocumentChanged();
         }
 
@@ -33,8 +35,6 @@ namespace Dash
             Debug.Assert(key != null);
             _documentController = doc;
             FieldKey = key;
-            DocumentChanged();
-            SaveOnServer();
         }
 
         public static DocumentReferenceController CreateFromServer(DocumentReferenceModel model)
@@ -60,7 +60,6 @@ namespace Dash
             await base.InitializeAsync();
             _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
             Debug.Assert(_documentController != null);
-            DocumentChanged();
         }
 
         public override FieldControllerBase Copy()
@@ -92,6 +91,8 @@ namespace Dash
             return null;
         }
 
+        public override TypeInfo TypeInfo => TypeInfo.DocumentReference;
+
         public override string ToScriptString(DocumentController thisDoc)
         {
             var funcString = DSL.GetFuncName<DocumentReferenceOperator>();
@@ -115,6 +116,24 @@ namespace Dash
             }
 
             return DocAndKeyToString(DocumentController, FieldKey);
+        }
+
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield return DocumentController;
+            yield return FieldKey;
+        }
+
+        protected override void RefInit()
+        {
+            base.RefInit();
+            ReferenceField(DocumentController);
+        }
+
+        protected override void RefDestroy()
+        {
+            base.RefDestroy();
+            ReleaseField(DocumentController);
         }
     }
 }

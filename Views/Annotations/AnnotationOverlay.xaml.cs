@@ -186,9 +186,11 @@ namespace Dash
         }
 
         void onUnloaded(object o, RoutedEventArgs routedEventArgs)
-        {
-            RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
-            _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
+        { 
+            if (RegionDocsList != null)
+                RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
+            if (_inkController != null)
+                _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
         }
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {

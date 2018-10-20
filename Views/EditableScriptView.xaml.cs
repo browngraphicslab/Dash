@@ -150,7 +150,7 @@ namespace Dash
             }
 
             _oldViewModel = ViewModel;
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),
                 Key = ViewModel.Reference.FieldKey,

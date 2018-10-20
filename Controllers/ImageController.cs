@@ -13,12 +13,10 @@ namespace Dash
         // == CONSTRUCTORS ==
         public ImageController() : base(new ImageModel())
         {
-            SaveOnServer();
         }
 
         public ImageController(Uri path, string data = null) : base(new ImageModel(path, data))
         {
-            SaveOnServer();
         }
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)

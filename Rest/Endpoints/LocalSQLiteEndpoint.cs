@@ -165,7 +165,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task DeleteDocument(FieldModel documentToDelete)
+        public override Task DeleteModel(FieldModel documentToDelete)
         {
             var watch = Stopwatch.StartNew();
 
@@ -186,7 +186,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task DeleteDocuments(IEnumerable<FieldModel> documents)
+        public override Task DeleteModels(IEnumerable<FieldModel> documents)
         {
             var watch = Stopwatch.StartNew();
 
@@ -283,7 +283,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task DeleteAllDocuments()
+        public override Task DeleteAllModels()
         {
             var watch = Stopwatch.StartNew();
 

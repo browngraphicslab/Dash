@@ -6,8 +6,10 @@ namespace Dash
 {
     class MarkdownNote : NoteDocument 
     {
-        public static DocumentType DocumentType = new DocumentType("4F6E6BA8-E18B-4CE2-A575-105A33017328", "Markdown Note");
+        public static readonly DocumentType MarkdownDocumentType = new DocumentType("4F6E6BA8-E18B-4CE2-A575-105A33017328", "Markdown Note");
         static string _prototypeID = "5296EA59-C0EB-4853-822B-D7BD426A316E";
+        protected override DocumentType DocumentType => MarkdownDocumentType;
+
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>

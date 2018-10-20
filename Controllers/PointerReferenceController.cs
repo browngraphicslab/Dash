@@ -14,9 +14,6 @@ namespace Dash
         {
             FieldKey = key;
             DocumentReference = documentReference;
-            DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
-            DocumentChanged();
-            SaveOnServer();
         }
 
         public static PointerReferenceController CreateFromServer(PointerReferenceModel model)
@@ -42,13 +39,17 @@ namespace Dash
             DocumentReference = await RESTClient.Instance.Fields.GetControllerAsync<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
             await base.InitializeAsync();
-            DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
-            DocumentChanged();
         }
 
+        private DocumentController _lastDoc = null;
         private void DocumentReferenceOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            DocumentChanged();
+            var doc = GetDocumentController(null);
+            if (doc != _lastDoc)
+            {
+                DocumentChanged();
+                _lastDoc = doc;
+            }
         }
 
         public override string ToScriptString(DocumentController thisDoc)
@@ -57,10 +58,24 @@ namespace Dash
                    $"({DocumentReference.ToScriptString(thisDoc)}, {FieldKey.ToScriptString(thisDoc)})";
         }
 
-        public override void DisposeField()
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
         {
-             base.DisposeField();
+            yield return DocumentReference;
+            yield return FieldKey;
+        }
+
+        protected override void RefInit()
+        {
+            ReferenceField(DocumentReference);
+            DocumentReference.FieldModelUpdated += DocumentReferenceOnFieldModelUpdated;
+            base.RefInit();
+        }
+
+        protected override void RefDestroy()
+        {
+            base.RefDestroy();
             DocumentReference.FieldModelUpdated -= DocumentReferenceOnFieldModelUpdated;
+            ReleaseField(DocumentReference);
         }
 
         public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
@@ -81,5 +96,7 @@ namespace Dash
             }
             return null;
         }
+
+        public override TypeInfo TypeInfo => TypeInfo.PointerReference;
     }
 }

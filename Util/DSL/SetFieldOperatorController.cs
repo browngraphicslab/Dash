@@ -11,7 +11,6 @@ namespace Dash
     {
         public SetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public SetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -23,16 +22,16 @@ namespace Dash
             throw new NotImplementedException();
         }
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("SetField", new Guid("8EAF5DD0-6E8E-4102-BDF2-E82F3BC6BCC3"));
+        private static readonly KeyController TypeKey = KeyController.Get("SetField");
 
         //Input keys
 
-        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
-        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
-        public static readonly KeyController FieldValueKey = new KeyController("FieldValue");
+        public static readonly KeyController InputDocumentKey = KeyController.Get("InputDoc");
+        public static readonly KeyController KeyNameKey = KeyController.Get("KeyName");
+        public static readonly KeyController FieldValueKey = KeyController.Get("FieldValue");
 
         //Output keys
-        public static readonly KeyController ResultDocKey = new KeyController("ResultDoc");
+        public static readonly KeyController ResultDocKey = KeyController.Get("ResultDoc");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -55,7 +54,7 @@ namespace Dash
 
             if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.Name, fieldValue.GetValue(null).ToString()));
 
-            var success = inputDoc.SetField(new KeyController(keyName), fieldValue, true);
+            var success = inputDoc.SetField(KeyController.Get(keyName), fieldValue, true);
 
             var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
 

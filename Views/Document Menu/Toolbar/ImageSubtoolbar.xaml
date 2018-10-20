@@ -11,11 +11,11 @@
 
     <Grid>
         <StackPanel Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" x:Name="xImageCommandbar" Height="40">
-            <ComboBox x:Name="xScaleOptionsDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="30" Margin="5 0 0 0" VerticalAlignment="Center" >
-                <ComboBoxItem Content="Scale to Size"/>
-                <ComboBoxItem Content="Stretch"/>
-                <ComboBoxItem Content="Clipped"/>
-                <ComboBoxItem Content="SmartFit"/>
+            <ComboBox x:Name="xScaleOptionsDropdown" Style="{StaticResource ComboBoxStyler}" SelectionChanged="xScaleOptionsDropdown_SelectionChanged"  SelectedIndex="0" Width="200" Height="30" Margin="5 0 0 0" VerticalAlignment="Center" >
+                <ComboBoxItem Content="None"/>
+                <ComboBoxItem Content="Fill"/>
+                <ComboBoxItem Content="Uniform"/>
+                <ComboBoxItem Content="UniformToFit"/>
             </ComboBox>
             <AppBarSeparator Height="45" Margin="0, -2, 0, 0" Background="White" Foreground="White"/>
                 <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xToggleAnnotations" Checked="ToggleAnnotations_Checked" Unchecked="ToggleAnnotations_Unchecked" PointerEntered="ShowAppBarToolTip"

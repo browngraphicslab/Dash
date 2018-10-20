@@ -11,17 +11,17 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("List");
-        public static readonly KeyController LambdaKey = new KeyController("Lambda");
+        public static readonly KeyController ListKey = KeyController.Get("List");
+        public static readonly KeyController LambdaKey = KeyController.Get("Lambda");
 
         //Output keys
-        public static readonly KeyController ResultListKey = new KeyController("ResultList");
+        public static readonly KeyController ResultListKey = KeyController.Get("ResultList");
 
         public MapOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public MapOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public MapOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
 
@@ -38,7 +38,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Lambda Map", new Guid("E119C98C-6A29-4D10-978C-8E8049330D92"));
+        private static readonly KeyController TypeKey = KeyController.Get("Lambda Map");
 
         public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {

@@ -111,6 +111,7 @@ namespace Dash
 
             Debug.Assert(controller != null);
 
+            controller.MarkFromServer();
             return controller;
         }
 

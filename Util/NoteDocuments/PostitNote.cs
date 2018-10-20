@@ -6,8 +6,10 @@ namespace Dash
 {
     public class PostitNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Text Note");
+        public static readonly DocumentType PostitNoteDocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Text Note");
         static string _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
+        protected override DocumentType DocumentType => PostitNoteDocumentType;
+
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>

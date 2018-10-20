@@ -183,17 +183,6 @@ namespace Dash
             }
         }
 
-        public DocumentController Snapshot(bool copyData = false)
-        {
-            var controllers = new List<DocumentController>();
-            foreach (var dvm in ViewModel.DocumentViewModels)
-                controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
-            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
-            snap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-            return snap;
-        }
-
 
         #region Manipulation
         /// <summary>
@@ -867,17 +856,17 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectionManager.GetSelectedDocs())
+            foreach (var doc in SelectionManager.GetSelectedDocs())
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
                 topLeftMostPoint.Y = doc.ViewModel.Position.Y < topLeftMostPoint.Y ? doc.ViewModel.Position.Y : topLeftMostPoint.Y;
-                bottomRightMostPoint.X = doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X > bottomRightMostPoint.X
-                    ? doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X
-                    : bottomRightMostPoint.X;
-                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y > bottomRightMostPoint.Y
-                    ? doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y
-                    : bottomRightMostPoint.Y;
+                var actualX = (double.IsNaN(doc.ViewModel.ActualSize.X) ? 0 : doc.ViewModel.ActualSize.X);
+                var actualY =(double.IsNaN(doc.ViewModel.ActualSize.Y) ? 0 : doc.ViewModel.ActualSize.Y);
+                bottomRightMostPoint.X = doc.ViewModel.Position.X + actualX > bottomRightMostPoint.X
+                    ? doc.ViewModel.Position.X + actualX : bottomRightMostPoint.X;
+                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + actualY > bottomRightMostPoint.Y
+                    ? doc.ViewModel.Position.Y + actualY : bottomRightMostPoint.Y;
             }
 
             if (isEmpty) return Rect.Empty;
@@ -1346,7 +1335,7 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = new KeyController(keyname);
+                var keycontroller = KeyController.Get(keyname);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
                 var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;

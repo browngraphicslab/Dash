@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
-    public sealed partial class SplitFrame
+    public partial class SplitFrame
     {
         #region Navigation
         public static DocumentController OpenInActiveFrame(DocumentController doc)
@@ -22,7 +24,7 @@ namespace Dash
             var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
             if (frames.Count == 0)
             {
-                return ActiveFrame.TrySplit(SplitDirection.Left, doc, true);
+                return ActiveFrame.Split(SplitDirection.Right, doc, true);
             }
             else
             {
@@ -39,13 +41,13 @@ namespace Dash
                     }
                 }
 
-                if (frame.ActualWidth < MainPage.Instance.ActualWidth / 2)
-                {
-                    var columns = frame.GetFirstAncestorOfType<SplitManager>().GetFirstAncestorOfType<SplitManager>().Columns;
-                    var frameCol = Grid.GetColumn(frame.GetFirstAncestorOfType<SplitManager>());
-                    columns[frameCol].Width = new GridLength(1, GridUnitType.Star);
-                    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
-                }
+                //if (frame.ActualWidth < MainPage.Instance.ActualWidth / 2)
+                //{
+                //    var columns = frame.GetFirstAncestorOfType<SplitManager>().GetFirstAncestorOfType<SplitManager>().Columns;
+                //    var frameCol = Grid.GetColumn(frame.GetFirstAncestorOfType<SplitManager>());
+                //    columns[frameCol].Width = new GridLength(1, GridUnitType.Star);
+                //    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
+                //}
 
                 return frame.OpenDocument(doc);
             }
