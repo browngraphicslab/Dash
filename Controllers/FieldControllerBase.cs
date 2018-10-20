@@ -146,12 +146,17 @@ namespace Dash
 
         protected sealed override void DeleteOnServer()
         {
+            Debug.WriteLine($"Deleting document with id {Id} and type {TypeInfo}");
             base.DeleteOnServer();
         }
 
         #region Reference Counting
 
         private int _refCount = 0;
+        /// <summary>
+        /// This should only be used for debugging purposes
+        /// </summary>
+        public int RefCount => _refCount;
 
         private void AddReference()
         {

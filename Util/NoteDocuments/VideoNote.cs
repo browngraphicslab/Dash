@@ -7,8 +7,10 @@ namespace Dash
 {
     public class VideoNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("E9D1BEAF-8D88-4C00-958B-A1C7DB3AB560", "Video Note");
+        public static readonly DocumentType VideoDocumentType = new DocumentType("E9D1BEAF-8D88-4C00-958B-A1C7DB3AB560", "Video Note");
         static string _prototypeID = "9D2573C1-1FA2-49ED-9C38-425224D9F685";
+        protected override DocumentType DocumentType => VideoDocumentType;
+
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>

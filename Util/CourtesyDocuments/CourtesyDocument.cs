@@ -19,11 +19,18 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
+        private static Dictionary<DocumentType, DocumentController> _prototypeDictionary =
+            new Dictionary<DocumentType, DocumentController>();
         protected DocumentController GetLayoutPrototype(DocumentType documentType, string prototypeId, string abstractInterface)
         {
-
-            return RESTClient.Instance.Fields.GetController<DocumentController>(prototypeId) ??
+            if (_prototypeDictionary.TryGetValue(documentType, out var proto))
+            {
+                return proto;
+            }
+            proto = RESTClient.Instance.Fields.GetController<DocumentController>(prototypeId) ??
                    InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
+            _prototypeDictionary[documentType] = proto;
+            return proto;
         }
 
         public virtual DocumentController Document { get; set; }

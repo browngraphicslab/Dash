@@ -1075,7 +1075,7 @@ namespace Dash
             theDoc = new RichTextNote(selectedText).Document;
             theDoc.SetRegionDefinition(LayoutDocument);
             var link = "\"" + theDoc.Id + "\"";
-            if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
+            if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.HtmlDocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
                 link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
             }
