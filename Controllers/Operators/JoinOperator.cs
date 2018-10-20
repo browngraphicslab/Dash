@@ -2,32 +2,31 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using DashShared;
 
 namespace Dash
 {
     [OperatorType(Op.Name.join)]
     public sealed class JoinOperator : OperatorController
     {
-        public static readonly KeyController SourceTableKey = new KeyController("TableOne");
-        public static readonly KeyController TargetTableKey = new KeyController("TableTwo");
-        public static readonly KeyController SourceKeyKey = new KeyController("KeyOne");
-        public static readonly KeyController TargetKeyKey = new KeyController("KeyTwo");
-        public static readonly KeyController OptionsKey = new KeyController("Options");
+        public static readonly KeyController SourceTableKey = KeyController.Get("TableOne");
+        public static readonly KeyController TargetTableKey = KeyController.Get("TableTwo");
+        public static readonly KeyController SourceKeyKey = KeyController.Get("KeyOne");
+        public static readonly KeyController TargetKeyKey = KeyController.Get("KeyTwo");
+        public static readonly KeyController ScopeKey = KeyController.Get("Scope");
+        public static readonly KeyController InPlaceKey = KeyController.Get("InPlace");
 
-        public static readonly KeyController GencollectionKey = new KeyController("GenCollection");
+        public static readonly KeyController GencollectionKey = KeyController.Get("GenCollection");
 
 
-        public JoinOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public JoinOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public JoinOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Join Tables", new Guid("50b36009-0a53-4790-b6fe-0a9007db4d92"));
+        private static readonly KeyController TypeKey = KeyController.Get("Join Tables");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -40,7 +39,8 @@ namespace Dash
             new KeyValuePair<KeyController, IOInfo>(TargetTableKey, new IOInfo(DashShared.TypeInfo.Document, true)),
             new KeyValuePair<KeyController, IOInfo>(SourceKeyKey, new IOInfo(DashShared.TypeInfo.Key, true)),
             new KeyValuePair<KeyController, IOInfo>(TargetKeyKey, new IOInfo(DashShared.TypeInfo.Key, true)),
-            new KeyValuePair<KeyController, IOInfo>(OptionsKey, new IOInfo(DashShared.TypeInfo.Text, false))
+            new KeyValuePair<KeyController, IOInfo>(ScopeKey, new IOInfo(DashShared.TypeInfo.Bool, false)),
+            new KeyValuePair<KeyController, IOInfo>(InPlaceKey, new IOInfo(DashShared.TypeInfo.Bool, false))
         };
 
         public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
@@ -55,21 +55,21 @@ namespace Dash
             var sourceKey = (KeyController)inputs[SourceKeyKey];
             var targetKey = (KeyController)inputs[TargetKeyKey];
 
-            TextController optionsMessage = null;
-            if (inputs.ContainsKey(OptionsKey)) optionsMessage = (TextController)inputs[OptionsKey];
+            bool innerJoin = true;
+            bool inPlace = false;
 
-            var gencollection = Execute(sourceTable, targetTable, sourceKey, targetKey, optionsMessage);
+            if (inputs.ContainsKey(ScopeKey)) innerJoin = ((BoolController)inputs[ScopeKey]).Data;
+            if (inputs.ContainsKey(InPlaceKey)) inPlace = ((BoolController)inputs[InPlaceKey]).Data;
+
+            var gencollection = Execute(sourceTable, targetTable, sourceKey, targetKey, innerJoin, inPlace);
             outputs[GencollectionKey] = gencollection;
 
             return Task.CompletedTask;
         }
 
-        public DocumentController Execute(DocumentController sourceTable, DocumentController targetTable, KeyController sourceKey, KeyController targetKey, TextController opMess)
+        public DocumentController Execute(DocumentController sourceTable, DocumentController targetTable, KeyController sourceKey, KeyController targetKey, bool innerJoin, bool inPlace)
         {
-            // if join mode is unspecified or "New", edit a copy of the source table. 
-            // If set to "Add", will add the fields to matched documents in the original table, and no filtering takes place
-            var addMode = opMess != null && opMess.Data.Equals("Append");
-            var generatedCollection = addMode ? sourceTable : (DocumentController)sourceTable.Copy();
+            var generatedCollection = inPlace ? sourceTable : (DocumentController)sourceTable.Copy();
             var sourceDocs = generatedCollection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             var targetDocs = targetTable.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             var toFilterOut = new List<DocumentController>();
@@ -86,7 +86,7 @@ namespace Dash
 
                 if (matchedDoc == null)
                 {
-                    if (!addMode) toFilterOut.Add(row);
+                    if (innerJoin) toFilterOut.Add(row);
                     continue;
                 }
  
@@ -107,7 +107,7 @@ namespace Dash
             var targetTitle = targetTable.GetDereferencedField(KeyStore.TitleKey, null);
             var joinMessage = $"Generated by joining on {sourceKey} in '{sourceTitle}' and {targetKey} in '{targetTitle}'";
             generatedCollection.SetField<TextController>(KeyStore.JoinInfoKey, joinMessage, true);
-            generatedCollection.SetField<TextController>(KeyStore.TitleKey, $"{sourceTitle} (Joined)", true);
+            if (!generatedCollection.Title.Contains("(Joined)")) generatedCollection.SetField<TextController>(KeyStore.TitleKey, $"{sourceTitle} (Joined)", true);
 
             return generatedCollection;
         }

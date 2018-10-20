@@ -25,7 +25,7 @@ namespace Dash.Controllers
         /*
          * Primary constructor recieves data of type DateTime and uses it to construct a new DateTimeModel. Default value is set to 1/1/0001 0:00:00.
          */
-        public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data)) => SaveOnServer();
+        public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data)) { }
 
         /*
          * Constructor that receives only an instance of DateTimeModel

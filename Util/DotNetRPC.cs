@@ -48,15 +48,17 @@ namespace Dash
                     {
                         var w = int.Parse(split[0]);
                         var h = int.Parse(split[1]);
-                        MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-                            async () =>
+                        await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                             {
                                 if (CollapseRequest.LastFrame != null)
                                 {
                                     var gsplit = CollapseRequest.LastFrame.GetFirstAncestorOfType<SplitManager>();
-                                    var scol = Grid.GetColumn(gsplit);
-                                    var maingrid = gsplit.GetFirstAncestorOfType<Grid>();
-                                    maingrid.ColumnDefinitions[scol].Width = new Windows.UI.Xaml.GridLength(w);
+                                    if (gsplit != null)
+                                    {
+                                        var scol     = Grid.GetColumn(gsplit);
+                                        var maingrid = gsplit.GetFirstAncestorOfType<Grid>();
+                                        maingrid.ColumnDefinitions[scol].Width = new Windows.UI.Xaml.GridLength(w);
+                                    }
                                 }
                             });
                     }

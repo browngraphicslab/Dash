@@ -26,8 +26,10 @@ using Task = System.Threading.Tasks.Task;
 using Window = Windows.UI.Xaml.Window;
 using DashShared;
 using System.Threading;
+using Windows.Devices.Input;
 using Windows.Storage.Streams;
 using Windows.Storage;
+using Windows.UI.Input;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.UI.Input.Inking;
 
@@ -86,6 +88,10 @@ namespace Dash
 
         public abstract Canvas GetInkHostCanvas();
 
+        //records number of fingers on screen for touch interactions
+        public static int NumFingers;
+        private List<PointerRoutedEventArgs> handledTouch = new List<PointerRoutedEventArgs>();
+
         protected CollectionFreeformBase()
         {
             Loaded += OnBaseLoaded;
@@ -115,7 +121,7 @@ namespace Dash
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
-            //MakeInkCanvas();
+            MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground -= ChangeBackground;
             setBackground += ChangeBackground;
@@ -156,14 +162,6 @@ namespace Dash
         protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             _lastViewModel = ViewModel;
-
-            if (ViewModel?.DocumentViewModels != null)
-            {
-                foreach (var dvm in ViewModel.DocumentViewModels)
-                {
-                    dvm.IsWidthless = false;
-                }
-            }
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -183,17 +181,6 @@ namespace Dash
             {
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
-        }
-
-        public DocumentController Snapshot(bool copyData = false)
-        {
-            var controllers = new List<DocumentController>();
-            foreach (var dvm in ViewModel.DocumentViewModels)
-                controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
-            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
-            snap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-            return snap;
         }
 
 
@@ -634,40 +621,65 @@ namespace Dash
         #region Marquee Select
 
         Rectangle _marquee;
-        Point _marqueeAnchor;
+        public Point _marqueeAnchor;
         bool _isMarqueeActive;
         private MarqueeInfo mInfo;
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            {
+                handledTouch.Add(e);
+                if (NumFingers > 0) NumFingers--;
+            }
             if (_marquee != null)
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
-                GetSelectionCanvas()?.Children.Remove(_marquee);
+                ResetMarquee(true);
+                if (e != null) e.Handled = true;
+            }
+
+            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
+
+            GetOuterGrid().PointerMoved -= OnPointerMoved;
+            //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
+        }
+
+        protected virtual void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            {
+                handledTouch.Add(e);
+                if(NumFingers > 0) NumFingers--;
+            }
+            if (_marquee != null)
+            {
+                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
+                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
+                GetSelectionCanvas().Children.Remove(_marquee);
                 _marquee = null;
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;
             }
-
-            SelectionCanvas?.Children.Clear();
-            GetOuterGrid().PointerMoved -= OnPointerMoved;
-            if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
+            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
         }
 
-        /// <summary>
-        /// Handles mouse movement.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        public bool StartMarquee(Point pos)
         {
             if (_isMarqueeActive)
             {
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
+
+                //Debug.WriteLine(dX + " and " + dY);
+
+                //if (_marquee == null)
+                //{
+                //    dX = dX + MainPage.Instance.xMainTreeView.ActualWidth;
+                //}
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -703,21 +715,50 @@ namespace Dash
                     Canvas.SetTop(_marquee, newAnchor.Y);
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
-                    args.Handled = true;
 
                     Canvas.SetLeft(mInfo, newAnchor.X);
                     Canvas.SetTop(mInfo, newAnchor.Y - 32);
+
+                    return true;
                 }
             }
+            return false;
         }
 
-		/// <summary>
-		/// Handles mouse movement. Starts drawing Marquee selection.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind != PointerUpdateKind.Other)
+            {
+                return;
+            }
+            var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+            if (StartMarquee(pos))
+                args.Handled = true;
+
+        }
+
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
 		{
+		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
+		    {
+                handledTouch.Add(args);
+                NumFingers++;
+                //var docview = this.GetFirstAncestorOfType<DocumentView>();
+                //      if (SelectionManager.IsSelected(docview))
+                //    //SelectionManager.Select(docview, false);
+                //SelectionManager.TryInitiateDragDrop(docview, args, null);
+		        ViewManipulationControls.isPanning = false;
+            }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
 			{
@@ -732,8 +773,8 @@ namespace Dash
 						SelectionManager.DeselectAll();
 
 					GetOuterGrid().CapturePointer(args.Pointer);
-					_marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
-					_isMarqueeActive = true;
+                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    _isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
                     if (ParentDocument != null)
 					    ParentDocument.ManipulationMode = ManipulationModes.None;
@@ -771,11 +812,22 @@ namespace Dash
         public bool IsMarqueeActive => _isMarqueeActive;
 
         // called by SelectionManager to reset this collection's internal selection-based logic
-        public void ResetMarquee()
+        public void ResetMarquee(bool hardClear)
         {
-            GetSelectionCanvas()?.Children?.Clear();
-            _marquee = null;
-            _isMarqueeActive = false;
+            if (hardClear)
+            {
+                SelectionCanvas?.Children?.Clear();
+                _marquee = null;
+                _isMarqueeActive = false;
+            }
+            else
+            {
+                foreach (UIElement selectionCanvasChild in SelectionCanvas.Children)
+                {
+                    //This is a hack because modifying the visual tree during a manipulation seems to screw up UWP
+                    selectionCanvasChild.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         public List<DocumentView> DocsInMarquee(Rect marquee)
@@ -804,17 +856,17 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectionManager.GetSelectedDocs())
+            foreach (var doc in SelectionManager.GetSelectedDocs())
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
                 topLeftMostPoint.Y = doc.ViewModel.Position.Y < topLeftMostPoint.Y ? doc.ViewModel.Position.Y : topLeftMostPoint.Y;
-                bottomRightMostPoint.X = doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X > bottomRightMostPoint.X
-                    ? doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X
-                    : bottomRightMostPoint.X;
-                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y > bottomRightMostPoint.Y
-                    ? doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y
-                    : bottomRightMostPoint.Y;
+                var actualX = (double.IsNaN(doc.ViewModel.ActualSize.X) ? 0 : doc.ViewModel.ActualSize.X);
+                var actualY =(double.IsNaN(doc.ViewModel.ActualSize.Y) ? 0 : doc.ViewModel.ActualSize.Y);
+                bottomRightMostPoint.X = doc.ViewModel.Position.X + actualX > bottomRightMostPoint.X
+                    ? doc.ViewModel.Position.X + actualX : bottomRightMostPoint.X;
+                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + actualY > bottomRightMostPoint.Y
+                    ? doc.ViewModel.Position.Y + actualY : bottomRightMostPoint.Y;
             }
 
             if (isEmpty) return Rect.Empty;
@@ -841,7 +893,6 @@ namespace Dash
                         SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     marquee = _marquee;
                     viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    OnPointerReleased(null, null);
                 } else
                 {
                     var bounds = GetBoundingRectFromSelection();
@@ -860,7 +911,11 @@ namespace Dash
 
                 var toSelectFrom = viewsToSelectFrom.ToList();
                 using (UndoManager.GetBatchHandle())
+                {
                     action(toSelectFrom, where, new Size(marquee.Width, marquee.Height));
+                }
+
+                ResetMarquee(false);
             }
 
             var type = CollectionView.CollectionViewType.Freeform;
@@ -1087,6 +1142,7 @@ namespace Dash
 
         void MakeInkCanvas()
         {
+
             if (MainPage.Instance.xSettingsView.UseInkCanvas)
             {
                 XInkCanvas = new InkCanvas()
@@ -1279,7 +1335,7 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = new KeyController(keyname);
+                var keycontroller = KeyController.Get(keyname);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
                 var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;

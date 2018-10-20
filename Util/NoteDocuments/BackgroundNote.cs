@@ -10,8 +10,10 @@ namespace Dash
     public class BackgroundNote : NoteDocument
     {
         private DocumentController _dataDocument;
-        public static DocumentType DocumentType = new DocumentType("907DBC71-1078-48C4-8AD0-F388CACEEA0B", "Background Note");
+        public static readonly DocumentType BackgroundDocumentType = new DocumentType("907DBC71-1078-48C4-8AD0-F388CACEEA0B", "Background Note");
         static string _prototypeID = "16133451-5E81-45E9-8A4D-1E7D9CF31036";
+        protected override DocumentType DocumentType => BackgroundDocumentType;
+
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>

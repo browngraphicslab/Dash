@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -9,6 +10,7 @@ using Dash.Converters;
 using DashShared;
 using static Dash.AnchorableAnnotation;
 using Windows.UI.Xaml.Media;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -17,11 +19,18 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
+        private static Dictionary<DocumentType, DocumentController> _prototypeDictionary =
+            new Dictionary<DocumentType, DocumentController>();
         protected DocumentController GetLayoutPrototype(DocumentType documentType, string prototypeId, string abstractInterface)
         {
-
-            return RESTClient.Instance.Fields.GetController<DocumentController>(prototypeId) ??
+            if (_prototypeDictionary.TryGetValue(documentType, out var proto))
+            {
+                return proto;
+            }
+            proto = RESTClient.Instance.Fields.GetController<DocumentController>(prototypeId) ??
                    InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
+            _prototypeDictionary[documentType] = proto;
+            return proto;
         }
 
         public virtual DocumentController Document { get; set; }
@@ -208,31 +217,6 @@ namespace Dash
             Document = GetLayoutPrototype(documentType, prototypeId, abstractInterface).MakeDelegate();
             Document.SetFields(fields, true);
         }
-
-        #region GettersAndSetters
-
-        protected static NumberController GetHeightField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.HeightFieldKey)
-                .DereferenceToRoot<NumberController>(context);
-        }
-
-        protected static NumberController GetWidthField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.WidthFieldKey)
-                .DereferenceToRoot<NumberController>(context);
-        }
-
-        protected static PointController  GetPositionField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(KeyStore.PositionFieldKey)
-                .DereferenceToRoot<PointController>(context);
-        }
-
-        #endregion
     }
 
     public enum LinkBehavior {
@@ -289,6 +273,43 @@ namespace Dash
             document.SetField<TextController>(KeyStore.TitleKey, title, true);
         }
 
+        public static bool GetIsButton(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<BoolController>(KeyStore.IsButtonKey, null);
+            return data?.Data == true;
+        }
+        public static void SetIsButton(this DocumentController document, bool button)
+        {
+            document.SetField<BoolController>(KeyStore.IsButtonKey, button, true);
+        }
+
+        public static void ToggleButton(this DocumentController document)
+        {
+            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.TappedScriptKey);
+            int i = 0;
+
+            for(; i < scripts.Count; ++i)
+            {
+                var operatorController = scripts[i];
+                if (operatorController is FollowLinksOperator)
+                {
+                    scripts.RemoveAt(i);
+                    return;
+                }
+            }
+            scripts.Add(new FollowLinksOperator());
+        }
+
+        public static bool GetAreContentsHitTestVisible(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, null);
+            return data?.Data != false;
+        }
+        public static void SetAreContentsHitTestVisible(this DocumentController document, bool adornment)
+        {
+            document.SetField<BoolController>(KeyStore.AreContentsHitTestVisibleKey, adornment, true);
+        }
+
         public static bool    GetIsAdornment(this DocumentController document)
         {
             var data = document.GetDereferencedField<BoolController>(KeyStore.IsAdornmentKey, null);
@@ -343,6 +364,11 @@ namespace Dash
         {
             var hiddenField = document.GetFieldOrCreateDefault<BoolController>(KeyStore.HiddenKey);
             hiddenField.Data = !hiddenField.Data;
+        }
+
+        public static ListController<OperatorController> GetScripts(this DocumentController document, KeyController scriptKey)
+        {
+            return document.GetField<ListController<OperatorController>>(scriptKey);
         }
 
         public static List<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
@@ -466,7 +492,7 @@ namespace Dash
 
         public static double GetWidth(this DocumentController document)
         {
-            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 0;
+            return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? double.NaN;
         }
 
         public static void SetHeight(this DocumentController document, double height)
@@ -476,7 +502,7 @@ namespace Dash
 
         public static double GetHeight(this DocumentController document)
         {
-            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? 0;
+            return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
         
     }

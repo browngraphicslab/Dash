@@ -12,13 +12,13 @@ namespace Dash
     public sealed class ListConcatOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListAKey = new KeyController("List A");
-        public static readonly KeyController ListBKey = new KeyController("List B");
+        public static readonly KeyController ListAKey = KeyController.Get("List A");
+        public static readonly KeyController ListBKey = KeyController.Get("List B");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ListConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ListConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ListConcatOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -38,7 +38,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("List concatenation", new Guid("679ADBE0-AD2C-4776-9672-9AF9759FE37D"));
+        private static readonly KeyController TypeKey = KeyController.Get("List concatenation");
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)

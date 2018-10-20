@@ -31,6 +31,9 @@ namespace Dash
             xOuterGrid.SizeChanged += OnSizeChanged;
             xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
+            xOuterGrid.PointerCanceled += OnPointerCancelled;
+            //xOuterGrid.PointerCaptureLost += OnPointerReleased;
+
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
@@ -211,22 +214,20 @@ namespace Dash
             {
                 var parser = new ImageToDashUtil();
                 var docController = await parser.ParseFileAsync(imageToAdd);
-                if (docController == null) { return false; }
-                double imageHeight = docController.GetHeight();
-                double imageWidth = docController.GetWidth();
-                var colRect = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformBounds(new Rect(point.X, point.Y, imageWidth, imageHeight));
-                // add adornment
-                var adornFormPoint = new Point(colRect.X, colRect.Y);//new Point(250, 250);
-                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, 100 + colRect.Width, 100 + colRect.Height);
-                ViewModel.AddDocument(adorn);
-                // add image
-                var pos = new Point(50 + colRect.X, 50 + colRect.Y);
-                Actions.DisplayDocument(ViewModel, docController, pos);
-                // add caption
-                var where = new Point(colRect.X, 45 + colRect.Bottom);
-                var postitNote = new RichTextNote("{\\rtf1\\ansi\\deff0\\pard\\qc{" + docController.Title + "}\\par}").Document;
-                postitNote.SetWidth(100 + colRect.Width);
-                Actions.DisplayDocument(ViewModel, postitNote, where);
+                if (docController != null)
+                {
+                    double imageWidth = docController.GetWidth();
+                    double imageHeight = docController.GetHeight();
+                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                    var caption = new RichTextNote(docController.Title).Document;
+                    caption.SetHorizontalAlignment(HorizontalAlignment.Center);
+                    docController.SetWidth(double.NaN);
+                    docController.SetHeight(double.NaN);
+                    docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                    docController.SetVerticalAlignment(VerticalAlignment.Top);
+                    var adorn = new CollectionNote(new Point(imagePt.X, imagePt.Y), CollectionView.CollectionViewType.Stacking, 300, imageHeight / imageWidth * 300 + 30, new DocumentController[] { docController, caption });
+                    ViewModel.AddDocument(adorn.Document);
+                }
             }
 
             return true;

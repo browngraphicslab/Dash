@@ -39,6 +39,7 @@ namespace Dash
         private DocumentController currEditLink;
         public WrapPanel XTagContainer => xTagContainer;
         private DocumentController _currentLink;
+        public bool touchActivated = false;
       
 
         private bool optionClick;
@@ -279,8 +280,11 @@ namespace Dash
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
+            var parentIsFreeform = true;
             foreach (var doc in SelectedDocs)
             {
+                if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewModel.ViewType != CollectionView.CollectionViewType.Freeform)
+                    parentIsFreeform = false;
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
@@ -295,6 +299,8 @@ namespace Dash
                     GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
                 }
             }
+            this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
 
@@ -466,7 +472,6 @@ namespace Dash
                         //xURISource.Inlines.Add(hyperlink);
                     }
                 }
-                xURISource.Visibility = Visibility.Visible;
             }
             else
             {
@@ -475,9 +480,8 @@ namespace Dash
                 {// add a hyperlink that points to the source webpage.
 
                     xURISource.Text = "Authored by: " + author;
-                    xURISource.Visibility = Visibility.Visible;
                 }
-                else xURISource.Visibility = Visibility.Collapsed;
+                else xURISource.Text = "";
             }
         }
 
@@ -526,6 +530,8 @@ namespace Dash
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
+            if (e.Pointer.PointerDeviceType.Equals(Windows.Devices.Input.PointerDeviceType.Touch))
+                touchActivated = true;
             if (doc.ViewModel != null)
             {
                 VisibilityState = Visibility.Visible;
@@ -535,9 +541,13 @@ namespace Dash
         private void SelectedDocView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
-            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed()))
+            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed() && !e.Pointer.PointerDeviceType.Equals(Windows.Devices.Input.PointerDeviceType.Touch)))
+            {
                 VisibilityState = Visibility.Collapsed;
-            SuggestGrid.Visibility = Visibility.Collapsed;
+                SuggestGrid.Visibility = Visibility.Collapsed;
+            }
+
+            touchActivated = false;
         }
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -579,6 +589,8 @@ namespace Dash
                 args.Data.RequestedOperation =
                     DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
+
+            //touchActivated = false;
         }
 
         //private void XTemplateEditorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -636,7 +648,7 @@ namespace Dash
 
             optionClick = false;
 
-            if (!this.IsLeftBtnPressed())
+            if (!this.IsLeftBtnPressed() && touchActivated == false)
                 VisibilityState = Visibility.Collapsed;
         }
 
@@ -1010,7 +1022,7 @@ namespace Dash
             {
                 if (newkey != null)
                 {
-                    HeaderFieldKey = new KeyController(newkey);
+                    HeaderFieldKey = KeyController.Get(newkey);
                 }
                 var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
                 xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
@@ -1018,7 +1030,7 @@ namespace Dash
                 {
                     foreach (var d in SelectedDocs.Where(sd => sd.ViewModel != null).Select(sd => sd.ViewModel.DataDocument))
                     {
-                        var dvalue = d.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        var dvalue = d?.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
                         if (dvalue != xHeaderText.Text)
                         {
                             xHeaderText.Text = "...";

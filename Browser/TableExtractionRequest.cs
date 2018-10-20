@@ -38,35 +38,34 @@ namespace Dash
 
         private static DocumentController ParseTable(IEnumerable<JObject> rows, JsonToDashUtil parser, Point where)
         {
-            var columns = rows.FirstOrDefault()?.GetEnumerator();
-            if (columns != null)
+            if (rows.Count() > 0)
             {
                 var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Stacking, 200, 200).Document;
                 prototype.GetDataDocument().SetTitle("Prototype Row Record");
+                prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
+
                 foreach (var c in rows.FirstOrDefault())
                 {
-                    prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
+                    prototype.GetDataDocument().SetField<TextController>(KeyController.Get(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
                 }
-
-
-                columns.MoveNext();
-                var primaryKey = new KeyController(columns.Current.Key.Trim() ?? "<empty>"); // choose a better primary key -- this should become the document's title, too.
-
-                var protobox = new DataBox(new DocumentReferenceController(prototype.GetDataDocument(), primaryKey), 0, 0, double.NaN, 50).Document;
-                protobox.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
-                prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(protobox), true);
-                CollectionViewModel.RouteDataBoxReferencesThroughCollection(prototype, new List<DocumentController>(new DocumentController[] { protobox }));
-
-                var jobj2 = rows.First();
+                
                 var listOfColumns = new List<KeyController>();
-                foreach (var keyValuePair in jobj2)
+                int count = 0;
+                KeyController primaryKey = null;
+                foreach (var keyValuePair in rows.First())
                 {
-                    listOfColumns.Add(new KeyController(keyValuePair.Key.Trim()));    
+                    var key = KeyController.Get(keyValuePair.Key.Trim());
+                    primaryKey = primaryKey ?? key;
+                    prototype.GetDataDocument().SetField<TextController>(key, "<" +key.Name + ">", true);
+                    listOfColumns.Add(key);
+                    CollectionDBSchemaView.AddDataBoxForKey(key, prototype);
                 }
                 var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                cnote.GetDataDocument().SetTitle("Table " + rows.Count());
                 cnote.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, prototype, true);
                 cnote.SetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns, listOfColumns, true);
+
                 return cnote;
             }
             return null;
@@ -79,10 +78,10 @@ namespace Dash
             
             foreach (var kvp in obj)
             {
-                var key = new KeyController(kvp.Key.Trim());
+                var key = KeyController.Get(kvp.Key.Trim());
                 var val = parser.ParseValue(kvp.Value);
                 datadoc.SetField(key, val, true);
-                if (key.Equals(primaryKey))
+                if (key.Equals(primaryKey))  // bcz: should we reference the first column instead of copying its value?
                 {
                     datadoc.SetTitle(val.ToString());
                 }

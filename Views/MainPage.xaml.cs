@@ -70,6 +70,8 @@ namespace Dash
 
         public SettingsView GetSettingsView => xSettingsView;
 
+        public InkManager InkManager { get; set; }
+
         public DashPopup ActivePopup;
         public Grid SnapshotOverlay => xSnapshotOverlay;
         public Storyboard FadeIn => xFadeIn;
@@ -138,7 +140,7 @@ namespace Dash
 
         private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
-            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"kno-fb-ctx\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
         }
 
         private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
@@ -175,6 +177,7 @@ namespace Dash
                 MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
+            FieldControllerBase.MakeRoot(MainDocument);
 
             LoadSettings();
 
@@ -186,11 +189,9 @@ namespace Dash
             DocumentController lastWorkspace;
             if (col.Count == 0)
             {
-                var documentController = new CollectionNote(new Point(),  CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 col.Add(documentController);
                 lastWorkspace = documentController;
-                lastWorkspace.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                lastWorkspace.SetVerticalAlignment(VerticalAlignment.Stretch);
             }
             else
             {
@@ -198,7 +199,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-
+            
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -207,6 +208,7 @@ namespace Dash
             SetupMapView(lastWorkspace);
 
             if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+            InkManager = new InkManager();
 
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();
@@ -743,8 +745,7 @@ namespace Dash
 
             //make doc view out of doc controller
             var docCopy = doc.GetViewCopy();
-            if (doc.DocumentType.Equals(CollectionBox.DocumentType) &&
-                double.IsNaN(doc.GetWidth()) && double.IsNaN(doc.GetHeight()))
+            if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 docCopy.SetWidth(400);
                 docCopy.SetHeight(300);
@@ -757,7 +758,7 @@ namespace Dash
             docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
-            var defaultPt = position ?? new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
+            var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
 
             var docView = new DocumentView
             {
@@ -841,7 +842,7 @@ namespace Dash
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
-            var frame = SplitFrame.GetFrameWithDoc(target, true);
+            var frame = MainSplitter.GetFrameWithDoc(target, true);
             if (frame != null)
             {
                 frame.Delete();

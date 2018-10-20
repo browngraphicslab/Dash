@@ -1978,8 +1978,6 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
-        <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
-        <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
         <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
