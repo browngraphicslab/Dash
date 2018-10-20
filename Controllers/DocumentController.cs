@@ -1170,10 +1170,6 @@ namespace Dash
         /// </summary>
         public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
-            if (!_initialized)
-            {
-                return;
-            }
             context = context ?? new Context(this);
             HashSet<Type> usedOperators = new HashSet<Type>();
             List<OperatorController> ops = new List<OperatorController>();
@@ -1428,6 +1424,10 @@ namespace Dash
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
             //TODO: If operators are added, the operator should be run, and if an operator is removed it's outputs should maybe be removed
+            if (!_initialized)
+            {
+                return;
+            }
             spaces += "  ";
             ShouldExecute(newContext, args.Reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);
