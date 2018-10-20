@@ -9,15 +9,15 @@ namespace Dash.Controllers.Operators
     [OperatorType(Op.Name.where)]
 	public sealed class WhereOperator : OperatorController
 	{
-        public static readonly KeyController InputListKey = new KeyController("InputList");
-        public static readonly KeyController LambdaKey = new KeyController("Lambda");
+        public static readonly KeyController InputListKey = KeyController.Get("InputList");
+        public static readonly KeyController LambdaKey = KeyController.Get("Lambda");
 
-        public static readonly KeyController OutputListKey = new KeyController("OutputList");
+        public static readonly KeyController OutputListKey = KeyController.Get("OutputList");
 
-        public WhereOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public WhereOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Where Operator", new Guid("6faf4dbe-9666-49a7-8908-a271b6f47b4e"));
+        private static readonly KeyController TypeKey = KeyController.Get("Where Operator");
 
         public override FieldControllerBase GetDefaultController()
         {

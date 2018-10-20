@@ -175,6 +175,7 @@
     <Compile Include="Controllers\Operators\DateOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentPathOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
+    <Compile Include="Controllers\Operators\FollowLinksOperator.cs" />
     <Compile Include="Controllers\Operators\QuerySnapshotOperator.cs" />
     <Compile Include="Controllers\Operators\KeyOperator.cs" />
     <Compile Include="Controllers\Operators\PointerReferenceOperator.cs" />
@@ -676,7 +677,6 @@
     <Compile Include="Views\Collection\CollectionDBView.xaml.cs">
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\KeyFieldContainer.cs" />
     <Compile Include="Views\Floating.cs" />
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
@@ -854,7 +854,7 @@
       <DependentUpon>CollectionGridView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
-    <Compile Include="Controllers\IController.cs" />
+    <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Controllers\FieldModelController.cs" />
     <Compile Include="Controllers\ImageController.cs" />
@@ -867,7 +867,6 @@
     <Compile Include="Models\ListModel.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
-    <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
     <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />

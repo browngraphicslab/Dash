@@ -9,7 +9,7 @@ namespace Dash
     {
         public override List<KeyController> VisitKeylist([NotNull] SearchGrammarParser.KeylistContext context)
         {
-            return context.value().Select(v => new KeyController(v.GetText().Trim('"'))).ToList();
+            return context.value().Select(v => KeyController.Get(v.GetText().Trim('"'))).ToList();
         }
     }
 }

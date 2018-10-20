@@ -18,9 +18,9 @@ namespace Dash
         public abstract Task<FieldModel> GetDocument(string id);
         public abstract Task<List<FieldModel>> GetDocuments(IEnumerable<string> ids);
         public abstract Task<List<U>> GetDocuments<U>(IEnumerable<string> ids) where U : EntityBase;
-        public abstract Task DeleteDocument(FieldModel document);
-        public abstract Task DeleteDocuments(IEnumerable<FieldModel> documents);
-        public abstract Task DeleteAllDocuments();
+        public abstract Task DeleteModel(FieldModel document);
+        public abstract Task DeleteModels(IEnumerable<FieldModel> documents);
+        public abstract Task DeleteAllModels();
         public abstract Task<List<FieldModel>> GetDocumentsByQuery(IQuery<FieldModel> query);
         public abstract Task<List<U>> GetDocumentsByQuery<U>(IQuery<FieldModel> query) where U : EntityBase;
         public abstract Task Close();
@@ -30,16 +30,38 @@ namespace Dash
         public abstract void SetBackupInterval(int millis);
         public abstract void SetNumBackups(int numBackups);
 
-        public async Task AddDocument(Controller<FieldModel> controller)
+        public Task AddDocument(Controller<FieldModel> controller)
         {
             Debug.Assert(!_cache.ContainsKey(controller.Id));
             _cache[controller.Id] = (FieldControllerBase)controller;
-            await AddModel(controller.Model);
+            return AddModel(controller.Model);
         }
 
-        public async Task UpdateDocument(Controller<FieldModel> controller)
+        public Task UpdateDocument(Controller<FieldModel> controller)
         {
-            await UpdateModel(controller.Model);
+            return UpdateModel(controller.Model);
+        }
+
+        public Task DeleteDocument(Controller<FieldModel> controller)
+        {
+            Debug.Assert(_cache.ContainsKey(controller.Id));
+            _cache.Remove(controller.Id);
+            return DeleteModel(controller.Model);
+        }
+
+        public Task DeleteDocuments(IEnumerable<Controller<FieldModel>> controllers)
+        {
+            foreach (var controller in controllers)
+            {
+                Debug.Assert(_cache.ContainsKey(controller.Id));
+                _cache.Remove(controller.Id);
+            }
+            return DeleteModels(controllers.Select(cont => cont.Model));
+        }
+
+        public Task DeleteAllDocuments()
+        {
+            return DeleteAllModels();
         }
 
         public async Task<FieldControllerBase> GetControllerAsync(string id)
@@ -90,14 +112,18 @@ namespace Dash
             {
                 var foundFields = await GetDocuments(missingIds);
                 var foundFieldsDict = foundFields.ToDictionary(fm => fm.Id, fm => fm);
+                var controllers = new List<FieldControllerBase>(foundFields.Count);
                 for (int i = 0; i < foundFields.Count; i++)
                 {
                     var f = foundFieldsDict[missingIds[i]];
                     var field = FieldControllerFactory.CreateFromModel(f);
+                    Debug.Assert(!_cache.ContainsKey(missingIds[i]));
                     _cache[missingIds[i]] = field;
-                    await field.InitializeAsync();
+                    controllers.Add(field);
                     fields[missingIdxs[i]] = field;
                 }
+
+                await Task.WhenAll(controllers.Select(c => c.InitializeAsync()));
             }
 
             return fields;

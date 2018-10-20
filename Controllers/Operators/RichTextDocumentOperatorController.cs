@@ -14,7 +14,6 @@ namespace Dash
 
         public RichTextDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public RichTextDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -24,7 +23,7 @@ namespace Dash
         //Input key   KeyStore.DataKey;
 
         //Output key
-        public static readonly KeyController ReadableTextKey = new KeyController("ReadableText");
+        public static readonly KeyController ReadableTextKey = KeyController.Get("ReadableText");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>>  Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -37,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = new KeyController("Doc Text", new Guid("A0BB0580-31E8-441E-907A-8A9C74224964"));
+        private static KeyController TypeKey = KeyController.Get("Doc Text");
         private static RichEditBox richEditBox = new RichEditBox();
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

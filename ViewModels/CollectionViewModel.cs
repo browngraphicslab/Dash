@@ -777,7 +777,7 @@ namespace Dash
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
-
+        
         public static async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel)
         {
             if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null && collectionViewModel != null)  // dropping a DataBox

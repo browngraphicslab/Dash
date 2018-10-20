@@ -46,7 +46,7 @@ namespace Dash
 
                 foreach (var c in rows.FirstOrDefault())
                 {
-                    prototype.GetDataDocument().SetField<TextController>(new KeyController(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
+                    prototype.GetDataDocument().SetField<TextController>(KeyController.Get(c.Key.Trim()), "<" + c.Key.Trim() + ">", true);
                 }
                 
                 var listOfColumns = new List<KeyController>();
@@ -54,7 +54,7 @@ namespace Dash
                 KeyController primaryKey = null;
                 foreach (var keyValuePair in rows.First())
                 {
-                    var key = new KeyController(keyValuePair.Key.Trim());
+                    var key = KeyController.Get(keyValuePair.Key.Trim());
                     primaryKey = primaryKey ?? key;
                     prototype.GetDataDocument().SetField<TextController>(key, "<" +key.Name + ">", true);
                     listOfColumns.Add(key);
@@ -78,7 +78,7 @@ namespace Dash
             
             foreach (var kvp in obj)
             {
-                var key = new KeyController(kvp.Key.Trim());
+                var key = KeyController.Get(kvp.Key.Trim());
                 var val = parser.ParseValue(kvp.Value);
                 datadoc.SetField(key, val, true);
                 if (key.Equals(primaryKey))  // bcz: should we reference the first column instead of copying its value?

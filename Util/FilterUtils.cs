@@ -147,13 +147,19 @@ namespace Dash.StaticClasses
             // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
             foreach (var document in CheckContainsKey(collection, keyName))
             {
-                var key = new KeyController();
+                KeyController key = null;
                 foreach (var docKey in GetKeys(document))
                 {
                     if (docKey.Name.Equals(keyName))
                     {
                         key = docKey;
+                        break;
                     }
+                }
+
+                if (key == null)
+                {
+                    continue;
                 }
                 string data = "";
                 var field = document.GetField(key);
@@ -193,7 +199,7 @@ namespace Dash.StaticClasses
             // loop through documents that have the specified field
             foreach (var document in CheckContainsKey(collection, keyName))
             {
-                var key = new KeyController();
+                KeyController key = null;
                 foreach (var docKey in GetKeys(document))
                 {
                     if (docKey.Name == keyName)
@@ -201,6 +207,11 @@ namespace Dash.StaticClasses
                         key = docKey;
                         break;
                     }
+                }
+
+                if (key == null)
+                {
+                    continue;
                 }
                 string data = "";
                 var field = document.GetField(key);

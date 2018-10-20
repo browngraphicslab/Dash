@@ -252,7 +252,7 @@ namespace Dash
                     var key = split.FirstOrDefault().Trim(' ');
                     var value = split.LastOrDefault().Trim(' ');
 
-                    var keycontroller = new KeyController(key);
+                    var keycontroller = KeyController.Get(key);
                     var containerDoc = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
                     if (containerDoc != null)
                     {
@@ -1075,7 +1075,7 @@ namespace Dash
             theDoc = new RichTextNote(selectedText).Document;
             theDoc.SetRegionDefinition(LayoutDocument);
             var link = "\"" + theDoc.Id + "\"";
-            if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
+            if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.HtmlDocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
                 link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
             }

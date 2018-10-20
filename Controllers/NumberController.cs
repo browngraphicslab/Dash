@@ -11,7 +11,6 @@ namespace Dash
 
         public NumberController(double data = 0) : base(new NumberModel(data))
         {
-            SaveOnServer();
         }
 
         public NumberController(NumberModel numberFieldModel) : base(numberFieldModel)

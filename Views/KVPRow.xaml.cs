@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash;
+using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -141,6 +142,32 @@ namespace Dash
         private void CancelEdit()
         {
             IsEditing = false;
+        }
+
+        private async void UserControl_Drop(object sender, DragEventArgs e)
+        {
+            var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
+
+            var dragModel        = e.DataView.GetDragModel();
+            var dragDocModel     = dragModel as DragDocumentModel;
+            var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
+            var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
+            var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
+            var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
+            var isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
+
+            e.AcceptedOperation = isSettingContext ? DataPackageOperation.None :
+                                  isLinking ? DataPackageOperation.Link :
+                                  isMoving ? DataPackageOperation.Move :
+                                  isCopying ? DataPackageOperation.Copy :
+                                  DataPackageOperation.None;
+            
+            var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement, new Point());
+            var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, null);
+
+            e.DataView.ReportOperationCompleted(e.AcceptedOperation);
+            ViewModel.Document.SetField(ViewModel.Key, docs.Count() == 1 ? (FieldControllerBase) docs.First() : new ListController<DocumentController>(docs), true);
+            e.Handled = true;
         }
     }
 }

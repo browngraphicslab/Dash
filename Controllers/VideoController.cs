@@ -11,13 +11,11 @@ namespace Dash
 
 	    public VideoController() : base(new VideoModel())
 	    {
-	        SaveOnServer();
-        }
+	        }
 
 	    public VideoController(Uri path) : base(new VideoModel(path))
 	    {
-	        SaveOnServer();
-        }
+	        }
 
         public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
 		{

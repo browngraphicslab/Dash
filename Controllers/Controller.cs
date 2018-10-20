@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using DashShared;
@@ -64,7 +65,7 @@ namespace Dash
         /// Pushes local changes in the controller's underlying model to the server.
         /// </summary>
         /// <param name="undoEvent"></param>
-        public void UpdateOnServer(UndoCommand undoEvent)
+        protected virtual void UpdateOnServer(UndoCommand undoEvent)
         {
             if(undoEvent != null)
             {
@@ -77,16 +78,16 @@ namespace Dash
         /// <summary>
         /// Deletes the given controller's underlying model from the server.
         /// </summary>
-        public void DeleteOnServer()
+        protected virtual void DeleteOnServer()
         {
-            _serverEndpoint.DeleteDocument(Model);
+            _serverEndpoint.DeleteDocument(this);
         }
 
         /// <summary>
         /// Saves the given controllers' underlying model on the server.
         /// This should only be called the first time you make the model, otherwise use "UpdateOnServer" to save;
         /// </summary>
-        public void SaveOnServer()
+        protected virtual void SaveOnServer()
         {
             _serverEndpoint.AddDocument(this);
         }
@@ -94,6 +95,18 @@ namespace Dash
         public Task<bool> IsOnServer()
         {
             return _serverEndpoint.HasDocument(Model);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var controller = obj as Controller<T>;
+            return controller != null &&
+                   Id == controller.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return 2108858624 + EqualityComparer<string>.Default.GetHashCode(Id);
         }
     }
 }

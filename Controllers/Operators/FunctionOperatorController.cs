@@ -20,7 +20,7 @@ namespace Dash
             InitFunc(model.Parameters, TypescriptToOperatorParser.ParseToExpression(model.FunctionCode), model.ReturnType);
         }
 
-        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) => SaveOnServer();
+        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) { }
 
         public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, Scope scope = null) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
         {
@@ -35,11 +35,10 @@ namespace Dash
 
             foreach (var param in paramss)
             {
-                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(new KeyController(param.Key), new IOInfo(param.Value, true)));
+                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(KeyController.Get(param.Key), new IOInfo(param.Value, true)));
                 _inputNames.Add(param.Key);
             }
 
-            SaveOnServer();
         }
 
         private readonly List<string> _inputNames = new List<string>();
@@ -48,11 +47,11 @@ namespace Dash
         private Scope _funcScope;
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Function", new Guid("1573E918-19E0-47A9-BB9D-0531233277C9"));
+        private static readonly KeyController TypeKey = KeyController.Get("Function");
 
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

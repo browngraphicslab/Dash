@@ -9,15 +9,14 @@ namespace Dash
     [OperatorType(Op.Name.k)]
     public class KeyOperator : OperatorController
     {
-        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
+        public static readonly KeyController KeyNameKey = KeyController.Get("KeyName");
 
 
-        public static readonly KeyController KeyKey = new KeyController("Key");
+        public static readonly KeyController KeyKey = KeyController.Get("Key");
 
 
         public KeyOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public KeyOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -25,7 +24,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("String to Key", new Guid("2071d5ac-4c84-4cfd-bd2c-1a09a1fe02b3"));
+        private static readonly KeyController TypeKey = KeyController.Get("String to Key");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -54,7 +53,7 @@ namespace Dash
 
         public KeyController Execute(TextController keyName)
         {
-            return new KeyController(keyName.Data);
+            return KeyController.Get(keyName.Data);
         }
 
     }
