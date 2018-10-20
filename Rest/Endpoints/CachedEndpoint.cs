@@ -117,8 +117,8 @@ namespace Dash
                 {
                     var f = foundFieldsDict[missingIds[i]];
                     var field = FieldControllerFactory.CreateFromModel(f);
+                    Debug.Assert(!_cache.ContainsKey(missingIds[i]));
                     _cache[missingIds[i]] = field;
-                    //await field.InitializeAsync();
                     controllers.Add(field);
                     fields[missingIdxs[i]] = field;
                 }
