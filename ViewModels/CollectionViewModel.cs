@@ -751,7 +751,7 @@ namespace Dash
                                       isCopying        ? DataPackageOperation.Copy : 
                                       DataPackageOperation.None;
 
-                if (dragDocModel.DraggingJoinButton)
+                if (dragDocModel?.DraggingJoinButton ?? false)
                 {
                     return;
                 }

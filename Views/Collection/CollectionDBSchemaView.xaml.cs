@@ -486,11 +486,6 @@ namespace Dash
                 {
                     foreach (var kvp in doc.GetDataDocument().EnumDisplayableFields())
                     {
-                        if (!allKeys.Contains(kvp.Key))
-                        {
-                            allKeys.Add(kvp.Key);
-                        }
-
                         if (!comparisonKeys.Contains(kvp.Key))
                         {
                             comparisonKeys.Add(kvp.Key);
