@@ -461,17 +461,16 @@ namespace Dash
                 docs.Add(doc.DocumentController);
             }
 
-            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.DB)
-                {DraggingJoinButton = true, DraggedKey = (sender as FrameworkElement).DataContext as KeyController});
+            args.Data.SetJoinModel(new JoinDragModel(docs, (sender as FrameworkElement).DataContext as KeyController));
         }
 
         private async void CollectionDBSchemaView_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.GetDragModel() is DragDocumentModel ddm && ddm.DraggingJoinButton)
+            if (e.DataView.GetJoinDragModel() is JoinDragModel jdm)
             {
                 e.Handled = true;
                 var allKeys = new List<KeyController>();
-                foreach (var doc in ddm.DraggedDocuments)
+                foreach (var doc in jdm.DraggedDocuments)
                 {
                     foreach (var kvp in doc.GetDataDocument().EnumDisplayableFields())
                     {
@@ -496,9 +495,9 @@ namespace Dash
 
                 (KeyController comparisonKey, List<KeyController> keysToJoin) = await MainPage.Instance.PromptJoinTables(comparisonKeys, allKeys);
                 if (comparisonKey == null) return;
-                foreach (var doc in ddm.DraggedDocuments)
+                foreach (var doc in jdm.DraggedDocuments)
                 {
-                    var draggedKey = ddm.DraggedKey;
+                    var draggedKey = jdm.DraggedKey;
                     var comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null).GetValue(null);
                     var matchingDoc = ViewModel.DocumentViewModels.FirstOrDefault(dvm =>
                         dvm.DocumentController.GetDataDocument().GetDereferencedField(comparisonKey, null).GetValue(null).Equals(comparisonField));

@@ -189,6 +189,7 @@
     <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Models\DragModels\JoinDragModel.cs" />
     <Compile Include="Popups\JoinGroupMenuPopup.xaml.cs">
       <DependentUpon>JoinGroupMenuPopup.xaml</DependentUpon>
     </Compile>

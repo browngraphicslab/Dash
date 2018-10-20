@@ -752,11 +752,6 @@ namespace Dash
                                       isCopying        ? DataPackageOperation.Copy : 
                                       DataPackageOperation.None;
 
-                if (dragDocModel?.DraggingJoinButton ?? false)
-                {
-                    return;
-                }
-
                 RemoveDragDropIndication(sender as ICollectionView);
                 
                 var where = new Point();
