@@ -131,7 +131,7 @@ namespace Dash
             _fromServer = true;
         }
 
-        protected sealed override void SaveOnServer()
+        public sealed override void SaveOnServer()
         {
             base.SaveOnServer();
         }
@@ -144,7 +144,7 @@ namespace Dash
             }
         }
 
-        protected sealed override void DeleteOnServer()
+        public sealed override void DeleteOnServer()
         {
             Debug.WriteLine($"Deleting document with id {Id} and type {TypeInfo}");
             base.DeleteOnServer();

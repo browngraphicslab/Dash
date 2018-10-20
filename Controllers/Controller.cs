@@ -78,7 +78,7 @@ namespace Dash
         /// <summary>
         /// Deletes the given controller's underlying model from the server.
         /// </summary>
-        protected virtual void DeleteOnServer()
+        public virtual void DeleteOnServer()
         {
             _serverEndpoint.DeleteDocument(this);
         }
@@ -87,7 +87,7 @@ namespace Dash
         /// Saves the given controllers' underlying model on the server.
         /// This should only be called the first time you make the model, otherwise use "UpdateOnServer" to save;
         /// </summary>
-        protected virtual void SaveOnServer()
+        public virtual void SaveOnServer()
         {
             _serverEndpoint.AddDocument(this);
         }
