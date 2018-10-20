@@ -46,7 +46,7 @@ namespace Dash
             {
                 return ViewModel.DocumentController;
             }
-            
+
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
                 doc = doc.GetViewCopy();

@@ -96,5 +96,7 @@ namespace Dash
             }
             return null;
         }
+
+        public override TypeInfo TypeInfo => TypeInfo.PointerReference;
     }
 }

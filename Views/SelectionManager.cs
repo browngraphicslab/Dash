@@ -227,7 +227,7 @@ namespace Dash
                 var prevParent = parents.FirstOrDefault();
                 foreach (var parent in parents)// bcz: Ugh.. this is ugly.
                 {
-                    if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.DocumentType) &&
+                    if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
                         parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
                         (SelectionManager.GetSelectedDocs().Contains(parent) || parent == parents.Last()))
                     {

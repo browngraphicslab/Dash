@@ -62,7 +62,11 @@ namespace Dash
         public DocumentViewModel CurrentPage
         {
             get => (DocumentViewModel)xThumbs.SelectedItem;
-            set => xThumbs.SelectedItem = value;
+            set
+            {
+                value.IsDimensionless = true;
+                xThumbs.SelectedItem = value;
+            }
         }
 
         #region ICollectionView Implementation

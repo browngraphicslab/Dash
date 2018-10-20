@@ -9,7 +9,7 @@ namespace Dash
 	public class KeyStore
 	{
 		//NOTE: Underscore prefacing registers the field as invisible
-	    public static KeyController DocumentContextKey                   = KeyController.Get("_DocumentContext");
+	    public static KeyController DocumentContextKey                   = KeyController.Get("DocumentContext");
 		public static KeyController AbstractInterfaceKey                 = KeyController.Get("_AbstractInterface");
 		public static KeyController LayoutListKey                        = KeyController.Get("_LayoutList");
 		public static KeyController RegionsKey                           = KeyController.Get("Regions");
@@ -146,6 +146,9 @@ namespace Dash
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible");
         public static KeyController ImageStretchKey                      = KeyController.Get("ImageStretch");
 
+        public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
+        public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
+        public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{

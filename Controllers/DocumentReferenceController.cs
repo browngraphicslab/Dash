@@ -18,7 +18,6 @@ namespace Dash
 
         private void SetDocumentController(DocumentController doc, bool withUndo)
         {
-            ReleaseField(_documentController);
             var oldDoc = _documentController;
             var newDoc = doc;
             _documentController = doc;
@@ -26,6 +25,7 @@ namespace Dash
             UndoCommand command = withUndo ? new UndoCommand(() => SetDocumentController(newDoc, false), () => SetDocumentController(oldDoc, false)) : null;
             ReferenceField(doc);
             UpdateOnServer(command);
+            ReleaseField(oldDoc);
             DocumentChanged();
         }
 
@@ -90,6 +90,8 @@ namespace Dash
             }
             return null;
         }
+
+        public override TypeInfo TypeInfo => TypeInfo.DocumentReference;
 
         public override string ToScriptString(DocumentController thisDoc)
         {

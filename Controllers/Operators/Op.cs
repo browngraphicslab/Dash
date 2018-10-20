@@ -188,6 +188,8 @@ namespace Dash
 
             get_doc,
 
+            follow_links,
+
             // NULL EQUIVALENT
 
             invalid,

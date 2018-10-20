@@ -134,7 +134,7 @@ namespace Dash
         
         private EditableScriptViewModel _oldViewModel;
         private DocumentController _oldDataBox = null;
-        private FieldBinding<FieldControllerBase> _oldBinding = null;
+        private FieldBinding<FieldControllerBase, TextController> _oldBinding = null;
         private void EditableScriptView_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (ViewModel == null || ViewModel == _oldViewModel)
@@ -154,7 +154,7 @@ namespace Dash
                 _oldBinding.Document.RemoveFieldUpdatedListener(_oldBinding.Key, fieldChanged);
             }
             _oldViewModel = ViewModel;
-            _oldBinding = new FieldBinding<FieldControllerBase>
+            _oldBinding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),
                 Key = ViewModel.Reference.FieldKey,

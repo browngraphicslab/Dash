@@ -520,7 +520,7 @@ namespace Dash
                 IsDoubleTapEnabled = false
             };
             textblock.DataContextChanged += Textblock_DataContextChanged;
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = doc,
                 Key = Key,
@@ -538,7 +538,7 @@ namespace Dash
 
         private void Textblock_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = (sender.DataContext as DocumentViewModel).DataDocument,
                 Key = Key,

@@ -172,7 +172,7 @@ namespace Dash
         }
     }
 
-    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase
+    public class FieldBinding<T> : FieldBinding<T, T> where T : FieldControllerBase, new()
     {
         public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "",
             [CallerFilePath] string path = "") : base(lineNumber, caller, path)
@@ -315,7 +315,7 @@ namespace Dash
                 //     but it does kinda mess with how the reference counting should work...
 
                 //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 0);
+                Debug.Assert(refCount == 0);
             }
 
             void OnElementOnLoading(object frameworkElement, object o)
@@ -407,7 +407,7 @@ namespace Dash
                 //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
               // Debug.Assert(refCount == 1);
             }  
-             
+
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
 
@@ -428,7 +428,7 @@ namespace Dash
                 //     but it does kinda mess with how the reference counting should work...
 
                 //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 0);
+                Debug.Assert(refCount == 0);
             }
 
             void OnElementOnLoaded(object frameworkElement, object o)

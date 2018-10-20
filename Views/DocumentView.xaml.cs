@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers.Operators;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.FontIcons;
 using Dash.Converters;
@@ -235,8 +236,8 @@ namespace Dash
             };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
-            RightTapped += (s, e) => e.Handled = TappedHandler(e.Handled);
-            Tapped += (s, e) => e.Handled = TappedHandler(e.Handled);
+            RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
+            Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
@@ -640,24 +641,36 @@ namespace Dash
         /// <summary>
         /// Handles left and right tapped events on DocumentViews
         /// </summary>
-        /// <param name="wasHandled">Whether the tapped event was previously handled</param>//this is always false currently so it probably isn't needed
+        /// <param name="wasHandled">Whether the tapped event was previously handled
+        /// this is always false currently so it probably isn't needed</param>
+        /// <param name="wasRightTapped"></param>
         /// <returns>Whether the calling tapped event should be handled</returns>
-        public bool TappedHandler(bool wasHandled)
+        public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (ViewModel.IsButton && !this.IsRightBtnPressed())
+            if (!wasRightTapped)
             {
-                foreach (var link in ViewModel.DataDocument.GetLinks(null))
-                    new AnnotationManager(this).FollowRegion(ViewModel.DocumentController,
-                        this.GetAncestorsOfType<ILinkHandler>(), new Point(), link.GetDataDocument().GetLinkTag()?.Data ?? "Annotation");
-                return true;
+                var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
+                if (scripts != null)
+                {
+                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
+                    var tasks = new List<Task>(scripts.Count);
+                    foreach (var operatorController in scripts)
+                    {
+                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                }
             }
             if (!wasHandled)
             {
                 FocusedDocument = this;
             }
 
-            var focused = FocusManager.GetFocusedElement() as FrameworkElement;
-            if (focused == null || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
+            if (!(FocusManager.GetFocusedElement() is FrameworkElement focused) || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
                 Focus(FocusState.Programmatic);
             }
@@ -778,7 +791,7 @@ namespace Dash
             {
                 foreach (var docView in SelectionManager.GetSelectedSiblings(this))
                 {
-                    docView.ViewModel.IsButton = !docView.ViewModel.IsButton;
+                    docView.ViewModel.DocumentController.ToggleButton();
                     SetZLayer();
                 }
             }
@@ -1076,7 +1089,7 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = ViewModel.LayoutDocument.GetIsButton() ? "Remove Button Behavior" : "Add Button Behavior",
+                Text = ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false ? "Remove Button Behavior" : "Add Button Behavior",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;

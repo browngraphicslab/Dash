@@ -96,7 +96,6 @@ namespace Dash
                 DocumentModel.DocumentType = value;
                 //If there is an issue here it is probably because 'enforceTypeCheck' is set to false.
                 this.SetField<TextController>(KeyStore.DocumentTypeKey, value.Type, true, false);
-                UpdateOnServer(null);
             }
         }
 
@@ -946,15 +945,16 @@ namespace Dash
                 //}
 
                 //field.SaveOnServer();
+
+
                 if (doc == proto && oldField != null)
                 {
                     doc.ReleaseContainedField(key, oldField);
                 }
+                doc.ReferenceContainedField(key, field);
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field.Id;
-
-                doc.ReferenceContainedField(key, field);
 
                 if (!doc.Equals(this))
                 {
@@ -1170,10 +1170,6 @@ namespace Dash
         /// </summary>
         public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
-            if (!_initialized)
-            {
-                return;
-            }
             context = context ?? new Context(this);
             HashSet<Type> usedOperators = new HashSet<Type>();
             List<OperatorController> ops = new List<OperatorController>();
@@ -1316,6 +1312,8 @@ namespace Dash
         {
             //Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
             //Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
+            Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
+                                       " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
 
             // set up contexts information
             context = new Context(context);
@@ -1426,6 +1424,10 @@ namespace Dash
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
             //TODO: If operators are added, the operator should be run, and if an operator is removed it's outputs should maybe be removed
+            if (!_initialized)
+            {
+                return;
+            }
             spaces += "  ";
             ShouldExecute(newContext, args.Reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);

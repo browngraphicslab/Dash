@@ -96,7 +96,7 @@ namespace Dash
                         ParentDocument.SetField(SelectedKey, new ListController<NumberController>(), true);
                     ParentDocument.SetField(AvgResultKey, new NumberController(0), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
-                    xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController>()
+                    xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController, TextController>()
                     {
                         Mode = BindingMode.TwoWay,
                         Document = ParentDocument,
