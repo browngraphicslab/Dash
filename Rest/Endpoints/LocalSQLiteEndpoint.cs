@@ -335,23 +335,41 @@ namespace Dash
             var enumerable = ids as string[] ?? ids.ToArray();
             var tempParams = new string[enumerable.Length];
 
-            for (var i = 0; i < enumerable.Length; ++i) { tempParams[i] = "@param" + i; }
+            int index = 0;
 
-            _transactionMutex.WaitOne();
-            //IN (" + string.Join(',', temp) + "
-            var getDocCommand = new SqliteCommand
+            var fieldModels = new List<FieldModel>();
+            
+
+            while (index < enumerable.Length)
             {
-                //i.e. "In "Fields", return the field contents at the specified document ids"
-                CommandText = @"SELECT `field` from `Fields` WHERE `id` in (" + string.Join(", ", tempParams) + ");",
-                Connection = _db,
-                Transaction = _currentTransaction
-            };
+                int limit = index + Math.Min(enumerable.Length - index, 500);
+                // 500 because max number of host parameters in sqlite statement is 999
+                for (var i = index; i < limit; ++i)
+                {
+                    tempParams[i] = "@param" + i;
+                }
 
-            for (var i = 0; i < enumerable.Length; ++i) { getDocCommand.Parameters.AddWithValue(tempParams[i], enumerable[i]); }
+                _transactionMutex.WaitOne();
+                //IN (" + string.Join(',', temp) + "
+                var getDocCommand = new SqliteCommand
+                {
+                    //i.e. "In "Fields", return the field contents at the specified document ids"
+                    CommandText =
+                        @"SELECT `field` from `Fields` WHERE `id` in (" + string.Join(", ", tempParams.Skip(index).Take(limit - index)) + ");",
+                    Connection = _db,
+                    Transaction = _currentTransaction
+                };
+
+                for (var i = index; i < limit; ++i)
+                {
+                    getDocCommand.Parameters.AddWithValue(tempParams[i], enumerable[i]);
+                }
+
+                fieldModels.AddRange(SafeExecuteAccessQuery(getDocCommand, "GetDocumentsssss", watch.ElapsedMilliseconds));
+                index += 500;
+            }
 
             watch.Stop();
-
-            var fieldModels = SafeExecuteAccessQuery(getDocCommand, "GetDocumentsssss", watch.ElapsedMilliseconds);
             if (fieldModels == null) return Task.FromException<List<FieldModel>>(new InvalidOperationException());
 
             return Task.FromResult(fieldModels.ToList());
