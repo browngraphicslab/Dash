@@ -120,7 +120,7 @@ namespace Dash
         /// Returns the string-representation name of the operator's type.
         /// </summary>
         /// <returns></returns>
-        public string GetOperatorType() { return OperatorFieldModel.Type.ToString(); }
+        public string GetOperatorType() { return OperatorFieldModel.ToString(); }
 
         /// <summary>
         /// Get the type of the field, operators are always of the same type

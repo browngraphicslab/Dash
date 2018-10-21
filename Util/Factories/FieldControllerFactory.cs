@@ -197,7 +197,7 @@ namespace Dash
         {
             // TODO assert that op controllers have a private static field TypeKey
             // TODO use reflection to map keys to delegates for performance (google linq-expressions-creating-objects)
-            var opToBuild = OperatorTypes.First(opType => ((KeyController)opType.GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Equals(model.Type));
+            var opToBuild = OperatorTypes.First(opType => ((KeyController)opType.GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Id.Equals(model.TypeId));
             return (OperatorController)Activator.CreateInstance(opToBuild, model);
         }
 
