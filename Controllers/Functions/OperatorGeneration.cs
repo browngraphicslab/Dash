@@ -23,7 +23,7 @@ namespace Dash
         }
     }
 
-#if true
+#if false
     public class Test
     {
         public void Process()
@@ -98,6 +98,8 @@ namespace Dash
                             if (ns.Name is IdentifierNameSyntax ident)
                             {
                                 methodNamespace = ident.Identifier.ValueText + "." + methodNamespace;
+                            } else if (ns.Name is QualifiedNameSyntax qualified)
+                            {
                             }
                         }
                         else

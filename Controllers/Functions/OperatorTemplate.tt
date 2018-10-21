@@ -250,6 +250,8 @@ namespace Dash
                             if (ns.Name is IdentifierNameSyntax ident)
                             {
                                 methodNamespace = ident.Identifier.ValueText + "." + methodNamespace;
+                            } else if(ns.Name is QualifiedNameSyntax qualified){
+                                methodNamespace = qualified.ToString() + "." + methodNamespace;
                             }
                         }
                         else
