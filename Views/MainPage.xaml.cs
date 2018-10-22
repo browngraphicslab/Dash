@@ -80,6 +80,10 @@ namespace Dash
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
+            // Set the instance to be itself, there should only ever be one MainView
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Instance = this;
+            InitializeComponent();
             SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
@@ -87,11 +91,7 @@ namespace Dash
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
-            // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
-            Instance = this;
 
-            InitializeComponent();
             SetUpToolTips();
 
             Loaded += (s, e) =>

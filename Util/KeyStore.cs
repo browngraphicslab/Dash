@@ -27,7 +27,7 @@ namespace Dash
 		public static KeyController HeightFieldKey                       = KeyController.Get("Height");
 		public static KeyController TransientKey                         = KeyController.Get("Transient");
 		public static KeyController HiddenKey                            = KeyController.Get("Hidden");
-		public static KeyController DataKey                              = KeyController.Get("Data");
+		public static KeyController DataKey                             { get; } = KeyController.Get("Data");
 		public static KeyController SnapshotsKey                         = KeyController.Get("Snaphshots");
 		public static KeyController SourceUriKey                         = KeyController.Get("SourceUriKeys");
 		public static KeyController SourceTitleKey                       = KeyController.Get("SourceTitle");

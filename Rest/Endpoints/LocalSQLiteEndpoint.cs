@@ -98,6 +98,10 @@ namespace Dash
 
         private void CopyAsBackup()
         {
+            if (MainPage.Instance == null || MainPage.Instance.GetSettingsView == null)
+            {
+                return;
+            }
             _numBackups = MainPage.Instance.GetSettingsView.NumBackups;
             var dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + FileName;
             if (!NewChangesToBackup || !File.Exists(dbPath)) return;
