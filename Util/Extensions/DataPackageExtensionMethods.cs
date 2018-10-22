@@ -202,10 +202,22 @@ namespace Dash
             return !packageView.Properties.ContainsKey(nameof(DragModelBase)) ? null : (DragModelBase)packageView.Properties[nameof(DragModelBase)];
         }
 
+        public static JoinDragModel GetJoinDragModel(this DataPackageView packageView)
+        {
+            return !packageView.Properties.ContainsKey(nameof(JoinDragModel))
+                ? null
+                : (JoinDragModel)packageView.Properties[nameof(JoinDragModel)];
+        }
+
         public static void SetDragModel(this DataPackage package, DragModelBase model)
         {
             Debug.Assert(!package.HasDragModel());
             package.Properties[nameof(DragModelBase)] = model;
+        }
+
+        public static void SetJoinModel(this DataPackage package, JoinDragModel model)
+        {
+            package.Properties[nameof(JoinDragModel)] = model;
         }
 
         public static bool TryGetLoneDocument(this DataPackageView packageView, out DocumentController doc)
