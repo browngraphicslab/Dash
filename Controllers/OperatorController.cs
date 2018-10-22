@@ -151,7 +151,7 @@ namespace Dash
         {
             var operatorCopy = GetDefaultController();
             Debug.Assert(operatorCopy is FieldModelController<OperatorModel>);
-            return (FieldModelController<OperatorModel>)operatorCopy;
+            return operatorCopy;
         }
 
         public override string ToScriptString(DocumentController thisDoc)

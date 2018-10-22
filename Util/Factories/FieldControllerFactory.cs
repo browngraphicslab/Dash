@@ -190,14 +190,27 @@ namespace Dash
             return controller;
         }
 
-        private static IEnumerable<Type> OperatorTypes { get; } = typeof(OperatorController).Assembly.GetTypes()
-            .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
+        private static Dictionary<string, Type> _operatorTypeMap;
 
         private static OperatorController MakeOperatorController(OperatorModel model)
         {
             // TODO assert that op controllers have a private static field TypeKey
             // TODO use reflection to map keys to delegates for performance (google linq-expressions-creating-objects)
-            var opToBuild = OperatorTypes.First(opType => ((KeyController)opType.GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Id.Equals(model.TypeId));
+            if (_operatorTypeMap == null)
+            {
+                _operatorTypeMap = new Dictionary<string, Type>();
+                var operatorTypes = typeof(OperatorController).Assembly.GetTypes()
+                    .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
+                foreach (var operatorType in operatorTypes)
+                {
+                    var id = ((KeyController)operatorType
+                        .GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic)
+                        .GetValue(null)).KeyModel.Id;
+                    _operatorTypeMap[id] = operatorType;
+                }
+            }
+
+            var opToBuild = _operatorTypeMap[model.TypeId];
             return (OperatorController)Activator.CreateInstance(opToBuild, model);
         }
 
@@ -357,6 +370,7 @@ namespace Dash
                 [typeof(NumberController)] = TypeInfo.Number,
                 [typeof(BoolController)] = TypeInfo.Bool,
             };
+
         }
 
         public static TypeInfo GetTypeInfo<T>() where T : FieldControllerBase
