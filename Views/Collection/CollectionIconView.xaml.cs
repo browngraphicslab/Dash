@@ -41,6 +41,17 @@ namespace Dash.Views.Collection
             }
         }
 
+
+        // bcz: stopgap -- need to think of a cleaner way to set the folderview contents
+        // This replaces the icon folder view document and makes the containing dataBox not hit test visible.
+        public void DropDoc(DocumentController dragDoc)
+        {
+            var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
+            containerDoc.SetField(KeyStore.FolderPreviewKey, dragDoc, true);
+            var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
+            db.SetAreContentsHitTestVisible(false);
+        }
+
         private void CollectionIconView_Loaded(object sender, RoutedEventArgs e)
         {
             if (ViewModel != null)
