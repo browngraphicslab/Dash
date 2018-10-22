@@ -493,12 +493,12 @@ namespace Dash
                     }
                 }
 
-                (KeyController comparisonKey, List<KeyController> keysToJoin) = await MainPage.Instance.PromptJoinTables(comparisonKeys, allKeys);
+                (KeyController comparisonKey, List<KeyController> keysToJoin) = await MainPage.Instance.PromptJoinTables(comparisonKeys, allKeys, new KeyController[] { jdm.DraggedKey }.ToList());
                 if (comparisonKey == null) return;
                 foreach (var doc in jdm.DraggedDocuments)
                 {
                     var draggedKey = jdm.DraggedKey;
-                    var comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null).GetValue(null);
+                    var comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null)?.GetValue(null);
                     var matchingDoc = ViewModel.DocumentViewModels.FirstOrDefault(dvm =>
                         dvm.DocumentController.GetDataDocument().GetDereferencedField(comparisonKey, null).GetValue(null).Equals(comparisonField));
                     if (matchingDoc != null)

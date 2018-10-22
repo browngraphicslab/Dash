@@ -23,18 +23,34 @@ namespace Dash
     {
         private KeyController _comparisonKey;
         private List<KeyController> _includeKeys = new List<KeyController>();
+        private List<KeyController> _joinKeys = new List<KeyController>();
 
-        public JoinGroupMenuPopup(List<KeyController> comparisonKeys, List<KeyController> diffKeys)
+        public JoinGroupMenuPopup(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)
         {
             this.InitializeComponent();
 
+            _joinKeys.AddRange(draggedKeys);
             xComparisonKeyList.ItemsSource = comparisonKeys;
             xIncludeKeyList.ItemsSource = diffKeys;
+
+            this.Loaded += JoinGroupMenuPopup_Loaded;
+        }
+
+        private void JoinGroupMenuPopup_Loaded(object sender, RoutedEventArgs e)
+        {
+            foreach (var k in _joinKeys.ToArray())
+            {
+                var contentPresenter = xComparisonKeyList.ItemsPanelRoot.Children.OfType<ContentPresenter>().Where((cp) => cp.DataContext.Equals(k)).FirstOrDefault();
+                var radio = contentPresenter?.GetFirstDescendantOfType<RadioButton>();
+                if (radio != null)
+                {
+                    contentPresenter.GetFirstDescendantOfType<RadioButton>().IsChecked = true;
+                }
+            }
         }
 
         private void Popup_OnOpened(object sender, object e)
         {
-
         }
 
         public Task<(KeyController, List<KeyController>)> GetFormResults()
@@ -63,6 +79,7 @@ namespace Dash
         public void SetVerticalOffset(double offset)
         {
             xLayoutPopup.VerticalOffset = offset;
+            xLayoutPopup.VerticalAlignment = VerticalAlignment.Top;
         }
 
         public FrameworkElement Self()
