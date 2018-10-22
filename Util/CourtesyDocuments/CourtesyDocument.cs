@@ -247,7 +247,7 @@ namespace Dash
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
             var data = document.GetDereferencedField<TextController>(KeyStore.HorizontalAlignmentKey,null)?.Data;
-            return data == null ? HorizontalAlignment.Stretch : Enum.Parse<HorizontalAlignment>(data);
+            return data == null ? HorizontalAlignment.Left : Enum.Parse<HorizontalAlignment>(data);
         }
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
@@ -257,7 +257,7 @@ namespace Dash
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
             var data =  document.GetDereferencedField<TextController>(KeyStore.VerticalAlignmentKey,null)?.Data ; 
-            return data == null ? VerticalAlignment.Stretch : Enum.Parse<VerticalAlignment>(data);
+            return data == null ? VerticalAlignment.Top : Enum.Parse<VerticalAlignment>(data);
         }
 
         public static bool GetFitToParent(this DocumentController document)

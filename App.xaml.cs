@@ -86,6 +86,8 @@ namespace Dash
 
             if (e.PrelaunchActivated == false)
             {
+                var migrator = new Migrator();
+                migrator.MigrateOperatorModels();
                 if (rootFrame.Content == null)
                 {
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);

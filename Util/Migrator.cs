@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DashShared;
 using Microsoft.Data.Sqlite;
 
-namespace Dash.Util
+namespace Dash
 {
     class Migrator
     {
@@ -14,7 +16,7 @@ namespace Dash.Util
         {
             var connectionStringBuilder = new SqliteConnectionStringBuilder
             {
-                DataSource = Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + FileName,
+                DataSource = Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\dash.db",
             };
 
             // instantiate the connection to the database and open it
@@ -34,7 +36,8 @@ namespace Dash.Util
             {
                 CommandText = @"
                     SELECT id, field FROM `Fields`;",
-                Connection = _db
+                Connection = _db,
+                Transaction = transaction
             };
 
 
@@ -46,13 +49,77 @@ namespace Dash.Util
             }
             fieldReader.Close();
 
+            var opRegex =
+                new Regex(
+                    "\"Type\":{\"\\$type\":\"DashShared\\.KeyModel, DashShared\",\"Name\":\".*\",\"id\":(?'id'\"[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12})\"}");
+            var keyRegex = new Regex("^{\"\\$type\":\"DashShared\\.KeyModel, DashShared\",\"Name\":\"(?'name'.*)\",\"id\":\"[0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}\"}");
+            var keys = new List<(KVP, string name)>();
             foreach (var result in results)
             {
-                result.value = result.value.Replace()
+                if (result.value.Contains("OperatorModel"))
+                {
+                    result.value = opRegex.Replace(result.value, match => "\"TypeId\":" + match.Groups["id"].Value.ToUpper() + "\"");
+                }
+
+                var keyMatch = keyRegex.Match(result.value);
+                if (keyMatch.Success)
+                {
+                    keys.Add((result, keyMatch.Groups["name"].Value));
+                }
+            }
+
+            var updateKeysCommand = new SqliteCommand()
+            {
+                CommandText = @"
+                    UPDATE `Fields` SET `id`=@newId WHERE `id`=@id;",
+                Connection = _db,
+                Transaction = transaction
+            };
+
+            var keyMap = new Dictionary<string, string>();
+            foreach (var (key, name) in keys)
+            {
+                var actualName = name;
+                if (actualName == "_DocumentContext")
+                {
+                    actualName = "DocumentContext";
+                }
+                var oldId = key.key;
+                var newId = UtilShared.GetDeterministicGuid(actualName).ToString().ToUpper();
+                keyMap[oldId] = newId;
+                key.key = newId;
+                updateKeysCommand.Parameters.Clear();
+                updateKeysCommand.Parameters.AddWithValue("@newId", newId);
+                updateKeysCommand.Parameters.AddWithValue("@id", oldId);
+                updateKeysCommand.ExecuteNonQuery();
+            }
+
+            foreach (var result in results)
+            {
+                foreach (var keyMapping in keyMap)
+                {
+                    result.value = result.value.Replace(keyMapping.Key, keyMapping.Value);
+                }
+            }
+
+            var updateCommand = new SqliteCommand()
+            {
+                CommandText = @"
+                    UPDATE `Fields` SET `field`=@field WHERE `id`=@id;",
+                Connection = _db,
+                Transaction = transaction
+            };
+            foreach (var result in results)
+            {
+                updateCommand.Parameters.Clear();
+                updateCommand.Parameters.AddWithValue("@field", result.value);
+                updateCommand.Parameters.AddWithValue("@id", result.key);
+                updateCommand.ExecuteNonQuery();
             }
 
             transaction.Commit();
 
+            _db.Close();
             return true;
         }
     }

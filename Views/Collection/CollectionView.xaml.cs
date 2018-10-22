@@ -46,6 +46,10 @@ namespace Dash
             Unloaded += CollectionView_Unloaded;
             InitializeComponent();
 
+            if (vm.ViewType == CollectionViewType.Freeform)
+            {
+                vm.ViewType = CollectionViewType.Icon;
+            }
             DataContext = vm;
             _lastViewModel = vm;
             SetView(vm.ViewType);
@@ -340,8 +344,8 @@ namespace Dash
 
             if (initialViewType == CollectionViewType.Icon && CurrentView?.ViewModel?.ViewType != CollectionViewType.Icon)
             {
-                ViewModel.ContainerDocument.SetWidth(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey).Data);
-                ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey).Data);
+                ViewModel.ContainerDocument.SetWidth(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey)?.Data ?? double.NaN);
+                ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey)?.Data ?? double.NaN);
             }
 
             xContentControl.Content = CurrentView;
