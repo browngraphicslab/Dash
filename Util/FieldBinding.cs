@@ -267,7 +267,7 @@ namespace Dash
                     }
                 };
 
-            int id = ID++;
+            //int id = ID++;
             int refCount = 0;
             bool loading = false;
 
@@ -280,11 +280,11 @@ namespace Dash
                 element.Loaded -= OnElementOnLoading;
                 element.Loading += OnElementOnLoading;
                 AddBinding();
-                Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
             else
             {
-                Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void AddBinding()
@@ -306,7 +306,7 @@ namespace Dash
                     binding.Remove(handler);
                 }
 
-                Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
 
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
@@ -326,7 +326,7 @@ namespace Dash
                 }
                 AddBinding();
 
-                Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void RemoveBinding()
@@ -341,11 +341,11 @@ namespace Dash
             AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
-        private static int ID = 0;
+        //private static int ID = 0;
         private static void AddTwoWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding)
             where T : FrameworkElement
         {
-            int id = ID++;
+            //int id = ID++;
             bool updateUI = true;
             DocumentController.DocumentUpdatedHandler handler =
                 (sender, args, context) =>
@@ -387,11 +387,11 @@ namespace Dash
                 element.Loaded -= OnElementOnLoaded;
                 element.Loading += OnElementOnLoaded;
                 AddBinding();
-                Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
             else
             {
-                Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void AddBinding()
@@ -401,7 +401,7 @@ namespace Dash
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                     token = element.RegisterPropertyChangedCallback(property, callback);
-                    Debug.WriteLine($"Binding {id,-5} Add :            RefCount = {refCount,5}, {element.GetType().Name}");
+                    //Debug.WriteLine($"Binding {id,-5} Add :            RefCount = {refCount,5}, {element.GetType().Name}");
                 }
 
                 //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
@@ -416,10 +416,10 @@ namespace Dash
                     binding.Remove(handler);
                     element.UnregisterPropertyChangedCallback(property, token);
                     token = -1;
-                    Debug.WriteLine($"Binding {id,-5} Remove :         RefCount = {refCount,5}, {element.GetType().Name}");
+                    //Debug.WriteLine($"Binding {id,-5} Remove :         RefCount = {refCount,5}, {element.GetType().Name}");
                 }
 
-                Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
 
                 //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
                 //tfs: the assert fails because Loaded and Unloaded can get called out of order
@@ -438,7 +438,7 @@ namespace Dash
                     return;
                 }
                 AddBinding();
-                Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
+                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void RemoveBinding()

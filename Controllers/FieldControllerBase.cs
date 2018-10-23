@@ -146,7 +146,6 @@ namespace Dash
 
         protected sealed override void DeleteOnServer()
         {
-            Debug.WriteLine($"Deleting document with id {Id} and type {TypeInfo}");
             base.DeleteOnServer();
         }
 

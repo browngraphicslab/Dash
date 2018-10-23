@@ -26,9 +26,11 @@ namespace Dash
     {
         private InkController                           _inkController;
         private AnnotationType                          _currAnnotationType = AnnotationType.None;
-        private ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
+        private readonly ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
         private bool                                    _maskInkUpdates = false;
         [CanBeNull] private AnchorableAnnotation        _currentAnnotation;
+
+        public ObservableCollection<DocumentViewModel> EmbeddedViewModels => _embeddedViewModels;
 
         public delegate DocumentController       RegionGetter(AnnotationType type);
         public readonly DocumentController        MainDocument;
