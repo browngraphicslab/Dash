@@ -61,7 +61,7 @@ namespace Dash
 
         ~CollectionView()
         {
-            Debug.WriteLine("Finalizing CollectionView");
+            //Debug.WriteLine("Finalizing CollectionView");
         }
 
         /// <summary>

@@ -39,7 +39,7 @@ namespace Dash
         }
         ~CollectionFreeformView()
         {
-            Debug.WriteLine("FINALIZING CollectionFreeFormView");
+            //Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
         private void OnLoad(object sender, RoutedEventArgs e)

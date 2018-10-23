@@ -83,7 +83,7 @@ namespace Dash
 
         ~CollectionViewModel()
         {
-            Debug.WriteLine("FINALIZING CollectionViewModel");
+            //Debug.WriteLine("FINALIZING CollectionViewModel");
         }
 
         /// <summary>

@@ -216,7 +216,7 @@ namespace Dash
 
         ~RichTextView()
         {
-            Debug.WriteLine("Finalized RichTextView");
+            //Debug.WriteLine("Finalized RichTextView");
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -828,7 +828,7 @@ namespace Dash
         public bool IsLoaded = false;
         void UnLoaded(object s, RoutedEventArgs e)
         {
-            Debug.WriteLine("RICH TEXT VIEW IS UNLOADED");
+            //Debug.WriteLine("RICH TEXT VIEW IS UNLOADED");
             IsLoaded = false;
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;

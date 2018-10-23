@@ -48,7 +48,7 @@ namespace Dash.Views.Collection
                 var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
                 if (containerDoc.GetDereferencedField(KeyStore.FolderPreviewKey,null) == null)
                 {
-                    containerDoc.SetField<TextController>(KeyStore.FolderPreviewKey, "<description>", true);
+                    containerDoc.SetField<TextController>(KeyStore.FolderPreviewKey, ViewModel.ContainerDocument.Title, true);
                 }
                 if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null) == null)
                 {
