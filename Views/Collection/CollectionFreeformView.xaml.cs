@@ -104,7 +104,6 @@ namespace Dash
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text", "Add a new text box!", AddTextNote, source));
-            menu.AddAction("BASIC", new ActionViewModel("To-Do List", "Track your tasks!", AddToDoList, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Image(s)", "Add one or more images",  AddMultipleImages, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Collection", "Collection",AddCollection,source));
@@ -122,19 +121,6 @@ namespace Dash
                     }, source);
                 menu.AddAction("CUSTOM", avm);
             }
-        }
-
-        private Task<bool> AddToDoList(Point point)
-        {
-            var templatedText =
-                "{\\rtf1\\fbidis\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fnil Century Gothic; } {\\f1\\fnil\\fcharset0 Century Gothic; } {\\f2\\fnil\\fcharset2 Symbol; } }" +
-                "\r\n{\\colortbl;\\red51\\green51\\blue51; }\r\n{\\*\\generator Riched20 10.0.17134}\\viewkind4\\uc1 \r\n\\pard\\tx720\\cf1\\b{\\ul\\f0\\fs34 My\\~\\f1 Todo\\~List:}\\par" +
-                "\r\n\\b0\\f0\\fs24\\par\r\n\r\n\\pard{\\pntext\\f2\\'B7\\tab}{\\*\\pn\\pnlvlblt\\pnf2\\pnindent0{\\pntxtb\\'B7}}\\tx720\\f1\\fs24 Item\\~1\\par" +
-                "\r\n{\\pntext\\f2\\'B7\\tab}\\b0 Item\\~2\\par}";
-            var note = new RichTextNote(templatedText).Document;
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
-            Actions.DisplayDocument(ViewModel, note, colPoint);
-            return Task.FromResult(true);
         }
 
         

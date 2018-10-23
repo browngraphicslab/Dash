@@ -220,70 +220,70 @@ namespace Dash
 
         private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Bold(true);
+            richTextView.Bold();
         }
 
         private void ItalicsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Italicize(true);
+            richTextView.Italicize();
         }
 
         private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Underline(true);
+            richTextView.Underline();
         }
 
         private void AllCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.AllCaps(true);
+            richTextView.AllCaps();
         }
 
         private void SmallCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.SmallCaps(true);
+            richTextView.SmallCaps();
         }
 
         public void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-                richTextView.Superscript(true);
+                richTextView.Superscript();
         }
 
         public void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-                richTextView.Subscript(true);
+                richTextView.Subscript();
         }
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Strikethrough(true);
+            richTextView.Strikethrough();
         }
 
         private void LeftAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Alignment(ParagraphAlignment.Left, true);
+            richTextView.Alignment(ParagraphAlignment.Left);
         }
 
         private void CenterAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Alignment(ParagraphAlignment.Center, true);
+            richTextView.Alignment(ParagraphAlignment.Center);
         }
 
         private void RightAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Alignment(ParagraphAlignment.Right, true);
+            richTextView.Alignment(ParagraphAlignment.Right);
         }
 
         private void BulletedListButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
             {
-                richTextView.Marker(MarkerType.None, true);
+                richTextView.Marker(MarkerType.None);
             }
             else
             {
-                richTextView.Marker(MarkerType.Bullet, true);
+                richTextView.Marker(MarkerType.Bullet);
             }
         }
 
@@ -291,11 +291,11 @@ namespace Dash
         {
             if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.UnicodeSequence)
             {
-                richTextView.Marker(MarkerType.None, true);
+                richTextView.Marker(MarkerType.None);
             }
             else
             {
-                richTextView.Marker(MarkerType.UnicodeSequence, true);
+                richTextView.Marker(MarkerType.UnicodeSequence);
             }
         }
 
@@ -325,8 +325,6 @@ namespace Dash
                     {
                         xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
                     }
-
-                    richTextView.UpdateDocumentFromXaml();
                 }
             }
             else
@@ -339,13 +337,9 @@ namespace Dash
         {
             var comboBox = sender as ComboBox;
             var selectedFontSize = comboBox?.SelectedValue;
-            if (selectedFontSize == null)
-            {
-                return;
-            }
-            _fontSizeTextChanged = true;
             if (selectedFontSize != null)
             {
+                _fontSizeTextChanged = true;
                 xFontSizeTextBox.Text = selectedFontSize.ToString();
                 //select all if nothing is selected
                 using (UndoManager.GetBatchHandle())
@@ -353,8 +347,8 @@ namespace Dash
                     if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
                         xRichEditBox.Document.Selection.EndPosition)
                     {
-                        Debug.WriteLine("changing font of unselected text");
-                        UpdateFontFamilyDisplay();xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
+                        UpdateFontFamilyDisplay();
+                        xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
                         var end = text.Length;
                         xRichEditBox.Document.Selection.SetRange(end, end+1);
                         xRichEditBox.Document.Selection.CharacterFormat.Size =
@@ -363,12 +357,9 @@ namespace Dash
                     }
                     else
                     {
-                        Debug.WriteLine("changing font of selected text");
                         xRichEditBox.Document.Selection.CharacterFormat.Size =
                             (float)Convert.ToDouble(selectedFontSize.ToString());
                     }
-
-                    richTextView.UpdateDocumentFromXaml();
                 }
             }
         }
@@ -404,10 +395,8 @@ namespace Dash
                     {
                         xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
                     }
-
-                    richTextView.UpdateDocumentFromXaml();
                 }
-                this.xFontSizeComboBox.SelectedItem = null;
+                xFontSizeComboBox.SelectedItem = null;
                 xFontSizeTextBox.Text = fontSize.ToString();
             }
             else
@@ -422,7 +411,7 @@ namespace Dash
             if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
-                richTextView.Foreground(color, true);
+                richTextView.Foreground(color);
             }
         }
 
@@ -431,7 +420,7 @@ namespace Dash
             if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
-                richTextView.Highlight(color, true);
+                richTextView.Highlight(color);
             }
         }
 
