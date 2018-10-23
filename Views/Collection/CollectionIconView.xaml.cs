@@ -32,7 +32,7 @@ namespace Dash.Views.Collection
             using (UndoManager.GetBatchHandle())
             {
                 var doc = ViewModel.ContainerDocument.GetViewCopy();
-                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null).Data, true);
+                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString(), true);
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
                 doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -41,18 +41,33 @@ namespace Dash.Views.Collection
             }
         }
 
+
+        // bcz: stopgap -- need to think of a cleaner way to set the folderview contents
+        // This replaces the icon folder view document and makes the containing dataBox not hit test visible.
+        public void DropDoc(DocumentController dragDoc)
+        {
+            var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
+            containerDoc.SetField(KeyStore.FolderPreviewKey, dragDoc, true);
+            var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
+            db.SetAreContentsHitTestVisible(false);
+        }
+
         private void CollectionIconView_Loaded(object sender, RoutedEventArgs e)
         {
             if (ViewModel != null)
             {
-                var binding = new FieldBinding<TextController>()
+                var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
+                if (containerDoc.GetDereferencedField(KeyStore.FolderPreviewKey,null) == null)
                 {
-                    Mode = BindingMode.TwoWay,
-                    Document = ViewModel.ContainerDocument,
-                    Key = KeyStore.DocumentTextKey,
-                    Tag = "icon name for collectionIconView"
-                };
-                xFolderTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                    containerDoc.SetField<TextController>(KeyStore.FolderPreviewKey, ViewModel.ContainerDocument.Title, true);
+                }
+                if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null) == null)
+                {
+                    containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
+                }
+                var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
+
+                xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
             }
         }
 

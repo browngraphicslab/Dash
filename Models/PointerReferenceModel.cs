@@ -11,21 +11,5 @@ namespace Dash
         {
             ReferenceFieldModelId = referenceFieldModelId;
         }
-
-        public override bool Equals(object obj)
-        {
-            DocumentReferenceModel refFieldModel = obj as DocumentReferenceModel;
-            if (refFieldModel == null)
-            {
-                return false;
-            }
-
-            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(ReferenceFieldModelId);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode() ^ ReferenceFieldModelId.GetHashCode();
-        }
     }
 }

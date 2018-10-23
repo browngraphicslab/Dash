@@ -7,8 +7,9 @@ namespace Dash
 {
     public class CollectionNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
+        public static readonly DocumentType CollectionNoteDocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
         static string _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
+        protected override DocumentType DocumentType => CollectionNoteDocumentType;
 
         protected override DocumentController createPrototype(string prototypeID)
         {

@@ -120,7 +120,7 @@ namespace Dash
         /// Returns the string-representation name of the operator's type.
         /// </summary>
         /// <returns></returns>
-        public string GetOperatorType() { return OperatorFieldModel.Type.ToString(); }
+        public string GetOperatorType() { return OperatorFieldModel.ToString(); }
 
         /// <summary>
         /// Get the type of the field, operators are always of the same type
@@ -151,7 +151,7 @@ namespace Dash
         {
             var operatorCopy = GetDefaultController();
             Debug.Assert(operatorCopy is FieldModelController<OperatorModel>);
-            return (FieldModelController<OperatorModel>)operatorCopy;
+            return operatorCopy;
         }
 
         public override string ToScriptString(DocumentController thisDoc)

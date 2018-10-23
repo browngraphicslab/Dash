@@ -10,11 +10,11 @@ namespace Dash
         protected BinaryOperatorControllerBase(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         //Input keys
-        public static readonly KeyController LeftKey = new KeyController("Left");
-        public static readonly KeyController RightKey = new KeyController("Right");
+        public static readonly KeyController LeftKey = KeyController.Get("Left");
+        public static readonly KeyController RightKey = KeyController.Get("Right");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
+        public static readonly KeyController ComputedResultKey = KeyController.Get("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

@@ -14,21 +14,5 @@ namespace Dash
             CopyOnWrite = copyOnWrite;
             DocumentId = docId;
         }
-
-        public override bool Equals(object obj)
-        {
-            DocumentReferenceModel refFieldModel = obj as DocumentReferenceModel;
-            if (refFieldModel == null)
-            {
-                return false;
-            }
-
-            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(DocumentId) && refFieldModel.CopyOnWrite == CopyOnWrite;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode() ^ DocumentId.GetHashCode() & CopyOnWrite.GetHashCode();
-        }
     }
 }

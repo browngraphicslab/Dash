@@ -125,13 +125,26 @@ namespace Dash
             }
             else if (data is DocumentController dc)
             {
-                var tb = new TextBlock();
-                tb.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>()
+                var Stack = new StackPanel() { Orientation = Orientation.Horizontal, Padding=new Thickness(0) };
+                if (dc.DocumentType.Equals(DataBox.DocumentType))
                 {
-                    Document = dc,
-                    Key = KeyStore.TitleKey,
-                });
-                currView = tb;
+                    var db = dc.GetField(KeyStore.DataKey) as ReferenceController;
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), VerticalAlignment=VerticalAlignment.Center, Text = "DATABOX("  + db?.GetDocumentController(null)?.Title + "->" + db?.FieldKey?.Name +")"?? ":" });
+                }
+                else
+                {
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), VerticalAlignment = VerticalAlignment.Center, Text = "Document:" });
+                    var tb = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Left, Padding = new Thickness(0), VerticalAlignment = VerticalAlignment.Center, HorizontalTextAlignment = TextAlignment.Left };
+
+                    tb.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>()
+                    {
+                        Mode = BindingMode.OneWay,
+                        Document = dc,
+                        Key = KeyStore.TitleKey,
+                    });
+                    Stack.Children.Add(tb);
+                }
+                currView = Stack;
             }
             else if (data is ListController<BoolController> boolList)
             {
@@ -142,17 +155,25 @@ namespace Dash
             else if (data is RichTextController)
             {
 
-                FrameworkElement mv = RichTextBox.MakeView(_docController, _key, _context);
+                var mv = RichTextBox.MakeView(_docController, _key, _context);
                 Grid grid = new Grid();
                 grid.Children.Add(mv);
                 grid.Margin = new Thickness(0, 8, 0, 0);
+                currView = grid;
+            }
+            else if (data is TextController)
+            {
+                var mv = TextingBox.MakeView(_docController, _key, _context);
+                Grid grid = new Grid();
+                grid.Children.Add(mv);
+                grid.Margin = new Thickness(0, -4, 0, 0);
                 currView = grid;
             }
 
             if (currView == null)
             {
                 var tb = new TextBlock();
-                var binding = new FieldBinding<FieldControllerBase>()
+                var binding = new FieldBinding<FieldControllerBase, TextController>()
                 {
                     Document = _docController,
                     Key = _key,

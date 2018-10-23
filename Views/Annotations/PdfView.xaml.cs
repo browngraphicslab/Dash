@@ -396,7 +396,7 @@ namespace Dash
         ~PdfView()
         {
 
-            Debug.WriteLine("FINALIZING PdfView");
+            //Debug.WriteLine("FINALIZING PdfView");
         }
 
 

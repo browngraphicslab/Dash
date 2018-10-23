@@ -124,7 +124,7 @@ namespace Dash
 			}
 	    }
 
-	    private void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
+	    public void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
 	    {
             //show link description floating doc if operator output is true
 	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);

@@ -17,7 +17,6 @@ namespace Dash
 
         public GetKeysOfDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override FieldControllerBase GetDefaultController()
@@ -26,13 +25,13 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Get Keys Of Document", new Guid("0D40C96F-2088-4601-A74A-AB582C369BD4"));
+        private static readonly KeyController TypeKey = KeyController.Get("Get Keys Of Document");
 
         //Input keys
-        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
+        public static readonly KeyController InputDocumentKey = KeyController.Get("InputDoc");
 
         //Output keys
-        public static readonly KeyController ResultKeysKey = new KeyController("Keys");
+        public static readonly KeyController ResultKeysKey = KeyController.Get("Keys");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

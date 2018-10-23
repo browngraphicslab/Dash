@@ -79,7 +79,8 @@ namespace Dash
             rtv = new RichTextView()
             {
                 LayoutDocument = docController,
-                DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
+                // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument
+                DataDocument = refToRichText?.GetDocumentController(context).GetDataDocument() ?? docController.GetDataDocument()
             };
             rtv.ManipulationMode = ManipulationModes.All;
             rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
