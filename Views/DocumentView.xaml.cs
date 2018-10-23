@@ -919,23 +919,20 @@ namespace Dash
                 {
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
+                    {
                         dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
+                    }
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
-
-                    // bcz: temporary hack.  Need to think of a way to allow a CollectionIcon view get a drop event directly. 
-                    if (this.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionIconView icon) {
-                        icon.DropDoc(dragDoc);
-                    }
-                    else
                     {
-                        var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
-                        MainPage.Instance.AddFloatingDoc(linkDoc);
-                        //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
-                        dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     }
+
+                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
+                    MainPage.Instance.AddFloatingDoc(linkDoc);
+                    //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
+                    dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
