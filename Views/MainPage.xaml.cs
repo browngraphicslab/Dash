@@ -488,6 +488,7 @@ namespace Dash
             if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 return;
             this.JavaScriptHack.Focus(FocusState.Programmatic);
+            (RESTClient.Instance.Fields as LocalSqliteEndpoint).CleanupDocuments();
             var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
             var mapPt = e.GetPosition(mapViewCanvas);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,12 @@ namespace Dash
     public abstract class CachedEndpoint : IModelEndpoint<FieldModel>
     {
         private readonly Dictionary<string, FieldControllerBase> _cache = new Dictionary<string, FieldControllerBase>();
+        public IReadOnlyDictionary<string, FieldControllerBase> Cache { get; }
 
+        protected CachedEndpoint()
+        {
+            Cache = new ReadOnlyDictionary<string, FieldControllerBase>(_cache);
+        }
         protected abstract Task AddModel(FieldModel newDocument);
         protected abstract Task UpdateModel(FieldModel documentToUpdate);
         public abstract Task<FieldModel> GetDocument(string id);
