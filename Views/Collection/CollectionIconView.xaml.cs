@@ -47,7 +47,6 @@ namespace Dash.Views.Collection
         {
             var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
             containerDoc.SetField(KeyStore.FolderPreviewKey, dragDoc, true);
-            var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
         }
 
         private void xFolderPreview_Drop(object sender, DragEventArgs e)
@@ -63,6 +62,7 @@ namespace Dash.Views.Collection
 
                 DropDoc(dfm.GetDropDocuments(new Point(),null).First());
             }
+            e.Handled = true;
         }
 
         private void CollectionIconView_Loaded(object sender, RoutedEventArgs e)
