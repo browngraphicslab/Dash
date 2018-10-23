@@ -202,7 +202,6 @@ namespace Dash
             _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
             RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
-            xItemsControl.ItemsSource = _embeddedViewModels;
             embeddedDocsListOnFieldModelUpdated(null, 
                 new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.TypedData, new List<DocumentController>(),0), null);
            _embeddedViewModels.Clear();

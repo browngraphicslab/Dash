@@ -15,7 +15,7 @@ namespace Dash
             {
                 if (_children == null)
                 {
-                    var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                    var childDocControllers = ViewDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                     _children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this)).ToList();
                 }
 

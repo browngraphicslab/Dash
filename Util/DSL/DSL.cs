@@ -29,20 +29,18 @@ namespace Dash
         /// <param name="script"></param>
         /// <param name="catchErrors"></param>
         /// <returns></returns>
-        public Task<FieldControllerBase> Run(string script, bool catchErrors =  false, bool undoVar = false)
+        public async Task<FieldControllerBase> Run(string script, bool catchErrors =  false, bool undoVar = false)
         {
             try
             {
-                var interpreted = TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
-
-                return interpreted;
+                return await TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
             }
             catch (DSLException e)
             {
-                if (!catchErrors) return Task.FromResult<FieldControllerBase>(null);
+                if (!catchErrors) return null;
 
-                if (e is ScriptExecutionException exception) return Task.FromResult<FieldControllerBase>(exception.Error.GetErrorDoc()); 
-                return Task.FromResult<FieldControllerBase>(new TextController(e.GetHelpfulString()));
+                if (e is ScriptExecutionException exception) return exception.Error.GetErrorDoc(); 
+                return new TextController(e.GetHelpfulString());
             }
         }
 

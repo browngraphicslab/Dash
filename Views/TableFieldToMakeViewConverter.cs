@@ -161,14 +161,14 @@ namespace Dash
                 grid.Margin = new Thickness(0, 8, 0, 0);
                 currView = grid;
             }
-            else if (data is TextController)
-            {
-                var mv = TextingBox.MakeView(_docController, _key, _context);
-                Grid grid = new Grid();
-                grid.Children.Add(mv);
-                grid.Margin = new Thickness(0, -4, 0, 0);
-                currView = grid;
-            }
+            //else if (data is TextController)
+            //{
+            //    var mv = TextingBox.MakeView(_docController, _key, _context);
+            //    Grid grid = new Grid();
+            //    grid.Children.Add(mv);
+            //    grid.Margin = new Thickness(0, -4, 0, 0);
+            //    currView = grid;
+            //}
 
             if (currView == null)
             {

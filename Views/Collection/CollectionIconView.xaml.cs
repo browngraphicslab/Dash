@@ -49,7 +49,6 @@ namespace Dash.Views.Collection
             var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
             containerDoc.SetField(KeyStore.FolderPreviewKey, dragDoc, true);
             var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
-            db.SetAreContentsHitTestVisible(false);
         }
 
         private void CollectionIconView_Loaded(object sender, RoutedEventArgs e)
@@ -59,13 +58,14 @@ namespace Dash.Views.Collection
                 var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
                 if (containerDoc.GetDereferencedField(KeyStore.FolderPreviewKey,null) == null)
                 {
-                    containerDoc.SetField<TextController>(KeyStore.FolderPreviewKey, ViewModel.ContainerDocument.Title, true);
+                    containerDoc.SetField(KeyStore.FolderPreviewKey, new DocumentReferenceController(containerDoc, KeyStore.TitleKey), true);
                 }
                 if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null) == null)
                 {
                     containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
                 }
                 var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
+                db.SetAreContentsHitTestVisible(false);
 
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
             }
