@@ -48,6 +48,9 @@ namespace Dash
 
             if (vm.ViewType == CollectionViewType.Freeform)
             {
+                vm.ContainerDocument.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CollectionViewType.Freeform.ToString(), true);
+                vm.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, vm.ContainerDocument.GetWidth(), true);
+                vm.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, vm.ContainerDocument.GetHeight(), true);
                 vm.ViewType = CollectionViewType.Icon;
             }
             DataContext = vm;
@@ -82,14 +85,15 @@ namespace Dash
             //        SelectionManager.Select(docview, false);
             //    SelectionManager.TryInitiateDragDrop(docview, args, null);
             //}
-            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed ) 
+            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
                 docview.ManipulationMode = ManipulationModes.All;
                 CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ||
                 this.GetFirstAncestorOfType<DocumentView>().IsTopLevel() ?
                     ManipulationModes.All : ManipulationModes.None;
-                    args.Handled = true;
-            } else
+                args.Handled = true;
+            }
+            else
             {
                 docview.ManipulationMode = ManipulationModes.None;
             }
@@ -126,7 +130,7 @@ namespace Dash
             #region CollectionView context menu 
 
             SetView(_viewType);
-        #endregion
+            #endregion
         }
 
         public void SetupContextMenu(MenuFlyout contextMenu)
@@ -170,7 +174,8 @@ namespace Dash
             foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
             {
                 (contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
-                ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => {
+                ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) =>
+                {
                     using (UndoManager.GetBatchHandle())
                     {
                         SetView(n);
@@ -178,7 +183,7 @@ namespace Dash
                 };
             }
             CurrentView?.SetupContextMenu(contextMenu);
-            
+
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             contextMenu.Items.Add(new MenuFlyoutItem()
@@ -259,7 +264,7 @@ namespace Dash
         }
 
         #region Menu
-        public void Iconify() 
+        public void Iconify()
         {
             SetView(CollectionViewType.Icon);
             ViewModel.ContainerDocument.SetWidth(double.NaN);
@@ -299,7 +304,7 @@ namespace Dash
                 if (CurrentView != null && CurrentView.ViewModel.ViewType != CollectionViewType.Icon)
                 {
                     ViewModel.ContainerDocument.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CurrentView.ViewModel.ViewType.ToString(), true);
-                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey,  ViewModel.ContainerDocument.GetWidth(), true);
+                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, ViewModel.ContainerDocument.GetWidth(), true);
                     ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, ViewModel.ContainerDocument.GetHeight(), true);
                 }
                 CurrentView = new CollectionIconView();
