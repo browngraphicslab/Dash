@@ -69,6 +69,7 @@ namespace Dash
             var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
             return rtv?.GetRegionDocument();
         }
+        
         public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
             RichTextView rtv = null;
@@ -77,7 +78,8 @@ namespace Dash
             rtv = new RichTextView()
             {
                 LayoutDocument = docController,
-                DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
+                // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument
+                DataDocument = refToRichText?.GetDocumentController(context).GetDataDocument() ?? docController.GetDataDocument()
             };
             rtv.ManipulationMode = ManipulationModes.All;
             rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
@@ -87,7 +89,6 @@ namespace Dash
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
             SetupTextBinding(rtv, docController, key, context);
-
             return rtv;
         }
 

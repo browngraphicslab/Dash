@@ -169,7 +169,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                var key = new KeyController(xNewKeyText.Text);
+                var key = KeyController.Get(xNewKeyText.Text);
                 var stringValue = xNewValueText.Text;
 
                 FieldControllerBase fmController;

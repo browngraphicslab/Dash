@@ -26,9 +26,11 @@ namespace Dash
     {
         private InkController                           _inkController;
         private AnnotationType                          _currAnnotationType = AnnotationType.None;
-        private ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
+        private readonly ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
         private bool                                    _maskInkUpdates = false;
         [CanBeNull] private AnchorableAnnotation        _currentAnnotation;
+
+        public ObservableCollection<DocumentViewModel> EmbeddedViewModels => _embeddedViewModels;
 
         public delegate DocumentController       RegionGetter(AnnotationType type);
         public readonly DocumentController        MainDocument;
@@ -186,9 +188,11 @@ namespace Dash
         }
 
         void onUnloaded(object o, RoutedEventArgs routedEventArgs)
-        {
-            RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
-            _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
+        { 
+            if (RegionDocsList != null)
+                RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
+            if (_inkController != null)
+                _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
         }
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {
@@ -198,7 +202,6 @@ namespace Dash
             _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
             RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
-            xItemsControl.ItemsSource = _embeddedViewModels;
             embeddedDocsListOnFieldModelUpdated(null, 
                 new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.TypedData, new List<DocumentController>(),0), null);
            _embeddedViewModels.Clear();

@@ -14,20 +14,19 @@ namespace Dash
 
         public QuizletOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
 
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Quizlet", new Guid("B1F174E7-64C3-4DB7-9D67-67F9DB24BB54"));
+        private static readonly KeyController TypeKey = KeyController.Get("Quizlet");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new QuizletOperatorBox(rfmc);
 
         //Input keys
-        public static readonly KeyController TermKey = new KeyController("Answer");
-        public static readonly KeyController ImageKey = new KeyController("Image Prompt");
-        public static readonly KeyController CollectionKey = new KeyController("Collection");
-        public static readonly KeyController TitleKey = new KeyController("Quiz Title");
+        public static readonly KeyController TermKey = KeyController.Get("Answer");
+        public static readonly KeyController ImageKey = KeyController.Get("Image Prompt");
+        public static readonly KeyController CollectionKey = KeyController.Get("Collection");
+        public static readonly KeyController TitleKey = KeyController.Get("Quiz Title");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

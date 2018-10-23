@@ -98,6 +98,10 @@ namespace Dash
 
         private void CopyAsBackup()
         {
+            if (MainPage.Instance == null || MainPage.Instance.GetSettingsView == null)
+            {
+                return;
+            }
             _numBackups = MainPage.Instance.GetSettingsView.NumBackups;
             var dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + FileName;
             if (!NewChangesToBackup || !File.Exists(dbPath)) return;
@@ -165,7 +169,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task DeleteDocument(FieldModel documentToDelete)
+        public override Task DeleteModel(FieldModel documentToDelete)
         {
             var watch = Stopwatch.StartNew();
 
@@ -186,7 +190,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task DeleteDocuments(IEnumerable<FieldModel> documents)
+        public override Task DeleteModels(IEnumerable<FieldModel> documents)
         {
             var watch = Stopwatch.StartNew();
 
@@ -283,7 +287,7 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        public override Task DeleteAllDocuments()
+        public override Task DeleteAllModels()
         {
             var watch = Stopwatch.StartNew();
 

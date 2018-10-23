@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Microsoft.Office.Interop.Word;
+using Task = System.Threading.Tasks.Task;
 
 namespace Dash
 {
@@ -45,11 +47,7 @@ namespace Dash
         /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            //UpdateOnServer();
-
             FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update), context);
-
-            //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }
 
         public virtual FieldControllerBase Dereference(Context context)
@@ -97,21 +95,6 @@ namespace Dash
         /// <returns></returns>
         public abstract FieldControllerBase GetDefaultController();
 
-        /// <summary>
-        ///     Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
-        /// </summary>
-        /// <returns></returns>
-        public virtual FrameworkElement GetTableCellView(Context context)
-        {
-            var tb = new TextingBox(this);
-            tb.Document.SetField<NumberController>(TextingBox.TextAlignmentKey, (int)TextAlignment.Left, true);
-            tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
-            tb.Document.SetHeight(double.NaN);
-            tb.Document.SetWidth(double.NaN);
-            return TextingBox.MakeView(tb.Document, context);
-        }
-
         public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, DocumentController doc)
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
@@ -141,52 +124,111 @@ namespace Dash
         /// <returns>A string that is a script that will evaluate to this field</returns>
         public abstract string ToScriptString(DocumentController thisDoc = null);
 
+        private bool _fromServer;
+
+        public void MarkFromServer()
+        {
+            _fromServer = true;
+        }
+
+        protected sealed override void SaveOnServer()
+        {
+            base.SaveOnServer();
+        }
+
+        protected sealed override void UpdateOnServer(UndoCommand command)
+        {
+            if (IsReferenced)
+            {
+                base.UpdateOnServer(command);
+            }
+        }
+
+        protected sealed override void DeleteOnServer()
+        {
+            base.DeleteOnServer();
+        }
+
+        #region Reference Counting
+
+        private int _refCount = 0;
         /// <summary>
-        ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
-        ///     displaying the number of items stored in collection/list
+        /// This should only be used for debugging purposes
         /// </summary>
-        protected Grid GetTableCellViewForCollectionAndLists(string icon, Action<TextBlock> bindTextOrSetOnce)
+        public int RefCount => _refCount;
+
+        private void AddReference()
         {
-            var grid = new Grid
+            ++_refCount;
+            if (_refCount == 1)
             {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
-            };
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            var symbol = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center,
-                FontSize = 40,
-                Text = icon
-            };
-            grid.Children.Add(symbol);
-
-            var textBlock = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center,
-                TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap
-            };
-            bindTextOrSetOnce(textBlock);
-            grid.Children.Add(textBlock);
-            Grid.SetRow(textBlock, 1);
-
-            return grid;
+                RefInit();
+                if (!_fromServer)
+                {
+                    SaveOnServer();
+                }
+                else
+                {
+                    //TODO tfs: This shouldn't technically be necessary
+                    UpdateOnServer(null);
+                }
+                _fromServer = false;
+            }
         }
 
-        public virtual void DisposeField()
+        private void ReleaseReference()
         {
-            //DeleteOnServer();
-            Disposed?.Invoke(this);
+            if (_refCount == 1)
+            {
+                DeleteOnServer();
+                RefDestroy();
+            }
+
+            --_refCount;
+            Debug.Assert(_refCount >= 0);
         }
 
-        public delegate void FieldControllerDisposedHandler(FieldControllerBase field);
-        public event FieldControllerDisposedHandler Disposed;
+        protected void ReferenceField(FieldControllerBase field)
+        {
+            //TODO RefCount: This assert is probably really slow
+            //Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            if (IsReferenced && field != null)
+            {
+                field.AddReference();
+            }
+        }
+
+        protected virtual void ReleaseField(FieldControllerBase field)
+        {
+            //TODO RefCount: This assert is probably really slow
+            //Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            if (IsReferenced && field != null)
+            {
+                field.ReleaseReference();
+            }
+        }
+
+        protected virtual IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield break;
+        }
+
+        protected bool IsReferenced => _refCount > 0;
+
+        protected virtual void RefInit()
+        {
+        }
+
+        protected virtual void RefDestroy()
+        {
+        }
+
+        public static void MakeRoot(FieldControllerBase field)
+        {
+            field.AddReference();
+        }
+
+        #endregion
 
     }
 }

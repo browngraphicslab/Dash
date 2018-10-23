@@ -109,7 +109,7 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, (doc, context) => TextingBox.MakeView(doc, KeyStore.DataKey, context), null);
                     KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DishReplBox.DocumentType, DishReplBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DishScriptBox.DocumentType, DishScriptBox.MakeView, null);

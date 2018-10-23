@@ -39,7 +39,7 @@ namespace Dash
         }
         ~CollectionFreeformView()
         {
-            Debug.WriteLine("FINALIZING CollectionFreeFormView");
+            //Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
         private void OnLoad(object sender, RoutedEventArgs e)
@@ -104,9 +104,9 @@ namespace Dash
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text", "Add a new text box!", AddTextNote, source));
-            menu.AddAction("BASIC", new ActionViewModel("To-Do List", "Track your tasks!", AddToDoList, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Image", "Add many images",  AddMultipleImages, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)", "Add one or more images",  AddMultipleImages, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Collection", "Collection",AddCollection,source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
@@ -123,24 +123,21 @@ namespace Dash
             }
         }
 
-        private Task<bool> AddToDoList(Point point)
-        {
-            var templatedText =
-                "{\\rtf1\\fbidis\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fnil Century Gothic; } {\\f1\\fnil\\fcharset0 Century Gothic; } {\\f2\\fnil\\fcharset2 Symbol; } }" +
-                "\r\n{\\colortbl;\\red51\\green51\\blue51; }\r\n{\\*\\generator Riched20 10.0.17134}\\viewkind4\\uc1 \r\n\\pard\\tx720\\cf1\\b{\\ul\\f0\\fs34 My\\~\\f1 Todo\\~List:}\\par" +
-                "\r\n\\b0\\f0\\fs24\\par\r\n\r\n\\pard{\\pntext\\f2\\'B7\\tab}{\\*\\pn\\pnlvlblt\\pnf2\\pnindent0{\\pntxtb\\'B7}}\\tx720\\f1\\fs24 Item\\~1\\par" +
-                "\r\n{\\pntext\\f2\\'B7\\tab}\\b0 Item\\~2\\par}";
-            var note = new RichTextNote(templatedText).Document;
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
-            Actions.DisplayDocument(ViewModel, note, colPoint);
-            return Task.FromResult(true);
-        }
+        
 
         private Task<bool> AddTextNote(Point point)
         {
             var postitNote = new RichTextNote().Document;
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
+            return Task.FromResult(true);
+        }
+
+        private Task<bool> AddCollection(Point point)
+        {
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Icon, 200, 75).Document;
+            Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
 
@@ -177,7 +174,7 @@ namespace Dash
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController == null) { continue; }
-                    var pos = new Point(colPoint.X + (counter * (defaultLength + 5)), colPoint.Y);
+                    var pos = new Point(10 + colPoint.X + (counter * (defaultLength + 5)), colPoint.Y+10);
                     docController.SetWidth(defaultLength);
                     docController.SetHeight(defaultLength);
                     Actions.DisplayDocument(ViewModel, docController, pos);

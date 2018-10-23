@@ -166,6 +166,7 @@
             <x:String x:Key="ArrowIcon">&#xf107;</x:String>
             <x:String x:Key="SwitchIcon">&#xf362;</x:String>
             <x:String x:Key="SearchArrowIcon">&#xf105;</x:String>
+            <x:String x:Key="JoinIcon">&#xf126;</x:String>
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
@@ -1971,17 +1972,16 @@
                 </Setter>
             </Style>
 
-            <!-- CONVERTERS-->
-            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
-            <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-            <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
-            <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
-            <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
-            <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
-            <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
-            <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
-            <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
+
+        <!-- CONVERTERS-->
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
+        <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
+        <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
+        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
+        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
             <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
 
             <!-- MISC. STYLES-->

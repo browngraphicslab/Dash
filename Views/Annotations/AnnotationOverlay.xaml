@@ -12,7 +12,7 @@
 
     <Grid x:Name="LayoutRoot" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
         <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public">
-            <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding EmbeddedViewModels}">
+            <ItemsControl x:Name="xItemsControl" ItemsSource="{x:Bind EmbeddedViewModels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>

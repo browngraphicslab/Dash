@@ -12,12 +12,10 @@ namespace Dash
         // == CONSTRUCTORS ==
         public PdfController() : base(new PdfModel())
         {
-            SaveOnServer();
         }
 
         public PdfController(Uri path, string data = null) : base(new PdfModel(path, data))
         {
-            SaveOnServer();
         }
 
         public PdfController(PdfModel pdfFieldModel) : base(pdfFieldModel)

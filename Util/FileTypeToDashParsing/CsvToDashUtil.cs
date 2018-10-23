@@ -52,7 +52,7 @@ namespace Dash
             // generate a default field model controller for each of the fields
             foreach (var header in headers)
             {
-                var key = new KeyController(header, Guid.NewGuid());
+                var key = KeyController.Get(header);
                 var field = FieldConversion.StringToFieldModelController(csv[header]).GetDefaultController();
                 protoFieldDict.Add(key, field);
                 headerToFieldMap.Add(header, field);

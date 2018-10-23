@@ -567,9 +567,9 @@ namespace Dash
                 {
                     retVal = await _dsl.Run(command, true);
                 }
-                catch (Exception ex)
+                catch (ScriptExecutionException ex)
                 {
-                    retVal = new TextController("There was an error: " + ex.Message);
+                    retVal = ex.Error.GetErrorDoc();
                 }
                 if (retVal == null) retVal = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded a null return. Enter <help()> for a complete catalog of valid functions.");
 
