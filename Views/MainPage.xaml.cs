@@ -115,7 +115,8 @@ namespace Dash
                 if (ActivePopup != null)
                 {
                     ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
-                    ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                    //ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                    ActivePopup.SetVerticalOffset(200);
                 }
             };
 
@@ -957,6 +958,17 @@ namespace Dash
             SetUpPopup(templatePopup);
 
             var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
+        }
+
+        public async Task<(KeyController, List<KeyController>)> PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)
+        {
+            var tablePopup = new JoinGroupMenuPopup(comparisonKeys, diffKeys, draggedKeys);
+            SetUpPopup(tablePopup);
+
+            var results = await tablePopup.GetFormResults();
             UnsetPopup();
 
             return results;

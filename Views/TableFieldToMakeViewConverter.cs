@@ -129,7 +129,7 @@ namespace Dash
                 if (dc.DocumentType.Equals(DataBox.DocumentType))
                 {
                     var db = dc.GetField(KeyStore.DataKey) as ReferenceController;
-                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), VerticalAlignment=VerticalAlignment.Center, Text = "DATABOX("  + db.GetDocumentController(null)?.Title + "->" + db.FieldKey.Name +")"?? ":" });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), VerticalAlignment=VerticalAlignment.Center, Text = "DATABOX("  + db?.GetDocumentController(null)?.Title + "->" + db?.FieldKey?.Name +")"?? ":" });
                 }
                 else
                 {
