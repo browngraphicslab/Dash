@@ -379,7 +379,7 @@ namespace Dash
                 _history.RemoveAt(_history.Count - 1);
                 _future.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc);
+                DataContext = new DocumentViewModel(doc) {IsDimensionless = true};
             }
         }
 
@@ -391,7 +391,7 @@ namespace Dash
                 _future.RemoveAt(_future.Count - 1);
                 _history.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc);
+                DataContext = new DocumentViewModel(doc) {IsDimensionless = true};
             }
         }
 
