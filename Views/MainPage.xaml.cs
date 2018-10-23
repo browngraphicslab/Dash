@@ -179,6 +179,21 @@ namespace Dash
             }
             FieldControllerBase.MakeRoot(MainDocument);
 
+            foreach (var node in DocumentTree.MainPageTree)
+            {
+                var layout = node.ViewDocument;
+                var horizontalAlignment = layout.GetField<TextController>(KeyStore.HorizontalAlignmentKey);
+                if (horizontalAlignment == null)
+                {
+                    layout.SetHorizontalAlignment(HorizontalAlignment.Left);
+                }
+                var verticalAlignment = layout.GetField<TextController>(KeyStore.VerticalAlignmentKey);
+                if (verticalAlignment == null)
+                {
+                    layout.SetVerticalAlignment(VerticalAlignment.Top);
+                }
+            }
+
             LoadSettings();
 
             //get current presentations if any and set data context of pres view to pres view model
