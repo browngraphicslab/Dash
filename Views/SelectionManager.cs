@@ -349,7 +349,7 @@ namespace Dash
             // copy out the bitmap rectangle that contains all the documents being dragged
             var renderBounds = renderTarget.GetBoundingRect(MainPage.Instance.MainSplitter);
             var scaling      = rtb.PixelWidth / renderTarget.ActualWidth;
-            var parentBitmap = new WriteableBitmap((int)(dragBounds.Width * scaling), (int)(dragBounds.Height * scaling));
+            var parentBitmap = new WriteableBitmap((int)(dragBounds.Width), (int)(dragBounds.Height ));
             parentBitmap.Blit(new Point(renderBounds.Left*scaling - dragBounds.X*scaling, renderBounds.Top*scaling - dragBounds.Y*scaling),
                                 miniBitmap,
                                 new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
