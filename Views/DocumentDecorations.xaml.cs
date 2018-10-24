@@ -1043,5 +1043,13 @@ namespace Dash
                 xHeaderText.Background = new SolidColorBrush(xHeaderText.Text == "<empty>" ? Colors.Pink : Colors.LightBlue);
             }
         }
+
+        private void Ellipse_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var activeDoc = SelectedDocs.FirstOrDefault()?.ViewModel.DocumentController;
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeDoc.GetDataDocument(), DocumentDecorations.HeaderFieldKey)));
+            // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
     }
 }
