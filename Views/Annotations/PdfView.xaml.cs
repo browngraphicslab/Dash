@@ -660,7 +660,7 @@ namespace Dash
             _bottomAnnotationOverlay.PageEndIndices = pages;
 
             var numSections = vagueSections.Aggregate(0, (i, list) => i + list.Count);
-            byte aIncrement = (byte) (128 / numSections);
+            byte aIncrement = (byte) (128 / (numSections + 1));
             byte a = 0;
 
             foreach (var sectionList in vagueSections)

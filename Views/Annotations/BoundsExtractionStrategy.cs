@@ -10,6 +10,7 @@ using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using MyToolkit.Utilities;
+using NewControls.Geometry;
 using Point = Windows.Foundation.Point;
 
 namespace Dash
@@ -125,7 +126,7 @@ namespace Dash
                 {
                     list.Add(0);
                 }
-                return (new List<SelectableElement>(), "", list, null);
+                return (new List<SelectableElement>(), "", list, new List<List<PDFSection>>());
             }
 
             var pageElements = new List<List<SelectableElement>>();
@@ -160,19 +161,28 @@ namespace Dash
             var pages = new List<int>(requestedPages.Count);
             var lastIndex = 0;
             // sort and add the elements in each page to a list of elements
-            //foreach (var page in pageElements)
-            
-                var (newElements, vagueSectionList) = GetSortedSelectableElements(pageElements[0], elements.Count);
+            var vagueSectionSuperList = new List<List<PDFSection>>();
+            foreach (var page in pageElements)
+            {
+                var (newElements, vagueSectionList) = GetSortedSelectableElements(page, elements.Count);
+                vagueSectionSuperList.AddRange(vagueSectionList);
                 elements.AddRange(newElements);
                 // set the last index to the last index of the new elements, or the last index of the previous page if no new elements, or 0 if no previous pages.
                 lastIndex += newElements.Count;
                 pages.Add(lastIndex);
-            
+            }
+
 
             StringBuilder sb = new StringBuilder(elements.Count);
-            elements.ForEach(se => sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : ""));
+            var elemIndex = 0;
+            elements.ForEach(se =>
+            {
+                sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : "");
+                se.Index = elemIndex;
+                elemIndex++;
+            });
 
-            return (elements, sb.ToString(), pages, vagueSectionList);
+            return (elements, sb.ToString(), pages, vagueSectionSuperList);
         }
 
         /// <summary>
@@ -254,7 +264,7 @@ namespace Dash
                     // while there's space to move the content to another column, based on what the previous line width is
                     while (firstEle.Bounds.Left > columns[col].Bounds.Right + currFontWidth)
 
-                    //!string.IsNullOrWhiteSpace(firstEle.Contents as string) && columns[col].SelectableElements.Any() && temp - lineWidth > columns[col].SelectableElements.Min(i => i.RawIndex == -1 ? int.MaxValue : i.Bounds.X) &&
+                    //!string.IsNullOrWhiteSpace(firstEle.Contents as string) && selectableElementsList[col].SelectableElements.Any() && temp - lineWidth > selectableElementsList[col].SelectableElements.Min(i => i.RawIndex == -1 ? int.MaxValue : i.Bounds.X) &&
                     //       lineWidth != 0.0)
                     {
                         columns[col].SelectableElements.Add(new SelectableElement(-1, "", new Rect()) { RawIndex = -1 }); // there's a gap
@@ -369,15 +379,15 @@ namespace Dash
         ///     Given a list of selectable elements, removes any duplicates in the list. This method doesn't
         ///     return a list, it only modifies the list passed in.
         /// </summary>
-        private void RemoveDuplicates(IReadOnlyCollection<List<SelectableElement>> columns)
+        private void RemoveDuplicates(List<List<SelectableElement>> selectableElementsList)
         {
-            // create a copy of the columns so we can loop through it and make changes in the original
-            var columnCopy = new List<List<SelectableElement>>(columns);
-            // loop through every column in the copy of columns
+            // create a copy of the selectableElementsList so we can loop through it and make changes in the original
+            var columnCopy = new List<List<SelectableElement>>(selectableElementsList);
+            // loop through every column in the copy of selectableElementsList
             foreach (var column in columnCopy)
             {
                 var prevElem = column.First();
-                var matchingColumn = columns.First(col => col.Equals(column));
+                var matchingColumn = selectableElementsList.First(col => col.Equals(column));
                 // this commented code is only necessary if we want to uncomment out the line break code
                 //var prevLineY = new Vector((float)prevElem.Bounds.Y,
                 //    (float)(prevElem.Bounds.Y + prevElem.Bounds.Height), 0);
@@ -440,17 +450,13 @@ namespace Dash
                 var charsToRemove = new List<SelectableElement>();
                 foreach (var elem in line.Skip(1))
                 {
-                    if (!char.IsWhiteSpace((elem.Contents as string)[0]))
+                    if ((elem.Contents as string).Any() && !char.IsWhiteSpace((elem.Contents as string)[0]))
                     {
                         if (elem.Bounds.Left - prevElem.Bounds.Right < elem.Bounds.Width * 4)
                         {
                             lineSpacings.Add(elem.Bounds.Left - prevElem.Bounds.Right);
                         }
                         prevElem = elem;
-                    }
-                    else
-                    {
-                        charsToRemove.Add(elem);
                     }
                 }
 
@@ -494,7 +500,8 @@ namespace Dash
 
                     foreach (var section in sections)
                     {
-                        var rectToCheck = new Rect(section.Bounds.X - 4 * wordSpacing, section.Bounds.Y - 8 * lineSpacing,
+                        var rectToCheck = new Rect(section.Bounds.X - 4 * wordSpacing,
+                            section.Bounds.Y - 8 * lineSpacing,
                             section.Bounds.Width + 8 * wordSpacing, section.Bounds.Height + 16 * lineSpacing);
                         rectToCheck.Intersect(elem.Bounds);
 
@@ -509,9 +516,17 @@ namespace Dash
                                 continue;
                             }
                             section.SectionElements.Add(elem);
-                            section.Bounds = RectHelper.Union(section.Bounds, elem.Bounds);
-                            //section.Bounds.Union(elem.Bounds);
-                            shouldAddNewSection = section;
+                            if ((elem.Contents as string).Any() && !char.IsWhiteSpace((elem.Contents as string)[0]))
+                            {
+                                section.Bounds = RectHelper.Union(section.Bounds, elem.Bounds);
+                                //section.Bounds.Union(elem.Bounds);
+                                shouldAddNewSection = section;
+                            }
+                            else
+                            {
+                                shouldAddNewSection = section;
+                                break;
+                            }
                         }
                     }
 
@@ -546,7 +561,10 @@ namespace Dash
                 foreach (var vagueSection in vagueSections)
                 {
                     bool validLeft = Math.Abs(sectionWidth.start - vagueSection.Bounds.Left) < wordSpacing * 2;
-                    bool validRight = Math.Abs(sectionWidth.end - vagueSection.Bounds.Right) < wordSpacing * 4;
+                    bool validRight = Math.Abs(sectionWidth.end - vagueSection.Bounds.Right) < wordSpacing * 4 ||
+                                      (sectionWidth.end < vagueSection.Bounds.Right &&
+                                       (sectionWidth.section.Bounds.Width < (vagueSection.Bounds.Width / 2) ||
+                                        vagueSection.Bounds.Width < sectionWidth.section.Bounds.Width / 2));
 
                     if (validLeft && validRight)
                     {
@@ -584,12 +602,12 @@ namespace Dash
 
             var vagueSections = SplitIntoVagueSections(wordSpacing, sections);
 
-            vagueSections.Sort((s1, s2) => Math.Sign(s1.Bounds.Top - s2.Bounds.Top));
+            vagueSections.Sort((s1, s2) => Math.Sign(s1.Bounds.Left - s2.Bounds.Left));
 
             var vagueSectionsSorted = new List<List<PDFSection>> {new List<PDFSection> {vagueSections.First()}};
             foreach (var vagueSection in vagueSections.Skip(1))
             {
-                if (Math.Abs(vagueSection.Bounds.Top - vagueSectionsSorted.Last().First().Bounds.Top) < lineSpacing)
+                if (Math.Abs(vagueSection.Bounds.Left - vagueSectionsSorted.Last().First().Bounds.Left) < wordSpacing * 4)
                 {
                     vagueSectionsSorted.Last().Add(vagueSection);
                 }
@@ -601,43 +619,55 @@ namespace Dash
 
             foreach (var vagueSectionList in vagueSectionsSorted)
             {
-                vagueSectionList.Sort((s1, s2) => Math.Sign(s1.Bounds.X - s2.Bounds.X));
+                vagueSectionList.Sort((s1, s2) => Math.Sign(s1.Bounds.Y - s2.Bounds.Y));
             }
+
+            //RemoveDuplicates(vagueSectionsSorted);
 
             var sortedElements = new List<SelectableElement>();
             var i = 0;
+            SelectableElement previousElement = null;
             foreach (var vagueSectionList in vagueSectionsSorted)
             {
                 foreach (var vagueSection in vagueSectionList)
                 {
                     foreach (var element in vagueSection.SectionElements)
                     {
+                        bool overlapping = element.Bounds.Left - previousElement?.Bounds.Left < wordSpacing / 2;
+                        bool sameY = element.Bounds.Top - previousElement?.Bounds.Top < element.Bounds.Height / 2;
+                        bool sameText = element.Contents.Equals(previousElement?.Contents);
+                        if (previousElement != null && overlapping && sameY && sameText)
+                        {
+                            continue;
+                        }
+
                         element.Index = i;
                         i++;
                         sortedElements.Add(element);
+
+                        previousElement = element;
                     }
                 }
             }
 
-            //var columns = SortIntoColumns(lines);
-            ////RemoveDuplicates(columns);
+            //var selectableElementsList = SortIntoColumns(lines);
 
-            //var colIndexes = columns.Select((c) => 0).ToList();
+            //var colIndexes = selectableElementsList.Select((c) => 0).ToList();
             //// loop through each column in increasing order
             //while (true)
             //{
             //    int whichCol = -1;
             //    var lowIndex = int.MaxValue;
             //    for (int i = 0; i < colIndexes.Count; i++)
-            //        if (columns[i].Count > colIndexes[i] && columns[i][colIndexes[i]].RawIndex < lowIndex)
+            //        if (selectableElementsList[i].Count > colIndexes[i] && selectableElementsList[i][colIndexes[i]].RawIndex < lowIndex)
             //        {
             //            whichCol = i;
-            //            lowIndex = columns[i][colIndexes[i]].RawIndex;
+            //            lowIndex = selectableElementsList[i][colIndexes[i]].RawIndex;
             //        }
-            //    // foreach (var column in columns)
+            //    // foreach (var column in selectableElementsList)
             //    if (whichCol == -1)
             //        break;
-            //    var column = columns[whichCol];
+            //    var column = selectableElementsList[whichCol];
             //    {
             //        // loop through each element
             //        for (int idx = colIndexes[whichCol]; idx < column.Count; idx++)
