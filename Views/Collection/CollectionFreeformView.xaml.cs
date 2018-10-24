@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage.Pickers;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
-using DashShared;
+using System;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,6 +34,9 @@ namespace Dash
 
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+
+            _scaleX = 1.01;
+            _scaleY = 1.01;
         }
         ~CollectionFreeformView()
         {
@@ -88,6 +89,9 @@ namespace Dash
             return InkHostCanvas;
         }
 
+        private double _scaleX;
+        private double _scaleY;
+
         CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
         private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
@@ -100,6 +104,69 @@ namespace Dash
             }
         }
 
+        private void XOuterGrid_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Add && this.IsCtrlPressed())
+            {
+                _scaleX += 0.1;
+                _scaleY += 0.1;
+                var scaleDelta = new ScaleTransform
+                {
+                    CenterX = xOuterGrid.ActualWidth / 2,
+                    CenterY = xOuterGrid.ActualHeight / 2,
+                    ScaleX = _scaleX,
+                    ScaleY = _scaleY
+                };
+
+                var composite = new TransformGroup();
+
+                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
+                composite.Children.Add(scaleDelta); // add the new scaling
+                var matrix = composite.Value;
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+                e.Handled = true;
+            }
+
+            if (e.Key == VirtualKey.Subtract && this.IsCtrlPressed())
+            {
+                _scaleX -= 0.1;
+                _scaleY -= 0.1;
+                var scaleDelta = new ScaleTransform
+                {
+                    CenterX = xOuterGrid.ActualWidth / 2,
+                    CenterY = xOuterGrid.ActualHeight / 2,
+                    ScaleX = _scaleX,
+                    ScaleY = _scaleY
+                };
+
+                var composite = new TransformGroup();
+
+                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
+                composite.Children.Add(scaleDelta); // add the new scaling
+                var matrix = composite.Value;
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+                e.Handled = true;
+            }
+
+            if ((e.Key == VirtualKey.NumberPad0 || e.Key == VirtualKey.Number0) && this.IsCtrlPressed())
+            {
+                var scaleDelta = new ScaleTransform
+                {
+                    CenterX = xOuterGrid.ActualWidth / 2,
+                    CenterY = xOuterGrid.ActualHeight / 2,
+                    ScaleX = 1.0,
+                    ScaleY = 1.0
+                };
+
+                var composite = new TransformGroup();
+
+                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
+                composite.Children.Add(scaleDelta); // add the new scaling
+                var matrix = composite.Value;
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+                e.Handled = true;
+            }
+        }
         public void AddToMenu(ActionMenu menu)
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));

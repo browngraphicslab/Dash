@@ -96,7 +96,7 @@ namespace Dash
             return start.GetAncestorsOfType<T>().FirstOrDefault();
         }
 
-        public static T GetFirstAncestorOfTypeFast<T>(this DependencyObject start)
+        public static T GetFirstAncestorOfTypeFast<T>(this DependencyObject start) where T : DependencyObject
         {
             var parent = VisualTreeHelper.GetParent(start);
             while (parent != null)
@@ -108,7 +108,7 @@ namespace Dash
                 parent = VisualTreeHelper.GetParent(parent);
             }
 
-            return default;
+            return default(T);
         }
 
         public static IEnumerable<T> GetAncestorsOfType<T>(this DependencyObject start)
