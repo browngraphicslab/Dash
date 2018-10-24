@@ -246,6 +246,12 @@ namespace Dash
                 MainPage.Instance.Focus(FocusState.Programmatic);
 
 
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    if (!SelectionManager.IsSelected(this))
+                        SelectionManager.Select(this, false);
+                    SelectionManager.TryInitiateDragDrop(this, e, null);
+                }
 
                 // e.Handled = true;
 
