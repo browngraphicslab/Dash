@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -8,15 +9,14 @@ namespace Dash.Controllers.Operators.Point
     [OperatorType(Op.Name.x)]
     public class XOperator : OperatorController
     {
-        public static readonly KeyController PointKey = new KeyController("Point");
+        public static readonly KeyController PointKey = KeyController.Get("Point");
 
 
-        public static readonly KeyController XCoordKey = new KeyController("XCoord");
+        public static readonly KeyController XCoordKey = KeyController.Get("XCoord");
 
 
         public XOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public XOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -24,7 +24,7 @@ namespace Dash.Controllers.Operators.Point
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("XCoordinate", "1ec86c4f-a5d8-418f-ab50-e525cf38d498");
+        private static readonly KeyController TypeKey = KeyController.Get("XCoordinate");
 
         public override FieldControllerBase GetDefaultController()
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -10,13 +11,13 @@ namespace Dash
     public sealed class ListAppendOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListAKey = new KeyController("List A");
-        public static readonly KeyController ToAppendKey = new KeyController("Element To Append");
+        public static readonly KeyController ListAKey = KeyController.Get("List A");
+        public static readonly KeyController ToAppendKey = KeyController.Get("Element To Append");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ListAppendOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ListAppendOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ListAppendOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -35,7 +36,8 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("List appending", "2F2C4A08-C81D-426E-913D-A5FBE5436619");
+        private static readonly KeyController TypeKey = KeyController.Get("List appending");
+
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)

@@ -76,7 +76,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 Debug.Assert(ViewModel != null, "ViewModel != null");
-                var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 ViewModel.AddDocument(documentController);
             }
         }
@@ -149,7 +149,8 @@ namespace Dash
 
             using (UndoManager.GetBatchHandle())
             {
-                cview.ViewModel.ContainerDocument.CreateSnapshot();
+                var snapshot = cview.ViewModel.ContainerDocument.CreateSnapshot();
+                MainPage.Instance.xMainTreeView.ViewModel.AddDocument(snapshot);
             }
         }
 

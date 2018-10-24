@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,13 +12,13 @@ namespace Dash
     public sealed class TemplateAssignmentOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController DocKey = new KeyController("501F0C8E-D5A5-4989-BEEA-69FC774E25F8", "Document Reference");
-        public static readonly KeyController TemplateKey = new KeyController("653DFD50-E5D0-4207-A61C-DC1F4851C1CB", "Template");
+        public static readonly KeyController DocKey = KeyController.Get("Document Reference");
+        public static readonly KeyController TemplateKey = KeyController.Get("Template");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("5CC0DDB3-E921-4032-9514-BB4034B254B6", "Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public TemplateAssignmentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public TemplateAssignmentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public TemplateAssignmentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -36,7 +37,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("53F162D1-3D49-4872-B0E2-2A1FBEB463E4", "Apply Template");
+        private static readonly KeyController TypeKey = KeyController.Get("Apply Template");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

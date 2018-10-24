@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,12 +11,12 @@ namespace Dash
     public class FindSingleDocumentOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController QueryKey = new KeyController("Query");
+        public static readonly KeyController QueryKey = KeyController.Get("Query");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public FindSingleDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -38,8 +39,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-            new KeyController("Simple Single Search", "C35B553E-F12A-483A-AED9-30927606B897");
+        private static readonly KeyController TypeKey = KeyController.Get("Simple Single Search");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

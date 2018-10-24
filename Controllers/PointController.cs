@@ -12,22 +12,15 @@ namespace Dash
 
         public PointController(Point data) : base(new PointModel(data))
         {
-            SaveOnServer();
 
         }
 
         public PointController(double x, double y) : base(new PointModel(x, y))
         {
-            SaveOnServer();
 
         }
 
         public PointController(PointModel pointFieldModel) : base(pointFieldModel)
-        {
-
-        }
-
-        public override void Init()
         {
 
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -17,16 +18,16 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("For", "3294AA7E-6E6A-4AE7-9D83-5693723A1EEA");
+        private static readonly KeyController TypeKey = KeyController.Get("For");
 
         //Input keys
-        public static readonly KeyController CounterDeclarationKey = new KeyController("Count Declaration");
-        public static readonly KeyController BoolKey = new KeyController("Bool");
-        public static readonly KeyController IncrementKey = new KeyController("Increment Size");
-        public static readonly KeyController ForBlockKey = new KeyController( "For Loop Body");
+        public static readonly KeyController CounterDeclarationKey = KeyController.Get("Count Declaration");
+        public static readonly KeyController BoolKey = KeyController.Get("Bool");
+        public static readonly KeyController IncrementKey = KeyController.Get("Increment Size");
+        public static readonly KeyController ForBlockKey = KeyController.Get("For Loop Body");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

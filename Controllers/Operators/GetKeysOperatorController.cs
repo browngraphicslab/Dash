@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,14 +11,13 @@ namespace Dash
     public class GetKeysOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController CollectionKey = new KeyController("Collection");
+        public static readonly KeyController CollectionKey = KeyController.Get("Collection");
 
         //Output keys
-        public static readonly KeyController ResultDocumentKey = new KeyController("ResultDocument");
+        public static readonly KeyController ResultDocumentKey = KeyController.Get("ResultDocument");
 
         public GetKeysOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public GetKeysOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -39,7 +39,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = new KeyController("Get Keys", "0FE2858F-CB94-4163-B4CD-CA84F99438E4");
+        private static KeyController TypeKey = KeyController.Get("Get Keys");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

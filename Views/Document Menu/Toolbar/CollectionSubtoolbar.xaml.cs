@@ -130,6 +130,17 @@ namespace Dash
                 }
             }
         }
+        private void FreezeContents_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var d in _collection.ViewModel.DocumentViewModels)
+                {
+                    d.AreContentsHitTestVisible = !d.AreContentsHitTestVisible;
+                    xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+                }
+            }
+        }
 
         /// <summary>
         /// Binds the drop down selection of view options with the view of the collection.
@@ -172,6 +183,13 @@ namespace Dash
             {
                 xFitParentIcon.Text = ((char)0xE740).ToString();
                 _fit.Content = "Fit Contents to Bounds";
+            }
+
+
+            xAreContentsHitTestVisibleIcon.Text = ((char)0xE840).ToString();
+            foreach (var d in _collection.ViewModel.DocumentViewModels)
+            {
+                xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
             }
         }
 

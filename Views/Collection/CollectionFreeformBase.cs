@@ -82,8 +82,6 @@ namespace Dash
 
         public abstract Grid GetOuterGrid();
 
-        public abstract AutoSuggestBox GetTagBox();
-
         public abstract Canvas GetSelectionCanvas();
 
         public abstract Rectangle GetDropIndicationRectangle();
@@ -164,14 +162,6 @@ namespace Dash
         protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             _lastViewModel = ViewModel;
-
-            if (ViewModel?.DocumentViewModels != null)
-            {
-                foreach (var dvm in ViewModel.DocumentViewModels)
-                {
-                    dvm.IsWidthless = false;
-                }
-            }
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -191,17 +181,6 @@ namespace Dash
             {
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
-        }
-
-        public DocumentController Snapshot(bool copyData = false)
-        {
-            var controllers = new List<DocumentController>();
-            foreach (var dvm in ViewModel.DocumentViewModels)
-                controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
-            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
-            snap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            snap.GetDataDocument().SetTitle(ParentDocument.ViewModel.DocumentController.Title + "_copy");
-            return snap;
         }
 
 
@@ -637,56 +616,6 @@ namespace Dash
             return false;
         }
 
-        public void ShowTagKeyBox()
-        {
-            GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Visible;
-            var mousePos = Util.PointTransformFromVisual(this.RootPointerPos(), Window.Current.Content, GetOuterGrid());
-            GetTagBox().RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
-        }
-
-        public void HideTagKeyBox()
-        {
-            GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-        }
-
-        protected void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
-                var names = keys.Where(k => !k.Name.StartsWith("_"));
-                GetTagBox().ItemsSource = names;
-            }
-        }
-
-        protected void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            sender.Text = ((KeyController)args.SelectedItem).Name;
-        }
-
-        protected void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args.ChosenSuggestion != null)
-            {
-                TagKey = (KeyController)args.ChosenSuggestion;
-            } else
-            {
-                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
-                var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
-
-                if (key == null)
-                {
-                    TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
-                } else
-                {
-                    TagKey = key;
-                }
-            }
-            TagMode = true;
-
-            HideTagKeyBox();
-        }
-
         #endregion
 
         #region Marquee Select
@@ -927,17 +856,17 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectionManager.GetSelectedDocs())
+            foreach (var doc in SelectionManager.GetSelectedDocs())
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
                 topLeftMostPoint.Y = doc.ViewModel.Position.Y < topLeftMostPoint.Y ? doc.ViewModel.Position.Y : topLeftMostPoint.Y;
-                bottomRightMostPoint.X = doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X > bottomRightMostPoint.X
-                    ? doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X
-                    : bottomRightMostPoint.X;
-                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y > bottomRightMostPoint.Y
-                    ? doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y
-                    : bottomRightMostPoint.Y;
+                var actualX = (double.IsNaN(doc.ViewModel.ActualSize.X) ? 0 : doc.ViewModel.ActualSize.X);
+                var actualY =(double.IsNaN(doc.ViewModel.ActualSize.Y) ? 0 : doc.ViewModel.ActualSize.Y);
+                bottomRightMostPoint.X = doc.ViewModel.Position.X + actualX > bottomRightMostPoint.X
+                    ? doc.ViewModel.Position.X + actualX : bottomRightMostPoint.X;
+                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + actualY > bottomRightMostPoint.Y
+                    ? doc.ViewModel.Position.Y + actualY : bottomRightMostPoint.Y;
             }
 
             if (isEmpty) return Rect.Empty;
@@ -1213,14 +1142,20 @@ namespace Dash
 
         void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
 
-            InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
-            MainPage.Instance.InkManager.AddInkCanvas(XInkCanvas);
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                XInkCanvas = new InkCanvas()
+                {
+                    Width = 60000,
+                    Height = 60000
+                };
 
-            Canvas.SetLeft(XInkCanvas, -30000);
-            Canvas.SetTop(XInkCanvas, -30000);
-            GetInkHostCanvas().Children.Add(XInkCanvas);
+                InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+                Canvas.SetLeft(XInkCanvas, -30000);
+                Canvas.SetTop(XInkCanvas, -30000);
+                GetInkHostCanvas().Children.Add(XInkCanvas);
+            }
         }
 
         bool loadingPermanentTextbox;
@@ -1400,7 +1335,7 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = new KeyController(keyname);
+                var keycontroller = KeyController.Get(keyname);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
                 var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;

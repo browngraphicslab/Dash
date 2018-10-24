@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Dash.Controllers;
 using DashShared;
 using TypeInfo = DashShared.TypeInfo;
@@ -11,6 +12,11 @@ namespace Dash
 {
     public class FieldControllerFactory : BaseControllerFactory
     {
+        /// <summary>
+        /// Create a controller from a model based on the type of the model.
+        /// Note that the controller returned from this method isn't necessarily initialized, so you must await InitializeAsync on it.
+        /// For this reason, it should only really be called in database methods
+        /// </summary>
         public static FieldControllerBase CreateFromModel(FieldModel model)
         {
             Type t = model.GetType();
@@ -43,7 +49,7 @@ namespace Dash
                 controller = MakeListFieldController(model as ListModel);
                 break;
             case TypeInfo.Document:
-                controller = new DocumentController(model as DocumentModel);
+                controller = DocumentController.CreateFromServer(model as DocumentModel);
                 break;
             case TypeInfo.Ink:
                 controller = new InkController(model as InkModel);
@@ -52,10 +58,10 @@ namespace Dash
                 controller = new NumberController(model as NumberModel);
                 break;
             case TypeInfo.DocumentReference:
-                controller = new DocumentReferenceController(model as DocumentReferenceModel);
+                controller = DocumentReferenceController.CreateFromServer(model as DocumentReferenceModel);
                 break;
             case TypeInfo.PointerReference:
-                controller = new PointerReferenceController(model as PointerReferenceModel);
+                controller = PointerReferenceController.CreateFromServer(model as PointerReferenceModel);
                 break;
             case TypeInfo.Rectangle:
                 controller = new RectController(model as RectModel);
@@ -99,10 +105,13 @@ namespace Dash
                 throw new Exception("Shoudlnt get here");
             case TypeInfo.Any:
                 throw new Exception("Shoudlnt get here");
+            default:
+                throw new ArgumentException("Parameter doesn't match any known types", nameof(model));
             }
 
             Debug.Assert(controller != null);
 
+            controller.MarkFromServer();
             return controller;
         }
 
@@ -116,65 +125,64 @@ namespace Dash
                 Debug.Fail("this shouldnt happen????");
                 break;
             case TypeInfo.Number:
-                controller = new ListController<NumberController>(model);
+                controller = ListController<NumberController>.CreateFromServer(model);
                 break;
             case TypeInfo.Text:
-                controller = new ListController<TextController>(model);
+                controller = ListController<TextController>.CreateFromServer(model);
                 break;
             case TypeInfo.Image:
-                controller = new ListController<ImageController>(model);
+                controller = ListController<ImageController>.CreateFromServer(model);
                 break;
             case TypeInfo.Video:
-                controller = new ListController<VideoController>(model);
+                controller = ListController<VideoController>.CreateFromServer(model);
                 break;
             case TypeInfo.Audio:
-                controller = new ListController<AudioController>(model);
+                controller = ListController<AudioController>.CreateFromServer(model);
                 break;
             case TypeInfo.Document:
-                controller = new ListController<DocumentController>(model);
+                controller = ListController<DocumentController>.CreateFromServer(model);
                 break;
             case TypeInfo.PointerReference:
-                controller = new ListController<PointerReferenceController>(model);
+                controller = ListController<PointerReferenceController>.CreateFromServer(model);
                 break;
             case TypeInfo.DocumentReference:
-                controller = new ListController<DocumentReferenceController>(model);
+                controller = ListController<DocumentReferenceController>.CreateFromServer(model);
                 break;
             case TypeInfo.Operator:
-                controller = new ListController<OperatorController>(model);
+                controller = ListController<OperatorController>.CreateFromServer(model);
                 break;
             case TypeInfo.Point:
-                controller = new ListController<PointController>(model);
+                controller = ListController<PointController>.CreateFromServer(model);
                 break;
             case TypeInfo.List:
-                Debug.Fail("idk why you got here");
+                Debug.Fail("Lists of lists are not currently supported");
                 break;
             case TypeInfo.Ink:
-                controller = new ListController<InkController>(model);
+                controller = ListController<InkController>.CreateFromServer(model);
                 break;
             case TypeInfo.RichText:
-                controller = new ListController<RichTextController>(model);
+                controller = ListController<RichTextController>.CreateFromServer(model);
                 break;
             case TypeInfo.Rectangle:
-                controller = new ListController<RectController>(model);
+                controller = ListController<RectController>.CreateFromServer(model);
                 break;
             case TypeInfo.Reference:
-                controller = new ListController<ReferenceController>(model);
+                controller = ListController<ReferenceController>.CreateFromServer(model);
                 break;
             case TypeInfo.Key:
-                controller = new ListController<KeyController>(model);
+                controller = ListController<KeyController>.CreateFromServer(model);
                 break;
             case TypeInfo.DateTime:
-                controller = new ListController<DateTimeController>(model);
+                controller = ListController<DateTimeController>.CreateFromServer(model);
                 break;
             case TypeInfo.Bool:
-                controller = new ListController<BoolController>(model);
+                controller = ListController<BoolController>.CreateFromServer(model);
                 break;
             case TypeInfo.Color:
-                controller = new ListController<ColorController>(model);
+                controller = ListController<ColorController>.CreateFromServer(model);
                 break;
             case TypeInfo.Any:
-                //Debug.Fail("idk why you got here");
-                controller = new ListController<FieldControllerBase>(model);
+                controller = ListController<FieldControllerBase>.CreateFromServer(model);
                 break;
             default:
                 break;
@@ -182,22 +190,29 @@ namespace Dash
             return controller;
         }
 
-        private static IEnumerable<Type> OperatorTypes { get; } = typeof(OperatorController).Assembly.GetTypes()
-            .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
+        private static Dictionary<string, Type> _operatorTypeMap;
 
         private static OperatorController MakeOperatorController(OperatorModel model)
         {
             // TODO assert that op controllers have a private static field TypeKey
             // TODO use reflection to map keys to delegates for performance (google linq-expressions-creating-objects)
-            var opToBuild = OperatorTypes.First(opType => ((KeyController)opType.GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Equals(model.Type));
+            if (_operatorTypeMap == null)
+            {
+                _operatorTypeMap = new Dictionary<string, Type>();
+                var operatorTypes = typeof(OperatorController).Assembly.GetTypes()
+                    .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
+                foreach (var operatorType in operatorTypes)
+                {
+                    var id = ((KeyController)operatorType
+                        .GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic)
+                        .GetValue(null)).KeyModel.Id;
+                    _operatorTypeMap[id] = operatorType;
+                }
+            }
+
+            var opToBuild = _operatorTypeMap[model.TypeId];
             return (OperatorController)Activator.CreateInstance(opToBuild, model);
         }
-
-        public static FieldModelController<T> CreateTypedFromModel<T>(T model) where T : FieldModel
-        {
-            return CreateFromModel(model) as FieldModelController<T>;
-        }
-
 
         public static FieldControllerBase CreateDefaultFieldController(TypeInfo t, TypeInfo listType = TypeInfo.Document)
         {
@@ -355,6 +370,7 @@ namespace Dash
                 [typeof(NumberController)] = TypeInfo.Number,
                 [typeof(BoolController)] = TypeInfo.Bool,
             };
+
         }
 
         public static TypeInfo GetTypeInfo<T>() where T : FieldControllerBase

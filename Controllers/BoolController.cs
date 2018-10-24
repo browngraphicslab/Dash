@@ -7,11 +7,9 @@ namespace Dash
         //OVERLOADED CONSTRUCTORS
         public BoolController() : this(false) { }
 
-        public BoolController(bool data = false) : base(new BoolModel(data)) { SaveOnServer(); }
+        public BoolController(bool data = false) : base(new BoolModel(data)) {  }
 
         public BoolController(BoolModel boolFieldModel) : base(boolFieldModel) { }
-
-        public override void Init() { }
 
         /// <summary>
         ///     The <see cref="BoolFieldModel" /> associated with this <see cref="Dash.BoolController" />,

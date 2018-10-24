@@ -12,16 +12,10 @@ namespace Dash
 
         public TextController(string data) : base(new TextModel(data))
         {
-            SaveOnServer();
         }
 
         public TextController(TextModel textFieldModel) : base(textFieldModel)
         {
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>

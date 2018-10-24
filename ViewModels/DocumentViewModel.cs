@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Media;
 using Windows.Foundation;
 using static Dash.DocumentController;
 using Point = Windows.Foundation.Point;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -16,7 +17,6 @@ namespace Dash
         private DocumentController _lastLayout = null;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private bool               _showLocalContext;
-        private bool               _decorationState = false;
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
 
@@ -63,18 +63,28 @@ namespace Dash
 
         private SolidColorBrush _searchHighlightBrush;
         private bool _isNotBackgroundPinned = true;
-
+        
         public bool IsDimensionless = false;
-        public bool IsWidthless = false;
-        public bool IsNotBackgroundPinned
+        public bool AreContentsHitTestVisible
         {
-            get => _isNotBackgroundPinned;
-            set => SetProperty(ref _isNotBackgroundPinned, value);
+            get => DocumentController.GetAreContentsHitTestVisible();
+            set {
+                DocumentController.SetAreContentsHitTestVisible(value);
+                foreach (var rtv in Content.GetDescendantsOfType<RichEditBox>())
+                {
+                    rtv.IsHitTestVisible = DocumentController.GetAreContentsHitTestVisible();
+                }
+            }
         }
         public bool IsAdornmentGroup
         {
             get => DocumentController.GetIsAdornment();
             set => DocumentController.SetIsAdornment(value);
+        }
+        public bool IsButton
+        {
+            get => DocumentController.GetIsButton();
+            set => DocumentController.SetIsButton(value);
         }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
@@ -96,12 +106,12 @@ namespace Dash
         }
         public double Width
         {
-            get => IsDimensionless || IsWidthless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? 100;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
             set => LayoutDocument.SetWidth(value);
         }
         public double Height
         {
-            get => IsDimensionless ? double.NaN : LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
+            get => IsDimensionless ? double.NaN : LayoutDocument.GetHeight();
             set => LayoutDocument.SetHeight(value);
         }
         public Point Scale
@@ -139,9 +149,7 @@ namespace Dash
             get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
             private set  {
                 _content = value; // content will be recomputed when someone accesses Content
-                OnPropertyChanged(nameof(Content)); // let everyone know that _content has changed
-                //create render transform for content zooming/panning!
-                _content.RenderTransform = new CompositeTransform();
+                OnPropertyChanged(); // let everyone know that _content has changed
             }
         }
 
@@ -251,8 +259,8 @@ namespace Dash
         }
         ~DocumentViewModel()
         {
-            System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
-            System.Diagnostics.Debug.WriteLine(" ");
+            //System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
+            //System.Diagnostics.Debug.WriteLine(" ");
             _content = null;
         }
         public void Dispose()

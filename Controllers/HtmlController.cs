@@ -10,16 +10,10 @@ namespace Dash
 
         public HtmlController(string data) : base(new HtmlModel(data))
         {
-            SaveOnServer();
         }
 
         public HtmlController(HtmlModel htmlFieldModel) : base(htmlFieldModel)
         {
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>

@@ -11,19 +11,19 @@ namespace Dash
     public class ExtractSentencesOperatorController : OperatorController
     {
         // Input Keys
-        public static readonly KeyController InputCollection = new KeyController("Input Collection");
-        public static readonly KeyController TextField = new KeyController("Text Field");
+        public static readonly KeyController InputCollection = KeyController.Get("Input Collection");
+        public static readonly KeyController TextField = KeyController.Get("Text Field");
 
         // Output Keys
-        public static readonly KeyController OutputCollection = new KeyController("Output");
+        public static readonly KeyController OutputCollection = KeyController.Get("Output");
 
         // helper key to store sentences in the output
-        public static readonly KeyController SentenceKey = new KeyController("Sentence");
+        public static readonly KeyController SentenceKey = KeyController.Get("Sentence");
 
         // helper key to store sentences in the output
-        public static readonly KeyController IndexKey = new KeyController("Index");
-        public static readonly KeyController SentenceLengthKey = new KeyController("Sentence Length");
-        public static readonly KeyController SentenceScoreKey = new KeyController("Sentence Score");
+        public static readonly KeyController IndexKey = KeyController.Get("Index");
+        public static readonly KeyController SentenceLengthKey = KeyController.Get("Sentence Length");
+        public static readonly KeyController SentenceScoreKey = KeyController.Get("Sentence Score");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } =  rfmc => new ExtractSentencesOperatorBox(rfmc);
 
@@ -31,7 +31,7 @@ namespace Dash
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
                 new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
-                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Text, true))
+                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Key, true))
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
@@ -42,7 +42,6 @@ namespace Dash
 
         public ExtractSentencesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public ExtractSentencesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -50,15 +49,14 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Sentence Analyzer", "D9EE3561-0A30-4DA9-B11A-859CABCF237B");
+        private static readonly KeyController TypeKey = KeyController.Get("Sentence Analyzer");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
-            var textFieldKeyId = (inputs[TextField] as TextController).Data;
-            var textFieldKey = ContentController<FieldModel>.GetController<KeyController>(textFieldKeyId);
+            var textFieldKey = inputs[TextField] as KeyController;
 
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)

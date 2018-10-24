@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Linq;
-using Windows.Devices.PointOfService;
 using DashShared;
 
 namespace Dash
@@ -13,48 +13,53 @@ namespace Dash
         public DocumentController DocumentController
         {
             get => _documentController;
-            set
-            {
-                _documentController = value;
-                (Model as DocumentReferenceModel).DocumentId = value.Id;
-                UpdateOnServer(null);//TODO Add FieldUpdate and undo
-            }
+            set => SetDocumentController(value, true);
         }
 
-        public DocumentReferenceController(DocumentController doc, KeyController key, bool copyOnWrite=false) : base(new DocumentReferenceModel(doc.Id, key.Id, copyOnWrite))
+        private void SetDocumentController(DocumentController doc, bool withUndo)
+        {
+            var oldDoc = _documentController;
+            var newDoc = doc;
+            _documentController = doc;
+            (Model as DocumentReferenceModel).DocumentId = doc.Id;
+            UndoCommand command = withUndo ? new UndoCommand(() => SetDocumentController(newDoc, false), () => SetDocumentController(oldDoc, false)) : null;
+            ReferenceField(doc);
+            UpdateOnServer(command);
+            ReleaseField(oldDoc);
+            DocumentChanged();
+        }
+
+        public DocumentReferenceController(DocumentController doc, KeyController key, bool copyOnWrite = false) : base(new DocumentReferenceModel(doc.Id, key.Id, copyOnWrite))
         {
             Debug.Assert(doc != null);
             Debug.Assert(key != null);
-            //DocumentId = docId;
-            SaveOnServer();
-            Init();
+            _documentController = doc;
+            FieldKey = key;
         }
 
-        public DocumentReferenceController(DocumentReferenceModel documentReferenceFieldModel) : base(documentReferenceFieldModel)
+        public static DocumentReferenceController CreateFromServer(DocumentReferenceModel model)
         {
+            var drc = new DocumentReferenceController(model);
+            return drc;
+        }
+        private DocumentReferenceController(DocumentReferenceModel documentReferenceFieldModel) : base(documentReferenceFieldModel)
+        {
+            _initialized = false;
             Debug.Assert(documentReferenceFieldModel?.DocumentId != null);
         }
 
-        public override void Init()
+        private bool _initialized = true;
+        public override async Task InitializeAsync()
         {
-            if (_documentController == null)
+            if (_initialized)
             {
-                _documentController =
-                    ContentController<FieldModel>.GetController<DocumentController>((Model as DocumentReferenceModel)
-                        .DocumentId);
+                return;
             }
-            base.Init();
-        }
 
-        public void ChangeFieldDoc(DocumentController doc, bool withUndo = true)
-        {
-            DocumentController oldDoc = DocumentController;
-            UndoCommand newEvent = new UndoCommand(() => ChangeFieldDoc(DocumentController, false), () => ChangeFieldDoc(oldDoc, false));
-
-            DocumentController = doc;
-            DocumentChanged();
-
-            UpdateOnServer(withUndo ? newEvent : null);
+            _initialized = true;
+            await base.InitializeAsync();
+            _documentController = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>((Model as DocumentReferenceModel).DocumentId);
+            Debug.Assert(_documentController != null);
         }
 
         public override FieldControllerBase Copy()
@@ -73,8 +78,6 @@ namespace Dash
             return new DocumentFieldReference(DocumentController, FieldKey);
         }
 
-
-        // todo: more meaningful tostring here
         public override string ToString() => $"dRef({DocumentController}, {FieldKey})";
 
         public override FieldControllerBase GetDocumentReference() => DocumentController;
@@ -87,6 +90,8 @@ namespace Dash
             }
             return null;
         }
+
+        public override TypeInfo TypeInfo => TypeInfo.DocumentReference;
 
         public override string ToScriptString(DocumentController thisDoc)
         {
@@ -111,6 +116,24 @@ namespace Dash
             }
 
             return DocAndKeyToString(DocumentController, FieldKey);
+        }
+
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield return DocumentController;
+            yield return FieldKey;
+        }
+
+        protected override void RefInit()
+        {
+            base.RefInit();
+            ReferenceField(DocumentController);
+        }
+
+        protected override void RefDestroy()
+        {
+            base.RefDestroy();
+            ReleaseField(DocumentController);
         }
     }
 }

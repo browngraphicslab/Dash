@@ -15,9 +15,9 @@ namespace Dash
         //TODO: ModifiedTime not existing until document is modified
 
         // Checks the DataDocuments of all DocumentControllers in the Dash view for a specific Key-Value pair
-        public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
+        public static IEnumerable<SearchResult> SearchByKeyValuePair(string key, string value, bool negate = false)
         {
-            return Parse((negate ? "!" : "") + key.Name + ":" + value);
+            return Parse((negate ? "!" : "") + $"\"{key}\":\"{value}\"");
         }
 
 
@@ -131,6 +131,6 @@ namespace Dash
             return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }));
         }
 
-        public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id);
+        public static DocumentController SearchIndividualById(string id) => RESTClient.Instance.Fields.GetController<DocumentController>(id);
     }
 }

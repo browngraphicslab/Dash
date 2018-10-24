@@ -38,7 +38,7 @@ namespace Dash
         {
             var converter = new TableFieldToMakeViewConverter(docController, key, context);
 
-            var contentBinding = new FieldBinding<FieldControllerBase>()
+            var contentBinding = new FieldBinding<FieldControllerBase, TextController>()
             {
                 Key = key,
                 Document = docController,

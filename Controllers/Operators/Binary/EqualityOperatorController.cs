@@ -1,14 +1,16 @@
-﻿namespace Dash
+﻿using System;
+
+namespace Dash
 {
     [OperatorType(Op.Name.equal, Op.Name.operator_equal)]
     public class EqualityOperatorController : BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>
     {
         public EqualityOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public EqualityOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public EqualityOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Equal To", "850C513F-F38D-4279-B9D4-EED858BCAA6A");
+        private static readonly KeyController TypeKey = KeyController.Get("Equal To");
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

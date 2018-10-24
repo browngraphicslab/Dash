@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -16,13 +17,13 @@ namespace Dash
         public HelpOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Get information on functions", "2D95083C-03E1-4FFA-80FA-881C0ECBD3D7");
+        private static readonly KeyController TypeKey = KeyController.Get("Get information on functions");
 
         //Input keys
-        public static readonly KeyController FuncNameKey = new KeyController("Name of function to explore");
+        public static readonly KeyController FuncNameKey = KeyController.Get("Name of function to explore");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
+        public static readonly KeyController ComputedResultKey = KeyController.Get("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

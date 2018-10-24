@@ -8,21 +8,21 @@ namespace Dash
 {
     public class DocumentAppendOperatorController : OperatorController
     {
-        public static readonly KeyController InputDocumentKey = new KeyController("Input Document");
-        public static readonly KeyController FieldKey = new KeyController("Input Field");
+        public static readonly KeyController InputDocumentKey = KeyController.Get("Input Document");
+        public static readonly KeyController FieldKey = KeyController.Get("Input Field");
 
-        public static readonly KeyController OutputDocumentKey = new KeyController("OutputDocument");
+        public static readonly KeyController OutputDocumentKey = KeyController.Get("OutputDocument");
 
         public DocumentAppendOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
+            
         }
         public DocumentAppendOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Document Append", "4DAD9DE7-DAF8-4EB6-8EA4-8AA5F8D00121");
+        private static readonly KeyController TypeKey = KeyController.Get("Document Append");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -48,7 +48,7 @@ namespace Dash
             FieldControllerBase field = inputs[FieldKey];
 
             var del = doc.MakeDelegate();
-            del.SetField(new KeyController("Concat output", Guid.NewGuid().ToString()), field, true);
+            del.SetField(KeyController.Get("Concat output"), field, true);
 
             outputs[OutputDocumentKey] = del;
             return Task.CompletedTask;

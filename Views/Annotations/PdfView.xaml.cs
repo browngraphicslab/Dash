@@ -173,7 +173,7 @@ namespace Dash
                         {
                             var ele = _bottomAnnotationOverlay.TextSelectableElements[i];
                             var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
-;
+                            ;
                             var correctedFont = fontFamily;
                             if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
                             {
@@ -396,7 +396,7 @@ namespace Dash
         ~PdfView()
         {
 
-            Debug.WriteLine("FINALIZING PdfView");
+            //Debug.WriteLine("FINALIZING PdfView");
         }
 
 
@@ -511,15 +511,18 @@ namespace Dash
         public DocumentController GetRegionDocument(Point? docViewPoint = null)
         {
             var regionDoc = _bottomAnnotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null) {
-                if (docViewPoint != null) {
+            if (regionDoc == null)
+            {
+                if (docViewPoint != null)
+                {
 
                     //else, make a new push pin region closest to given point
                     var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
                     var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
 
                     regionDoc = _bottomAnnotationOverlay.CreatePinRegion(newPoint);
-                } else
+                }
+                else
                     regionDoc = LayoutDocument;
             }
             return regionDoc;
@@ -557,7 +560,7 @@ namespace Dash
 
         private Point calculateClosestPointOnPDF(Point p)
         {
-            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth  ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
+            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
                              p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
         }
 
@@ -576,21 +579,22 @@ namespace Dash
             {
                 return;
             }
-            
+
             try
             {
-                _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
+                if (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://"))
+                {
+                    _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
+                }
+                else
+                {
+                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
+
+                }
             }
             catch (ArgumentException)
             {
-                try
-                {
-                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
-                }
-                catch (ArgumentException)
-                {
-                    return;
-                }
+                return;
             }
 
             var reader = new PdfReader(await _file.OpenStreamForReadAsync());
@@ -599,7 +603,7 @@ namespace Dash
             {
                 pdfDocument = new PdfDocument(reader);
             }
-            catch(BadPasswordException)
+            catch (BadPasswordException)
             {
                 return;
             }
@@ -624,17 +628,28 @@ namespace Dash
                 _currentPageCount = (int)PDFdoc.PageCount;
             }
 
-            await Task.Run(() =>
+            if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
+            {
+                await Task.Run(() =>
+                {
+                    for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                    {
+                        var page = pdfDocument.GetPage(i);
+                        var size = page.GetPageSize();
+                        strategy.SetPage(i - 1, offset, size, page.GetRotation());
+                        offset += page.GetPageSize().GetHeight() + 10;
+                        processor.ProcessPageContent(page);
+                    }
+                });
+            }
+            else
             {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
-                    var size = page.GetPageSize();
-                    strategy.SetPage(i - 1, offset, size, page.GetRotation());
                     offset += page.GetPageSize().GetHeight() + 10;
-                    processor.ProcessPageContent(page);
                 }
-            });
+            }
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;
@@ -875,8 +890,8 @@ namespace Dash
 
                 xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First())  - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First())  - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
+                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
             }
             else
             {

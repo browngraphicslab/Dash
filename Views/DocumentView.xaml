@@ -24,27 +24,22 @@
     </UserControl.Resources>
 
     <Grid x:Name="xMasterStack">
+        <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
+        <Grid.ContextFlyout>
+            <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
+        </Grid.ContextFlyout>
         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
         <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False" />
-        <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved" IsHitTestVisible="{Binding IsNotBackgroundPinned}">
+        <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">
             <Grid.Clip>
                 <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
             </Grid.Clip>
-            <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
-            <Grid.ContextFlyout>
-                <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
-            </Grid.ContextFlyout>
-            
-            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" >
+
+            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" Holding="XContent_OnHolding" IsHoldingEnabled="True">
                 <ContentPresenter.RenderTransform>
                     <MatrixTransform x:Name="xContentTransform"/>
                 </ContentPresenter.RenderTransform>
             </ContentPresenter>
-        </Grid>
-        <Grid x:Name="xBackgroundPinBox" Margin="-20 -20 -20 0" Height="20" Width="20" CornerRadius="10" 
-              Tapped="xBackgroundPin_Tapped" Background="#40FFFFFF" VerticalAlignment="Top"  HorizontalAlignment="Right"  
-              PointerPressed="xBackgroundPin_PointerPressed"  PointerReleased="xBackgroundPin_PointerReleased" >
-            <TextBlock x:Name="xBackgroundPin" Text="&#xE77A;" FontSize="18" Height="20" Width="20" FontFamily="Segoe MDL2 Assets" Foreground="Green" Padding="0"/>
         </Grid>
 
         <!-- border to highlight search results-->

@@ -9,11 +9,12 @@ namespace Dash
     {
         public ColorController() : this(Colors.White) { }
 
-        public ColorController(Color data) : base(new ColorModel(data)) => SaveOnServer();
+        public ColorController(Color data) : base(new ColorModel(data))
+        {
+
+        }
 
         public ColorController(ColorModel colorFieldModel) : base(colorFieldModel) { }
-
-        public override void Init() { }
 
         public ColorModel ColorFieldModel => Model as ColorModel;
 

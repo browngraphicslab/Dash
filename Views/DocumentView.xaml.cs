@@ -15,10 +15,12 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers.Operators;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.FontIcons;
 using Dash.Converters;
 using DashShared;
+using Dash.Views.Collection;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -26,7 +28,6 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        private DocumentController _templateEditor;
         private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private Point _pointerPoint = new Point(0, 0);
@@ -89,7 +90,7 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
-            if (ViewModel?.IsDimensionless == true || ViewModel?.IsWidthless == true)
+            if (ViewModel?.IsDimensionless == true)
             {
                 Width = double.NaN;
                 Height = double.NaN;
@@ -120,16 +121,15 @@ namespace Dash
                 };
             this.AddFieldBinding(VisibilityProperty, binding);
 
-            var binding2 = doc == null ? null : new FieldBinding<BoolController>
+            var binding3 = doc == null ? null : new FieldBinding<BoolController>
             {
-                Converter = new BoolToVisibilityConverter(),
                 Document = doc,
-                Key = KeyStore.IsAdornmentKey,
+                Key = KeyStore.AreContentsHitTestVisibleKey,
                 Mode = BindingMode.OneWay,
-                Tag = "IsAdornment binding in DocumentView",
-                FallbackValue = Visibility.Collapsed
+                Tag = "AreContentsHitTestVisible binding in DocumentView",
+                FallbackValue = true
             };
-            xBackgroundPinBox.AddFieldBinding(VisibilityProperty, binding2);
+            LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
 
             if (ViewModel?.IsDimensionless == true)
             {
@@ -148,36 +148,16 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
-            DataContextChanged += ContextChanged;
+            DataContextChanged += DocumentView_DataContextChanged;
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 25;
 
-            void updateBindings()
-            {
-                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-
-                UpdateRenderTransformBinding();
-                UpdateVisibilityBinding();
-                this.BindBackgroundColor();
-                ViewModel?.Load();
-            }
-
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-            }
-
-            void ContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-            {
-                if (!Equals(args.NewValue, _oldViewModel))
-                {
-                    _oldViewModel?.UnLoad();
-                    updateBindings();
-                    _oldViewModel = ViewModel;
-                }
             }
 
             //int id = DOCID++;
@@ -238,7 +218,7 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                if (this.IsRightBtnPressed() && this.ViewModel.IsNotBackgroundPinned)
+                if (this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                         e.Handled = true;
@@ -246,58 +226,17 @@ namespace Dash
             };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
-            RightTapped += (s, e) => e.Handled = TappedHandler(e.Handled);
-            Tapped += (s, e) => e.Handled = TappedHandler(e.Handled);
+            RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
+            Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
         }
 
-
-
-
-
-
-        void updateRenderTransformBinding(object sender, DependencyProperty dp)
+        private void UpdateBindings()
         {
-            var doc = ViewModel?.LayoutDocument;
-
-            var binding = !BindRenderTransform || doc == null
-                ? null
-                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
-                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
-                {
-                    Converter = new TransformGroupMultiConverter(),
-                    Context = new Context(doc),
-                    Mode = BindingMode.OneWay,
-                    Tag = "RenderTransform multi binding in DocumentView"
-                };
-            this.AddFieldBinding(RenderTransformProperty, binding);
-        }
-
-        void updateVisibilityBinding(object sender, DependencyProperty dp)
-        {
-            var doc = ViewModel?.LayoutDocument;
-
-            var binding = !BindVisibility || doc == null
-                ? null
-                : new FieldBinding<BoolController>
-                {
-                    Converter = new InverseBoolToVisibilityConverter(),
-                    Document = doc,
-                    Key = KeyStore.HiddenKey,
-                    Mode = BindingMode.OneWay,
-                    Tag = "Visibility binding in DocumentView",
-                    FallbackValue = false
-                };
-            this.AddFieldBinding(VisibilityProperty, binding);
-        }
-        void updateBindings()
-        {
-            updateRenderTransformBinding(null, null);
-            updateVisibilityBinding(null, null);
-
-            _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+            UpdateRenderTransformBinding();
+            UpdateVisibilityBinding();
 
             this.BindBackgroundColor();
             ViewModel?.Load();
@@ -306,11 +245,14 @@ namespace Dash
 
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs a)
         {
-            if (a.NewValue != _oldViewModel)
+            if (ViewModel != _oldViewModel)
             {
                 _oldViewModel?.UnLoad();
-                updateBindings();
                 _oldViewModel = ViewModel;
+                if (ViewModel != null)
+                {
+                    UpdateBindings();
+                }
             }
         }
 
@@ -533,10 +475,18 @@ namespace Dash
             }
 
             ViewModel.Position = newPos;
-            ViewModel.Width = newSize.Width;
+            if (newSize.Width != ViewModel.ActualSize.X)
+            {
+                ViewModel.Width = newSize.Width;
+            }
 
             if (delta.Y != 0 || this.IsShiftPressed() || isImage)
-                ViewModel.Height = newSize.Height;
+            {
+                if (newSize.Height != ViewModel.ActualSize.Y)
+                {
+                    ViewModel.Height = newSize.Height;
+                }
+            }
         }
 
         // Controls functionality for the Right-click context menu
@@ -553,14 +503,6 @@ namespace Dash
                 ParentCollection.MaxZ += 1;
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
             }
-        }
-
-        /// <summary>
-        /// Ensures the menu flyout is shown on right tap.
-        /// </summary>
-        public void ForceLeftTapped()
-        {
-            TappedHandler(false);
         }
 
         // this action is used to remove template editor in sync with document
@@ -689,17 +631,36 @@ namespace Dash
         /// <summary>
         /// Handles left and right tapped events on DocumentViews
         /// </summary>
-        /// <param name="wasHandled">Whether the tapped event was previously handled</param>//this is always false currently so it probably isn't needed
+        /// <param name="wasHandled">Whether the tapped event was previously handled
+        /// this is always false currently so it probably isn't needed</param>
+        /// <param name="wasRightTapped"></param>
         /// <returns>Whether the calling tapped event should be handled</returns>
-        public bool TappedHandler(bool wasHandled)
+        public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
+            if (!wasRightTapped)
+            {
+                var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
+                if (scripts != null)
+                {
+                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
+                    var tasks = new List<Task>(scripts.Count);
+                    foreach (var operatorController in scripts)
+                    {
+                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                }
+            }
             if (!wasHandled)
             {
                 FocusedDocument = this;
             }
 
-            var focused = FocusManager.GetFocusedElement() as FrameworkElement;
-            if (focused == null || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
+            if (!(FocusManager.GetFocusedElement() is FrameworkElement focused) || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
                 Focus(FocusState.Programmatic);
             }
@@ -708,10 +669,7 @@ namespace Dash
             MainPage.Instance.xPresentationView.TryHighlightMatches(this);
 
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
-            if (ViewModel?.IsAdornmentGroup == false)
-            {
-                ToFront();
-            }
+            ToFront();
 
             //         if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             if (!wasHandled) // (ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && !wasHandled)
@@ -816,7 +774,18 @@ namespace Dash
             }
         }
 
-
+        
+        private void MenuFlyoutItemToggleAsButton_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var docView in SelectionManager.GetSelectedSiblings(this))
+                {
+                    docView.ViewModel.DocumentController.ToggleButton();
+                    SetZLayer();
+                }
+            }
+        }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -916,7 +885,7 @@ namespace Dash
 
         public void This_Drop(object sender, DragEventArgs e)
         {
-            if (ViewModel.IsAdornmentGroup)
+            if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
                 return;
 
             var dragModel = e.DataView.GetDragModel();
@@ -940,7 +909,7 @@ namespace Dash
 
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
-                    updateBindings();
+                    UpdateBindings();
                     e.Handled = true;
                     return;
                 }
@@ -950,14 +919,18 @@ namespace Dash
                 {
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
+                    {
                         dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
+                    }
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                    {
                         dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                    }
+
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
                     MainPage.Instance.AddFloatingDoc(linkDoc);
-                    //dragDoc.Link(dropDoc, LinkContexts.None, dragModel.LinkType);
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
@@ -1044,6 +1017,12 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpen_OnClick;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true) == null ? "Open In Collapsed Frame" : "Close Frame",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Folder }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpenCollapsed_OnClick;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Delete",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Trash }
             });
@@ -1102,6 +1081,12 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false ? "Remove Button Behavior" : "Add Button Behavior",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
             if (ViewModel.Content is RichTextView)
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1120,6 +1105,22 @@ namespace Dash
                 (cpresent.Content is CollectionView collectionView2))
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
+            }
+        }
+
+        private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(ViewModel.DocumentController, true);
+                if (frame != null)
+                {
+                    frame.Delete();
+                }
+                else
+                {
+                    SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
+                }
             }
         }
 
@@ -1151,20 +1152,12 @@ namespace Dash
             //Debug.Write("dispose DocumentView");
         }
 
-        private void xBackgroundPin_PointerPressed(object sender, PointerRoutedEventArgs e)
+        public bool AreContentsHitTestVisible
         {
-            e.Handled = true;
-        }
-        private void xBackgroundPin_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void xBackgroundPin_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            ViewModel.IsNotBackgroundPinned = !ViewModel.IsNotBackgroundPinned;
-            xBackgroundPin.Text = "" + (char)(!ViewModel.IsNotBackgroundPinned ? 0xE840 : 0xE77A);
-            e.Handled = true;
+            get => ViewModel.AreContentsHitTestVisible;
+            set => ViewModel.AreContentsHitTestVisible = !ViewModel.DocumentController.GetAreContentsHitTestVisible();
+                //xBackgroundPin.Text = "" + (char)(!ViewModel.DocumentController.GetAreContentsHitTestVisible() ? 0xE840 : 0xE77A);
+            
         }
 
         /// <summary>
@@ -1246,6 +1239,13 @@ namespace Dash
 
                 e.Handled = true;
             }
+        }
+
+        //this won't work
+
+        private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            xMenuFlyout_Opening(sender, e);
         }
     }
 }

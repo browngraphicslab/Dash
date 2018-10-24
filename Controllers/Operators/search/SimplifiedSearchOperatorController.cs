@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,12 +13,12 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController QueryKey = new KeyController("Query");
+        public static readonly KeyController QueryKey = KeyController.Get("Query");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public SimplifiedSearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public SimplifiedSearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public SimplifiedSearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
@@ -35,7 +36,7 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey = new KeyController("Simple Search", "F0D6FCB0-4635-4ECF-880F-81D2738A1350");
+        private static readonly KeyController TypeKey = KeyController.Get("Simple Search");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

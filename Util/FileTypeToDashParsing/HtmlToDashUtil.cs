@@ -115,7 +115,7 @@ namespace Dash
                     related.Add(i.Document);
                 }
 
-                htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(new KeyController("Html Images", "Html Images"), related, true);
+                htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(KeyController.Get("Html Images"), related, true);
             }
 
             return htmlNote;

@@ -479,12 +479,12 @@ namespace Dash
                 var splitstring = str.Split(':');
                 value = splitstring[1].TrimEnd(' ').TrimStart(' ');
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                key = new KeyController(keystring, Guid.NewGuid().ToString());
+                key = KeyController.Get(keystring);
             }
             else
             {
                 value = str;
-                key = new KeyController($"Document Field {suffix}", Guid.NewGuid().ToString());
+                key = KeyController.Get($"Document Field {suffix}");
             }
 
         }

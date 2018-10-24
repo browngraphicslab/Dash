@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,14 +16,14 @@ namespace Dash
         public RemoveCharOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Remove all of specified char", "A1AE7EAF-4C95-42C9-AFF9-845673B87042");
+        private static readonly KeyController TypeKey = KeyController.Get("Remove all of specified char");
 
         //Input keys
-        public static readonly KeyController SourceKey = new KeyController("Source string");
-        public static readonly KeyController ToRemoveKey = new KeyController( "Char(s) to Remove");
+        public static readonly KeyController SourceKey = KeyController.Get("Source string");
+        public static readonly KeyController ToRemoveKey = KeyController.Get("Char(s) to Remove");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
+        public static readonly KeyController ComputedResultKey = KeyController.Get("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

@@ -7,14 +7,12 @@ namespace Dash
     {
         public RectController(Rect data) : base(new RectModel(data))
         {
-            SaveOnServer();
 
         }
 
         public RectController(double x, double y, double width, double height) : base(
             new RectModel(x, y, width, height))
         {
-            SaveOnServer();
 
         }
 
@@ -22,12 +20,6 @@ namespace Dash
         {
 
         }
-
-        public override void Init()
-        {
-
-        }
-
 
         /// <summary>
         ///     The <see cref="Dash.PointModel" /> associated with this <see cref="PointController" />,

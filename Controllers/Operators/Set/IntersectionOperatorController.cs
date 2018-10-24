@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -9,11 +10,11 @@ namespace Dash
 
     {
         //Input keys
-        public static readonly KeyController AKey = new KeyController("Input A");
-        public static readonly KeyController BKey = new KeyController("Input B");
+        public static readonly KeyController AKey = KeyController.Get("Input A");
+        public static readonly KeyController BKey = KeyController.Get("Input B");
 
         //Output keys
-        public static readonly KeyController IntersectionKey = new KeyController("Intersection");
+        public static readonly KeyController IntersectionKey = KeyController.Get("Intersection");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -32,11 +33,10 @@ namespace Dash
 
         public IntersectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Intersection operator", "5B93D353-AE02-4E20-9E2D-D38C01BC5F20");
+        private static readonly KeyController TypeKey = KeyController.Get("Intersection operator");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

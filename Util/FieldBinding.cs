@@ -172,7 +172,7 @@ namespace Dash
         }
     }
 
-    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase
+    public class FieldBinding<T> : FieldBinding<T, T> where T : FieldControllerBase, new()
     {
         public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "",
             [CallerFilePath] string path = "") : base(lineNumber, caller, path)
@@ -272,17 +272,19 @@ namespace Dash
             bool loading = false;
 
             element.Unloaded += OnElementOnUnloaded;
+                element.Loaded += OnElementOnLoading;
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             if (element.IsInVisualTree())
             {
                 loading = true;
+                element.Loaded -= OnElementOnLoading;
                 element.Loading += OnElementOnLoading;
                 AddBinding();
                 //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
             else
             {
-                element.Loaded += OnElementOnLoading;
+                //Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void AddBinding()
@@ -292,6 +294,9 @@ namespace Dash
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
                 }
+
+                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
+                //Debug.Assert(refCount == 1);
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -308,7 +313,9 @@ namespace Dash
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
                 //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
                 //     but it does kinda mess with how the reference counting should work...
-                //Debug.Assert(refCount >= 0);
+
+                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
+                //Debug.Assert(refCount == 0);
             }
 
             void OnElementOnLoading(object frameworkElement, object o)
@@ -371,18 +378,20 @@ namespace Dash
             int refCount = 0;
             bool loading = false;
             element.Unloaded += OnElementOnUnloaded;
+                element.Loaded += OnElementOnLoaded;
 
             //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             if (element.IsInVisualTree())
             {
                 loading = true;
+                element.Loaded -= OnElementOnLoaded;
                 element.Loading += OnElementOnLoaded;
                 AddBinding();
                 //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
             else
             {
-                element.Loaded += OnElementOnLoaded;
+                //Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
             }
 
             void AddBinding()
@@ -394,6 +403,9 @@ namespace Dash
                     token = element.RegisterPropertyChangedCallback(property, callback);
                     //Debug.WriteLine($"Binding {id,-5} Add :            RefCount = {refCount,5}, {element.GetType().Name}");
                 }
+
+                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
+                //Debug.Assert(refCount == 1);
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
@@ -414,7 +426,9 @@ namespace Dash
                 //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
                 //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
                 //     but it does kinda mess with how the reference counting should work...
-                //Debug.Assert(refCount >= 0);
+
+                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
+                //Debug.Assert(refCount == 0);
             }
 
             void OnElementOnLoaded(object frameworkElement, object o)

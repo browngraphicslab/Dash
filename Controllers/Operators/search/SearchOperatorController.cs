@@ -17,21 +17,20 @@ namespace Dash
 
         public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Search", "EA5FD353-F99A-4F99-B0BC-5D2C88A51019");
+        private static readonly KeyController TypeKey = KeyController.Get("Search");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new SearchOperatorBox(rfmc);
 
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("Term");
-        public static readonly KeyController SortKey = new KeyController("Sorted");
-        public static readonly KeyController InputCollection = new KeyController("InputCollection");
+        public static readonly KeyController TextKey = KeyController.Get("Term");
+        public static readonly KeyController SortKey = KeyController.Get("Sorted");
+        public static readonly KeyController InputCollection = KeyController.Get("InputCollection");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

@@ -150,6 +150,7 @@ namespace Dash
             Loaded += (sender, args) =>
             {
                 xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -158,6 +159,7 @@ namespace Dash
                 xCopy,
                 xDelete,
                 xMakeInstance,
+                xAreContentsHitTestVisible,
                 xFitWidth,
                 xFitHeight
             };
@@ -170,6 +172,7 @@ namespace Dash
                 xCopy,
                 xDelete,
                 xMakeInstance,
+                xAreContentsHitTestVisible,
                 xFitWidth,
                 xFitHeight,
                 xAddGroup,
@@ -196,6 +199,15 @@ namespace Dash
             allSeparators = tempSeparators;
 
             AddSecondaryButtonEventHandlers();
+        }
+
+        private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            xAreContentsHitTestVisibleIcon.Text = ((char)0xE840).ToString();
+            foreach (var d in args.SelectedViews)
+            {
+                xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+            }
         }
 
         /// <summary>
@@ -527,8 +539,17 @@ namespace Dash
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
+                {
+                    d.ViewModel.LayoutDocument.SetWidth(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey,null)?.Data ?? 
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.X);
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
-                else d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                }
+                else
+                {
+                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, d.ViewModel.LayoutDocument.GetWidth(), true);
+                    d.ViewModel.LayoutDocument.SetWidth(double.NaN);
+                    d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                }
                 d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
             }
         }
@@ -538,17 +559,41 @@ namespace Dash
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
+                {
+                    d.ViewModel.LayoutDocument.SetHeight(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.Y);
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
-                else d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
+                }
+                else
+                {
+                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, d.ViewModel.LayoutDocument.GetHeight(), true);
+                    d.ViewModel.LayoutDocument.SetHeight(double.NaN);
+                    d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
+                }
                 d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
+            }
+        }
+        // free contetns
+        private void FreezeContents(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var d in SelectionManager.GetSelectedDocs())
+                {
+                    d.AreContentsHitTestVisible = !d.AreContentsHitTestVisible;
+                    xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+                }
             }
         }
         // copy btn
         private void MakeInstance(object sender, RoutedEventArgs e)
         {
-            foreach (var d in SelectionManager.GetSelectedDocs())
+            using (UndoManager.GetBatchHandle())
             {
-                d.MakeInstance();
+                foreach (var d in SelectionManager.GetSelectedDocs())
+                {
+                    d.MakeInstance();
+                }
             }
         }
 
@@ -556,9 +601,11 @@ namespace Dash
         private void Delete(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
             {
-                d.DeleteDocument();
+                foreach (DocumentView d in SelectionManager.GetSelectedDocs())
+                {
+                    d.DeleteDocument();
+                }
             }
         }
         
@@ -969,6 +1016,7 @@ namespace Dash
         private ToolTip _addAudio;
         private ToolTip _copy;
         private ToolTip _instance;
+        private ToolTip _freeze;
         private ToolTip _fitWidth;
         private ToolTip _fitHeight;
         private ToolTip _delete;
@@ -1062,7 +1110,15 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xMakeInstance, _instance);
 
-            _fitWidth = new ToolTip()
+            _freeze = new ToolTip()
+            {
+                Content = "Freeze Contents",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAreContentsHitTestVisibleIcon, _freeze); 
+
+             _fitWidth = new ToolTip()
             {
                 Content = "Fit Width",
                 Placement = placementMode,
@@ -1161,12 +1217,12 @@ namespace Dash
 
         private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
         {
-            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Left, SplitFrame.ActiveFrame.DocumentController, true);
+            SplitFrame.ActiveFrame.Split(SplitDirection.Right, autosize: true);
         }
 
         private void XSplitHorizontal_OnClick(object sender, RoutedEventArgs e)
         {
-            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Down, SplitFrame.ActiveFrame.DocumentController, true);
+            SplitFrame.ActiveFrame.Split(SplitDirection.Down, autosize: true);
         }
 
         private void XCloseSplit_OnClick(object sender, RoutedEventArgs e)

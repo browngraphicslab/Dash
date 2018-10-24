@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -9,15 +10,14 @@ namespace Dash
     public class IntersectByValueOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController SetAKey = new KeyController("A");
-        public static readonly KeyController SetBKey = new KeyController("B");
+        public static readonly KeyController SetAKey = KeyController.Get("A");
+        public static readonly KeyController SetBKey = KeyController.Get("B");
 
         //Output keys
-        public static readonly KeyController IntersectionKey = new KeyController("Intersection");
+        public static readonly KeyController IntersectionKey = KeyController.Get("Intersection");
 
         public IntersectByValueOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public IntersectByValueOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -42,7 +42,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("Intersect by value", "9B073C2B-8B11-4939-818F-903A067D412E");
+            KeyController.Get("Intersect by value");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -55,16 +55,16 @@ namespace Dash
 
             //TODO actually optimize this, right now it's just a prood of concept.  
             //optimizing this will be VERY important as we can definitly go from O(n*n) to O(n) 
-            foreach(var obj in set1)
-            {
-                foreach (var obj2 in set2)
-                {
-                    if (obj.Model.ValueEquals(obj2.Model))
-                    {
-                        returnSet.Add(obj);
-                    }
-                }
-            }
+            //foreach(var obj in set1)
+            //{
+            //    foreach (var obj2 in set2)
+            //    {
+            //        if (obj.Model.ValueEquals(obj2.Model))
+            //        {
+            //            returnSet.Add(obj);
+            //        }
+            //    }
+            //}
 
             outputs[IntersectionKey] = returnSet;
             return Task.CompletedTask;

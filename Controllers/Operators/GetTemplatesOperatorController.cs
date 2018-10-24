@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DashShared;
@@ -12,9 +13,9 @@ namespace Dash
         //Input keys
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("C2CA8DE2-5320-4788-BF81-96853CBD61B8", "Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public GetTemplatesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public GetTemplatesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public GetTemplatesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -29,7 +30,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("6CD6E948-800D-4536-9985-154D7A0347DC", "Access Template List");
+        private static readonly KeyController TypeKey = KeyController.Get("Access Template List");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

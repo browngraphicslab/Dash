@@ -83,7 +83,7 @@ namespace Dash
 
         ~CollectionViewModel()
         {
-            Debug.WriteLine("FINALIZING CollectionViewModel");
+            //Debug.WriteLine("FINALIZING CollectionViewModel");
         }
 
         /// <summary>
@@ -124,15 +124,16 @@ namespace Dash
                 foreach (var d in DocumentViewModels)
                 {
                     var halin = d.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch;
-                    var valin = d.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch;
-                    bool autoHeight = double.IsNaN(d.LayoutDocument.GetHeight()) && !double.IsNaN(d.LayoutDocument.GetWidth())&& !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-                    bool autoWidth = !double.IsNaN(d.LayoutDocument.GetHeight()) &&  double.IsNaN(d.LayoutDocument.GetWidth()) && !d.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
-                    if (!halin && !autoWidth)
+                    var valin = d.LayoutDocument.GetVerticalAlignment()   == VerticalAlignment.Stretch;
+                    if (!halin)
+                    {
                         rl.Union(d.Bounds);
-                    if (!valin && !autoHeight)
+                    }
+
+                    if (!valin)
+                    {
                         rr.Union(d.Bounds);
-                    else if (!valin && autoHeight)
-                        rr.Union(new Point(d.Bounds.Left, d.Bounds.Top));
+                    }
                 }
                 var r = !rl.IsEmpty && !rr.IsEmpty ? new Rect(rl.Left, rr.Top, rl.Width, rr.Height) : Rect.Empty;
                 if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
@@ -732,7 +733,6 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("DROP ");
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
@@ -771,26 +771,25 @@ namespace Dash
                 }
                 else
                 {
-
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving));
+                    AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, this));
                 }
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
-
-        private async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving)
+        
+        public static async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel)
         {
-            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null)  // dropping a DataBox
+            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null && collectionViewModel != null)  // dropping a DataBox
             {
-                RouteDataBoxReferencesThroughCollection(ContainerDocument, docsToAdd);
+                RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
             }
 
             if (isMoving && dragModel is DragDocumentModel dragDocModel)
             {
                 for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
                 {
-                    if (dragDocModel.DraggedDocCollectionViews[i] == this)
+                    if (dragDocModel.DraggedDocCollectionViews[i] == collectionViewModel)
 
                     {
                         docsToAdd.Remove(dragDocModel.DraggedDocuments[i]);
@@ -811,14 +810,26 @@ namespace Dash
                             var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
                             overlay?.EmbeddedDocsList.Remove(dragDocModel.DraggedDocuments[i]);
                         }
-                        else
+                        else 
                         {
                             dragDocModel.DraggedDocCollectionViews[i].RemoveDocument(dragDocModel.DraggedDocuments[i]);
                         }
-
                     }
                 }
-
+            }
+            for (int i = 0; i < docsToAdd.Count; i++)
+            {
+                if (collectionViewModel?.ViewType == CollectionView.CollectionViewType.Freeform && !docsToAdd[i].DocumentType.Equals(RichTextBox.DocumentType))
+                {
+                    if (docsToAdd[i].GetHorizontalAlignment() == HorizontalAlignment.Stretch)
+                        docsToAdd[i].SetHorizontalAlignment(HorizontalAlignment.Left);
+                    if (docsToAdd[i].GetVerticalAlignment() == VerticalAlignment.Stretch)
+                        docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
+                    if (double.IsNaN(docsToAdd[i].GetWidth()))
+                        docsToAdd[i].SetWidth(300);
+                    if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
+                        docsToAdd[i].SetFitToParent(true);
+                }
             }
 
             return docsToAdd;

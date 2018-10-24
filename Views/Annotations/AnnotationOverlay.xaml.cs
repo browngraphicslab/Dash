@@ -26,9 +26,11 @@ namespace Dash
     {
         private InkController                           _inkController;
         private AnnotationType                          _currAnnotationType = AnnotationType.None;
-        private ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
+        private readonly ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
         private bool                                    _maskInkUpdates = false;
         [CanBeNull] private AnchorableAnnotation        _currentAnnotation;
+
+        public ObservableCollection<DocumentViewModel> EmbeddedViewModels => _embeddedViewModels;
 
         public delegate DocumentController       RegionGetter(AnnotationType type);
         public readonly DocumentController        MainDocument;
@@ -48,12 +50,17 @@ namespace Dash
                 _currAnnotationType = value;
                 OnPropertyChanged();
 
-                //XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
-                //XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                if (XInkCanvas != null)
+                {
+                    XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
+                    XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                }
             }
         }
 
         public List<int> PageEndIndices { get; set; }
+
+        private InkCanvas XInkCanvas { get; }
 
         public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
         {
@@ -64,12 +71,17 @@ namespace Dash
 
             AnnotationManager = new AnnotationManager(this);
 
-            //XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
-            //XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-            //XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            //XInkCanvas.InkPresenter.IsInputEnabled = false;
-            //XInkCanvas.IsHitTestVisible = false;
-            //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                XInkCanvas = new InkCanvas();
+                XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+                XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+                XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+                XInkCanvas.InkPresenter.IsInputEnabled = false;
+                XInkCanvas.IsHitTestVisible = false;
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            }
+
             Loaded   += onLoaded;
             Unloaded += onUnloaded;
 
@@ -176,9 +188,11 @@ namespace Dash
         }
 
         void onUnloaded(object o, RoutedEventArgs routedEventArgs)
-        {
-            RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
-            _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
+        { 
+            if (RegionDocsList != null)
+                RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
+            if (_inkController != null)
+                _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
         }
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {
@@ -188,7 +202,6 @@ namespace Dash
             _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
             RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
-            xItemsControl.ItemsSource = _embeddedViewModels;
             embeddedDocsListOnFieldModelUpdated(null, 
                 new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.TypedData, new List<DocumentController>(),0), null);
            _embeddedViewModels.Clear();
@@ -254,10 +267,10 @@ namespace Dash
 
         private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (!_maskInkUpdates)
+            if (!_maskInkUpdates && XInkCanvas != null)
             {
-                //XInkCanvas.InkPresenter.StrokeContainer.Clear();
-                //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+                XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
         }
 
@@ -404,16 +417,22 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
         {
-            //_maskInkUpdates = true;
-            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            //_maskInkUpdates = false;
+            if (XInkCanvas != null)
+            {
+                _maskInkUpdates = true;
+                _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                _maskInkUpdates = false;
+            }
         }
 
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            //_maskInkUpdates = true;
-            //_inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-            //_maskInkUpdates = false;
+            if (XInkCanvas != null)
+            {
+                _maskInkUpdates = true;
+                _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                _maskInkUpdates = false;
+            }
         }
 
         #endregion

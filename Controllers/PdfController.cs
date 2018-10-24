@@ -12,12 +12,10 @@ namespace Dash
         // == CONSTRUCTORS ==
         public PdfController() : base(new PdfModel())
         {
-            SaveOnServer();
         }
 
         public PdfController(Uri path, string data = null) : base(new PdfModel(path, data))
         {
-            SaveOnServer();
         }
 
         public PdfController(PdfModel pdfFieldModel) : base(pdfFieldModel)
@@ -26,10 +24,6 @@ namespace Dash
         }
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="PdfFieldModel" /> associated with this <see cref="PdfController" />,

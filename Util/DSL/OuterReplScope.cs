@@ -37,7 +37,7 @@ namespace Dash
             //add varible to autosuggest option
             DishReplView.NewVariable(variableName);
 
-            var key = new KeyController(variableName);
+            var key = KeyController.Get(variableName);
             _variableDoc.SetField(key, valueToSet, true);
         }
 
@@ -49,7 +49,7 @@ namespace Dash
 
             child._dictionary[variableName] = valueToSet;
 
-            var key = new KeyController(variableName);
+            var key = KeyController.Get(variableName);
             _variableDoc.SetField(key, valueToSet, true);
         }
     }

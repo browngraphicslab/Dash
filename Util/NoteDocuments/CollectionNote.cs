@@ -7,8 +7,9 @@ namespace Dash
 {
     public class CollectionNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
+        public static readonly DocumentType CollectionNoteDocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
         static string _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
+        protected override DocumentType DocumentType => CollectionNoteDocumentType;
 
         protected override DocumentController createPrototype(string prototypeID)
         {
@@ -39,7 +40,17 @@ namespace Dash
             dataDocument.Tag = "Collection Note Data " + count;
             Document.Tag = "Collection Note Layout" + count++;
 
+            if (viewtype == CollectionView.CollectionViewType.Icon)
+            {
+                Document.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CollectionView.CollectionViewType.Freeform.ToString(), true);
+            }
+
             dataDocument.SetField(KeyStore.InkDataKey, new InkController(), true);
+            if (double.IsNaN(width) && double.IsNaN(height))
+            {
+                Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                Document.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
+            }
 
             // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
             //Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);

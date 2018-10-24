@@ -69,12 +69,12 @@ namespace Dash
         }   
         
         //Input Keys
-        public static readonly KeyController FilterFieldKey = new KeyController("_FilterField", "B98F5D76-55D6-4796-B53C-D7C645094A85");
-        public static readonly KeyController BucketsKey = new KeyController("_Buckets", "5F0974E9-08A1-46BD-89E5-6225C1FE40C7");
-        public static readonly KeyController SelectedKey = new KeyController("Selected", "A1AABEE2-D842-490A-875E-72C509011D86");
-        public static readonly KeyController InputDocsKey = new KeyController("Dataset", "0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17");
-        public static readonly KeyController AutoFitKey = new KeyController("_AutoFit", "79A247CB-CE40-44EA-9EA5-BB295F1F70F5");
-        public static readonly KeyController AvgResultKey = new KeyController("Avg", "27A7017A-170E-4E4A-8CDC-94983C2A5188");
+        public static readonly KeyController FilterFieldKey = KeyController.Get("_FilterField");
+        public static readonly KeyController BucketsKey = KeyController.Get("_Buckets");
+        public static readonly KeyController SelectedKey = KeyController.Get("Selected");
+        public static readonly KeyController InputDocsKey = KeyController.Get("Dataset");
+        public static readonly KeyController AutoFitKey = KeyController.Get("_AutoFit");
+        public static readonly KeyController AvgResultKey = KeyController.Get("Avg");
 
 
         DocumentController _parentDocument;
@@ -90,15 +90,13 @@ namespace Dash
                     if (ParentDocument.GetField(BucketsKey) == null)
                         ParentDocument.SetField(BucketsKey, new ListController<NumberController>(new NumberController[] {
                                                         new NumberController(0), new NumberController(0), new NumberController(0), new NumberController(0)}), true);
-                    if (ParentDocument.GetField(FilterFieldKey) == null)
-                        ParentDocument.SetField(FilterFieldKey, new KeyController(), true);
                     if (ParentDocument.GetField(AutoFitKey) == null)
                         ParentDocument.SetField(AutoFitKey, new NumberController(3), true);
                     if (ParentDocument.GetField(SelectedKey) == null)
                         ParentDocument.SetField(SelectedKey, new ListController<NumberController>(), true);
                     ParentDocument.SetField(AvgResultKey, new NumberController(0), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
-                    xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController>()
+                    xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController, TextController>()
                     {
                         Mode = BindingMode.TwoWay,
                         Document = ParentDocument,
@@ -177,7 +175,7 @@ namespace Dash
             var pattern = ParentDocument?.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, context);
             var autofit = ParentDocument?.GetDereferencedField<NumberController>(CollectionDBView.AutoFitKey, context)?.Data != 0;
             var selectedBars = ParentDocument?.GetDereferencedField<ListController<NumberController>>(CollectionDBView.SelectedKey, context)?.Data;
-            if (dbDocs != null && buckets != null)
+            if (dbDocs != null && buckets != null && pattern != null)
             {
                 if (autofit)
                 {

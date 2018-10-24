@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,20 +12,20 @@ namespace Dash
     public class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("Term");
+        public static readonly KeyController TextKey = KeyController.Get("Term");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
 
-        public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public GetDocumentsInCollectionOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Get Documents In Collection", "2A9CC210-795F-416E-B039-7644B59B4CFE");
+        private static readonly KeyController TypeKey = KeyController.Get("Get Documents In Collection");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

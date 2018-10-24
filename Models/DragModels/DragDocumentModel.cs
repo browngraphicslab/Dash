@@ -33,6 +33,7 @@ namespace Dash
         public bool MakeCollection { get; set; } = false;
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
+        public bool DraggingJoinButton { get; set; } = false;
 
         public DragDocumentModel(DocumentController draggedDocument)
         {
@@ -107,22 +108,7 @@ namespace Dash
                 // ...otherwise, create a view copy
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                    DocumentController vcopy = DraggedDocuments[i]
-                        .GetViewCopy(GetPosition(i));
-
-                    // when we drop a something that had no bounds (e.g., a workspace or a docked document), then we create
-                    // an arbitrary size for it and zero out its pan position so that it will FitToParent
-                    if (vcopy.DocumentType.Equals(RichTextBox.DocumentType) ||
-                        !double.IsNaN(vcopy.GetWidthField()?.Data ?? double.NaN) ||
-                        !double.IsNaN(vcopy.GetHeightField()?.Data ?? double.NaN))
-                        docs.Add(vcopy);
-                    else
-                    {
-                        vcopy.SetWidth(500);
-                        vcopy.SetHeight(300);
-                        vcopy.SetFitToParent(true);
-                        docs.Add(vcopy);
-                    }
+                   docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
                 }
             }
             else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
@@ -135,13 +121,6 @@ namespace Dash
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
                     var draggedDoc = DraggedDocuments[i];
-                    if (double.IsNaN(draggedDoc.GetWidth()) && draggedDoc.DocumentType.Equals(CollectionBox.DocumentType))
-                    {
-                        draggedDoc = draggedDoc.GetViewCopy();
-                        draggedDoc.SetWidth(400);
-                        draggedDoc.SetHeight(300);
-                        draggedDoc.SetFitToParent(true);
-                    }
 
                     var pos = GetPosition(i);
                     if (pos.HasValue)
@@ -153,7 +132,7 @@ namespace Dash
                 }
             }
 
-            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(), ViewType, collectedDocuments: docs).Document } : docs;
+            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(),  ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
         }
 
         //TODO do we want to create link here?

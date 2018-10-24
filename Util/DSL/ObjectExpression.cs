@@ -53,7 +53,7 @@ namespace Dash
             {
                 var keyString = scriptExpression.Key;
                 if (keyString == KeyStore.DataKey.Name) continue;
-                var key = new KeyController(keyString);
+                var key = KeyController.Get(keyString);
                 var value = await scriptExpression.Value.Execute(scope);
                 doc.SetField(key, value, true);
             }
