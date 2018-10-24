@@ -182,16 +182,8 @@ namespace Dash
             foreach (var node in DocumentTree.MainPageTree)
             {
                 var layout = node.ViewDocument;
-                var horizontalAlignment = layout.GetField<TextController>(KeyStore.HorizontalAlignmentKey);
-                if (horizontalAlignment == null)
-                {
-                    layout.SetHorizontalAlignment(HorizontalAlignment.Left);
-                }
-                var verticalAlignment = layout.GetField<TextController>(KeyStore.VerticalAlignmentKey);
-                if (verticalAlignment == null)
-                {
-                    layout.SetVerticalAlignment(VerticalAlignment.Top);
-                }
+                layout.SetHorizontalAlignment(HorizontalAlignment.Left);
+                layout.SetVerticalAlignment(VerticalAlignment.Top);
             }
 
             LoadSettings();
@@ -214,7 +206,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-            
+
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -373,7 +365,7 @@ namespace Dash
 
                 }
             }
-            
+
             e.Handled = true;
         }
 
