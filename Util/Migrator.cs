@@ -76,22 +76,25 @@ namespace Dash
                 Transaction = transaction
             };
 
+            var nameRegex = new Regex("\"Name\":\"(?'name'.*)\",\"id\"");
+
             var keyMap = new Dictionary<string, string>();
             foreach (var (key, name) in keys)
             {
+                updateKeysCommand.Parameters.Clear();
                 var actualName = name;
                 if (actualName == "_DocumentContext")
                 {
                     actualName = "DocumentContext";
+                    key.value = nameRegex.Replace(key.value, match => $"\"Name\":\"{actualName}\",\"id\"");
                 }
                 var oldId = key.key;
                 var newId = UtilShared.GetDeterministicGuid(actualName).ToString().ToUpper();
                 keyMap[oldId] = newId;
                 key.key = newId;
-                updateKeysCommand.Parameters.Clear();
                 updateKeysCommand.Parameters.AddWithValue("@newId", newId);
                 updateKeysCommand.Parameters.AddWithValue("@id", oldId);
-                updateKeysCommand.ExecuteNonQuery();
+                var test = updateKeysCommand.ExecuteNonQuery();
             }
 
             foreach (var result in results)
