@@ -88,9 +88,6 @@ namespace Dash
 
         public abstract Canvas GetInkHostCanvas();
 
-        //records number of fingers on screen for touch interactions
-        public static int NumFingers;
-        private List<PointerRoutedEventArgs> handledTouch = new List<PointerRoutedEventArgs>();
 
         protected CollectionFreeformBase()
         {
@@ -627,10 +624,10 @@ namespace Dash
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !TouchInteractions.handledTouch.Contains(e))
             {
-                handledTouch.Add(e);
-                if (NumFingers > 0) NumFingers--;
+                TouchInteractions.handledTouch.Add(e);
+                if (TouchInteractions.NumFingers > 0) TouchInteractions.NumFingers--;
             }
             if (_marquee != null)
             {
@@ -638,10 +635,15 @@ namespace Dash
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
                 ResetMarquee(true);
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 if (e != null) e.Handled = true;
             }
 
-            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
+            if (TouchInteractions.NumFingers == 0)
+            {
+                TouchInteractions.isPanning = false;
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+            }
 
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
@@ -649,10 +651,10 @@ namespace Dash
 
         protected virtual void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !TouchInteractions.handledTouch.Contains(e))
             {
-                handledTouch.Add(e);
-                if(NumFingers > 0) NumFingers--;
+                TouchInteractions.handledTouch.Add(e);
+                if(TouchInteractions.NumFingers > 0) TouchInteractions.NumFingers--;
             }
             if (_marquee != null)
             {
@@ -664,13 +666,19 @@ namespace Dash
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;
             }
-            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
+
+            if (TouchInteractions.NumFingers == 0)
+            {
+                TouchInteractions.isPanning = false;
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+            }
         }
 
         public bool StartMarquee(Point pos)
         {
             if (_isMarqueeActive)
             {
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Marquee;
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 
@@ -749,15 +757,16 @@ namespace Dash
         /// <param name="args"></param>
         protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
 		{
-		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
+		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !TouchInteractions.handledTouch.Contains(args))
 		    {
-                handledTouch.Add(args);
-                NumFingers++;
+		        TouchInteractions.handledTouch.Add(args);
+		        TouchInteractions.NumFingers++;
                 //var docview = this.GetFirstAncestorOfType<DocumentView>();
                 //      if (SelectionManager.IsSelected(docview))
                 //    //SelectionManager.Select(docview, false);
                 //SelectionManager.TryInitiateDragDrop(docview, args, null);
-		        ViewManipulationControls.isPanning = false;
+		        TouchInteractions.isPanning = false;
+
             }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())

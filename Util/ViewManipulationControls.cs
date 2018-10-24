@@ -36,12 +36,8 @@ namespace Dash
             get => _elementScale;
             set =>_elementScale = value;
         }
-
         public PointerDeviceType BlockedInputType { get; set; }
         public bool FilterInput { get; set; }
-
-        private bool DraggingDoc;
-        public static bool isPanning;
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
@@ -102,9 +98,10 @@ namespace Dash
 
         private void DragManipCompletedTouch(object sender, EventArgs e)
         {
-            CollectionFreeformBase.NumFingers--;
-            DraggingDoc = false;
+            TouchInteractions.NumFingers--;
+            TouchInteractions.DraggingDoc = false;
             SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;
+            TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
         }
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -115,15 +112,16 @@ namespace Dash
                 //e.Complete();
                 _processManipulation = false;
             }
-            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !DraggingDoc)
+            if (docView != null && TouchInteractions.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !TouchInteractions.DraggingDoc)
             {
                 //drag document 
                 if (!SelectionManager.IsSelected(docView))
                 {
                     SelectionManager.Select(docView, false);
                     SelectionManager.DragManipulationCompleted += DragManipCompletedTouch;
-                    DraggingDoc = true;
-
+                    TouchInteractions.DraggingDoc = true;
+                    TouchInteractions.CurrInteraction =
+                        TouchInteractions.TouchInteraction.DocumentManipulation;
                     SelectionManager.TryInitiateDragDrop(docView, null, e);
                 }
             }
@@ -141,7 +139,7 @@ namespace Dash
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() || 
-                (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 2) || (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 && isPanning))
+                (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2) || (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 1 && TouchInteractions.isPanning))
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
@@ -158,9 +156,10 @@ namespace Dash
                     }
                 }
 
-                isPanning = true;
+                TouchInteractions.isPanning = true;
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Pan;
                 e.Handled = true;
-            } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
+            } else if (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 1)
             {
                 ////only do marquee if main collection (for now)
                 //var mainColl = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformBase>();
@@ -171,8 +170,10 @@ namespace Dash
                     .TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
                     //gets funky with nested collections, but otherwise works
                     ////handle touch interactions with just one finger - equivalent to drag without ctr
-                    if (_freeformView.StartMarquee(point))
+                    //if in another touch mode, ignore
+                    if (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None && _freeformView.StartMarquee(point))
                     {
+                        TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Marquee;
                         e.Handled = true;
                     }
                 }
