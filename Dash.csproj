@@ -209,6 +209,7 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Util\KMeansCluster.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
     <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />
@@ -240,6 +241,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\PDFSection.cs" />
     <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />

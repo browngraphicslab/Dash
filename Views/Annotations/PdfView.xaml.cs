@@ -16,12 +16,14 @@ using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Storage;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using iText.Kernel.Crypto;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
@@ -651,11 +653,39 @@ namespace Dash
                 }
             }
 
-            var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            var (selectableElements, text, pages, vagueSections) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             _topAnnotationOverlay.TextSelectableElements = selectableElements;
             _topAnnotationOverlay.PageEndIndices = pages;
             _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
             _bottomAnnotationOverlay.PageEndIndices = pages;
+
+            var numSections = vagueSections.Aggregate(0, (i, list) => i + list.Count);
+            byte aIncrement = (byte) (128 / numSections);
+            byte a = 0;
+
+            foreach (var sectionList in vagueSections)
+            {
+                foreach (var section in sectionList)
+                {
+                    var rect = new Rectangle
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Width = section.Bounds.Width,
+                        Height = section.Bounds.Height,
+                        RenderTransform = new TranslateTransform
+                        {
+                            X = section.Bounds.X,
+                            Y = section.Bounds.Y
+                        },
+                        Fill = new SolidColorBrush(Color.FromArgb(a, 255, 0, 0)),
+                        Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
+                        StrokeThickness = 1
+                    };
+                    a += aIncrement;
+                    _bottomAnnotationOverlay.XAnnotationCanvas.Children.Add(rect);
+                }
+            }
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
