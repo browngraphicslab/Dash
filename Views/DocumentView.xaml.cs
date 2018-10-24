@@ -214,23 +214,41 @@ namespace Dash
                 _oldViewModel?.UnLoad();
             };
 
+            Tapped += (sender, e) =>
+            {
+                Debug.WriteLine("tap");
+            };
+
+            RightTapped += (sender, e) =>
+            {
+                Debug.WriteLine("right tap");
+            };
+
+
+            DoubleTapped += (sender, e) =>
+            {
+                Debug.WriteLine("double tap");
+            };
+
+
+            Holding += (sender, e) =>
+            {
+                Debug.WriteLine("hold");
+            };
+
             PointerPressed += (sender, e) =>
             {
+                Debug.WriteLine("pointer pressed");
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
 
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-                {
-                    if(!SelectionManager.IsSelected(this))
-                        SelectionManager.Select(this, false);
-                    SelectionManager.TryInitiateDragDrop(this, e, null);
-                }
 
-                e.Handled = true;
-                
+
+                // e.Handled = true;
+
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
                     e.Handled = false;
@@ -246,6 +264,8 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
+                Debug.WriteLine("manipulation started");
+                // enables right click on selection
                 if (this.IsRightBtnPressed() && this.ViewModel.IsNotBackgroundPinned)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))

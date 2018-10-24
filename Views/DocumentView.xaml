@@ -14,6 +14,7 @@
     d:DesignHeight="400"
     AllowDrop="True"
     Drop="This_Drop"
+    Background="White"
     UseLayoutRounding="False">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
@@ -23,7 +24,7 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid x:Name="xMasterStack" Background="Transparent">
+    <Grid x:Name="xMasterStack" Background="Transparent" >
         <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
         <Grid.ContextFlyout>
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
