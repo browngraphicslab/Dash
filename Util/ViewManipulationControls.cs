@@ -95,7 +95,7 @@ namespace Dash
                         false);
             }
         }
-        
+
         private void DragManipCompletedTouch(object sender, EventArgs e)
         {
             TouchInteractions.NumFingers--;
@@ -172,7 +172,6 @@ namespace Dash
                     //gets funky with nested collections, but otherwise works
                     ////handle touch interactions with just one finger - equivalent to drag without ctr
                     //if in another touch mode, ignore
-                    Debug.WriteLine(TouchInteractions.CurrInteraction);
                     if ((TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.Marquee) 
                         && _freeformView.StartMarquee(point))
                     {

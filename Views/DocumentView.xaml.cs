@@ -194,14 +194,11 @@ namespace Dash
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
 
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && 
-                    (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation))
+                if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null &&
+                    !TouchInteractions.handledTouch.Contains(e))
                 {
-                    if (!SelectionManager.IsSelected(this))
-                        SelectionManager.Select(this, false);
-                    TouchInteractions.CurrInteraction =
-                        TouchInteractions.TouchInteraction.DocumentManipulation;
-                    SelectionManager.TryInitiateDragDrop(this, e, null);
+                    TouchInteractions.handledTouch.Add(e);
+                    TouchInteractions.NumFingers++;
                 }
 
                 e.Handled = true;
@@ -209,6 +206,15 @@ namespace Dash
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
                     e.Handled = false;
+                }
+            };
+            PointerReleased += (sender, e) =>
+            {
+                if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null &&
+                    !TouchInteractions.handledTouch.Contains(e))
+                {
+                    TouchInteractions.handledTouch.Add(e);
+                    TouchInteractions.NumFingers--;
                 }
             };
             MenuFlyout.Opened += (s, e) =>
@@ -220,8 +226,10 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                if (this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible)
+                if ((this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible) || (e.PointerDeviceType == PointerDeviceType.Touch &&
+                    (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
+                    TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                     {
                         e.Handled = true;

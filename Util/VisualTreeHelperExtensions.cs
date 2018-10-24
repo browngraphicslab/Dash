@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -210,7 +211,7 @@ namespace Dash
 
         public static bool IsRightPressed(this PointerRoutedEventArgs e)
         {
-            return e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
+            return e.GetCurrentPoint(null).Properties.IsRightButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Touch;
         }
         public static bool IsCtrlPressed(this FrameworkElement f)
         {
