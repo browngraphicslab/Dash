@@ -1,20 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
     public class MapOperatorController : OperatorController
     {
-        public static KeyController InputKey = new KeyController("Input Collection");
-        public static KeyController OperatorKey = new KeyController("Operator");
+        public static KeyController InputKey = KeyController.Get("Input Collection");
+        public static KeyController OperatorKey = KeyController.Get("Operator");
 
-        public static KeyController OutputKey = new KeyController("Output Collection");
+        public static KeyController OutputKey = KeyController.Get("Output Collection");
 
         public MapOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public MapOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -22,7 +23,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Map", "A8A3732F-FADE-4504-BC51-4CCF23165E8A");
+        private static readonly KeyController TypeKey = KeyController.Get("Map");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -41,7 +42,7 @@ namespace Dash
         }
 
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -49,7 +50,7 @@ namespace Dash
             var op = (OperatorController)inputs[OperatorKey];
             if (op.Inputs.Count != 1 || op.Outputs.Count != 1)
             {
-                return;
+                return Task.CompletedTask;
             }
             List<FieldControllerBase> outputList = new List<FieldControllerBase>(input.Data.Count);
             Dictionary<KeyController, FieldControllerBase> inDict = new Dictionary<KeyController, FieldControllerBase>();
@@ -65,6 +66,7 @@ namespace Dash
             }
 
             outputs[OutputKey] = new ListController<FieldControllerBase>(outputList);//TODO Can this be more specific?
+            return Task.CompletedTask;
         }
     }
 }

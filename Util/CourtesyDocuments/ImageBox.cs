@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
-using DashShared;
 using Windows.UI.Xaml.Media;
-using System.Threading.Tasks;
-using Windows.Storage.Streams;
-using Windows.Storage;
-using Windows.Graphics.Imaging;
-using Windows.UI.Xaml.Media.Imaging;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
+using DashShared;
+using Dash.Converters;
 
 namespace Dash
 {
@@ -30,24 +23,22 @@ namespace Dash
         public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
-            (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
-            (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             SetupDocument(DocumentType, PrototypeId, "ImageBox Prototype Layout", fields);
-
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the image
 
-           var editableImage = new EditableImage(docController, context);
+            var editableImage = new EditableImage(docController, context);
            
             var image = editableImage.Image;
             
 
             // setup bindings on the image
-            SetupBindings(editableImage, docController, context);
             SetupImageBinding(image, docController, context);
+            editableImage.HorizontalAlignment = HorizontalAlignment.Left;
+            editableImage.VerticalAlignment = VerticalAlignment.Top;
 
             var border = new Border();
             border.Child = editableImage;
@@ -71,6 +62,16 @@ namespace Dash
                 Converter = UriToBitmapImageConverter.Instance
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
+            var binding2 = new FieldBinding<TextController>
+            {
+                Document = docController,
+                Key = KeyStore.ImageStretchKey,
+                Mode = BindingMode.OneWay,
+                Context = context,
+                Converter = new StringToEnumConverter<Stretch>(),
+                FallbackValue = Stretch.Uniform
+            };
+            image.AddFieldBinding(Image.StretchProperty, binding2);
         }
 
 	    public static DocumentController MakeRegionDocument(DocumentView image, Point? point)

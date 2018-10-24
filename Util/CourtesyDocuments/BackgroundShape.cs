@@ -1,6 +1,5 @@
 ﻿using DashShared;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -50,8 +49,6 @@ namespace Dash
             var pathBox = new Viewbox { Stretch = Stretch.Fill };
             var corePath = new Path { StrokeThickness = 0 };
             pathBox.Child = corePath;
-
-            SetupBindings(pathBox, docController, context);
 
             BindPathShape(corePath, docController, context);
             BindPathFill(corePath, docController, context);

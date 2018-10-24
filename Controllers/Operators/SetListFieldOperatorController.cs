@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -13,17 +10,16 @@ namespace Dash
    public class SetListFieldOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController VariableNameKey = new KeyController("E98CE259-9A48-4F7D-970B-A3740C1DBA54", "VariableName");
-        public static readonly KeyController VariableKey = new KeyController("53A07A39-5D02-4357-941C-98D145CB2541", "Variable");
-        public static readonly KeyController IndexKey = new KeyController("AB4E9D5C-A5EA-4FA9-A47A-36268FA4DE64", "Index");
-        public static readonly KeyController ValueKey = new KeyController("0C574103-B233-40CC-A8CE-91E815A9F9F3", "Value");
+        public static readonly KeyController VariableNameKey = KeyController.Get("VariableName");
+        public static readonly KeyController VariableKey = KeyController.Get("Variable");
+        public static readonly KeyController IndexKey = KeyController.Get("Index");
+        public static readonly KeyController ValueKey = KeyController.Get("Value");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("BB4F8C51-F982-48CA-9497-502DF8CE6277", "Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public SetListFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
         public SetListFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -44,9 +40,9 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9", "Element Access");
+        private static readonly KeyController TypeKey = KeyController.Get("Set Field");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -66,6 +62,7 @@ namespace Dash
             }
             
             outputs[ResultsKey] = newValue;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

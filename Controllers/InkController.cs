@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Windows.Storage.Streams;
@@ -16,21 +15,20 @@ namespace Dash
     public class InkController : FieldModelController<InkModel>
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
-        private Image _icon = new Image();
 
         public InkController() : base(new InkModel())
         {
-            SaveOnServer();
             UpdateStrokesFromList(new List<InkStroke>(), false);
+        }
+
+        public InkController(string inkData) : base(new InkModel(inkData))
+        {
+            UpdateStrokesFromData(inkData);
         }
 
         public InkController(InkModel inkFieldModel) : base(inkFieldModel)
         {
             UpdateStrokesFromData(inkFieldModel.Data);
-        }
-        public override void Init()
-        {
-
         }
 
         /// <summary>
@@ -41,11 +39,6 @@ namespace Dash
 
 
         public string InkData => InkFieldModel.Data;
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return new Grid();
-        }
 
         public override object GetValue(Context context)
         {
@@ -65,7 +58,7 @@ namespace Dash
 
         public override FieldControllerBase Copy()
         {
-            return new InkController(new InkModel(InkData));
+            return new InkController(InkData);
         }
 
         public override FieldControllerBase GetDefaultController()
@@ -118,6 +111,11 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "InkController";
         }
 
         public IReadOnlyList<InkStroke> GetStrokes()

@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Windows.Foundation;
-using Windows.UI.Input;
+﻿using System.Linq;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
     public class ManipulationControlHelper
     {
-        private DocumentView _manipulationDocumentTarget = null;
+        public DocumentView _manipulationDocumentTarget = null;
         private int          _numMovements = 0;
 
         public ManipulationControlHelper(FrameworkElement eventElement, PointerRoutedEventArgs pointer, bool drillDown, bool useCache = false)

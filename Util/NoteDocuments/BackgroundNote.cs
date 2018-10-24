@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using DashShared;
 using Windows.Foundation;
 using static Dash.BackgroundShape;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI;
-using Windows.UI.Xaml.Shapes;
-using Dash.Converters;
 
 namespace Dash
 {
     public class BackgroundNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("907DBC71-1078-48C4-8AD0-F388CACEEA0B", "Background Note");
+        private DocumentController _dataDocument;
+        public static readonly DocumentType BackgroundDocumentType = new DocumentType("907DBC71-1078-48C4-8AD0-F388CACEEA0B", "Background Note");
         static string _prototypeID = "16133451-5E81-45E9-8A4D-1E7D9CF31036";
+        protected override DocumentType DocumentType => BackgroundDocumentType;
+
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
@@ -39,7 +37,7 @@ namespace Dash
             base(_prototypeID)
         {
             var dataDocument = makeDataDelegate(new TextController(shape.ToString()));
-			
+            _dataDocument = dataDocument;
             var r = new Random();
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255));
             // set fields based on the parameters
@@ -47,10 +45,15 @@ namespace Dash
             dataDocument.SetBackgroundColor(hexColor);
             dataDocument.SetSideCount(GroupGeometryConstants.DefaultCustomPolySideCount);
             dataDocument.SetTitle("Background : " + hexColor);
-
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             Document.Tag = "Background Note Layout " + bcount;
             dataDocument.Tag = "Background Note Data" + bcount++;
+        }
+
+        public void SetAdornmentColor(Color color)
+        {
+            _dataDocument.SetBackgroundColor(color);
+            _dataDocument.SetTitle("Background : " + color);
         }
     }
 }

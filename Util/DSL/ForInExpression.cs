@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -20,16 +20,16 @@ namespace Dash
             _bodyToExecute = bodyToExecute;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             scope = new Scope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
-            var list = _listToExecute.Execute(scope) as BaseListController;
+            var list = await _listToExecute.Execute(scope) as BaseListController;
 
             for (var i = 0; i < list?.Count; i++)
             {
                 scope.SetVariable(_subVarName, list.GetValue(i));
-                _bodyToExecute.Execute(scope);
+                await _bodyToExecute.Execute(scope);
                 list.SetValue(i, scope.GetVariable(_subVarName));
             }
 

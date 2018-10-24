@@ -1,4 +1,7 @@
 ﻿// ReSharper disable once CheckNamespace
+
+using System;
+
 namespace Dash
 {
     [OperatorType(Op.Name.negate, Op.Name.operator_negate)]
@@ -6,10 +9,10 @@ namespace Dash
     {
         public NegationOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public NegationOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public NegationOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController( "Negate", "A17762A4-F8CA-4061-8554-0D4EC82E6733");
+        private static readonly KeyController TypeKey = KeyController.Get("Negate");
 
         public override FieldControllerBase Compute(NumberController inContent) => new NumberController(-inContent.Data);
 

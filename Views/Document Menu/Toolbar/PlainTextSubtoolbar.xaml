@@ -6,12 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:buttons="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons"
-    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
-    xmlns:format="Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
-    xmlns:textToolbarFormats="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
-    xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
 
     d:DesignHeight="300"
     d:DesignWidth="1010">
@@ -38,31 +32,12 @@
                                   Background="LightGray" Margin="10,0,0,0">
                         <Button.Flyout>
                             <Flyout>
-                                <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
+                                <local:DashColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="XBackgroundColorPicker_OnSelectedColorChanged" />
                             </Flyout>
                         </Button.Flyout>
                         <Image Source="ms-appx:///Assets/GroupColorIcon.png" />
                     </AppBarButton>
                   
-                    <Slider x:Name="xOpacitySlider" 
-                            Minimum="0" 
-                            Maximum="255"
-                            Width="200"
-                            TickFrequency="1" 
-                            StepFrequency="1" 
-                            SnapsTo="StepValues" 
-                            TickPlacement="None"  
-                            IntermediateValue="128" 
-                            Margin="10, 5, 10, 0" 
-                            RightTapped="XOpacitySlider_OnRightTapped"  
-                            ValueChanged="XOpacitySlider_OnValueChanged">
-                        <Slider.Foreground>
-                            <LinearGradientBrush >
-                                <GradientStop Color="White" Offset="0.0" />
-                                <GradientStop Color="Black" Offset="1.0" />
-                            </LinearGradientBrush>
-                        </Slider.Foreground>
-                    </Slider>
                 </StackPanel>
 
             </CommandBar.Content>

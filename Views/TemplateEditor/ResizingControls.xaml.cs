@@ -1,5 +1,4 @@
 ﻿using System;
-using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;

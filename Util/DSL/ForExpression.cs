@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -24,18 +25,18 @@ namespace Dash
             _forBody = forBody;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             var timer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
             _loopRef = "";
 
-            _countDeclaration.Execute(scope);
+            await _countDeclaration.Execute(scope);
 
-            while (((BoolController) _forBinary.Execute(scope)).Data && !InfiniteLoopDetected())
+            while (((BoolController) await _forBinary.Execute(scope)).Data && !InfiniteLoopDetected())
             {
                 if (InfiniteLoopDetected()) return new TextController(RecursiveError);
-                _forBody.Execute(scope); 
-                _incrementExp.Execute(scope);
+                await _forBody.Execute(scope); 
+                await _incrementExp.Execute(scope);
             }
 
             return new TextController("");

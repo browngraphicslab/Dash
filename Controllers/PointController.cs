@@ -12,22 +12,15 @@ namespace Dash
 
         public PointController(Point data) : base(new PointModel(data))
         {
-            SaveOnServer();
 
         }
 
         public PointController(double x, double y) : base(new PointModel(x, y))
         {
-            SaveOnServer();
 
         }
 
         public PointController(PointModel pointFieldModel) : base(pointFieldModel)
-        {
-
-        }
-
-        public override void Init()
         {
 
         }
@@ -86,6 +79,11 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<PointOperator>() + $"({Data.X}, {Data.Y})";
         }
 
         public override string ToString()

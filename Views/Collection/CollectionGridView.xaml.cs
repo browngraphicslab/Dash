@@ -1,9 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Dash.FontIcons;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Dash.CollectionView;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -23,10 +28,30 @@ namespace Dash
             Loaded += CollectionGridView_Loaded;
         }
 
+
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+            contextMenu.Items.Add(new MenuFlyoutSubItem()
+            {
+                Text = "View Children As",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Eye }
+            });
+            foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+            {
+                (contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Add(new MenuFlyoutItem() { Text = n.ToString() });
+                ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => {
+                    foreach (var dvm in ViewModel.DocumentViewModels)
+                    {
+                        dvm.LayoutDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, n.ToString(), true);
+                    }
+                };
+            }
+        }
+
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
             var selectedDocControllers =
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel.DocumentController).ToList();
+                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel?.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {
                 var d = i.DocumentController;
@@ -58,45 +83,32 @@ namespace Dash
                     _cellSize += scaleAmount;
 
                     ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemWidth = _cellSize;
-                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = _cellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = double.NaN;
                     e.Handled = true;
                 }
                 
             }
         }
-
-        #region DragAndDrop
+        
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;
         }
-        #endregion
         
 
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            DocumentViewModel dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
-            if (dvm == null) return;
-
-            e.Data.AddDragModel(new DragDocumentModel(dvm.DocumentController));
-        }
-
-        private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            if (args.DropResult == DataPackageOperation.Move)
+            var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
+            if (dvm != null)
             {
-                var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
-                if (dvm != null)
-                {
-                    ViewModel.RemoveDocument(dvm.DocumentController);
-                }
+                e.Data.SetDragModel(new DragDocumentModel(dvm.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
             }
         }
 
         private void Viewbox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
-            MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true, true);
+            SplitFrame.TryNavigateToDocument(dv.ViewModel.DocumentController, true);
         }
     }
 }

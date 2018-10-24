@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash.Controllers.Operators.Point
@@ -8,16 +9,15 @@ namespace Dash.Controllers.Operators.Point
     [OperatorType(Op.Name.operator_add)]
     public class PointAddOperator : OperatorController
     {
-        public static readonly KeyController AKey = new KeyController("A");
-        public static readonly KeyController BKey = new KeyController("B");
+        public static readonly KeyController AKey = KeyController.Get("A");
+        public static readonly KeyController BKey = KeyController.Get("B");
 
 
-        public static readonly KeyController OutputKey = new KeyController("Output");
+        public static readonly KeyController OutputKey = KeyController.Get("Output");
 
 
         public PointAddOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public PointAddOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -25,7 +25,8 @@ namespace Dash.Controllers.Operators.Point
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("PointAdd", "59e828b8-0e30-4bd3-904b-9919f89cc4be");
+
+        private static readonly KeyController TypeKey = KeyController.Get("PointAdd");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -45,13 +46,14 @@ namespace Dash.Controllers.Operators.Point
 
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = ((PointController)inputs[AKey]).Data;
             var b = ((PointController)inputs[BKey]).Data;
             outputs[OutputKey] = new PointController(a.X + b.X, a.Y + b.Y);
+            return Task.CompletedTask;
         }
 
     }

@@ -122,7 +122,7 @@ namespace Dash
         {
             if (freeform == null) return absolutePosition;
 
-            GeneralTransform r = MainPage.Instance.xCanvas.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
+            GeneralTransform r = MainPage.Instance.xOuterGrid.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
             Debug.Assert(r != null);
             return r.TransformPoint(absolutePosition);
         }
@@ -544,22 +544,24 @@ namespace Dash
             return new BackgroundNote(shape, pos,new Size(width, height)).Document;
         }
 
+        public static DocumentController AdornmentWithPosandColor(Color color,BackgroundShape.AdornmentShape shape, Point pos,
+            double width = 200, double height = 200)
+        {
+            var note = new BackgroundNote(shape, pos, new Size(width, height));
+            note.SetAdornmentColor(color);
+            return note.Document;
+        }
+
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController AdornmentDoc()
         {
             return AdornmentWithPosition(BackgroundShape.AdornmentShape.Elliptical, new Point(0, 0));
         }
-
-        // TODO remove this method or match it up with the methods in Actions.cs
-        public static DocumentController BlankCollectionWithPosition(Point where = new Point())
-        {
-            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
-        }
+        
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            return BlankCollectionWithPosition(new Point());
+            return new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
@@ -590,14 +592,14 @@ namespace Dash
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static Dictionary<KeyController, HashSet<TypeInfo>> GetDisplayableTypedHeaders(ListController<DocumentController> collection)
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetDisplayableTypedHeaders(IEnumerable<DocumentController> collection)
         {
             // create the new list of headers
             var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
 
             // iterate over all the documents in the input collection and get their key's
             // and associated types
-            foreach (var docController in collection.TypedData)
+            foreach (var docController in collection)
             {
                 var actualDoc = docController.GetDataDocument();
 

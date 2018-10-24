@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,7 +52,7 @@ namespace Dash
             // generate a default field model controller for each of the fields
             foreach (var header in headers)
             {
-                var key = new KeyController(header, DashShared.UtilShared.GenerateNewId());
+                var key = KeyController.Get(header);
                 var field = FieldConversion.StringToFieldModelController(csv[header]).GetDefaultController();
                 protoFieldDict.Add(key, field);
                 headerToFieldMap.Add(header, field);
@@ -87,7 +88,8 @@ namespace Dash
         /// <param name="doc"></param>
         private static void SetDefaultActiveLayout(DocumentController doc)
         {
-            doc.SetActiveLayout(new DefaultLayout(0, 0, 200, 200).Document, true, true);
+            throw new System.Exception("ActiveLayout code has not been updated yet");
+            //doc.SetActiveLayout(new DefaultLayout(0, 0, 200, 200).Document, true, true);
         }
 
         /// <summary>

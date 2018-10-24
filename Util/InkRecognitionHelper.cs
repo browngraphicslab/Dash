@@ -309,9 +309,10 @@ namespace Dash
             {
                 doc.SetField(KeyStore.ParsedFieldsKey, list, true);
             }
-            var layout = new FreeFormDocument(layoutDocs,
-                position, size).Document;
-            doc.SetActiveLayout(layout, true, true);
+            var layout = new FreeFormDocument(layoutDocs, position, size).Document;
+
+            throw new Exception("ActiveLayout code has not been updated yet");
+            // doc.SetActiveLayout(layout, true, true);
             if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc);
             return doc;
         }
@@ -478,12 +479,12 @@ namespace Dash
                 var splitstring = str.Split(':');
                 value = splitstring[1].TrimEnd(' ').TrimStart(' ');
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                key = new KeyController(keystring, Guid.NewGuid().ToString());
+                key = KeyController.Get(keystring);
             }
             else
             {
                 value = str;
-                key = new KeyController($"Document Field {suffix}", Guid.NewGuid().ToString());
+                key = KeyController.Get($"Document Field {suffix}");
             }
 
         }

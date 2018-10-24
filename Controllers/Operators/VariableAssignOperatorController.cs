@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -12,19 +10,19 @@ namespace Dash
     public class VariableAssignOperatorController : OperatorController
     {
 
-        public static readonly KeyController VariableKey = new KeyController("20859151-FBBC-4267-8008-E91A2CD3D61A", "Variable");
-        public static readonly KeyController AssignmentKey = new KeyController("B9230797-EFE1-4231-9AD7-9F5C401F44D0", "Assignment");
+        public static readonly KeyController VariableKey = KeyController.Get("Variable");
+        public static readonly KeyController AssignmentKey = KeyController.Get("Assignment");
 
-        public static readonly KeyController OutputKey = new KeyController("E0B86647-5A1C-40B4-B4AD-0A738EB85CA9", "Output");
+        public static readonly KeyController OutputKey = KeyController.Get("Output");
 
-        public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public VariableAssignOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("D0BA93CC-9585-4E36-BE05-C15C586AF9FD", "VariableAssign");
+        private static readonly KeyController TypeKey = KeyController.Get("VariableAssign");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -42,8 +40,9 @@ namespace Dash
             [OutputKey] = TypeInfo.Any
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, 
-            Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var var = (inputs[VariableKey] as TextController)?.Data;
             var assignment = inputs[AssignmentKey];
@@ -51,6 +50,7 @@ namespace Dash
             scope?.SetVariable(var, assignment);
 
             outputs[OutputKey] = assignment;
+            return Task.CompletedTask;
         }
 
     }

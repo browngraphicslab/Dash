@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Devices.Input;
-using Windows.Foundation;
 using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Frame = Microsoft.Office.Interop.Word.Frame;
 using Point = Windows.Foundation.Point;
 
 namespace Dash
@@ -40,6 +40,9 @@ namespace Dash
         public PointerDeviceType BlockedInputType { get; set; }
         public bool FilterInput { get; set; }
 
+        private bool DraggingDoc;
+        public static bool isPanning;
+
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
@@ -62,13 +65,15 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
-            element.ManipulationCompleted += (sender, args) => args.Handled = true;
+            element.ManipulationCompleted += (sender, args) => args.Handled = true;  
         }
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            // bcz: don't zoom the contents of collections when FitToParent is set -- instead, it would be better if the container document size changed...
+            if (this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
+                return;
             e.Handled = true;
-
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
@@ -94,28 +99,49 @@ namespace Dash
                         false);
             }
         }
-
-     
+        
+        private void DragManipCompletedTouch(object sender, EventArgs e)
+        {
+            CollectionFreeformBase.NumFingers--;
+            DraggingDoc = false;
+            SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;
+        }
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
+            var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
+            if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
             {
                 //e.Complete();
                 _processManipulation = false;
             }
-            else
+            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !DraggingDoc)
+            {
+                //drag document 
+                if (!SelectionManager.IsSelected(docView))
+                {
+                    SelectionManager.Select(docView, false);
+                    SelectionManager.DragManipulationCompleted += DragManipCompletedTouch;
+                    DraggingDoc = true;
+
+                    SelectionManager.TryInitiateDragDrop(docView, null, e);
+                }
+            }
+            else if (!(_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent()))
             {
                 _processManipulation = true;
                 e.Handled = true;
             }
+
         }
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() || 
+                (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 2) || (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 && isPanning))
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
@@ -131,10 +157,29 @@ namespace Dash
                             new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position), false);
                     }
                 }
+
+                isPanning = true;
                 e.Handled = true;
+            } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
+            {
+                ////only do marquee if main collection (for now)
+                //var mainColl = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformBase>();
+                var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
+                if (docView?.IsTopLevel() ?? false)
+                {
+                    var point = _freeformView //(Window.Current.Content)
+                    .TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
+                    //gets funky with nested collections, but otherwise works
+                    ////handle touch interactions with just one finger - equivalent to drag without ctr
+                    if (_freeformView.StartMarquee(point))
+                    {
+                        e.Handled = true;
+                    }
+                }
+                
             }
         }
-        
+
         public void Dispose()
         {
             _freeformView.ManipulationDelta -= ElementOnManipulationDelta;

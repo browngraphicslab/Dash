@@ -11,24 +11,16 @@ namespace Dash
 
 	    public VideoController() : base(new VideoModel())
 	    {
-	        SaveOnServer();
-        }
+	        }
 
 	    public VideoController(Uri path) : base(new VideoModel(path))
 	    {
-	        SaveOnServer();
-        }
+	        }
 
         public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
 		{
 
 		}
-
-		public override void Init()
-		{
-
-		}
-
 
 		public VideoModel VideoFieldModel => Model as VideoModel;
 
@@ -69,7 +61,12 @@ namespace Dash
 			return StringSearchModel.False;
 		}
 
-		public override FieldControllerBase GetDefaultController()
+	    public override string ToScriptString(DocumentController thisDoc)
+	    {
+	        return "VideoController";
+	    }
+
+	    public override FieldControllerBase GetDefaultController()
 		{
 			return new VideoController(new Uri("ms-appx:///Assets/DefaultVideo.mp4"));
 		}

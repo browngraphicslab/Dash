@@ -1,4 +1,5 @@
-﻿using Windows.UI;
+﻿using System;
+using Windows.UI;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -8,11 +9,12 @@ namespace Dash
     {
         public ColorController() : this(Colors.White) { }
 
-        public ColorController(Color data) : base(new ColorModel(data)) => SaveOnServer();
+        public ColorController(Color data) : base(new ColorModel(data))
+        {
+
+        }
 
         public ColorController(ColorModel colorFieldModel) : base(colorFieldModel) { }
-
-        public override void Init() { }
 
         public ColorModel ColorFieldModel => Model as ColorModel;
 
@@ -63,6 +65,11 @@ namespace Dash
         {
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "";
         }
 
         public override FieldControllerBase Copy() => new ColorController(Data);

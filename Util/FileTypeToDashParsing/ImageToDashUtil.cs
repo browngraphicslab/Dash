@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -168,11 +167,10 @@ namespace Dash
         /// </summary>
         public static async Task<DocumentController> CreateImageNoteFromLocalFile(IStorageFile localFile, string title, Point where = new Point())
         {
-            Point size = await GetImageSize(localFile);
+            var size = await GetImageSize(localFile);
             double imgWidth = size.X;
-            double imgHeight = size.Y;
 
-            return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, imgHeight), title).Document;
+            return new ImageNote(new Uri(localFile.Path), where, new Size(imgWidth, double.NaN), title).Document;
         }
 
         /// <summary>

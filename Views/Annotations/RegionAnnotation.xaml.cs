@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+﻿using System.Diagnostics;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-using Path = Windows.UI.Xaml.Shapes.Path;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -56,11 +47,29 @@ namespace Dash
             }
         }
 
+        public override bool IsInView(Rect bounds)
+        {
+            foreach (var r in LayoutRoot.Children)
+            {
+                if (r is Rectangle annotationRect)
+                {
+                    var annotationBounds = annotationRect.GetBoundingRect(this);
+                    annotationBounds.Intersect(bounds);
+                    if (!annotationBounds.IsEmpty)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
         {
             r.Stroke = new SolidColorBrush(Colors.Black);
             r.StrokeThickness = 2;
             r.StrokeDashArray = new DoubleCollection {2};
+            r.HorizontalAlignment = HorizontalAlignment.Left;
+            r.VerticalAlignment = VerticalAlignment.Top;
             InitializeAnnotationObject(r, pos, mode);
             LayoutRoot.Children.Add(r);
         }
@@ -68,8 +77,11 @@ namespace Dash
         public override void StartAnnotation(Point p)
         {
             _previewStartPoint = p;
-            Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
-            Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
+            ParentOverlay.XPreviewRect.RenderTransform = new TranslateTransform
+            {
+                X = p.X,
+                Y = p.Y
+            };
             Debug.WriteLine("start" + p.X + " " + p.Y);
             XPos = p.X;
             YPos = p.Y;
@@ -87,7 +99,7 @@ namespace Dash
             if (p.X < _previewStartPoint.X)
             {
                 ParentOverlay.XPreviewRect.Width = _previewStartPoint.X - p.X;
-                Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
+                (ParentOverlay.XPreviewRect.RenderTransform as TranslateTransform).X = p.X;
             }
             else
             {
@@ -97,7 +109,7 @@ namespace Dash
             if (p.Y < _previewStartPoint.Y)
             {
                 ParentOverlay.XPreviewRect.Height = _previewStartPoint.Y - p.Y;
-                Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
+                (ParentOverlay.XPreviewRect.RenderTransform as TranslateTransform).Y = p.Y;
             }
             else
             {
@@ -110,17 +122,19 @@ namespace Dash
 
         public override void EndAnnotation(Point p)
         {
-            XRegionRect = new Rectangle();
-            XRegionRect.StrokeThickness = 2;
-            XRegionRect.StrokeDashArray = new DoubleCollection();
-            XRegionRect.StrokeDashArray.Add(2);
-            XRegionRect.Fill = ParentOverlay.XPreviewRect.Fill;
-            XRegionRect.Opacity = ParentOverlay.XPreviewRect.Opacity;
-            XRegionRect.Stroke = new SolidColorBrush(Colors.Black);
-            XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
-            XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
-            Canvas.SetLeft(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Left);
-            Canvas.SetTop(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Top);
+            XRegionRect = new Rectangle
+            {
+                StrokeThickness = 2,
+                StrokeDashArray = new DoubleCollection {2},
+                Fill = ParentOverlay.XPreviewRect.Fill,
+                Opacity = ParentOverlay.XPreviewRect.Opacity,
+                Stroke = new SolidColorBrush(Colors.Black),
+                Width = ParentOverlay.XPreviewRect.Width,
+                Height = ParentOverlay.XPreviewRect.Height,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                RenderTransform = ParentOverlay.XPreviewRect.RenderTransform
+            };
 
             if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
             {
@@ -130,7 +144,7 @@ namespace Dash
         }
         public override double AddToRegion(DocumentController region)
         {
-            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(XRegionRect), Canvas.GetTop(XRegionRect)));
+            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController((XRegionRect.RenderTransform as TranslateTransform).X, (XRegionRect.RenderTransform as TranslateTransform).Y));
             region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));
 
             return YPos;

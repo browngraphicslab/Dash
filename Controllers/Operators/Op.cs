@@ -22,6 +22,7 @@ namespace Dash
             operator_add,
             add,
             concat,
+            append,
 
             operator_subtract,
             subtract,
@@ -103,6 +104,7 @@ namespace Dash
             coll_title,
             rtf_title,
             inside,
+            join,
 
             // images
             image,
@@ -133,9 +135,13 @@ namespace Dash
 
             search,
             intersect_by_value,
+            query,
+            q,
 
             // misc
             map,
+            where,
+            sum,
 
             // EXECUTE
 
@@ -169,6 +175,20 @@ namespace Dash
             // Point functions
             point,
             x, y,
+
+            dref,
+            pref,
+
+            k,//Key
+            d,//Document
+
+            date,
+
+            api,
+
+            get_doc,
+
+            follow_links,
 
             // NULL EQUIVALENT
 

@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
 using Dash.Controllers;
 using DashShared;
 
@@ -20,8 +14,10 @@ namespace Dash.Converters
         private Context _context = null;
         private TypeInfo _lastType = TypeInfo.None;
         private FrameworkElement _lastElement = null;
+        private DocumentType _lastDocType = DocumentType.DefaultType;
+        private DocumentController _lastDocument = null;
 
-        public DataFieldToMakeViewConverter(DocumentController docController, Context context)
+        public DataFieldToMakeViewConverter(DocumentController docController, Context context = null)
         {
             _docController = docController;
             _context = context;
@@ -29,31 +25,22 @@ namespace Dash.Converters
 
         public override FrameworkElement ConvertDataToXaml(FieldControllerBase data, object parameter = null)
         {
-            if (data is TextController txt && txt.Data.StartsWith("=="))
-            {
-                try
-                {
-                    data = DSL.InterpretUserInput(txt.Data)?.DereferenceToRoot(null);
-                }
-                catch (Exception) { }
-            }
-            //if (data is ListController<DocumentController> documentList)
-            //{
-            //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));
-            //}
-
             FrameworkElement currView = null;
 
-            if (_lastType == data?.TypeInfo && _lastType != TypeInfo.Document)
+            if (_lastType == data?.TypeInfo && 
+                (_lastType != TypeInfo.Document || 
+                 (_lastDocType.Equals((data as DocumentController).DocumentType) &&
+                  _lastDocument.Equals(data as DocumentController))))
             {
                 return _lastElement;
             }
             if (data is ImageController img)
             {
-                if (img.Data.LocalPath.EndsWith(".pdf"))
-                    return PdfBox.MakeView(_docController, _context);
-
                 currView = ImageBox.MakeView(_docController, _context);
+            }
+            if (data is PdfController)
+            {
+                currView = PdfBox.MakeView(_docController, _context);
             }
             if (data is VideoController)
             {
@@ -61,7 +48,7 @@ namespace Dash.Converters
             }
             else if (data is AudioController)
             {
-                currView = AudioBox.MakeView(_docController, _context);
+                currView = AudioBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             else if (data is ListController<DocumentController> docList)
             {
@@ -83,14 +70,16 @@ namespace Dash.Converters
                 {
                     currView = dc.GetKeyValueAlias().MakeViewUI(_context);
                 }
+                _lastDocType = dc.DocumentType;
+                _lastDocument = dc;
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {
-                currView = TextingBox.MakeView(_docController, _context);
+                currView = TextingBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             else if (data is RichTextController)
             {
-                currView = RichTextBox.MakeView(_docController, _context);
+                currView = RichTextBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             if (currView == null) currView = new Grid();
 

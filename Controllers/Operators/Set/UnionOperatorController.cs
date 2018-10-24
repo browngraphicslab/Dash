@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -8,11 +10,11 @@ namespace Dash
     public class UnionOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController AKey = new KeyController("Input A");
-        public static readonly KeyController BKey = new KeyController("Input B");
+        public static readonly KeyController AKey = KeyController.Get("Input A");
+        public static readonly KeyController BKey = KeyController.Get("Input B");
 
         //Output keys
-        public static readonly KeyController UnionKey = new KeyController("Union");
+        public static readonly KeyController UnionKey = KeyController.Get("Union");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -32,14 +34,13 @@ namespace Dash
 
         public UnionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
 
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Union operator", "CAEA115E-BE19-4796-B225-51AC4122C168");
+        private static readonly KeyController TypeKey = KeyController.Get("Union operator");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -59,6 +60,7 @@ namespace Dash
             // Union by Document ID 
             //(doc.GetField(UnionKey) as ListController<DocumentController>).SetDocuments(setA.GetDocuments().Union(setB.GetDocuments()).ToList());
 
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

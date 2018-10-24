@@ -223,9 +223,9 @@ namespace Dash
                 {
                     var doc = param.LayoutDocument;
                     var position = doc.GetPositionField().Data;
-                    var width = doc.GetWidthField().Data;
+                    var width = doc.GetWidth();
                     if (double.IsNaN(width)) width = 0;
-                    var height = doc.GetHeightField().Data;
+                    var height = doc.GetHeight();
                     if (double.IsNaN(height)) height = 0;
                     var points = new List<Point>
                     {

@@ -30,6 +30,13 @@
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBreakGroup" Click="BreakGroup_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -3, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
+            
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xFitParent" Click="FitParent_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xFitParentIcon" Text="&#xE740;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -3, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
+            <AppBarButton Style="{StaticResource AppBarButtonStyler}"  x:Name="xAreContentsHitTestVisible"  Click="FreezeContents_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock x:Name="xAreContentsHitTestVisibleIcon" Text="&#xE77A;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="3, -3, 0, 0" Padding="0" HorizontalAlignment="Center"/>
+            </AppBarButton>
         </StackPanel>
 <!--
             <CommandBar Background="LightGray" x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">

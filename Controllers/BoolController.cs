@@ -7,11 +7,9 @@ namespace Dash
         //OVERLOADED CONSTRUCTORS
         public BoolController() : this(false) { }
 
-        public BoolController(bool data = false) : base(new BoolModel(data)) { SaveOnServer(); }
+        public BoolController(bool data = false) : base(new BoolModel(data)) {  }
 
         public BoolController(BoolModel boolFieldModel) : base(boolFieldModel) { }
-
-        public override void Init() { }
 
         /// <summary>
         ///     The <see cref="BoolFieldModel" /> associated with this <see cref="Dash.BoolController" />,
@@ -25,10 +23,13 @@ namespace Dash
 
         public override bool TrySetValue(object value)
         {
-            var data = value as bool?;
-            if (!(value is bool?)) return false;
-            if (Data != data.Value) Data = data.Value;
-            return true;
+            if (value is bool b)
+            {
+                Data = b;
+                return true;
+            }
+
+            return false;
         }
 
         public bool Data
@@ -62,6 +63,11 @@ namespace Dash
         {
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return Data.ToString();
         }
     }
 }

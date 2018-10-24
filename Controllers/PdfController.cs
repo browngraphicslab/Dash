@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -16,12 +12,10 @@ namespace Dash
         // == CONSTRUCTORS ==
         public PdfController() : base(new PdfModel())
         {
-            SaveOnServer();
         }
 
         public PdfController(Uri path, string data = null) : base(new PdfModel(path, data))
         {
-            SaveOnServer();
         }
 
         public PdfController(PdfModel pdfFieldModel) : base(pdfFieldModel)
@@ -30,10 +24,6 @@ namespace Dash
         }
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="PdfFieldModel" /> associated with this <see cref="PdfController" />,
@@ -89,6 +79,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "PdfController";
         }
 
         public override FieldControllerBase GetDefaultController()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.UI.Xaml.Controls;
 
@@ -16,14 +17,14 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController HtmlInputKey =
-            new KeyController("Html Input");
+            KeyController.Get("Html Input");
 
         public static readonly KeyController ScriptKey =
-            new KeyController("Script");
+            KeyController.Get("Script");
 
         // Output Keys
         public static readonly KeyController OutputDocumentKey =
-            new KeyController("Output Document");
+            KeyController.Get("Output Document");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
 
@@ -52,14 +53,14 @@ namespace Dash
             execOp.SetField(OutputDocumentKey, new TextController(""), true);
 
             var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp, KeyStore.OperatorKey)).Document;
-            execOp.SetActiveLayout(layoutDoc, true, true);
+            //execOp.SetActiveLayout(layoutDoc, true, true);
+            throw new Exception("Active layout code has not been updated for this class");
             return execOp;
         }
         
 
         public ExecuteHtmlJavaScriptController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
 
@@ -68,9 +69,9 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Execute html javascript", "D0286E73-D9F6-4341-B901-5ECC27AC76BC");
+        private static readonly KeyController TypeKey = KeyController.Get("Execute html javascript");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -88,6 +89,7 @@ namespace Dash
 
                 outputs[OutputDocumentKey] = doc.Document;
             }
+            return Task.CompletedTask;
         }
 
         class execClass

@@ -1,6 +1,8 @@
-﻿using DashShared;
+﻿using System;
+using DashShared;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -10,20 +12,20 @@ namespace Dash
     {
         public ContainsOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public ContainsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ContainsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override FieldControllerBase GetDefaultController() => new ContainsOperatorController();
 
         // input keys
-        public static readonly KeyController InputStringKey = new KeyController("Input String");
-        public static readonly KeyController ContainerStringKey = new KeyController("Container String");
+        public static readonly KeyController InputStringKey = KeyController.Get("Input String");
+        public static readonly KeyController ContainerStringKey = KeyController.Get("Container String");
 
         // output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Contains", "03CB1DD8-238B-467E-8BE6-C64164DB875B");
+        private static readonly KeyController TypeKey = KeyController.Get("Contains");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -36,7 +38,9 @@ namespace Dash
             [ResultKey] = TypeInfo.Bool,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             if (inputs[InputStringKey] is TextController inputStr && inputs[ContainerStringKey] is TextController containerStr)
             {

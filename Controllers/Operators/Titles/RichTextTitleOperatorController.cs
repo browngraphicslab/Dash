@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -16,18 +17,17 @@ namespace Dash
 
         public RichTextTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
 
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Rich Text Title", "B56DC556-7B88-495B-880B-1E3D420A1F5B");
+        private static readonly KeyController TypeKey = KeyController.Get("Rich Text Title");
 
         //Input keys
-        public static readonly KeyController RichTextKey = KeyStore.DocumentTextKey;// new KeyController("E0105956-B0F8-4552-9420-CA7572C94657", "Rich Text");
+        public static readonly KeyController RichTextKey = KeyStore.DocumentTextKey;// new KeyController(new Guid("E0105956-B0F8-4552-9420-CA7572C94657"), "Rich Text");
 
         //Output keys
-        public static readonly KeyController ComputedTitle = new KeyController("Computed Title");
+        public static readonly KeyController ComputedTitle = KeyController.Get("Computed Title");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
@@ -40,7 +40,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -77,6 +77,7 @@ namespace Dash
 
             computedTitle = (computedTitle ?? "").Replace((char)160, ' ');
             outputs[ComputedTitle] = new TextController(computedTitle);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

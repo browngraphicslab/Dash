@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using DashShared;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -12,14 +13,14 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("Script");
+        public static readonly KeyController ScriptKey = KeyController.Get("Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public ExecDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
+            
         }
 
 
@@ -37,15 +38,15 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Exec", "F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0");
+        private static readonly KeyController TypeKey = KeyController.Get("Exec");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             try
             {
-                var result = TypescriptToOperatorParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
+                var result = await TypescriptToOperatorParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
                 outputs[ResultKey] = result;
             }
             catch (InvalidDishScriptException dishScriptException)

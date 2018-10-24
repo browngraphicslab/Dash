@@ -547,6 +547,58 @@
                     PointerExited="HideAppBarToolTip">
                         <TextBlock x:Name="xImageIcon" Text="&#xE155;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
                     </AppBarButton>
+                    <AppBarToggleButton 
+                        Height="60"
+                        x:Name="xEnableInk"
+                        Style="{StaticResource AppBarToggleButtonStyler}"
+                        Unchecked="XEnableInk_OnUnchecked" 
+                        Checked="XEnableInk_OnChecked"
+                        PointerEntered="ShowAppBarToolTip"
+                        PointerExited="HideAppBarToolTip">
+                        <TextBlock x:Name="xInkSymbol" Text="&#xE76D;" FontSize="16" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarToggleButton>
+                    <AppBarButton 
+                    Height="60"
+                    x:Name="xAreContentsHitTestVisible"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Click="FreezeContents"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <TextBlock x:Name="xAreContentsHitTestVisibleIcon" Text="&#xE77A;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
+                    Height="60"
+                    x:Name="xMakeInstance"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Click="MakeInstance"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <TextBlock x:Name="xMakeInstanceIcon" Text="&#xE923;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                    </AppBarButton>
+                    <AppBarButton 
+                    Height="60"
+                    x:Name="xFitWidth"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Click="FitWidth"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <StackPanel Margin="0 0 0 0" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock x:Name="xFitWidthIcon" Text="&#xE76B;" FontSize="12"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                            <TextBlock  Text="&#xE76C;" FontSize="12" TextWrapping="Wrap" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </AppBarButton>
+                    <AppBarButton 
+                    Height="60"
+                    x:Name="xFitHeight"
+                    Style="{StaticResource AppBarButtonStyler}" 
+                    Click="FitHeight"
+                    PointerEntered="ShowAppBarToolTip"
+                    PointerExited="HideAppBarToolTip">
+                        <StackPanel Margin="0 -5 0 0" HorizontalAlignment="Center">
+                            <TextBlock x:Name="xFitHeightIcon" Text="&#xE70E;" FontSize="12"   TextWrapping="Wrap" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                            <TextBlock  Text="&#xE70D;" FontSize="12" TextWrapping="Wrap" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                         </StackPanel>
+                      </AppBarButton>
                     <AppBarButton Visibility="Collapsed"
                     Margin="0 1 0 0"
                     x:Name="xAddVideo" 
@@ -601,7 +653,7 @@
                     Click="XExport_OnClick"
                     PointerEntered="ShowAppBarToolTip"
                     PointerExited="HideAppBarToolTip">
-                        <TextBlock x:Name="xExportIcon" Text="&#xEDE1;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="2, 0, 0, 0" Padding="0" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="xExportIcon" Text="&#xE898;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="2, 0, 0, 0" Padding="0" HorizontalAlignment="Center"/>
                     </AppBarButton>
                     <AppBarButton 
                     x:Name="xPresentationMode"

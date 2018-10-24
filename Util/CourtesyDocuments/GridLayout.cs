@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -13,10 +12,10 @@ namespace Dash
         public static readonly DocumentType DocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Layout");
         private static readonly string PrototypeId = "0F5A4B9A-44BA-4FFE-9A35-0818BCD038A6";
 
-        public static readonly KeyController GridRowsTypeKey = new KeyController("RowDefinitionTypes", "17F67B9A-A9C2-4325-BEC1-B8308B48FC39");
-        public static readonly KeyController GridRowsValueKey = new KeyController("RowDefinitionValues", "3761458D-757E-4350-8BF5-FC42D3DCF70F");
-        public static readonly KeyController GridColumnsTypeKey = new KeyController("ColumnDefinitionTypes", "7B698361-0F0E-4322-983C-055989376C72");
-        public static readonly KeyController GridColumnsValueKey = new KeyController("ColumnDefinitionValues", "8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9");
+        public static readonly KeyController GridRowsTypeKey = new KeyController("RowDefinitionTypes", new Guid("17F67B9A-A9C2-4325-BEC1-B8308B48FC39"));
+        public static readonly KeyController GridRowsValueKey = new KeyController("RowDefinitionValues", new Guid("3761458D-757E-4350-8BF5-FC42D3DCF70F"));
+        public static readonly KeyController GridColumnsTypeKey = new KeyController("ColumnDefinitionTypes", new Guid("7B698361-0F0E-4322-983C-055989376C72"));
+        public static readonly KeyController GridColumnsValueKey = new KeyController("ColumnDefinitionValues", new Guid("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9"));
 
         public GridLayout(Point position, Size size)
         {
@@ -71,8 +70,6 @@ namespace Dash
 
         protected static void SetupBindings(Grid grid, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(grid, docController, context);
-
             AddBinding(grid, docController, GridRowsTypeKey, context, BindRowDefinitions);
             AddBinding(grid, docController, GridColumnsTypeKey, context, BindColumnDefinitions);
         }

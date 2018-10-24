@@ -55,6 +55,7 @@
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
 
+        <!--<local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>-->
         <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>
 
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 15, 15, 0" Spacing="10" Grid.Column="2">
@@ -68,28 +69,6 @@
                 <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
                 <ToolTipService.ToolTip>
                     <ToolTip Content="Search" Placement="Bottom" VerticalOffset="20"
-                                />
-                </ToolTipService.ToolTip>
-            </Grid>
-
-            <Grid Name="xBackButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited" Visibility="Collapsed">
-                <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
-
-                </Ellipse>
-                <TextBlock x:Name="xBackIcon" Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Go Back" Placement="Bottom" VerticalOffset="20"
-                                />
-                </ToolTipService.ToolTip>
-            </Grid>
-
-            <Grid Name="xForwardButton" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited" Visibility="Collapsed">
-                <Ellipse  Height="30" Width="30" Fill="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Top">
-
-                </Ellipse>
-                <TextBlock x:Name="xForwardIcon" Text="&#xE72A;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Go Forward" Placement="Bottom" VerticalOffset="20"
                                 />
                 </ToolTipService.ToolTip>
             </Grid>
@@ -131,7 +110,7 @@
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
-        <Grid x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+        <Canvas x:Name="xCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
             <local:DocumentDecorations x:Name="XDocumentDecorations" x:FieldModifier="public"/>
             <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
 
@@ -163,7 +142,7 @@
                 </Grid.Resources>
             </Grid>
 
-        </Grid>
+        </Canvas>
 
         <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
 

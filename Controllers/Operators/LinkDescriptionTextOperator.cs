@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -18,17 +15,16 @@ namespace Dash
 
         public LinkDescriptionTextOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Link Description Text", "6A81D1DC-E26D-43E5-856E-E4634A46354D");
+        private static readonly KeyController TypeKey = KeyController.Get("Link Description Text");
 
         //Input keys
         public static readonly KeyController DescriptionText = KeyStore.DocumentTextKey;
 
         //Output keys
-        public static readonly KeyController ShowDescription = new KeyController("Show Description");
+        public static readonly KeyController ShowDescription = KeyController.Get("Show Description");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
@@ -41,7 +37,7 @@ namespace Dash
             [ShowDescription] = TypeInfo.Bool
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -63,6 +59,7 @@ namespace Dash
             {
                 outputs[ShowDescription] = new BoolController(false);
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

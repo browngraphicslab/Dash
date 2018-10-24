@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash.Controllers.Operators.Point
@@ -8,15 +9,14 @@ namespace Dash.Controllers.Operators.Point
     [OperatorType(Op.Name.y)]
     public class YOperator : OperatorController
     {
-        public static readonly KeyController PointKey = new KeyController("Point");
+        public static readonly KeyController PointKey = KeyController.Get("Point");
 
 
-        public static readonly KeyController YCoordKey = new KeyController("YCoord");
+        public static readonly KeyController YCoordKey = KeyController.Get("YCoord");
 
 
         public YOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public YOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -24,7 +24,7 @@ namespace Dash.Controllers.Operators.Point
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("YCoordinate", "098a1b23-20a1-4623-8460-2d848280b1b2");
+        private static readonly KeyController TypeKey = KeyController.Get("YCoordinate");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -43,12 +43,13 @@ namespace Dash.Controllers.Operators.Point
 
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var p = ((PointController)inputs[PointKey]).Data;
             outputs[YCoordKey] = new NumberController(p.Y);
+            return Task.CompletedTask;
         }
 
     }

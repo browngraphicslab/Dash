@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -16,14 +14,13 @@ namespace Dash
     public class GetAllDocsBeforeTime : OperatorController
     {
         //Input keys
-        public static readonly KeyController TimeKey = new KeyController("Time");
+        public static readonly KeyController TimeKey = KeyController.Get("Time");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public GetAllDocsBeforeTime() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
         public GetAllDocsBeforeTime(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -41,9 +38,9 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Before", "27B6978D-F053-480B-8B64-439D334E5C9E");
+        private static readonly KeyController TypeKey = KeyController.Get("Before");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -53,7 +50,7 @@ namespace Dash
 
             if (!DateTime.TryParse(time, out DateTime givenTime))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (!string.IsNullOrEmpty(time))
@@ -74,6 +71,7 @@ namespace Dash
             }
 
             outputs[ResultsKey] = toReturn;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

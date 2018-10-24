@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DashShared;
+﻿using DashShared;
 
 namespace Dash
 {
@@ -15,16 +10,10 @@ namespace Dash
 
         public HtmlController(string data) : base(new HtmlModel(data))
         {
-            SaveOnServer();
         }
 
         public HtmlController(HtmlModel htmlFieldModel) : base(htmlFieldModel)
         {
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>
@@ -86,6 +75,11 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "HtmlController";
         }
 
         public override FieldControllerBase Copy()

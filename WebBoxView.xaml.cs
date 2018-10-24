@@ -1,22 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
-using Windows.UI.Xaml.Shapes;
 using Image = Windows.UI.Xaml.Controls.Image;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -84,14 +73,16 @@ namespace Dash
             //size = new Point(rect.Width, rect.Height);
             if (size.X > 0 && size.Y > 0)
             {
-                await rtb.RenderAsync(_xWebView, (int)size.X, (int)size.Y);
-                var buf = await rtb.GetPixelsAsync();
+                try
+                {
+                    await rtb.RenderAsync(_xWebView, (int)size.X, (int)size.Y);
+                    var buf = await rtb.GetPixelsAsync();
 
-                var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
-                var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
-                await Util.SaveSoftwareBitmapToFile(sb, localFile);
-                LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
-
+                    var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
+                    var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
+                    await Util.SaveSoftwareBitmapToFile(sb, localFile);
+                    LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
+                } catch (Exception) { }
                 _xWebView.Visibility = Visibility.Collapsed;
                 xCacheBitmap.Visibility = Visibility.Visible;
                 if (xTextBlock != null)
@@ -247,7 +238,7 @@ namespace Dash
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
             if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1) {
-                webBoxView.Freeze();
+                webBoxView?.Freeze();
             }
         }
         

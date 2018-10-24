@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash;
 using Dash.Annotations;
-using MyToolkit.Multimedia;
-using static Dash.DataTransferTypeInfo;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -56,6 +44,7 @@ namespace Dash
             ParentOverlay = parentOverlay;
             RegionDocumentController = regionDocumentController;
         }
+        public abstract bool IsInView(Rect bounds);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
@@ -155,26 +144,19 @@ namespace Dash
 
             if (pos != null)
             {
-                shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
+
+                shape.RenderTransform = new TranslateTransform { X = pos.Value.X, Y = pos.Value.Y };
             }
             else
             {
-                var bindingX = new FieldBinding<PointController>()
+                var bindingXf = new FieldBinding<PointController>()
                 {
                     Mode = BindingMode.OneWay,
                     Document = RegionDocumentController,
                     Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(false)
+                    Converter = new PointToTranslateTransformConverter()
                 };
-                this.AddFieldBinding(Canvas.LeftProperty, bindingX);
-                var bindingY = new FieldBinding<PointController>()
-                {
-                    Mode = BindingMode.OneWay,
-                    Document = RegionDocumentController,
-                    Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(true)
-                };
-                this.AddFieldBinding(Canvas.TopProperty, bindingY);
+                this.AddFieldBinding(RenderTransformProperty, bindingXf);
             }
 
             if (RegionDocumentController != null)
@@ -207,7 +189,7 @@ namespace Dash
             {
                 return new Binding
                 {
-                    Path = new PropertyPath(nameof(ViewModel.IsSelected)),
+                    Path = new PropertyPath(nameof(IsSelected)),
                     Mode = BindingMode.OneWay,
                     Converter = new BoolToBrushConverter(_selectedBrush, _unselectedBrush)
                 };

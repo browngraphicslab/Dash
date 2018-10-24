@@ -91,6 +91,10 @@ namespace Dash
             Loaded += CollectionGraphView_Loaded;
             Unloaded += CollectionGraphView_Unloaded;
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         public DocumentController ParentDocument
         {
@@ -98,9 +102,6 @@ namespace Dash
             set
             {
                 _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
             }
         }
 

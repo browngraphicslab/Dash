@@ -1,46 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
     [OperatorType(Op.Name.map)]
-    public class MapOperator : OperatorController
+    public sealed class MapOperator : OperatorController
     {
 
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("List");
-        public static readonly KeyController LambdaVariableNameKey = new KeyController("LambdaVariableName");
-        public static readonly KeyController LambdaFuncKey = new KeyController("LambdaFunc");
+        public static readonly KeyController ListKey = KeyController.Get("List");
+        public static readonly KeyController LambdaKey = KeyController.Get("Lambda");
 
         //Output keys
-        public static readonly KeyController ResultListKey = new KeyController("ResultList", "87F48D1A-F958-4020-8F47-2F247BA7D66C");
+        public static readonly KeyController ResultListKey = KeyController.Get("ResultList");
 
         public MapOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public MapOperator() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public MapOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
-
-        public override FieldControllerBase GetDefaultController()
-        {
-            throw new NotImplementedException();
-        }
+        public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {
             new KeyValuePair<KeyController, IOInfo>(ListKey, new IOInfo(TypeInfo.List, true)),
-            new KeyValuePair<KeyController, IOInfo>(LambdaVariableNameKey, new IOInfo(TypeInfo.Text, true)),
-            new KeyValuePair<KeyController, IOInfo>(LambdaFuncKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(LambdaKey, new IOInfo(TypeInfo.Operator, true))
         };
+
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
             [ResultListKey] = TypeInfo.List
@@ -48,36 +38,25 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-            new KeyController("Lambda Map", "E119C98C-6A29-4D10-978C-8E8049330D92");
+        private static readonly KeyController TypeKey = KeyController.Get("Lambda Map");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputList = inputs[ListKey] as BaseListController;
-            var lambdaString = inputs[LambdaFuncKey] as TextController;
-            var variableName = inputs[LambdaVariableNameKey] as TextController;
+            var lambda = inputs[LambdaKey] as OperatorController;
 
-            if (inputList != null && lambdaString != null && variableName != null)
+            var outputList = new ListController<FieldControllerBase>();
+
+            if (inputList != null && lambda != null && inputList.Count > 0 && lambda.Inputs.Count == 1)
             {
-                var outputList = new ListController<FieldControllerBase>();
-
-                foreach (var obj in inputList.Data.ToArray())
+                foreach (var field in inputList.Data.ToArray())
                 {
-                    var newScope = new Scope();
-                    newScope.SetVariable(variableName.Data, obj);
-                    var dsl = new DSL(newScope);
-                    var executed = dsl.Run(lambdaString.Data, false);
-                    outputList.Add(executed);
+                    var res = await OperatorScript.Run(lambda, new List<FieldControllerBase> {field}, new Scope());
+                    if (res != null) outputList.Add(res);
                 }
+            }
 
-                outputs[ResultListKey] = outputList;
-            }
-            else
-            {
-                outputs[ResultListKey] = new ListController<FieldControllerBase>();
-            }
+            outputs[ResultListKey] = outputList;
         }
     }
 }

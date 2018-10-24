@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -13,16 +15,16 @@ namespace Dash
         {
         }
 
-        public DebugPrintOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public DebugPrintOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DebugPrint", "57A955CF-81BD-4B5F-A510-753BC4E9B983");
+        private static readonly KeyController TypeKey = KeyController.Get("DebugPrint");
 
         //Input keys
-        public static readonly KeyController InputKey = new KeyController("Input");
+        public static readonly KeyController InputKey = KeyController.Get("Input");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -33,11 +35,14 @@ namespace Dash
             [ResultKey] = TypeInfo.Any,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             FieldControllerBase input = inputs[InputKey];
             Debug.WriteLine(input.ToString());
             outputs[ResultKey] = input;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new DebugPrintOperatorController();

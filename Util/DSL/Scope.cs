@@ -1,6 +1,6 @@
-﻿using DashShared;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Flurl.Util;
 
 namespace Dash
 {
@@ -58,6 +58,30 @@ namespace Dash
         public void DeleteVariable(string variableName)
         {
             _dictionary.Remove(variableName);
+        }
+
+        public Scope Merge(Scope scope)
+        {
+            var outScope = new Scope(this);
+
+            foreach (var kv in scope.CollectVariables()) { outScope._dictionary.Add(kv.Key, kv.Value); }
+
+            return outScope;
+        }
+
+        public Dictionary<string, FieldControllerBase> CollectVariables()
+        {
+            var collector = new Dictionary<string, FieldControllerBase>();
+
+            var child = this;
+            while (child != null)
+            {
+                var items = child._dictionary.ToKeyValuePairs().ToList();
+                items.ForEach(kv => collector.Add(kv.Key, (FieldControllerBase) kv.Value));
+                child = child.Parent;
+            }
+
+            return collector;
         }
 
         public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }

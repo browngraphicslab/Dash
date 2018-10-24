@@ -1,19 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -26,6 +18,7 @@ namespace Dash
         public int EndIndex = -1;
         public Rect ClipRect = Rect.Empty;
         private Point? _selectionStartPoint;
+        private Selection _selectionViewModel;
 
         public TextAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
@@ -36,12 +29,22 @@ namespace Dash
 
             AnnotationType = AnnotationType.Selection;
 
-            if (selectionViewModel != null)
-            {
-                HelpRenderRegion(selectionViewModel);
-            }
+            _selectionViewModel = selectionViewModel;
+            HelpRenderRegion();
         }
-
+        public override bool IsInView(Rect bounds)
+        {
+            foreach (var p in LayoutRoot.Children.OfType<Path>())
+            {
+                var pbounds = p.GetBoundingRect(this);
+                pbounds.Intersect(bounds);
+                if (!pbounds.IsEmpty)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         public override void StartAnnotation(Point p)
         {
             _selectionStartPoint = p;
@@ -50,13 +53,20 @@ namespace Dash
         {
             SelectableElement ele = null;
             double closestDist = double.PositiveInfinity;
-            foreach (var selectableElement in ParentOverlay.TextSelectableElements)
+
+            var startPage = ParentOverlay.GetPageOf(p.Y);
+            // startIndex is either 0 or the last page's end index + 1
+            var startIndex = startPage > 0 ? ParentOverlay.PageEndIndices[startPage - 1] + 1 : 0;
+            var endIndex = ParentOverlay.PageEndIndices[startPage];
+            for (var index = startIndex; index < endIndex; index++)
             {
+                var selectableElement = ParentOverlay.TextSelectableElements[index];
                 var b = selectableElement.Bounds;
                 if (b.Contains(p) && !string.IsNullOrWhiteSpace(selectableElement.Contents as string))
                 {
                     return selectableElement;
                 }
+
                 var dist = GetMinRectDist(b, p, out var closest);
                 if (dist < closestDist && (closest.X - p.X) * dir.X + (closest.Y - p.Y) * dir.Y > 0)
                 {
@@ -121,11 +131,15 @@ namespace Dash
             }
         }
 
-        private void HelpRenderRegion(Selection vm)
+        public void HelpRenderRegion()
         {
+            if (RegionDocumentController == null)
+            {
+                return;
+            }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
-            if (ParentOverlay.TextSelectableElements != null && indexList.Any())
+            if (ParentOverlay.TextSelectableElements != null && indexList.Any() && _selectionViewModel != null)
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -151,8 +165,10 @@ namespace Dash
                 var path = new Path
                 {
                     Data = geometryGroup,
-                    DataContext = vm,
-                    IsDoubleTapEnabled = false
+                    DataContext = _selectionViewModel,
+                    IsDoubleTapEnabled = false,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Left
                 };
                 InitializeAnnotationObject(path, topLeft, PlacementMode.Mouse);
                 LayoutRoot.Children.Add(path);

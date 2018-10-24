@@ -11,24 +11,15 @@ namespace Dash
 
         public AudioController() : base(new AudioModel())
         {
-            SaveOnServer();
         }
 
         public AudioController(Uri path) : base(new AudioModel(path))
         {
-            SaveOnServer();
         }
 
         public AudioController(AudioModel audFieldModel) : base(audFieldModel)
         {
-            SaveOnServer();
         }
-
-        public override void Init()
-        {
-
-        }
-
 
         public AudioModel AudioFieldModel => Model as AudioModel;
 
@@ -64,6 +55,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "";
         }
 
         public override FieldControllerBase GetDefaultController()

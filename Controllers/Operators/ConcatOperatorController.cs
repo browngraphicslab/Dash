@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -7,20 +9,20 @@ namespace Dash
     [OperatorType(Op.Name.add, Op.Name.concat, Op.Name.operator_add)]
     public sealed class ConcatOperatorController : OperatorController
     {
-        public static readonly KeyController AKey = new KeyController("A");
-        public static readonly KeyController BKey = new KeyController("B");
+        public static readonly KeyController AKey = KeyController.Get("A");
+        public static readonly KeyController BKey = KeyController.Get("B");
 
-        public static readonly KeyController OutputKey = new KeyController("Output");
+        public static readonly KeyController OutputKey = KeyController.Get("Output");
 
 
-        public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ConcatOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Concat", "F69DF9CF-5B51-482D-AE1E-40B3266930CB");
+        private static readonly KeyController TypeKey = KeyController.Get("Concat");
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -38,13 +40,14 @@ namespace Dash
             [OutputKey] = TypeInfo.Text
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var a = (inputs[AKey] as TextController)?.Data;
             var b = (inputs[BKey] as TextController)?.Data;
             outputs[OutputKey] = new TextController(a + b);
+            return Task.CompletedTask;
         }
     }
 }

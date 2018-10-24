@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -43,7 +45,7 @@ namespace Dash
         /*
          * Wrapper to retrieve the list items stored in the ListController.
          */
-        private List<T> _typedData = new List<T>();
+        private List<T> _typedData;
         public List<T> TypedData
         {
             get => _typedData;
@@ -65,11 +67,11 @@ namespace Dash
             // can simply reassign list, as below, but only if first all the necessary event handlers are removed and added
             foreach (var d in _typedData)
             {
-                d.FieldModelUpdated -= ContainedFieldUpdated;
+                ReleaseContainedField(d);
             }
             foreach (var d in targetList)
             {
-                d.FieldModelUpdated += ContainedFieldUpdated;
+                ReferenceContainedField(d);
             }
             _typedData = targetList;
             // updates the data of the list model @database
@@ -113,17 +115,60 @@ namespace Dash
 
         #region // OVERLOADED CONSTRUCTORS, INITIALIZATION //
 
-        // List model
-        public ListController(ListModel model, bool readOnly = false) : base(model) => IsReadOnly = readOnly;
+        private bool _initialized = true;
 
         // Parameterless
-        public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(false);
+        public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            _typedData = new List<T>();
+            ConstructorHelper(false);
+        }
 
         // IEnumerable<T> (list of items)
-        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            _typedData = new List<T>(list);
+            ConstructorHelper(readOnly);
+        }
 
         // T (item)
-        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            _typedData = new List<T> {item};
+            ConstructorHelper(readOnly);
+        }
+
+        private ListController(ListModel model) : base(model)
+        {
+            _initialized = false;
+        }
+
+        public static ListController<T> CreateFromServer(ListModel model)
+        {
+            Debug.Assert(!model.SubTypeInfo.Equals(TypeInfo.None));
+            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
+            return new ListController<T>(model);
+        }
+
+        public override async Task InitializeAsync()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
+
+            var fields = await RESTClient.Instance.Fields.GetControllersAsync<T>(ListModel.Data);
+            List<T> list = fields as List<T> ?? new List<T>(fields);
+
+            // furthermore, confirms the type of the list in the model matches the type of this list controller
+            _typedData = list;
+            foreach (var field in list)
+            {
+                ReferenceContainedField(field);
+            }
+        }
 
         /*
          * Factors out code common to all constructors - sets the readonly status, saves to database and calls the custom initialization
@@ -132,19 +177,46 @@ namespace Dash
         {
             IsReadOnly = readOnly;
             Indexed = true;
-            SaveOnServer();
-            Init();
         }
 
-        public override void Init()
+        protected override IEnumerable<FieldControllerBase> GetReferencedFields()
         {
-            // ensures that the list isn't initialized with a type of none
-            Debug.Assert(!((ListModel)Model).SubTypeInfo.Equals(TypeInfo.None));
+            return TypedData;
+        }
 
-            TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
+        private void ReferenceContainedField(T field)
+        {
+            ReferenceField(field);
+            if (IsReferenced)
+            {
+                field.FieldModelUpdated += ContainedFieldUpdated;
+            }
+        }
 
-            // furthermore, confirms the type of the list in the model matches the type of this list controller
-            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
+        private void ReleaseContainedField(T field)
+        {
+            if (IsReferenced)
+            {
+                field.FieldModelUpdated -= ContainedFieldUpdated;
+            }
+
+            ReleaseField(field);
+        }
+
+        protected override void RefInit()
+        {
+            foreach (var fieldControllerBase in TypedData)
+            {
+                ReferenceContainedField(fieldControllerBase);
+            }
+        }
+
+        protected override void RefDestroy()
+        {
+            foreach (var fieldControllerBase in TypedData)
+            {
+                ReleaseContainedField(fieldControllerBase);
+            }
         }
 
         #endregion
@@ -194,9 +266,12 @@ namespace Dash
             index = CheckedIndex(index, TypedData);
 
             var prevElement = TypedData[index]; // for undo and event args
+            ReleaseContainedField(prevElement);
 
             TypedData[index] = value;
             ListModel.Data[index] = value.Id;
+
+            ReferenceContainedField(value);
 
             var newEvent = new UndoCommand(() => SetIndex(index, value, false), () => SetIndex(index, prevElement, false));
             UpdateOnServer(withUndo ? newEvent : null);
@@ -212,17 +287,6 @@ namespace Dash
          * Gets the type of the elements in the actual list
          */
         public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
-
-        /*
-         * Returns a view of the given list in the form of a table
-         */
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewForCollectionAndLists("📜", delegate (TextBlock block)
-            {
-                block.Text = string.Format($"{TypedData.Count()} object(s)");           //TODO make a factory and specify what objects it contains ,,,, 
-            });
-        }
 
         /*
          * Creates and returns a duplicate of this ListController and its underlying data
@@ -241,11 +305,16 @@ namespace Dash
         {
             if (string.IsNullOrEmpty(searchString))
             {
-                return new StringSearchModel(true, ToString());
+                return new StringSearchModel(ToString());
             }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
             return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "[" + string.Join(", ", TypedData.Select(f => f.ToScriptString(thisDoc))) + "]";
         }
 
         // @IList<T> //
@@ -336,19 +405,16 @@ namespace Dash
 
         private bool AddHelper(T element)
         {
+            Debug.Assert(element != null);
             if (AvoidDuplicates) if (TypedData.Contains(element)) return false; // Conditionally avoid duplicate addition
-
-            element.FieldModelUpdated += ContainedFieldUpdated;
 
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
             TypedData.Add(element);
             ListModel.Data.Add(element.Id );
+
+            ReferenceContainedField(element);
+
             return true;
-        }
-        
-        public static explicit operator ListController<T>(FieldUpdatedEventArgs v)
-        {
-            throw new NotImplementedException();
         }
 
         public override void AddRange(IEnumerable<FieldControllerBase> elements)
@@ -378,7 +444,7 @@ namespace Dash
         {
             if (IsReadOnly) return;
 
-            var prevList = TypedData;
+            var prevList = TypedData.ToList();
             var enumerable = elements.ToList();
             foreach (var element in enumerable)
             {
@@ -397,7 +463,7 @@ namespace Dash
 
             UpdateOnServer(withUndo ? newEvent : null);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, enumerable.ToList(), prevList, prevList.Count - 1));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, enumerable.ToList(), prevList, prevList.Count));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, enumerable.ToList()));
         }
 
@@ -414,6 +480,8 @@ namespace Dash
 
             TypedData.Insert(index, element);
             ListModel.Data.Insert(index, element.Id);
+
+            ReferenceContainedField(element);
 
             var newEvent = new UndoCommand(() => InsertManager(index, element, false), () => RemoveManager(element, false));
             UpdateOnServer(withUndo ? newEvent : null);
@@ -453,7 +521,7 @@ namespace Dash
 
         private bool RemoveHelper(T element)
         {
-            element.FieldModelUpdated -= ContainedFieldUpdated;
+            ReleaseContainedField(element);
 
             var removed = TypedData.Remove(element);
             ListModel.Data.Remove(element.Id);
@@ -484,10 +552,10 @@ namespace Dash
         private T RemoveAtHelper(int index)
         {
             var element = TypedData[index];
-            element.FieldModelUpdated -= ContainedFieldUpdated;
+            ReleaseContainedField(element);
 
-            TypedData.Remove(element);
-            ListModel.Data.Remove(element.Id);
+            TypedData.RemoveAt(index);
+            ListModel.Data.RemoveAt(index);
 
             return element;
         }
@@ -507,7 +575,7 @@ namespace Dash
             var prevList = TypedData;
             foreach (var element in TypedData)
             {
-                element.FieldModelUpdated -= ContainedFieldUpdated;
+                ReleaseContainedField(element);
             }
             TypedData.Clear();
             ListModel.Data.Clear();

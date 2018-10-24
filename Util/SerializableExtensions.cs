@@ -28,7 +28,7 @@ namespace Dash
 
             foreach (var kvp in dict)
             {
-                var newKey = new KeyController(kvp.Key, kvp.Key + "__from__" + typeIdentifierId);
+                var newKey = new KeyController(kvp.Key, new Guid(kvp.Key + "__from__" + typeIdentifierId));
                 FieldControllerBase newField;
                 try
                 {

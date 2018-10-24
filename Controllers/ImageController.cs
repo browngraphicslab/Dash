@@ -1,6 +1,7 @@
 ﻿using System;
 using DashShared;
 using System.Diagnostics;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -12,12 +13,10 @@ namespace Dash
         // == CONSTRUCTORS ==
         public ImageController() : base(new ImageModel())
         {
-            SaveOnServer();
         }
 
         public ImageController(Uri path, string data = null) : base(new ImageModel(path, data))
         {
-            SaveOnServer();
         }
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
@@ -26,10 +25,6 @@ namespace Dash
 		}
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageController" />,
@@ -85,6 +80,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<TextToImageOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

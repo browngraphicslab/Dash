@@ -3,13 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Networking.Sockets;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Browser;
 using DashShared;
@@ -234,7 +229,7 @@ namespace Dash
 
         public string GetUrlHash()
         {
-            var hash = UtilShared.GetDeterministicGuid(Url);
+            var hash = UtilShared.GetDeterministicGuid(Url).ToString();
             //Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
             return hash;
         }

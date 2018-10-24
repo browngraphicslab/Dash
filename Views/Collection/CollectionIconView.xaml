@@ -1,0 +1,18 @@
+﻿<UserControl
+    x:Class="Dash.Views.Collection.CollectionIconView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Collection"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" 
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    AllowDrop="True">
+    <StackPanel x:Name="Grid" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" 
+                ManipulationMode="All">
+        <TextBlock x:Name="xFolderIcon"   HorizontalTextAlignment="Center" Foreground="DarkGoldenrod" Text="&#xE188;" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="38" FontFamily="Segoe MDL2 Assets" />
+        <ContentPresenter x:Name="xFolderPreview" AllowDrop="True" Drop="xFolderPreview_Drop" Background="Transparent"/>
+        <!--<TextBox x:Name="xFolderTitle" AcceptsReturn="True" FontSize="24" FontWeight="Bold" Foreground="Black"/>-->
+    </StackPanel>
+</UserControl>

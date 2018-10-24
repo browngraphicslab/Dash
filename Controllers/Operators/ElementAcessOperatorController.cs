@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -9,13 +11,13 @@ namespace Dash
     public sealed class ElementAccessOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("6407AD77-89C7-470C-A0FE-1133ADEED75D", "List");
-        public static readonly KeyController IndexKey = new KeyController("E800D4F4-AF0D-4848-AA30-0CCBF1014C99", "Index");
+        public static readonly KeyController ListKey = KeyController.Get("List");
+        public static readonly KeyController IndexKey = KeyController.Get("Index");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("425BEF63-041B-4705-8DAA-AECB9A5BF7CB", "Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ElementAccessOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ElementAccessOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ElementAccessOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -34,8 +36,10 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9", "Element Access");
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        private static readonly KeyController TypeKey = KeyController.Get("Element Access");
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var indexable = inputs[ListKey];
             var varIndex = ((NumberController)inputs[IndexKey]).Data;
@@ -56,6 +60,7 @@ namespace Dash
                     outputs[ResultsKey] = new TextController(stringToIndex.Data[(int)varIndex].ToString());
                     break;
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ElementAccessOperatorController();

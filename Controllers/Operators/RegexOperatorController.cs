@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DashShared;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -14,17 +16,17 @@ namespace Dash
 
         public RegexOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Regex", "DF48D210-40A9-46A2-B32A-8F3C96C6CDD7");
+        private static readonly KeyController TypeKey = KeyController.Get("Regex");
 
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("Text");
-        public static readonly KeyController ExpressionKey = new KeyController("Expression");
+        public static readonly KeyController TextKey = KeyController.Get("Text");
+        public static readonly KeyController ExpressionKey = KeyController.Get("Expression");
 
         //Output keys
-        public static readonly KeyController MatchDocsKey = new KeyController("Matches");
+        public static readonly KeyController MatchDocsKey = KeyController.Get("Matches");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -37,12 +39,14 @@ namespace Dash
             [MatchDocsKey] = TypeInfo.Document,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             string text = (inputs[TextKey] as TextController)?.Data;
             string expr = (inputs[ExpressionKey] as TextController)?.Data;
 
-            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(expr)) return;
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(expr)) return Task.CompletedTask;
 
             var reg = new Regex($@"{expr}");
             var matches = reg.Matches(text).ToList();
@@ -57,7 +61,7 @@ namespace Dash
                 var unnamedList = new ListController<TextController>();
 
                 infoDoc.SetField<TextController>(KeyStore.TitleKey, $"Match #{++i}", true);
-                infoDoc.SetField<NumberController>(new KeyController("Index"), match.Index, true);
+                infoDoc.SetField<NumberController>(KeyController.Get("Index"), match.Index, true);
 
                 foreach (Group group in groups)
                 {
@@ -66,8 +70,8 @@ namespace Dash
                     if (IsNumeric(group.Name)) unnamedList.Add(new TextController(group.Value.Trim()));
                     else
                     {
-                        var key = new KeyController(group.Name);
-                        if (group.Name.Equals("0")) key = new KeyController("Full Match");
+                        var key = KeyController.Get(group.Name);
+                        if (group.Name.Equals("0")) key = KeyController.Get("Full Match");
 
                         infoDoc.SetField<TextController>(key, group.Value.Trim(), true);
                     }
@@ -78,6 +82,7 @@ namespace Dash
                 matchDocs.Add(infoDoc);
             }
             outputs[MatchDocsKey] = matchDocs;
+            return Task.CompletedTask;
         }
 
         private bool IsNumeric(string name) => _digits.Contains(name[0].ToString());

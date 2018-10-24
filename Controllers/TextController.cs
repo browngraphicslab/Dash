@@ -12,16 +12,10 @@ namespace Dash
 
         public TextController(string data) : base(new TextModel(data))
         {
-            SaveOnServer();
         }
 
         public TextController(TextModel textFieldModel) : base(textFieldModel)
         {
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>
@@ -99,15 +93,20 @@ namespace Dash
                 {
                     if (index < 0)
                     {
-                        return new StringSearchModel(Data, true);
+                        return new StringSearchModel(Data);
                     }
                     index = Math.Max(0, index - textDecrementForContext);
                     var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
-                    return new StringSearchModel(substring, true);
+                    return new StringSearchModel(substring);
                 }
                 
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc = null)
+        {
+            return "\"" + Data + "\"";
         }
 
         public override FieldControllerBase Copy()
