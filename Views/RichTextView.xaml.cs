@@ -63,7 +63,8 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && 
+                    (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation))
                 {
                     if (!SelectionManager.IsSelected(docView))
                     {
@@ -77,7 +78,8 @@ namespace Dash
                         xRichEditBox.Focus(FocusState.Keyboard);
                         MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
                     }
-                       
+                    TouchInteractions.CurrInteraction =
+                        TouchInteractions.TouchInteraction.DocumentManipulation;
                     SelectionManager.TryInitiateDragDrop(docView, e, null);
                 }
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);

@@ -225,6 +225,7 @@
       <DependentUpon>InkSubToolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
+    <Compile Include="Util\TouchInteractions.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
       <DependentUpon>ActionMenu.xaml</DependentUpon>
     </Compile>

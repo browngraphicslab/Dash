@@ -639,11 +639,7 @@ namespace Dash
                 if (e != null) e.Handled = true;
             }
 
-            if (TouchInteractions.NumFingers == 0)
-            {
-                TouchInteractions.isPanning = false;
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
-            }
+            
 
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
@@ -666,19 +662,12 @@ namespace Dash
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;
             }
-
-            if (TouchInteractions.NumFingers == 0)
-            {
-                TouchInteractions.isPanning = false;
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
-            }
         }
 
         public bool StartMarquee(Point pos)
         {
             if (_isMarqueeActive)
             {
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Marquee;
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 

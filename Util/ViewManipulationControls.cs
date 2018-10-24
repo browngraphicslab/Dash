@@ -100,8 +100,8 @@ namespace Dash
         {
             TouchInteractions.NumFingers--;
             TouchInteractions.DraggingDoc = false;
-            SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;
             TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+            SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;         
         }
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -112,7 +112,8 @@ namespace Dash
                 //e.Complete();
                 _processManipulation = false;
             }
-            if (docView != null && TouchInteractions.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !TouchInteractions.DraggingDoc)
+            if (docView != null && TouchInteractions.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !TouchInteractions.DraggingDoc &&
+                (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation))
             {
                 //drag document 
                 if (!SelectionManager.IsSelected(docView))
@@ -171,7 +172,9 @@ namespace Dash
                     //gets funky with nested collections, but otherwise works
                     ////handle touch interactions with just one finger - equivalent to drag without ctr
                     //if in another touch mode, ignore
-                    if (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None && _freeformView.StartMarquee(point))
+                    Debug.WriteLine(TouchInteractions.CurrInteraction);
+                    if ((TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.Marquee) 
+                        && _freeformView.StartMarquee(point))
                     {
                         TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Marquee;
                         e.Handled = true;

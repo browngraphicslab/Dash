@@ -194,10 +194,13 @@ namespace Dash
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
 
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && 
+                    (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation))
                 {
-                    if(!SelectionManager.IsSelected(this))
+                    if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
+                    TouchInteractions.CurrInteraction =
+                        TouchInteractions.TouchInteraction.DocumentManipulation;
                     SelectionManager.TryInitiateDragDrop(this, e, null);
                 }
 
@@ -208,7 +211,6 @@ namespace Dash
                     e.Handled = false;
                 }
             };
-
             MenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
@@ -221,11 +223,17 @@ namespace Dash
                 if (this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
+                    {
                         e.Handled = true;
+                    }
                 }
             };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
-            DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
+            DropCompleted += (s, e) =>
+            {
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+                SelectionManager.DropCompleted(this, s, e);
+            };
             RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
             Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
 

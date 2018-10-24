@@ -11,8 +11,21 @@ namespace Dash
     {
 
         //records number of fingers on screen for touch interactions
-        public static int NumFingers;
-
+        private static int numFingers;
+        public static int NumFingers
+        {
+            get => numFingers;
+            set
+            {
+                numFingers = value;
+                if (numFingers == 0)
+                {
+                    isPanning = false;
+                    CurrInteraction = TouchInteraction.None;
+                }
+            } 
+        }
+        
         public static TouchInteraction CurrInteraction = TouchInteraction.None;
 
         public enum TouchInteraction
