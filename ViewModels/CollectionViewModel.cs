@@ -49,8 +49,8 @@ namespace Dash
             }
             set
             {
-                if (ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey).Data != value.Translate ||
-                    ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey).Data != value.ScaleAmount)
+                if (ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data != value.Translate ||
+                    ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data != value.ScaleAmount)
                 {
                     ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
                     ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
