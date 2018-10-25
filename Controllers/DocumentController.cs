@@ -992,8 +992,13 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true, bool updateBindings=true)
         {
+            if (updateBindings)
+            {
+                RemoveOperatorForKey(key);
+            }
+
             var oldVal = GetField(key);
             UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false),
                 () => SetField(key, oldVal, forceMask, false));
@@ -1010,6 +1015,29 @@ namespace Dash
 
             return fieldChanged;
         }
+
+        private void RemoveOperatorForKey(KeyController key)
+        {
+            var opFields = GetField<ListController<OperatorController>>(KeyStore.OperatorKey,        false) ?? new ListController<OperatorController>();
+            var rmFields = GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, false) ?? new ListController<OperatorController>();
+            bool removedField = false;
+            foreach (var opfield in opFields.ToArray())
+            {
+                foreach (var output in opfield.Outputs)
+                {
+                    if (output.Key.Equals(key) && !rmFields.Contains(opfield))
+                    {
+                        rmFields.Add(opfield);
+                        removedField = true;
+                    }
+                }
+            }
+            if (removedField)
+            {
+                SetField(KeyStore.RemoveOperatorsKey, rmFields, true, updateBindings: false);
+            }
+        }
+
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true)
             where TDefault : FieldControllerBase, new()
         {
@@ -1022,6 +1050,7 @@ namespace Dash
             {
                 if (field.TrySetValue(v))
                 {
+                    RemoveOperatorForKey(key);
                     return true;
                 }
             }
@@ -1171,29 +1200,27 @@ namespace Dash
         public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
             context = context ?? new Context(this);
-            HashSet<Type> usedOperators = new HashSet<Type>();
-            List<OperatorController> ops = new List<OperatorController>();
-            var proto = this;
-            while (proto != null)
+            var usedOperators = new HashSet<Type>();
+            var ops           = new List<OperatorController>();
+            var remOps        = new List<OperatorController>();
+            for (var proto = this; proto != null; proto = proto.GetPrototype())
             {
-                var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true);
-                if (opFields != null)
+                var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true) ?? new ListController<OperatorController>();
+                foreach (var operatorController in opFields)
                 {
-                    foreach (var operatorController in opFields)
+                    if (!usedOperators.Contains(operatorController.GetType()))
                     {
-                        if (usedOperators.Contains(operatorController.GetType()))
-                        {
-                            continue;
-                        }
-
                         ops.Add(operatorController);
                     }
                 }
-
-                proto = proto.GetPrototype();
+                var remOpFields = proto.GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, true) ?? new ListController<OperatorController>();
+                foreach (var operatorController in remOpFields)
+                {
+                    remOps.Add(operatorController);
+                }
             }
 
-            foreach (var opField in ops)
+            foreach (var opField in ops.Where((op) => !remOps.Contains(op)))
             {
                 if (opField.Inputs.Any(i => i.Key.Equals(updatedKey)))
                 {
@@ -1246,7 +1273,7 @@ namespace Dash
             // pass the updates along 
             foreach (var fieldModel in outputs)
             {
-                SetField(fieldModel.Key, fieldModel.Value, true);
+                SetField(fieldModel.Key, fieldModel.Value, true, updateBindings:false);
             }
         }
         #endregion

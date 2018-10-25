@@ -49,9 +49,16 @@ namespace Dash
             }
             set
             {
-                ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
-                ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
-                MainPage.Instance.XDocumentDecorations.SetPositionAndSize(); // bcz: hack ... The Decorations should update automatically when the view zooms -- need a mechanism to bind/listen to view changing globally?
+                if (ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey).Data != value.Translate ||
+                    ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey).Data != value.ScaleAmount)
+                {
+                    ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
+                    ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
+                    if (MainPage.Instance.XDocumentDecorations.SelectedDocs.Any((sd) => DocumentViewModels.Contains(sd.ViewModel)))
+                    {
+                        MainPage.Instance.XDocumentDecorations.SetPositionAndSize(); // bcz: hack ... The Decorations should update automatically when the view zooms -- need a mechanism to bind/listen to view changing globally?
+                    }
+                }
             }
         }
         public DocumentController ContainerDocument { get; private set; }

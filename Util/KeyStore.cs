@@ -151,6 +151,7 @@ namespace Dash
         public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
         public static KeyController FolderIconKey                        = KeyController.Get("FolderIcon");
         public static KeyController FolderIconDataBoxKey                 = KeyController.Get("_FolderIconDataBox");
+        public static KeyController RemoveOperatorsKey                   = KeyController.Get("_RemoveOperators");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{

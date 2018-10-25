@@ -272,6 +272,8 @@ namespace Dash
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             xMultiSelectBorder.BorderThickness = new Thickness(SelectedDocs.Count > 1 ? 2 : 0);
             SetPositionAndSize();
+
+            ResetHeader(); // force header field to update
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -444,8 +446,6 @@ namespace Dash
                 AddTag(name, TagMap[name]);
             }
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
-
-            ResetHeader(); // force header field to update
 
             var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
             if (!string.IsNullOrEmpty(htmlAddress))
