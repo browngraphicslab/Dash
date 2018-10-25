@@ -531,7 +531,7 @@ namespace Dash
             }
         }
 
-        private void XDropDown_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XDropDown_OnPointerPressed(object sender, TappedRoutedEventArgs e)
         {
             var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
             Debug.WriteLine(viewModel.Copies);
@@ -552,7 +552,9 @@ namespace Dash
                     itemsSource?.Remove(svm);
                 }
             }
-            
+
+            e.Handled = true;
+
         }
     }
 }

@@ -84,7 +84,7 @@
                             Height="30"
                             HorizontalAlignment="Center"
                             Visibility="{Binding Visibility}"
-                            PointerPressed ="XDropDown_OnPointerPressed"/>
+                            Tapped ="XDropDown_OnPointerPressed"/>
                         <TextBlock 
                             x:Name="xCollIcon"
                             Grid.Column="1"
