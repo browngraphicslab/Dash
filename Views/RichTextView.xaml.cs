@@ -21,6 +21,7 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using System.Threading.Tasks;
 using System.Windows;
 using Windows.UI.Xaml.Documents;
+using Dash.Controllers.Operators;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -288,6 +289,27 @@ namespace Dash
                 {
                     rtv._prevQueryLength = selected.Length;
                 }
+                var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
+                if (documentView != null)
+                {
+                    rtv.xRichEditBox.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case);
+                    if (rtv.xRichEditBox.Document.Selection.StartPosition != rtv.xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+                        var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
+
+                        //this does better formatting/ parsing than the regex stuff can
+                        var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
+
+                        rtv.xRichEditBox.Document.Selection.CharacterFormat.Size = 9;
+                        rtv.xRichEditBox.Document.Selection.FindText(HyperlinkMarker, rtv.getRtfText().Length, FindOptions.Case);
+                        rtv.xRichEditBox.Document.Selection.CharacterFormat.Size = 8;
+                        rtv.xRichEditBox.Document.Selection.Text = link;
+                        rtv.xRichEditBox.Document.Selection.Link = "\"" + url + "\"";
+                        rtv.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
+                        rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
+                    }
+                }
             }
         }
 
@@ -434,13 +456,15 @@ namespace Dash
             cfv?.AddToMenu(menu);
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC",new ActionViewModel("Title","Add title",MakeTitleAction,source));
-            menu.AddAction("BASIC", new ActionViewModel("Center", "Align text to center",SetCenterAction, source));
-            menu.AddAction("BASIC", new ActionViewModel("To-Do", "Create a todo note", CreateTodoAction, source));
+            menu.AddAction("BASIC", new ActionViewModel("Title",  "Add title",           MakeTitleAction,  source));
+            menu.AddAction("BASIC", new ActionViewModel("Center", "Align text to center",SetCenterAction,  source));
+            menu.AddAction("BASIC", new ActionViewModel("To-Do",  "Create a todo note",  CreateTodoAction, source));
+            menu.AddAction("BASIC", new ActionViewModel("Google", "Google Clip",         GoogleClip,       source));
+            menu.AddAction("BASIC", new ActionViewModel("Bio",    "Google Bio",          GoogleBio,       source));
             MainPage.Instance.xCanvas.Children.Add(menu);
         }
 
-        private Task<bool> MakeTitleAction(Point point)
+        private Task<bool> MakeTitleAction(ActionFuncParams actionParams)
         {
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, "TITLE\n");
             xRichEditBox.Document.Selection.StartPosition = 0;
@@ -453,7 +477,7 @@ namespace Dash
             return Task.FromResult(false);
         }
 
-        private Task<bool> SetCenterAction(Point point)
+        private Task<bool> SetCenterAction(ActionFuncParams actionParams)
         {
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, "text");
             xRichEditBox.TextAlignment = TextAlignment.Center;
@@ -462,7 +486,7 @@ namespace Dash
             return Task.FromResult(false);
         }
 
-        private Task<bool> CreateTodoAction(Point point)
+        private Task<bool> CreateTodoAction(ActionFuncParams actionParams)
         {
             var templatedText =
             "{\\rtf1\\fbidis\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fnil Century Gothic; } {\\f1\\fnil\\fcharset0 Century Gothic; } {\\f2\\fnil\\fcharset2 Symbol; } }" +
@@ -471,6 +495,33 @@ namespace Dash
             "\r\n{\\pntext\\f2\\'B7\\tab}\\b0 Item\\~2\\par}";
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, templatedText);
             return Task.FromResult(false);
+        }
+        private async Task<bool> GoogleClip(ActionFuncParams actionParams)
+        {
+            var templatedText = await QuerySnapshotOperator.QueryGoogle(actionParams.Params?.FirstOrDefault() ?? "");
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, (actionParams.Params?.FirstOrDefault() ?? "") + "-> " + templatedText);
+            return false;
+        }
+        private async Task<bool> GoogleBio(ActionFuncParams actionParams)
+        {
+            var bkey = KeyController.Get("Birthday");
+            var wkey = KeyController.Get("Wikipedia");
+            var birthday = await QuerySnapshotOperator.QueryGoogle("birthday " + (actionParams.Params?.FirstOrDefault() ?? ""));
+            var wikipedia = "https://en.wikipedia.org/wiki/" + (actionParams.Params?.FirstOrDefault().Replace(" ", "_") ?? "");
+            var stack = new CollectionNote(actionParams.Where, CollectionView.CollectionViewType.Stacking, 400,600).Document;
+            var stackData = stack.GetDataDocument();
+            stackData.SetTitle(actionParams.Params.FirstOrDefault() ?? "<null>");
+            stackData.SetField<TextController>(bkey, birthday, true);
+            stackData.SetField<TextController>(wkey, wikipedia, true);
+            var html = new HtmlNote(wikipedia,size:new Size(double.NaN, 700)).Document;
+            html.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+            var dbox = new DataBox(new DocumentReferenceController(stackData, bkey)).Document;
+            dbox.SetField<NumberController>(KeyStore.FontSizeKey, 36, true);
+            stackData.SetField(KeyStore.DataKey,
+                new ListController<DocumentController>(
+                new DocumentController[] { dbox, html}), true);
+            this.GetFirstAncestorOfType<CollectionView>().ViewModel.AddDocument(stack);
+            return true;
         }
 
         private void Menu_ActionCommitted(bool removeTextBox)
@@ -541,7 +592,7 @@ namespace Dash
 
             if (e.Key.Equals(VirtualKey.Back))
             {
-                if (actionMenu != null)
+                if (actionMenu != null && string.IsNullOrEmpty(GetParsedText()))
                 {
                     CloseActionMenu();
                 }

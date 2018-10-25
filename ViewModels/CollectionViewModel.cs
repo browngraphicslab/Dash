@@ -796,11 +796,6 @@ namespace Dash
         
         public static async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel)
         {
-            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null && collectionViewModel != null)  // dropping a DataBox
-            {
-                RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
-            }
-
             if (isMoving && dragModel is DragDocumentModel dragDocModel)
             {
                 for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
@@ -849,6 +844,17 @@ namespace Dash
             }
 
             return docsToAdd;
+        }
+
+        public static void ConvertToTemplate(DocumentController templateRoot, DocumentController collectionToConvert)
+        {
+            var children = collectionToConvert.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey,null).TypedData;
+            var nestedCollections = children.Where((c) => c.DocumentType.Equals(CollectionBox.DocumentType));
+            foreach (var nc in nestedCollections)
+            {
+                ConvertToTemplate(templateRoot, nc);
+            }
+            RouteDataBoxReferencesThroughCollection(templateRoot, children);
         }
 
         public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
