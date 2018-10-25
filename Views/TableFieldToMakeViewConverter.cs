@@ -166,6 +166,7 @@ namespace Dash
                 currView.MaxHeight = 72;
                 currView.Width = double.NaN;
                 (currView as EditableTextBlock).Foreground = new SolidColorBrush(data is TextController ? Colors.Black : data is DateTimeController ? Colors.CadetBlue : Colors.Blue);
+                (currView as EditableTextBlock).Background = null;
                 //var grid = new Grid();
                 //grid.Children.Add(currView);
                 //grid.Background = new SolidColorBrush(Colors.LightSkyBlue);

@@ -2,6 +2,7 @@
 using DashShared;
 using System.Linq;
 using Windows.Foundation;
+using System;
 
 namespace Dash
 {
@@ -17,7 +18,8 @@ namespace Dash
             {
                 // [KeyStore.DataKey] = new ListController<DocumentController>(),
                 [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
-                [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() })
+                [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() }),
+                [KeyStore.FolderIconKey] = new ImageController(new Uri("https://opengameart.org/sites/default/files/Flat%20Folder%20icon.png"))
             };
             return new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
         }
