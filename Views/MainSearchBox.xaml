@@ -70,12 +70,24 @@
                         DragStarting="SearchResult_OnDragStarting"
                         Tapped="UIElement_OnTapped">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="32"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
+                        <TextBlock
+                            x:Name="xDropDown"
+                            Grid.Column="0"
+                            Text ="{Binding DropDownText}"
+                            FontSize ="15"
+                            Foreground="Black"
+                            Width ="15"
+                            Height="30"
+                            HorizontalAlignment="Center"
+                            Visibility="{Binding Visibility}"
+                            PointerPressed ="XDropDown_OnPointerPressed"/>
                         <TextBlock 
                             x:Name="xCollIcon"
-                            Grid.Column="0"
+                            Grid.Column="1"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
                             FontSize="15"
@@ -84,10 +96,10 @@
                             VerticalAlignment="Center"
                             Height="32"
                             Width="32"
-                            Margin="0, 15, 0, 0"
+                            Margin="0, 25, 0, 0"
                             PointerWheelChanged="DocIcon_OnPointerWheelChanged"/>
                         <TextBlock x:Name="xNumFields"
-                            Grid.Column="0"
+                            Grid.Column="1"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
                             FontSize="10"
@@ -98,7 +110,7 @@
                             Width="35"
                             Margin="20, 32, 0, 0"/>
                         <TextBlock x:Name="xFieldNum"
-                            Grid.Column="0"
+                            Grid.Column="1"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
                             FontSize="10"
@@ -109,15 +121,15 @@
                             Width="35"
                             Margin="20, 11, 0, 0"/>
                         <TextBlock x:Name="xCopyCount"
-                            Grid.Column = "0"
+                            Grid.Column = "1"
                             Foreground ="Red"
                             FontSize = "10"
                             Text ="{Binding Copies}"
                             Height ="32"
                             Width ="35"
-                            Margin ="25,0,0,0"
+                            Margin ="5,0,0,0"
                         />
-                        <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="1">
+                        <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="2">
                             <TextBlock Text="{Binding CurrentTitle}" FontWeight="Medium"></TextBlock>
                             <TextBlock Text="{Binding CurrentContext}"></TextBlock>
                         </StackPanel>

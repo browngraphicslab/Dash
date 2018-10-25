@@ -24,7 +24,21 @@ namespace Dash
         public bool IsLikelyUsefulContextText { get; }
         public int FieldCount { get; }
 
-        public int Copies => _copies;
+        public int Copies { get; set; }= 1;
+        public string Visibility { get; set; } = "Collapsed";
+        
+        public List<SearchResultViewModel> svmCopies = new List<SearchResultViewModel>();
+        private string _dropDownText = ">";
+
+        public string DropDownText
+        {
+            get => _dropDownText;
+            set
+            {
+                _dropDownText = value; 
+                OnPropertyChanged();
+            }
+        }
 
         public string CurrentTitle
         {
@@ -32,7 +46,6 @@ namespace Dash
             private set
             {
                 _currentTitle = value;
-                Debug.WriteLine("current title: "+_currentTitle);
                 OnPropertyChanged();
             }
         }
@@ -43,7 +56,6 @@ namespace Dash
             private set
             {
                 _currentContext = "Value: "+ value;
-                Debug.WriteLine("current context: " + _currentContext);
                 OnPropertyChanged();
             }
         }

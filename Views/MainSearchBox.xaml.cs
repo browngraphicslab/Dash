@@ -335,7 +335,8 @@ namespace Dash
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
-            try {
+            try
+            {
 
                 searchRes = Search.Parse(text).ToList();
             }
@@ -368,13 +369,12 @@ namespace Dash
                 }
                 else
                 {
-                    map[searchResult.DataDocument] = new List<SearchResult>() {searchResult};
+                    map[searchResult.DataDocument] = new List<SearchResult>() { searchResult };
                 }
             }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return;
             //highlight doc results
-            HighlightSearchResults(docs);
 
             var vmGroups = new List<SearchResultViewModel>();
             foreach (var resList in map)
@@ -384,27 +384,39 @@ namespace Dash
                 {
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
-                Debug.WriteLine("RES:"+res);
+                Debug.WriteLine("RES:" + res);
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
-                DocumentController parent = res.Node.Parent?.ViewDocument;
-                if (parent != null) newVm.DocumentCollection = parent;
+                var numOfCopies = resList.Value.Count;
+                newVm.Copies = numOfCopies;
+                if (numOfCopies > 1)
+                {
+                    newVm.Visibility = "Visible";
+                    foreach (var sr in resList.Value)
+                    {
+                        newVm.svmCopies.Add(DocumentSearchResultToViewModel(sr));
+                    }
+                }
+                
                 vmGroups.Add(newVm);
             }
+
+            Debug.WriteLine("Length of vmGroups: " + vmGroups.Count);
 
             var first = vmGroups
                 .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
-            Debug.WriteLine(first.Length);
+            Debug.WriteLine("Length of First:" + first.Length);
+            var docsToHighlight = new List<DocumentController>();
 
-            foreach (SearchResultViewModel searchResultViewModel in first)
+            foreach (var searchResultViewModel in first)
             {
-                //if (!searchResultViewModel.IsCopy)
-                {
-                    Debug.WriteLine("svm is not copy");
-                    itemsSource?.Add(searchResultViewModel);
-                }
+                itemsSource?.Add(searchResultViewModel);
+                docsToHighlight.Add(searchResultViewModel.ViewDocument);
             }
+
+            HighlightSearchResults(docsToHighlight);
+
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs, bool animate = false)
@@ -440,21 +452,12 @@ namespace Dash
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)
         {
             var view = result.ViewDocument;
-            Debug.WriteLine("View Copy: "+view.isCopy);
-            Debug.WriteLine("Number of Copies: " + view._copies);
             string docTitle = view.ToString();
             int len = docTitle.Length > 10 ? 10 : docTitle.Length - 1;
             string suffix = len < docTitle.Length - 1 ? "..." : "";
             docTitle = docTitle.Substring(1, len) + suffix;
-            var titles = result.FormattedKeyRef.Select(key => "Title:" +docTitle +", Key:"+ key).ToList();
-            var svm= new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
-            if (view.isCopy)
-            {
-                svm.IsCopy = true;
-            }
-
-            svm._copies = view._copies;
-            
+            var titles = result.FormattedKeyRef.Select(key => "Title:" + docTitle + ", Key:" + key).ToList();
+            var svm = new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, result.Node.Parent?.ViewDocument, true);
             return svm;
         }
 
@@ -526,6 +529,30 @@ namespace Dash
 
                 break;
             }
+        }
+
+        private void XDropDown_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
+            Debug.WriteLine(viewModel.Copies);
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
+            if (viewModel?.DropDownText == ">")
+            {
+                viewModel.DropDownText = "v";
+                foreach (var svm in viewModel.svmCopies)
+                {
+                    itemsSource?.Add(svm);
+                }
+            }
+            else
+            {
+                viewModel.DropDownText = ">";
+                foreach (var svm in viewModel.svmCopies)
+                {
+                    itemsSource?.Remove(svm);
+                }
+            }
+            
         }
     }
 }

@@ -111,9 +111,6 @@ namespace Dash
                 {
                     var dragDoc = DraggedDocuments[i];
                     var doc = dragDoc.GetViewCopy(GetPosition(i));
-                    dragDoc._copies++;
-                    doc.isCopy = true;
-                    doc._copyOf = dragDoc;
                     docs.Add(doc);
                 }
 
