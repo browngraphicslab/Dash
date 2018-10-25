@@ -278,9 +278,10 @@ namespace Dash
             if (!_searchHighlight)
             {
                 var rtv = sender as RichTextView;
-                if (((RichTextModel.RTD)dp.NewValue).RtfFormatString != rtv._lastXamlRTFText)
+                var newRtFormatString = ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString;
+                if (newRtFormatString != null && newRtFormatString != rtv._lastXamlRTFText)
                 {
-                    rtv.xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue).RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+                    rtv.xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
                     rtv._lastXamlRTFText = rtv.getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
                 }
                 if (rtv.getSelected()?.FirstOrDefault() != null && rtv.getSelected().First().Data is string selected)
