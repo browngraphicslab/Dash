@@ -93,8 +93,7 @@ namespace Dash
             }
             else if (data is ListController<TextController> textList)
             {
-                WrapPanel wrap = new WrapPanel();
-                wrap.HorizontalAlignment = HorizontalAlignment.Center;
+                var wrap = new WrapPanel() { HorizontalAlignment = HorizontalAlignment.Center };
                 wrap.Margin = new Thickness(0, 12, 0, 0);
                 foreach (var text in textList)
                 {
@@ -110,14 +109,11 @@ namespace Dash
             else if (data is ListController<DocumentController> docList)
             {
 
-                WrapPanel wrap = new WrapPanel();
-
-                KVPDocBox docBox = null;
-                wrap.HorizontalAlignment = HorizontalAlignment.Center;
+                var wrap = new WrapPanel() { HorizontalAlignment = HorizontalAlignment.Center };
                 wrap.Margin = new Thickness(0, 10, 0, 10);
                 foreach (var doc in docList)
                 {
-                    docBox = new KVPDocBox(doc.DocumentType, doc.Title);
+                    var docBox = new KVPDocBox(doc.DocumentType, doc.Title);
                     wrap.Children.Add(docBox);
 
                 }
@@ -125,15 +121,19 @@ namespace Dash
             }
             else if (data is DocumentController dc)
             {
-                var Stack = new StackPanel() { Orientation = Orientation.Horizontal, Padding=new Thickness(0) };
+                var Stack = new StackPanel() { Orientation = Orientation.Horizontal, Padding = new Thickness(0), HorizontalAlignment=HorizontalAlignment.Center };
                 if (dc.DocumentType.Equals(DataBox.DocumentType))
                 {
                     var db = dc.GetField(KeyStore.DataKey) as ReferenceController;
-                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), VerticalAlignment=VerticalAlignment.Center, Text = "DATABOX("  + db?.GetDocumentController(null)?.Title + "->" + db?.FieldKey?.Name +")"?? ":" });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), FontStyle = Windows.UI.Text.FontStyle.Italic, FontWeight = Windows.UI.Text.FontWeights.Normal, Text = "DataBox:" });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), FontStyle = Windows.UI.Text.FontStyle.Italic, FontWeight = Windows.UI.Text.FontWeights.Bold,   Text = " doc= " });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), FontStyle = Windows.UI.Text.FontStyle.Normal, FontWeight = Windows.UI.Text.FontWeights.Normal, Text = db?.GetDocumentController(null)?.Title ?? "<null>" });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), FontStyle = Windows.UI.Text.FontStyle.Italic, FontWeight = Windows.UI.Text.FontWeights.Bold,   Text = " key=" });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), FontStyle = Windows.UI.Text.FontStyle.Normal, FontWeight = Windows.UI.Text.FontWeights.Normal, Text = db?.FieldKey?.Name ?? "<null>" });
                 }
                 else
                 {
-                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), VerticalAlignment = VerticalAlignment.Center, Text = "Document:" });
+                    Stack.Children.Add(new TextBlock() { Padding = new Thickness(0), FontStyle=Windows.UI.Text.FontStyle.Italic, VerticalAlignment = VerticalAlignment.Center, Text = "Document:" });
                     var tb = new TextBlock() { HorizontalAlignment = HorizontalAlignment.Left, Padding = new Thickness(0), VerticalAlignment = VerticalAlignment.Center, HorizontalTextAlignment = TextAlignment.Left };
 
                     tb.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>()
@@ -144,31 +144,33 @@ namespace Dash
                     });
                     Stack.Children.Add(tb);
                 }
+                Stack.Margin = new Thickness(10, 0, 0, 0);
                 currView = Stack;
             }
             else if (data is ListController<BoolController> boolList)
             {
-                WrapPanel wrap = new WrapPanel();
-                currView = wrap;
+                currView = new WrapPanel();
 
             }
             else if (data is RichTextController)
             {
-
-                var mv = RichTextBox.MakeView(_docController, _key, _context);
-                Grid grid = new Grid();
-                grid.Children.Add(mv);
-                grid.Margin = new Thickness(0, 8, 0, 0);
-                currView = grid;
+                currView = RichTextBox.MakeView(_docController, _key, _context);
+                currView.HorizontalAlignment = HorizontalAlignment.Center;
+                currView.Margin = new Thickness(0, 8, 0, 0);
+                currView.MaxHeight = 72;
             }
-            //else if (data is TextController)
-            //{
-            //    var mv = TextingBox.MakeView(_docController, _key, _context);
-            //    Grid grid = new Grid();
-            //    grid.Children.Add(mv);
-            //    grid.Margin = new Thickness(0, -4, 0, 0);
-            //    currView = grid;
-            //}
+            else if (data is TextController || data is NumberController || data is DateTimeController)
+            {
+                currView = TextingBox.MakeView(_docController, _key, _context);
+                currView.Margin = new Thickness(0, -4, 0, 0);
+                currView.MaxHeight = 72;
+                currView.Width = double.NaN;
+                (currView as EditableTextBlock).Foreground = new SolidColorBrush(data is TextController ? Colors.Black : data is DateTimeController ? Colors.CadetBlue : Colors.Blue);
+                //var grid = new Grid();
+                //grid.Children.Add(currView);
+                //grid.Background = new SolidColorBrush(Colors.LightSkyBlue);
+                //currView = grid;
+            }
 
             if (currView == null)
             {
@@ -182,12 +184,20 @@ namespace Dash
                     FallbackValue = "<null>",
                 };
                 tb.AddFieldBinding(TextBlock.TextProperty, binding);
+                tb.Foreground = new SolidColorBrush(Colors.Gray);
                 currView = tb;
             }
 
             _lastElement = currView;
             _lastType = data?.TypeInfo ?? TypeInfo.None;
 
+            // if field is the output of an operator, mark it as not being editable by cutting its opacity and not making it hit test visible
+            var ops = _docController.GetDataDocument().GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, null)?.TypedData ?? new List<OperatorController>();
+            if (ops.Any((op) => op.Outputs.ContainsKey(_key)))
+            {
+                currView.Opacity = 0.5;
+                currView.IsHitTestVisible = false;
+            }
             return currView;
         }
 

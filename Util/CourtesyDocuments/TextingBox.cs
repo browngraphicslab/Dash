@@ -102,7 +102,7 @@ namespace Dash
                     }
                     
                 }
-                return isNumber ? TextAlignment.Right : TextAlignment.Center;
+                return isNumber ? TextAlignment.Right : TextAlignment.Left;
             }
 
             public override List<object> ConvertXamlToData(TextAlignment xaml, object parameter = null)

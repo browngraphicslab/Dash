@@ -146,28 +146,33 @@ namespace Dash
 
         private async void UserControl_Drop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
 
             var dragModel        = e.DataView.GetDragModel();
             var dragDocModel     = dragModel as DragDocumentModel;
+            var dragFieldModel   = dragModel as DragFieldModel;
             var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
             var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
             var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
             var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
             var isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
 
-            e.AcceptedOperation = isSettingContext ? DataPackageOperation.None :
-                                  isLinking ? DataPackageOperation.Link :
-                                  isMoving ? DataPackageOperation.Move :
-                                  isCopying ? DataPackageOperation.Copy :
-                                  DataPackageOperation.None;
-            
-            var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement, new Point());
-            var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, null);
+            if (!(dragFieldModel?.DraggedRefs.FirstOrDefault() is DocumentFieldReference dragRef &&  // don't allow a key to be dropped onto itself
+                  dragRef.DocumentController.Equals(ViewModel.Document) && dragRef.FieldKey.Equals(ViewModel.Key)))
+            {
+                e.AcceptedOperation = isSettingContext ? DataPackageOperation.None :
+                                      isLinking ? DataPackageOperation.Link :
+                                      isMoving ? DataPackageOperation.Move :
+                                      isCopying ? DataPackageOperation.Copy :
+                                      DataPackageOperation.None;
 
-            e.DataView.ReportOperationCompleted(e.AcceptedOperation);
-            ViewModel.Document.SetField(ViewModel.Key, docs.Count() == 1 ? (FieldControllerBase) docs.First() : new ListController<DocumentController>(docs), true);
-            e.Handled = true;
+                var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement, new Point());
+                var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, null);
+
+                e.DataView.ReportOperationCompleted(e.AcceptedOperation);
+                ViewModel.Document.SetField(ViewModel.Key, docs.Count() == 1 ? (FieldControllerBase)docs.First() : new ListController<DocumentController>(docs), true);
+            }
         }
     }
 }

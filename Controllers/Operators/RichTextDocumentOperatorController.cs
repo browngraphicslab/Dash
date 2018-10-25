@@ -23,7 +23,7 @@ namespace Dash
         //Input key   KeyStore.DataKey;
 
         //Output key
-        public static readonly KeyController ReadableTextKey = KeyController.Get("ReadableText");
+        public static readonly KeyController ReadableTextKey = KeyStore.DocumentTextKey;
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>>  Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

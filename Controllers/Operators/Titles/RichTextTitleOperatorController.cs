@@ -27,7 +27,7 @@ namespace Dash
         public static readonly KeyController RichTextKey = KeyStore.DocumentTextKey;// new KeyController(new Guid("E0105956-B0F8-4552-9420-CA7572C94657"), "Rich Text");
 
         //Output keys
-        public static readonly KeyController ComputedTitle = KeyController.Get("Computed Title");
+        public static readonly KeyController ComputedTitle = KeyStore.TitleKey;
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
