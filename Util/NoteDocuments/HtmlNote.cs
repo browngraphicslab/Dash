@@ -6,8 +6,10 @@ namespace Dash
 {
     public class HtmlNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("292C8EF7-D41D-49D6-8342-EC48AE014CBC", "Html Note");
+        public static readonly DocumentType HtmlDocumentType = new DocumentType("292C8EF7-D41D-49D6-8342-EC48AE014CBC", "Html Note");
         static string _prototypeID = "223BB098-78FA-4D61-8D18-D9E15086AC39";
+        protected override DocumentType DocumentType => HtmlDocumentType;
+
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
@@ -18,12 +20,7 @@ namespace Dash
                 [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new RichTextTitleOperatorController() })
             };
-            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Html Note Prototype" };
-
-            protoDoc.SetField(KeyStore.TitleKey,
-                new DocumentReferenceController(protoDoc, RichTextTitleOperatorController.ComputedTitle), true);
-
-            return protoDoc;
+            return new DocumentController(fields, DocumentType, prototypeID) { Tag = "Html Note Prototype" };
         }
 
         DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)

@@ -14,14 +14,13 @@ namespace Dash
     public class GetAllDocsBeforeTime : OperatorController
     {
         //Input keys
-        public static readonly KeyController TimeKey = new KeyController("Time");
+        public static readonly KeyController TimeKey = KeyController.Get("Time");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public GetAllDocsBeforeTime() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
         public GetAllDocsBeforeTime(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -39,7 +38,7 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Before", new Guid("27B6978D-F053-480B-8B64-439D334E5C9E"));
+        private static readonly KeyController TypeKey = KeyController.Get("Before");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

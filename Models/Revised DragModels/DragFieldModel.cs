@@ -29,7 +29,6 @@ namespace Dash {
                     dbox.Tag = $"Dragged Field Doc => Key: {reference.FieldKey.Name}";
                     dbox.SetTitle(reference.FieldKey.Name);
                 }
-                reference.GetReferenceController().GetDocumentController(null).Link(dbox, LinkBehavior.Annotate, "KeyValue");
 
                 return dbox;
             }

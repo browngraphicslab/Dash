@@ -22,6 +22,7 @@ using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 using System.Web;
+using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
@@ -80,6 +81,10 @@ namespace Dash
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
+            // Set the instance to be itself, there should only ever be one MainView
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Instance = this;
+            InitializeComponent();
             SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
@@ -87,11 +92,7 @@ namespace Dash
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
-            // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
-            Instance = this;
 
-            InitializeComponent();
             SetUpToolTips();
 
             Loaded += (s, e) =>
@@ -115,7 +116,8 @@ namespace Dash
                 if (ActivePopup != null)
                 {
                     ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
-                    ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                    //ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                    ActivePopup.SetVerticalOffset(200);
                 }
             };
 
@@ -177,6 +179,7 @@ namespace Dash
                 MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
+            FieldControllerBase.MakeRoot(MainDocument);
 
             LoadSettings();
 
@@ -342,21 +345,15 @@ namespace Dash
 
             }
 
+            
+       
+
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {
-                var selected = SelectionManager.GetSelectedDocs();
-                if (selected.Count > 0)
-                {
-                    using (UndoManager.GetBatchHandle())
-                    {
-                        foreach (var doc in SelectionManager.GetSelectedDocs())
-                        {
-                            LinkActivationManager.ActivateDoc(doc);
-                        }
-                    }
-
-                }
+               
+                var docs = SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>();
+                SelectionManager.SelectDocuments(docs, this.IsShiftPressed());
             }
             
             e.Handled = true;
@@ -758,7 +755,7 @@ namespace Dash
             docCopy.SetHeight(size?.Y ?? 150 / aspect);
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
-            var defaultPt = position ?? new Point(xCanvas.RenderSize.Width / 2 - 250, xCanvas.RenderSize.Height / 2 - 50);
+            var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
 
             var docView = new DocumentView
             {
@@ -957,6 +954,17 @@ namespace Dash
             SetUpPopup(templatePopup);
 
             var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
+        }
+
+        public async Task<(KeyController, List<KeyController>)> PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)
+        {
+            var tablePopup = new JoinGroupMenuPopup(comparisonKeys, diffKeys, draggedKeys);
+            SetUpPopup(tablePopup);
+
+            var results = await tablePopup.GetFormResults();
             UnsetPopup();
 
             return results;

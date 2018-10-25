@@ -11,15 +11,14 @@ namespace Dash
     public class GetScriptValueAsStringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("Script");
+        public static readonly KeyController ScriptKey = KeyController.Get("Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
 
         public GetScriptValueAsStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public GetScriptValueAsStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -41,7 +40,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Exec to string", new Guid("99E9328B-7341-403F-819B-26CDAB2F9A51"));
+        private static readonly KeyController TypeKey = KeyController.Get("Exec to string");
 
         public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

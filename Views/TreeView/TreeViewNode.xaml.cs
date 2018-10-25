@@ -443,7 +443,7 @@ namespace Dash.Views.TreeView
 
             var snapshotItem = new MenuFlyoutItem()
             {
-                Text = "Take Snapshop",
+                Text = "Take Snapshot",
             };
             snapshotItem.Click += SnapshotItemOnClick;
 

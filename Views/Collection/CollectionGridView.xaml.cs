@@ -83,7 +83,7 @@ namespace Dash
                     _cellSize += scaleAmount;
 
                     ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemWidth = _cellSize;
-                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = _cellSize;
+                    ((ItemsWrapGrid)xGridView.ItemsPanelRoot).ItemHeight = double.NaN;
                     e.Handled = true;
                 }
                 

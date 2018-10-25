@@ -20,6 +20,23 @@ namespace Dash
         Task UpdateDocument(Controller<T> documentToUpdate);
 
         /// <summary>
+        ///     Deletes a document from the server.
+        /// </summary>
+        /// <param name="document"></param>
+        Task DeleteDocument(Controller<T> document);
+
+        /// <summary>
+        ///     Deletes all input documents from the server.
+        /// </summary>
+        /// <param name="documents"></param>
+        Task DeleteDocuments(IEnumerable<Controller<T>> documents);
+
+        /// <summary>
+        ///     Deletes all documents from the server.
+        /// </summary>
+        Task DeleteAllDocuments();
+
+        /// <summary>
         ///     Gets a document from the server.
         /// </summary>
         /// <param name="id"></param>
@@ -49,22 +66,6 @@ namespace Dash
         Task<IList<FieldControllerBase>> GetControllersByQueryAsync(IQuery<T> query);
         Task<IList<V>> GetControllersByQueryAsync<V>(IQuery<T> query) where V : FieldControllerBase;
 
-        /// <summary>
-        ///     Deletes a document from the server.
-        /// </summary>
-        /// <param name="document"></param>
-        Task DeleteDocument(T document);
-
-        /// <summary>
-        ///     Deletes all input documents from the server.
-        /// </summary>
-        /// <param name="documents"></param>
-        Task DeleteDocuments(IEnumerable<T> documents);
-
-        /// <summary>
-        ///     Deletes all documents from the server.
-        /// </summary>
-        Task DeleteAllDocuments();
 
         /// <summary>
         /// method to make an arbitrary query for a subset of document T's

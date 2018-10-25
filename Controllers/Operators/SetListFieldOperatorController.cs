@@ -10,17 +10,16 @@ namespace Dash
    public class SetListFieldOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController VariableNameKey = new KeyController("VariableName");
-        public static readonly KeyController VariableKey = new KeyController("Variable");
-        public static readonly KeyController IndexKey = new KeyController("Index");
-        public static readonly KeyController ValueKey = new KeyController("Value");
+        public static readonly KeyController VariableNameKey = KeyController.Get("VariableName");
+        public static readonly KeyController VariableKey = KeyController.Get("Variable");
+        public static readonly KeyController IndexKey = KeyController.Get("Index");
+        public static readonly KeyController ValueKey = KeyController.Get("Value");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public SetListFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
         public SetListFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -41,7 +40,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Set Field", new Guid("F36FBA4F-9B95-412C-B32B-C59FF03B307B"));
+        private static readonly KeyController TypeKey = KeyController.Get("Set Field");
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

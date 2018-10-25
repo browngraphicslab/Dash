@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using Dash.Controllers;
 using System;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -8,15 +9,30 @@ namespace Dash
     {
         public DocumentController Document { get; set; }
 
-        public NoteDocument(string prototypeID)
+        protected DocumentController Prototype;
+        protected NoteDocument(string prototypeId)
         {
-            _prototype = RESTClient.Instance.Fields.GetController<DocumentController>(prototypeID);
-            if (_prototype == null)
-            {
-                _prototype = createPrototype(prototypeID);
-            }
+            Prototype = GetPrototype(prototypeId);
         }
-        protected DocumentController _prototype;
+
+        protected DocumentController GetPrototype(string prototypeId)
+        {
+            if (_prototypeDict.TryGetValue(DocumentType, out var proto))
+            {
+                return proto;
+            }
+            proto = RESTClient.Instance.Fields.GetController<DocumentController>(prototypeId);
+            if (proto == null)
+            {
+                proto = createPrototype(prototypeId);
+            }
+            _prototypeDict[DocumentType] = proto;
+            return proto;
+        }
+
+        private static Dictionary<DocumentType, DocumentController> _prototypeDict = new Dictionary<DocumentType, DocumentController>();
+
+        protected abstract DocumentType DocumentType { get; }
 
         /// <summary>
         /// creates the prototype data document 
@@ -42,7 +58,7 @@ namespace Dash
         /// <returns></returns>
         protected DocumentController makeDataDelegate(FieldControllerBase controller)
         {
-            DocumentController dataDocument = _prototype.MakeDelegate();
+            DocumentController dataDocument = Prototype.MakeDelegate();
 
             dataDocument.SetField(KeyStore.DataKey, controller, true);
             dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);

@@ -65,7 +65,14 @@
                     <TextBlock x:Name="xURISource" FontSize="9"/>
                 </Canvas>
                 <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
-                <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="25"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
+                        <Ellipse CanDrag="True" DragStarting="Ellipse_DragStarting" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
+                </Grid>
                 </Canvas>
             </Grid>
 
@@ -89,25 +96,7 @@
                         </ToolTipService.ToolTip>
                     </Grid>
                     <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
-                    <!--<Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
-                        <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
-                            PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
-                        HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
-                            <Grid HorizontalAlignment="Left">
-                                <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight" />
-                                <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"
-                             Visibility="Collapsed"/>
-                                <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
-
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
-                               />
-                                </ToolTipService.ToolTip>
-
-                            </Grid>
-                        </Border>
-                    </Grid>-->
-                </Grid>
+              </Grid>
             </Canvas>
 
         <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="2" Grid.Column="0" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">

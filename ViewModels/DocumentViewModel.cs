@@ -259,8 +259,8 @@ namespace Dash
         }
         ~DocumentViewModel()
         {
-            System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
-            System.Diagnostics.Debug.WriteLine(" ");
+            //System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
+            //System.Diagnostics.Debug.WriteLine(" ");
             _content = null;
         }
         public void Dispose()

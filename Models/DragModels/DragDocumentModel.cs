@@ -35,6 +35,7 @@ namespace Dash
         public bool DragCopy { get; set; } = false;
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
+        public bool DraggingJoinButton { get; set; } = false;
 
         public DragDocumentModel(DocumentController draggedDocument)
         {

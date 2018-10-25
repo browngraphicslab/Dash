@@ -203,34 +203,29 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public bool InvokeAction(string actionName, Point point)
+        public async void InvokeAction(string actionName, Point point)
         {
-            foreach (var group in Groups)
+            var action = Groups.FirstOrDefault()?.FirstOrDefault();
+            if (action != null)
             {
-                foreach (var action in group)
-                {
-                    if (action.Title.Equals(actionName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        action.Action.Invoke(point);
-                    }
-                }
+                OnActionCommitted(await action.Action.Invoke(point));
             }
-            return false;
         }
 
         public event Action<bool> ActionCommitted;
 
         private async void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
         {
-            var action = ((ActionViewModel) e.ClickedItem).Action;
-            var removeTextBox = action != null && await action.Invoke(_targetPoint);
-            MainPage.Instance.xCanvas.Children.Remove(this);
-            OnActionCommitted(removeTextBox);
+            var action = ((ActionViewModel)e.ClickedItem).Action;
+            if (action != null) {
+                OnActionCommitted(await action.Invoke(_targetPoint));
+            }
         }
 
         private void OnActionCommitted(bool obj)
         {
             ActionCommitted?.Invoke(obj);
+            MainPage.Instance.xCanvas.Children.Remove(this);
         }
     }
 }

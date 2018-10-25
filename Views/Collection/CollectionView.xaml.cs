@@ -61,7 +61,7 @@ namespace Dash
 
         ~CollectionView()
         {
-            Debug.WriteLine("Finalizing CollectionView");
+            //Debug.WriteLine("Finalizing CollectionView");
         }
 
         /// <summary>
@@ -340,8 +340,8 @@ namespace Dash
 
             if (initialViewType == CollectionViewType.Icon && CurrentView?.ViewModel?.ViewType != CollectionViewType.Icon)
             {
-                ViewModel.ContainerDocument.SetWidth(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey).Data);
-                ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey).Data);
+                ViewModel.ContainerDocument.SetWidth(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey)?.Data ?? 300) ;
+                ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey)?.Data ?? 300);
             }
 
             xContentControl.Content = CurrentView;

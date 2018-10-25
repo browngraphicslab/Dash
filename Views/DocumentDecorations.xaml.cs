@@ -272,6 +272,8 @@ namespace Dash
             SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
             xMultiSelectBorder.BorderThickness = new Thickness(SelectedDocs.Count > 1 ? 2 : 0);
             SetPositionAndSize();
+
+            ResetHeader(); // force header field to update
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -280,8 +282,11 @@ namespace Dash
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
+            var parentIsFreeform = true;
             foreach (var doc in SelectedDocs)
             {
+                if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewModel.ViewType != CollectionView.CollectionViewType.Freeform)
+                    parentIsFreeform = false;
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
@@ -296,6 +301,8 @@ namespace Dash
                     GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
                 }
             }
+            this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
 
@@ -440,8 +447,6 @@ namespace Dash
             }
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
-            ResetHeader(); // force header field to update
-
             var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
             if (!string.IsNullOrEmpty(htmlAddress))
             {// add a hyperlink that points to the source webpage.
@@ -467,7 +472,6 @@ namespace Dash
                         //xURISource.Inlines.Add(hyperlink);
                     }
                 }
-                xURISource.Visibility = Visibility.Visible;
             }
             else
             {
@@ -476,9 +480,8 @@ namespace Dash
                 {// add a hyperlink that points to the source webpage.
 
                     xURISource.Text = "Authored by: " + author;
-                    xURISource.Visibility = Visibility.Visible;
                 }
-                else xURISource.Visibility = Visibility.Collapsed;
+                else xURISource.Text = "";
             }
         }
 
@@ -1019,7 +1022,7 @@ namespace Dash
             {
                 if (newkey != null)
                 {
-                    HeaderFieldKey = new KeyController(newkey);
+                    HeaderFieldKey = KeyController.Get(newkey);
                 }
                 var layoutHeader = SelectedDocs.First().ViewModel?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
                 xHeaderText.Text = layoutHeader ?? SelectedDocs.First().ViewModel?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
@@ -1039,6 +1042,14 @@ namespace Dash
                 _titleTip.Content = HeaderFieldKey.Name;
                 xHeaderText.Background = new SolidColorBrush(xHeaderText.Text == "<empty>" ? Colors.Pink : Colors.LightBlue);
             }
+        }
+
+        private void Ellipse_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var activeDoc = SelectedDocs.FirstOrDefault()?.ViewModel.DocumentController;
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeDoc.GetDataDocument(), DocumentDecorations.HeaderFieldKey)));
+            // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }

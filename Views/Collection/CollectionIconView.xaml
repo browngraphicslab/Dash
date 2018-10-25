@@ -11,7 +11,9 @@
     AllowDrop="True">
     <StackPanel x:Name="Grid" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" 
                 ManipulationMode="All">
-        <TextBlock x:Name="xFolderIcon"   HorizontalTextAlignment="Center" Foreground="DarkGoldenrod" Text="&#xE188;" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="38" FontFamily="Segoe MDL2 Assets" />
-        <TextBox x:Name="xFolderTitle" AcceptsReturn="True" FontSize="24" FontWeight="Bold" Foreground="Black"/>
+        <!--<TextBlock x:Name="xFolderIcon"   HorizontalTextAlignment="Center" Foreground="DarkGoldenrod" Text="&#xE188;" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="38" FontFamily="Segoe MDL2 Assets" />-->
+        <ContentPresenter x:Name="xFolderIcon" AllowDrop="True" MaxWidth="40" Drop="xFolderIcon_Drop" Background="Transparent"/>
+        <ContentPresenter x:Name="xFolderPreview" AllowDrop="True" Drop="xFolderPreview_Drop" Background="Transparent"/>
+        <!--<TextBox x:Name="xFolderTitle" AcceptsReturn="True" FontSize="24" FontWeight="Bold" Foreground="Black"/>-->
     </StackPanel>
 </UserControl>
