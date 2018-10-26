@@ -1282,103 +1282,46 @@ namespace Dash
         // == VIEW GENERATION ==
         #region View Generation
         /// <summary>
-        /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
-        /// string key of the field and value is the rendered UI element representing the value.
-        /// </summary>
-        /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context)
-        {
-            var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
-            if (fields.Count > 15)
-                return MakeAllViewUIForManyFields(fields);
-            var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
-            void Action(KeyValuePair<KeyController, FieldControllerBase> f)
-            {
-                f.Value.MakeAllViewUI(this, f.Key, context, panel, this);
-            }
-
-
-#pragma warning disable CS4014
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                CoreDispatcherPriority.Low,
-                async () =>
-                {
-                    foreach (var f in fields)
-                    {
-                        Action(f);
-                        await Task.Delay(5);
-                    }
-                });
-#pragma warning restore CS4014
-            return panel;
-        }
-
-        private static FrameworkElement MakeAllViewUIForManyFields(
-            List<KeyValuePair<KeyController, FieldControllerBase>> fields)
-        {
-            var sp = new StackPanel();
-            for (var i = 0; i < 16; i++)
-            {
-                var block = new TextBlock
-                {
-                    Text = i == 15
-                        ? "+ " + (fields.Count - 15) + " more"
-                        : "Field " + (i + 1) + ": " + fields[i].Key,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left
-                };
-                sp.Children.Add(block);
-            }
-            return sp;
-        }
-        /// <summary>
         /// Builds the underlying XAML Framework Element representation of this document.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context)
         {
-            //Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
-            //Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
             Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
                                        " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
-
-            // set up contexts information
-            context = new Context(context);
-            context.AddDocumentContext(this);
-            context.AddDocumentContext(GetDataDocument());
-
+            
             if (GetDereferencedField<TextController>(KeyStore.XamlKey, null) is TextController xamlField)
             {
-                var grid = new ScrollViewer();
-                grid.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Blue);
                 try
                 {
-                    grid.Style = (Style)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
+                    var fe = (FrameworkElement)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
+                    fe.Loaded += Grid_Loaded;
+                    return fe;
                 } catch (Exception e)
                 {
-
                 }
-                grid.HorizontalAlignment = HorizontalAlignment.Stretch;
-                grid.VerticalAlignment = VerticalAlignment.Stretch;
-                grid.Loaded += Grid_Loaded;
-                return grid;
             }
-            else if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
+            if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
-                return KeyStore.TypeRenderer[DocumentType](this, context);
+                return KeyStore.TypeRenderer[DocumentType](this, null);
             }
-            else
-            {
-                return makeAllViewUI(context);
-            }
+
+            return KeyValueDocumentBox.MakeView(this, null);
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            var g = sender as ScrollViewer;
+            var g = sender as FrameworkElement;
             var textFields = g.GetDescendantsOfType<TextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
             foreach (var fieldReplacement in textFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xTextField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var editTextFields = g.GetDescendantsOfType<EditableTextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
+            foreach (var fieldReplacement in editTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);

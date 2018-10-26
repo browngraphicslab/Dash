@@ -207,7 +207,7 @@ namespace Dash
 
         public async void InvokeAction(string actionName, Point point)
         {
-            var action = Groups.FirstOrDefault()?.FirstOrDefault();
+            var action = Groups.Select((g) => g.FirstOrDefault()).Where((a) => a != null).FirstOrDefault();
             if (action != null)
             {
                 var actionParams = actionName.Split(":").Where((s, i) => i > 0);

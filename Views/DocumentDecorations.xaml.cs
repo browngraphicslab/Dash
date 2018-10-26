@@ -1061,22 +1061,7 @@ namespace Dash
                 foreach (var d in SelectedDocs)
                 {
                     var xml = txt.Replace("\"", "'");
-                    var xaml =
-                  "<Style  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
-                           "xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' " +
-                           "xmlns:dash='using:Dash' " +
-                           "xmlns:d = 'http://schemas.microsoft.com/expression/blend/2008' " +
-                           "TargetType='ScrollViewer'>" +
-                     "<Setter Property = 'Template' >" +
-                        "<Setter.Value>" +
-                             "<ControlTemplate TargetType = 'ScrollViewer' >" +
-                                 xml +//"<TextBlock x:Name='xTextFieldDocumentText' Text='hello' FontSize='32' />"+
-
-                             "</ControlTemplate>" +
-                         "</Setter.Value>" +
-                     "</Setter>" +
-                   "</Style>";
-                    d.ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                    d.ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, xml, true);
                     var pc = d.ParentCollection;
                     var dc = d.ViewModel.DocumentController;
                     pc.ViewModel.RemoveDocument(dc);
@@ -1086,9 +1071,12 @@ namespace Dash
         }
 
         // try dropping the Xaml style below onto the blue frame of one or more selected text documents:
-        // paste the text into word, then select it, then drag and drop it.
         /*
-        <Grid>
+        <Grid
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:dash="using:Dash"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
@@ -1097,16 +1085,16 @@ namespace Dash
                 <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
                     <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
                 </Border>
-                <Border Grid.Row="1" Background= "CadetBlue" >
-                    < dash:RichTextView x:Name= "xRichTextFieldData" Foreground= "White" HorizontalAlignment= "Stretch" Grid.Row= "1" VerticalAlignment= "Top" />
-                </ Border >
-            < StackPanel Orientation= "Horizontal"  Grid.Row= "2" Height= "30" Background= "White" >
-                < TextBlock Text= "Author:" HorizontalAlignment= "Stretch" FontStyle= "Italic" FontSize= "9" VerticalAlignment= "Center" Margin= "0 5 0 0" Padding= "0 0 5 0" />
-                < TextBlock x:Name= "xTextFieldAuthor" Text= "author" HorizontalAlignment= "Stretch" VerticalAlignment= "Center" Padding= "0 0 5 0" />
-                < TextBlock Text= "Created: " HorizontalAlignment= "Stretch" FontStyle= "Italic" FontSize= "9" VerticalAlignment= "Center" Margin= "0 5 0 0" Padding= "0 0 5 0" />
-                < TextBlock x:Name= "xTextFieldDateCreated" Text= "created" HorizontalAlignment= "Stretch" VerticalAlignment= "Center" />
-            </ StackPanel >
-        </ Grid >
+                <Border Grid.Row="1" Background="CadetBlue" >
+                    <dash:RichTextView x:Name="xRichTextFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+                </Border>
+            <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
+                <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <dash:EditableTextBlock x:Name="xTextFieldAuthor" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0" />
+                <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
         */
 
 
