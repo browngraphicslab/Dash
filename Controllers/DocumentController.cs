@@ -10,6 +10,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -1347,13 +1348,49 @@ namespace Dash
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument());
 
-            if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
+            if (GetDereferencedField<TextController>(KeyStore.XamlKey, null) is TextController xamlField)
+            {
+                var grid = new ScrollViewer();
+                grid.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Blue);
+                try
+                {
+                    grid.Style = (Style)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
+                } catch (Exception e)
+                {
+
+                }
+                grid.HorizontalAlignment = HorizontalAlignment.Stretch;
+                grid.VerticalAlignment = VerticalAlignment.Stretch;
+                grid.Loaded += Grid_Loaded;
+                return grid;
+            }
+            else if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
                 return KeyStore.TypeRenderer[DocumentType](this, context);
             }
             else
-
+            {
                 return makeAllViewUI(context);
+            }
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            var g = sender as ScrollViewer;
+            var textFields = g.GetDescendantsOfType<TextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
+            foreach (var fieldReplacement in textFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xTextField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var richTextFields = g.GetDescendantsOfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            foreach (var fieldReplacement in richTextFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                RichTextBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
         }
 
         #endregion

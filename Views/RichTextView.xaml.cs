@@ -233,9 +233,8 @@ namespace Dash
         //    }
         //}
 
-        public DocumentController    DataDocument { get; set; }
-        public DocumentController    LayoutDocument { get; set; }
-
+        public DocumentController    DataDocument => getDataDoc();
+        public DocumentController    LayoutDocument => getLayoutDoc();
         private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         private DocumentController   getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
         private DocumentController   getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
@@ -821,7 +820,7 @@ namespace Dash
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;
             SetSelected("");
-            DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            DataDocument?.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 
@@ -835,7 +834,7 @@ namespace Dash
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data == "/" && xRichEditBox == FocusManager.GetFocusedElement())
+            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && xRichEditBox == FocusManager.GetFocusedElement())
             {
                 CreateActionMenu(xRichEditBox);
             }

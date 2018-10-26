@@ -883,11 +883,11 @@ namespace Dash
 
         #endregion
 
-        public void This_Drop(object sender, DragEventArgs e)
+        public async void This_Drop(object sender, DragEventArgs e)
         {
             if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
                 return;
-
+            
             var dragModel = e.DataView.GetDragModel();
             if (dragModel != null)
             {
