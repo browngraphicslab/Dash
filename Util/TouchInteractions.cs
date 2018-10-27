@@ -17,11 +17,14 @@ namespace Dash
             get => numFingers;
             set
             {
-                numFingers = value;
-                if (numFingers == 0)
+                if (value >= 0)
                 {
-                    isPanning = false;
-                    CurrInteraction = TouchInteraction.None;
+                    numFingers = value;
+                    if (numFingers == 0)
+                    {
+                        isPanning = false;
+                        CurrInteraction = TouchInteraction.None;
+                    }
                 }
             } 
         }

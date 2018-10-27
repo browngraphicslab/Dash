@@ -217,6 +217,15 @@ namespace Dash
                     TouchInteractions.NumFingers--;
                 }
             };
+            PointerCanceled += (sender, e) =>
+            {
+                if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null &&
+                    !TouchInteractions.handledTouch.Contains(e))
+                {
+                    TouchInteractions.handledTouch.Add(e);
+                    TouchInteractions.NumFingers--;
+                }
+            };
             MenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
@@ -239,6 +248,7 @@ namespace Dash
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) =>
             {
+                TouchInteractions.NumFingers--;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 SelectionManager.DropCompleted(this, s, e);
             };
