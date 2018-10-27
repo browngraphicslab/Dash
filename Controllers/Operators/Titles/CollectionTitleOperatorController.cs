@@ -24,10 +24,10 @@ namespace Dash
 
         //Input keys
         public static readonly KeyController CollectionDocsKey = KeyStore.DataKey;
-       // public static readonly KeyController CollectionDocsKey = new KeyController(new Guid("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2"), "Collection Docs");
+        // public static readonly KeyController CollectionDocsKey = new KeyController(new Guid("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2"), "Collection Docs");
 
         //Output keys
-        public static readonly KeyController ComputedTitle = KeyController.Get("Computed Title");
+        public static readonly KeyController ComputedTitle = KeyStore.TitleKey;
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

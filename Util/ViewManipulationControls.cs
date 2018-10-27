@@ -99,7 +99,7 @@ namespace Dash
                         false);
             }
         }
-
+        
         private void DragManipCompletedTouch(object sender, EventArgs e)
         {
             CollectionFreeformBase.NumFingers--;

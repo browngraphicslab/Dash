@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage.Pickers;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
-using DashShared;
+using System;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,6 +34,9 @@ namespace Dash
 
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+
+            _scaleX = 1.01;
+            _scaleY = 1.01;
         }
         ~CollectionFreeformView()
         {
@@ -88,6 +89,9 @@ namespace Dash
             return InkHostCanvas;
         }
 
+        private double _scaleX;
+        private double _scaleY;
+
         CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
         private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
@@ -100,22 +104,85 @@ namespace Dash
             }
         }
 
+        private void XOuterGrid_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Add && this.IsCtrlPressed())
+            {
+                _scaleX += 0.1;
+                _scaleY += 0.1;
+                var scaleDelta = new ScaleTransform
+                {
+                    CenterX = xOuterGrid.ActualWidth / 2,
+                    CenterY = xOuterGrid.ActualHeight / 2,
+                    ScaleX = _scaleX,
+                    ScaleY = _scaleY
+                };
+
+                var composite = new TransformGroup();
+
+                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
+                composite.Children.Add(scaleDelta); // add the new scaling
+                var matrix = composite.Value;
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+                e.Handled = true;
+            }
+
+            if (e.Key == VirtualKey.Subtract && this.IsCtrlPressed())
+            {
+                _scaleX -= 0.1;
+                _scaleY -= 0.1;
+                var scaleDelta = new ScaleTransform
+                {
+                    CenterX = xOuterGrid.ActualWidth / 2,
+                    CenterY = xOuterGrid.ActualHeight / 2,
+                    ScaleX = _scaleX,
+                    ScaleY = _scaleY
+                };
+
+                var composite = new TransformGroup();
+
+                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
+                composite.Children.Add(scaleDelta); // add the new scaling
+                var matrix = composite.Value;
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+                e.Handled = true;
+            }
+
+            if ((e.Key == VirtualKey.NumberPad0 || e.Key == VirtualKey.Number0) && this.IsCtrlPressed())
+            {
+                var scaleDelta = new ScaleTransform
+                {
+                    CenterX = xOuterGrid.ActualWidth / 2,
+                    CenterY = xOuterGrid.ActualHeight / 2,
+                    ScaleX = 1.0,
+                    ScaleY = 1.0
+                };
+
+                var composite = new TransformGroup();
+
+                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
+                composite.Children.Add(scaleDelta); // add the new scaling
+                var matrix = composite.Value;
+                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+                e.Handled = true;
+            }
+        }
         public void AddToMenu(ActionMenu menu)
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC", new ActionViewModel("Text", "Add a new text box!", AddTextNote, source));
+            menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)", "Add one or more images",  AddMultipleImages, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Collection", "Collection",AddCollection,source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)",        "Add one or more images",  AddMultipleImages, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Collection",      "Collection",AddCollection,source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
             foreach (var template in templates)
             {
                 var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,
-                    template.GetField<TextController>(KeyStore.CaptionKey).Data, point =>
+                    template.GetField<TextController>(KeyStore.CaptionKey).Data, actionParams  =>
                     {
-                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                         Actions.DisplayDocument(ViewModel, template.GetCopy(), colPoint);
                         return Task.FromResult(true);
                     }, source);
@@ -125,23 +192,23 @@ namespace Dash
 
         
 
-        private Task<bool> AddTextNote(Point point)
+        private Task<bool> AddTextNote(ActionFuncParams actionParams)
         {
             var postitNote = new RichTextNote().Document;
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
             return Task.FromResult(true);
         }
 
-        private Task<bool> AddCollection(Point point)
+        private Task<bool> AddCollection(ActionFuncParams actionParams)
         {
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
             var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Icon, 200, 75).Document;
             Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
 
-        private async Task<bool> AddMultipleImages(Point point)
+        private async Task<bool> AddMultipleImages(ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -163,7 +230,7 @@ namespace Dash
             {
                 double defaultLength = 200;
 
-                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                 var adornFormPoint = colPoint;
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
                 ViewModel.AddDocument(adorn);
@@ -189,7 +256,7 @@ namespace Dash
             return true;
         }
 
-        private async Task<bool> AddImageWithCaption(Point point)
+        private async Task<bool> AddImageWithCaption(ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -215,7 +282,7 @@ namespace Dash
                 {
                     double imageWidth = docController.GetWidth();
                     double imageHeight = docController.GetHeight();
-                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                     var caption = new RichTextNote(docController.Title).Document;
                     caption.SetHorizontalAlignment(HorizontalAlignment.Center);
                     docController.SetWidth(double.NaN);

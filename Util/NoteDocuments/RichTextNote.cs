@@ -19,11 +19,7 @@ namespace Dash
                 [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new RichTextDocumentOperatorController(), new RichTextTitleOperatorController() })
             };
-            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
-
-            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc, RichTextDocumentOperatorController.ReadableTextKey), true);
-            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc, RichTextTitleOperatorController.ComputedTitle), true);
-            return protoDoc;
+            return new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
         }
 
         static int rcount = 1;
