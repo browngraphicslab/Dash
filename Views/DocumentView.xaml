@@ -35,7 +35,7 @@
                 <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
             </Grid.Clip>
 
-            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" Holding="XContent_OnHolding" IsHoldingEnabled="True">
+            <ContentPresenter Content="{Binding Content}" Holding="XContent_OnHolding" IsHoldingEnabled="True">
                 <ContentPresenter.RenderTransform>
                     <MatrixTransform x:Name="xContentTransform"/>
                 </ContentPresenter.RenderTransform>

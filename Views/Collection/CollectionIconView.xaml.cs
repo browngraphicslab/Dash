@@ -43,28 +43,28 @@ namespace Dash.Views.Collection
 
 
          // This replaces the icon folder view document and makes the containing dataBox not hit test visible.
-        public void DropDoc(DocumentController dragDoc)
+        public void DropDoc(DocumentController dragDoc, KeyController key)
         {
             var containerDoc = ViewModel.ContainerDocument.GetDataDocument();
-            containerDoc.SetField(KeyStore.FolderPreviewKey, dragDoc, true);
+            containerDoc.SetField(key, dragDoc, true);
         }
 
-        private void xFolderPreview_Drop(object sender, DragEventArgs e)
-        {
+        private void xFolderPreview_Drop(object sender, DragEventArgs e) { drop(e, KeyStore.FolderPreviewKey); }
+
+        private void xFolderIcon_Drop(object sender, DragEventArgs e)    { drop(e, KeyStore.FolderIconKey); }
+        private void drop(DragEventArgs e, KeyController key)
+        { 
             var dragModel = e.DataView.GetDragModel();
             if (dragModel is DragDocumentModel dm)
             {
-
-                DropDoc(dm.DraggedDocuments.First());
+                DropDoc(dm.DraggedDocuments.First(), key);
             }
             if (dragModel is DragFieldModel dfm)
             {
-
-                DropDoc(dfm.GetDropDocuments(new Point(),null).First());
+                DropDoc(dfm.GetDropDocuments(new Point(),null).First(), key);
             }
             e.Handled = true;
         }
-
         private void CollectionIconView_Loaded(object sender, RoutedEventArgs e)
         {
             if (ViewModel != null)
@@ -78,10 +78,17 @@ namespace Dash.Views.Collection
                 {
                     containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
                 }
+                if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderIconDataBoxKey, null) == null)
+                {
+                    containerDoc.SetField(KeyStore.FolderIconDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderIconKey)).Document, true);
+                }
                 var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
                 db.SetAreContentsHitTestVisible(false);
+                var dbf = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderIconDataBoxKey, null);
+                dbf.SetAreContentsHitTestVisible(false);
 
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
+                xFolderIcon.Content    = new DocumentView() { ViewModel = new DocumentViewModel(dbf) { IsDimensionless = true } };
             }
         }
 

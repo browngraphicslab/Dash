@@ -10,6 +10,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -992,8 +993,13 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true, bool updateBindings=true)
         {
+            if (updateBindings)
+            {
+                RemoveOperatorForKey(key);
+            }
+
             var oldVal = GetField(key);
             UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false),
                 () => SetField(key, oldVal, forceMask, false));
@@ -1010,6 +1016,29 @@ namespace Dash
 
             return fieldChanged;
         }
+
+        private void RemoveOperatorForKey(KeyController key)
+        {
+            var opFields = GetField<ListController<OperatorController>>(KeyStore.OperatorKey,        false) ?? new ListController<OperatorController>();
+            var rmFields = GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, false) ?? new ListController<OperatorController>();
+            bool removedField = false;
+            foreach (var opfield in opFields.ToArray())
+            {
+                foreach (var output in opfield.Outputs)
+                {
+                    if (output.Key.Equals(key) && !rmFields.Contains(opfield))
+                    {
+                        rmFields.Add(opfield);
+                        removedField = true;
+                    }
+                }
+            }
+            if (removedField)
+            {
+                SetField(KeyStore.RemoveOperatorsKey, rmFields, true, updateBindings: false);
+            }
+        }
+
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true)
             where TDefault : FieldControllerBase, new()
         {
@@ -1022,6 +1051,7 @@ namespace Dash
             {
                 if (field.TrySetValue(v))
                 {
+                    RemoveOperatorForKey(key);
                     return true;
                 }
             }
@@ -1171,29 +1201,27 @@ namespace Dash
         public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
             context = context ?? new Context(this);
-            HashSet<Type> usedOperators = new HashSet<Type>();
-            List<OperatorController> ops = new List<OperatorController>();
-            var proto = this;
-            while (proto != null)
+            var usedOperators = new HashSet<Type>();
+            var ops           = new List<OperatorController>();
+            var remOps        = new List<OperatorController>();
+            for (var proto = this; proto != null; proto = proto.GetPrototype())
             {
-                var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true);
-                if (opFields != null)
+                var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true) ?? new ListController<OperatorController>();
+                foreach (var operatorController in opFields)
                 {
-                    foreach (var operatorController in opFields)
+                    if (!usedOperators.Contains(operatorController.GetType()))
                     {
-                        if (usedOperators.Contains(operatorController.GetType()))
-                        {
-                            continue;
-                        }
-
                         ops.Add(operatorController);
                     }
                 }
-
-                proto = proto.GetPrototype();
+                var remOpFields = proto.GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, true) ?? new ListController<OperatorController>();
+                foreach (var operatorController in remOpFields)
+                {
+                    remOps.Add(operatorController);
+                }
             }
 
-            foreach (var opField in ops)
+            foreach (var opField in ops.Where((op) => !remOps.Contains(op)))
             {
                 if (opField.Inputs.Any(i => i.Key.Equals(updatedKey)))
                 {
@@ -1246,7 +1274,7 @@ namespace Dash
             // pass the updates along 
             foreach (var fieldModel in outputs)
             {
-                SetField(fieldModel.Key, fieldModel.Value, true);
+                SetField(fieldModel.Key, fieldModel.Value, true, updateBindings:false);
             }
         }
         #endregion
@@ -1254,79 +1282,58 @@ namespace Dash
         // == VIEW GENERATION ==
         #region View Generation
         /// <summary>
-        /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
-        /// string key of the field and value is the rendered UI element representing the value.
-        /// </summary>
-        /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context)
-        {
-            var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
-            if (fields.Count > 15)
-                return MakeAllViewUIForManyFields(fields);
-            var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
-            void Action(KeyValuePair<KeyController, FieldControllerBase> f)
-            {
-                f.Value.MakeAllViewUI(this, f.Key, context, panel, this);
-            }
-
-
-#pragma warning disable CS4014
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                CoreDispatcherPriority.Low,
-                async () =>
-                {
-                    foreach (var f in fields)
-                    {
-                        Action(f);
-                        await Task.Delay(5);
-                    }
-                });
-#pragma warning restore CS4014
-            return panel;
-        }
-
-        private static FrameworkElement MakeAllViewUIForManyFields(
-            List<KeyValuePair<KeyController, FieldControllerBase>> fields)
-        {
-            var sp = new StackPanel();
-            for (var i = 0; i < 16; i++)
-            {
-                var block = new TextBlock
-                {
-                    Text = i == 15
-                        ? "+ " + (fields.Count - 15) + " more"
-                        : "Field " + (i + 1) + ": " + fields[i].Key,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left
-                };
-                sp.Children.Add(block);
-            }
-            return sp;
-        }
-        /// <summary>
         /// Builds the underlying XAML Framework Element representation of this document.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context)
         {
-            //Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
-            //Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
             Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
                                        " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
-
-            // set up contexts information
-            context = new Context(context);
-            context.AddDocumentContext(this);
-            context.AddDocumentContext(GetDataDocument());
-
+            
+            if (GetDereferencedField<TextController>(KeyStore.XamlKey, null) is TextController xamlField)
+            {
+                try
+                {
+                    var fe = (FrameworkElement)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
+                    fe.Loaded += Grid_Loaded;
+                    return fe;
+                } catch (Exception e)
+                {
+                }
+            }
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
-                return KeyStore.TypeRenderer[DocumentType](this, context);
+                return KeyStore.TypeRenderer[DocumentType](this, null);
             }
-            else
 
-                return makeAllViewUI(context);
+            return KeyValueDocumentBox.MakeView(this, null);
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            var g = sender as FrameworkElement;
+            var textFields = g.GetDescendantsOfType<TextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
+            foreach (var fieldReplacement in textFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xTextField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var editTextFields = g.GetDescendantsOfType<EditableTextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
+            foreach (var fieldReplacement in editTextFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xTextField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var richTextFields = g.GetDescendantsOfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            foreach (var fieldReplacement in richTextFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                RichTextBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
         }
 
         #endregion

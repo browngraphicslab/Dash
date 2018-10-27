@@ -49,8 +49,16 @@ namespace Dash
             }
             set
             {
-                ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
-                ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
+                if (ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data != value.Translate ||
+                    ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data != value.ScaleAmount)
+                {
+                    ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
+                    ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
+                    if (MainPage.Instance.XDocumentDecorations.SelectedDocs.Any((sd) => DocumentViewModels.Contains(sd.ViewModel)))
+                    {
+                        MainPage.Instance.XDocumentDecorations.SetPositionAndSize(); // bcz: hack ... The Decorations should update automatically when the view zooms -- need a mechanism to bind/listen to view changing globally?
+                    }
+                }
             }
         }
         public DocumentController ContainerDocument { get; private set; }
@@ -740,6 +748,7 @@ namespace Dash
 
                 var dragModel        = e.DataView.GetDragModel();
                 var dragDocModel     = dragModel as DragDocumentModel;
+                var joinDragModel    = e.DataView.GetJoinDragModel();
                 var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
                 var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
                 var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
@@ -768,9 +777,16 @@ namespace Dash
                     (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null) // bcz: hack -- dropping a KeyValuepane will set the datacontext of the collection
                 {
                     ContainerDocument.SetField(KeyStore.DocumentContextKey, dragDocModel.DraggedDocuments.First().GetDataDocument().GetDataDocument(), true);
-                }
+                } 
                 else
                 {
+                    if (joinDragModel != null)
+                    {
+                        var newDoc = joinDragModel.CollectionDocument.GetViewCopy(where);
+                        newDoc.SetField(KeyController.Get("DBChartField"), joinDragModel.DraggedKey, true);
+                        newDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, CollectionView.CollectionViewType.DB.ToString(), true);
+                        AddDocument(newDoc);
+                    }
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, this));
                 }
@@ -780,11 +796,6 @@ namespace Dash
         
         public static async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel)
         {
-            if (dragModel is DragFieldModel && (sender as FrameworkElement).GetFirstAncestorOfType<CollectionView>() != null && collectionViewModel != null)  // dropping a DataBox
-            {
-                RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
-            }
-
             if (isMoving && dragModel is DragDocumentModel dragDocModel)
             {
                 for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
@@ -833,6 +844,17 @@ namespace Dash
             }
 
             return docsToAdd;
+        }
+
+        public static void ConvertToTemplate(DocumentController templateRoot, DocumentController collectionToConvert)
+        {
+            var children = collectionToConvert.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey,null).TypedData;
+            var nestedCollections = children.Where((c) => c.DocumentType.Equals(CollectionBox.DocumentType));
+            foreach (var nc in nestedCollections)
+            {
+                ConvertToTemplate(templateRoot, nc);
+            }
+            RouteDataBoxReferencesThroughCollection(templateRoot, children);
         }
 
         public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)

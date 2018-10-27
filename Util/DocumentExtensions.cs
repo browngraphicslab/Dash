@@ -391,13 +391,12 @@ namespace Dash
         }
         public static TextController GetTitleFieldOrSetDefault(this DocumentController doc)
         {
-            var dataDoc = doc.GetDataDocument();
-            var context = new Context(dataDoc);
-            var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
+            var context = new Context(doc);
+            var titleKey = doc.GetField(KeyStore.TitleKey) as TextController ?? doc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                dataDoc.SetTitle("Title");
-                titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
+                doc.SetTitle("Title");
+                titleKey = doc.GetField(KeyStore.TitleKey) as TextController;
             }
             return titleKey;
         }

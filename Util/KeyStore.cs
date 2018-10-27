@@ -150,6 +150,11 @@ namespace Dash
         public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
         public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
         public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
+        public static KeyController FolderIconKey                        = KeyController.Get("FolderIcon");
+        public static KeyController FolderIconDataBoxKey                 = KeyController.Get("_FolderIconDataBox");
+        public static KeyController RemoveOperatorsKey                   = KeyController.Get("_RemoveOperators");
+        public static KeyController XamlKey                              = KeyController.Get("Xaml");
+        public static KeyController DefaultTextboxXamlKey                = KeyController.Get("DefaultTextboxXamlKey");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{

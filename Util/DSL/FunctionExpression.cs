@@ -24,26 +24,24 @@ namespace Dash
 
         public override async Task<FieldControllerBase> Execute(Scope scope)
         {
-            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             OperatorController op = null;
             var opName = Op.Name.invalid;
-            //try
-            //{
-            //    op = await _funcName.Execute(scope) as FunctionOperatorController;
-            //}
-            //catch (ScriptExecutionException)
+            if (_funcName is VariableExpression variable)
             {
-                if (!(_funcName is VariableExpression variable))
+                var varName = variable.GetVariableName();
+                op = scope[varName] as OperatorController;
+                if (op == null)
                 {
-                    throw new Exception();
+                    opName = Op.Parse(varName);
+                    if (opName == Op.Name.invalid)
+                    {
+                        throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(varName));
+                    }
                 }
-
-                var variableName = variable.GetVariableName();
-                opName = Op.Parse(variableName);
-                if (opName == Op.Name.invalid)
-                {
-                    throw new Exception();
-                }
+            }
+            else
+            {
+                op = await _funcName.Execute(scope) as FunctionOperatorController;
             }
 
             var inputs = new List<FieldControllerBase>();
@@ -95,7 +93,7 @@ namespace Dash
                 //TODO
                 return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
             }
-            else if(_funcName is VariableExpression variable)
+            else if (_funcName is VariableExpression variable)
             {
                 op = OperatorScript.GetOperatorWithName(Op.Parse(variable.GetVariableName()));
                 return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
@@ -113,12 +111,12 @@ namespace Dash
             {
                 switch (param)
                 {
-                    case VariableExpression varExp:
-                        concat += varExp.GetVariableName() + " ";
-                        break;
-                    case LiteralExpression litExp:
-                        concat += litExp.GetField() + " ";
-                        break;
+                case VariableExpression varExp:
+                    concat += varExp.GetVariableName() + " ";
+                    break;
+                case LiteralExpression litExp:
+                    concat += litExp.GetField() + " ";
+                    break;
                 }
             }
 
