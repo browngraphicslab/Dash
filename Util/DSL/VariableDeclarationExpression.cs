@@ -30,12 +30,18 @@ namespace Dash
                 return new TextController("");
             }
 
-            FieldControllerBase value = scope.GetVariable(_variableName);
-            if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, value));
-            FieldControllerBase val = await _value.Execute(scope);
-            scope.DeclareVariable(_variableName, val);
+            var existingVal = scope.GetVariable(_variableName);
+            var targetVal = await _value.Execute(scope);
 
-            return val;
+            if (existingVal != null)
+            {
+                bool alreadyEqual = targetVal.GetValue(null).Equals(existingVal.GetValue(null));
+                throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, targetVal, existingVal, alreadyEqual));
+            }
+
+            scope.DeclareVariable(_variableName, targetVal);
+
+            return targetVal;
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

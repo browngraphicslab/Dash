@@ -1,19 +1,22 @@
-﻿// ReSharper disable once CheckNamespace
+﻿using DashShared;
 
-using DashShared;
-
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     internal class DuplicateVariableDeclarationErrorModel : ScriptExecutionErrorModel
     {
         private DocumentController _errorDoc;
         private readonly string _variableName;
-        private readonly FieldControllerBase _value;
+        private readonly FieldControllerBase _existingValue;
+        private readonly FieldControllerBase _targetValue;
+        private readonly bool _alreadyEqual;
 
-        public DuplicateVariableDeclarationErrorModel(string variableName, FieldControllerBase value)
+        public DuplicateVariableDeclarationErrorModel(string variableName, FieldControllerBase targetValue, FieldControllerBase existingValue, bool alreadyEqual)
         {
             _variableName = variableName;
-            _value = value;
+            _existingValue = existingValue;
+            _targetValue = targetValue;
+            _alreadyEqual = alreadyEqual;
         }
 
         public override string GetHelpfulString() => "DuplicateVariableDeclarationException";
@@ -27,13 +30,13 @@ namespace Dash
             _errorDoc.DocumentType = DashConstants.TypeStore.ErrorType;
             _errorDoc.SetField<TextController>(KeyStore.TitleKey, title, true);
             _errorDoc.SetField<TextController>(KeyStore.ExceptionKey, Exception(), true);
-            _errorDoc.SetField<TextController>(KeyStore.FeedbackKey, Feedback(), true);
+            _errorDoc.SetField<TextController>(KeyStore.ActionKey, Action(), true);
 
             return _errorDoc;
         }
 
-        private string Exception() => $"Variable {_variableName} already exists with value {_value}.";
+        private string Exception() => $"Variable \'{_variableName}\' already exists with value {_existingValue}.";
 
-        private static string Feedback() => "Update current assignment rather than re-declaring.";
+        private string Action() => _alreadyEqual ? "No action necessary - redundant reassignment" : $"Hit <enter> to reassign \'{_variableName}\' to \'{_targetValue}\'\n           Hit <escape> to preserve old value";
     }
 }

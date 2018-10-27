@@ -122,7 +122,8 @@ namespace Dash
 		public static KeyController ReceivedKey                          = KeyController.Get("Inputs Received");
 		public static KeyController ExpectedKey                          = KeyController.Get("Inputs Expected");
 		public static KeyController FeedbackKey                          = KeyController.Get("Feedback");
-		public static KeyController CollectionFitToParentKey             = KeyController.Get("CollectionFitToParent");
+	    public static KeyController ActionKey                            = KeyController.Get("Action");
+        public static KeyController CollectionFitToParentKey             = KeyController.Get("CollectionFitToParent");
 		public static readonly KeyController HorizontalAlignmentKey      = KeyController.Get("Horizontal Alignment");
 		public static readonly KeyController VerticalAlignmentKey        = KeyController.Get("Vertical Alignment");
 		public static readonly KeyController SnapshotImage               = KeyController.Get("SnapshotImage");

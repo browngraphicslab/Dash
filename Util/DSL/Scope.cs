@@ -30,11 +30,15 @@ namespace Dash
             set => SetVariable(variableName, value);
         }
 
-        public virtual void DeclareVariable(string variableName, FieldControllerBase valueToSet)
+        public virtual void DeclareVariable(string variableName, FieldControllerBase targetValue)
         {
-            var value = GetVariable(variableName);
-            if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, value));
-            _dictionary[variableName] = valueToSet;
+            var existingValue = GetVariable(variableName);
+            if (existingValue != null)
+            {
+                bool alreadyEqual = targetValue.GetValue(null).Equals(existingValue.GetValue(null));
+                throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, targetValue, existingValue, alreadyEqual));
+            }
+            _dictionary[variableName] = targetValue;
 
             //add varible to autosuggest option
             //TODO Add this variable a different way, possibly with an event, or by looking though the scope in the repl

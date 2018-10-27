@@ -9,6 +9,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using static System.String;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -20,6 +21,8 @@ namespace Dash
         #region Defintions and Intilization  
         private readonly DocumentController _dataDoc;
         private readonly DocumentController _viewDoc;
+
+        private ScriptExpression _toExecute;
 
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private DSL _dsl;
@@ -118,9 +121,9 @@ namespace Dash
         public void Clear(bool clearData)
         {
             ViewModel.Items.Clear();
+            _currentHistoryIndex = 0;
             if (!clearData) return;
 
-            _currentHistoryIndex = 0;
             _dataDoc.SetField(KeyStore.ReplScopeKey, new DocumentController(), true);
             NewBlankScopeAndDSL();
             _lineTextList?.Clear();
@@ -547,15 +550,12 @@ namespace Dash
         {
             async void EnterPressed(KeyRoutedEventArgs e)
             {
-                if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
-                {
-                    return;
-                }
+                if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) return;
 
                 string command = xTextBox.Text;
                 xTextBox.Text = "";
 
-                if (string.IsNullOrEmpty(command)) return;
+                if (IsNullOrEmpty(command)) return;
                 if (CheckSpecialCommands(command))
                 {
                     ScrollToBottom();
@@ -570,6 +570,8 @@ namespace Dash
                     ForExpression.sw.Reset();
                     mySw.Restart();
                     retVal = await _dsl.Run(command, true);
+                    if (retVal is TextController text && IsNullOrEmpty(text.Data)) text.Data = "\"\"";
+
                     mySw.Stop();
                     Debug.WriteLine($"For time {ForExpression.sw.ElapsedMilliseconds}");
                     Debug.WriteLine($"Total time {mySw.ElapsedMilliseconds}");

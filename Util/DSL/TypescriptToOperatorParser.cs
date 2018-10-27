@@ -761,6 +761,8 @@ namespace Dash
                 break;
             case SyntaxKind.VariableDeclaration:
                 var variableDeclaration = node as VariableDeclaration;
+                if (variableDeclaration.Children.Count <= 1)
+                    throw new ScriptExecutionException(new IncompleteVariableDeclarationErrorModel(variableDeclaration.IdentifierStr));
 
                 return new VariableDeclarationExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]), _undoVar);
             case SyntaxKind.VariableDeclarationList:
@@ -771,7 +773,8 @@ namespace Dash
                     return new ExpressionChain(varDeclList.Declarations.Select(ParseToExpression), false);
                 }
 
-                //Debug.Assert(varDeclList.Declarations.Any());
+                if (!varDeclList.Declarations.Any())
+                    throw new ScriptExecutionException(new IncompleteVariableDeclarationErrorModel("\"\"")); 
 
                 return ParseToExpression(varDeclList.Declarations[0]);
             case SyntaxKind.FunctionDeclaration:
