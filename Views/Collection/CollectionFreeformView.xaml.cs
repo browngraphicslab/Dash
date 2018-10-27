@@ -83,12 +83,13 @@ namespace Dash
         {
             return XDropIndicationRectangle;
         }
+       
 
         public override Canvas GetInkHostCanvas()
         {
-            return InkHostCanvas;
+           return InkHostCanvas;
         }
-
+        
         private double _scaleX;
         private double _scaleY;
 

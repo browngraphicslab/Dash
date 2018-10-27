@@ -24,7 +24,7 @@
         <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" IsHitTestVisible="False"
                     Width="{Binding ElementName=xOuterGrid, Path=Width}" Height="{Binding ElementName=xOuterGrid, Path=Height}" />
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
-                      RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" />
+                      RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" /> 
 
         <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>

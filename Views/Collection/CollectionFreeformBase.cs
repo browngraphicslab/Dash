@@ -106,19 +106,19 @@ namespace Dash
 
             _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
-            GetInkHostCanvas().Children.Clear();
+           GetInkHostCanvas().Children.Clear();
             MakePreviewTextbox();
 
             //make and add selectioncanvas 
             SelectionCanvas = new Canvas();
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            //Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
+            Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
             GetInkHostCanvas().Children.Add(SelectionCanvas);
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
-            MakeInkCanvas();
+            //MakeInkCanvas();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             setBackground -= ChangeBackground;
             setBackground += ChangeBackground;
@@ -1139,8 +1139,8 @@ namespace Dash
         void MakeInkCanvas()
         {
 
-            if (MainPage.Instance.xSettingsView.UseInkCanvas)
-            {
+            //if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            //{
                 XInkCanvas = new InkCanvas()
                 {
                     Width = 60000,
@@ -1151,7 +1151,7 @@ namespace Dash
                 Canvas.SetLeft(XInkCanvas, -30000);
                 Canvas.SetTop(XInkCanvas, -30000);
                 GetInkHostCanvas().Children.Add(XInkCanvas);
-            }
+            //}
         }
 
         bool loadingPermanentTextbox;
