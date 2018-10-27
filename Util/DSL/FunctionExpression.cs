@@ -27,22 +27,22 @@ namespace Dash
             //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             OperatorController op = null;
             var opName = Op.Name.invalid;
-            try
-            {
-                op = await _funcName.Execute(scope) as FunctionOperatorController;
-            }
-            catch (ScriptExecutionException)
+            //try
+            //{
+            //    op = await _funcName.Execute(scope) as FunctionOperatorController;
+            //}
+            //catch (ScriptExecutionException)
             {
                 if (!(_funcName is VariableExpression variable))
                 {
-                    throw;
+                    throw new Exception();
                 }
 
                 var variableName = variable.GetVariableName();
                 opName = Op.Parse(variableName);
                 if (opName == Op.Name.invalid)
                 {
-                    throw;
+                    throw new Exception();
                 }
             }
 
@@ -63,7 +63,7 @@ namespace Dash
             {
                 scope = new ReturnScope();
 
-                var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
+                var output = /*op != null ? await OperatorScript.Run(op, inputs, scope) : */await OperatorScript.Run(opName, inputs, scope);
                 return output;
             }
             catch (ReturnException)

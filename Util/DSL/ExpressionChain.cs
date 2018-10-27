@@ -21,24 +21,14 @@ namespace Dash
             var newScope = _newScope ? new Scope(scope) : scope;
 
             var exps = _expressions.ToArray();
-            var length = exps.Count();
+            var length = exps.Length;
             FieldControllerBase retVal = null;
-            for(var i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 var ret = await exps[i].Execute(newScope);
-                if (ret != null)
-                {
-                    retVal = ret;
-                } else
-                {
-                    break;
-                }
-                if (exps[i] is BreakLoopExpression)
-                {
-                    break;
-                }
-                
-
+                if (ret == null) break;
+                retVal = ret;        
+                if (exps[i] is BreakLoopExpression) break;
             }
             return retVal;
         }

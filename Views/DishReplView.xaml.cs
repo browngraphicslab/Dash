@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
@@ -565,7 +566,13 @@ namespace Dash
                 FieldControllerBase retVal;
                 try
                 {
+                    var mySw = new Stopwatch();
+                    ForExpression.sw.Reset();
+                    mySw.Restart();
                     retVal = await _dsl.Run(command, true);
+                    mySw.Stop();
+                    Debug.WriteLine($"For time {ForExpression.sw.ElapsedMilliseconds}");
+                    Debug.WriteLine($"Total time {mySw.ElapsedMilliseconds}");
                 }
                 catch (Exception ex)
                 {

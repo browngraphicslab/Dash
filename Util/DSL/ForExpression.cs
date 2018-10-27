@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,17 +26,32 @@ namespace Dash
             _forBody = forBody;
         }
 
+        public static Stopwatch sw = new Stopwatch();
         public override async Task<FieldControllerBase> Execute(Scope scope)
         {
             var timer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
             _loopRef = "";
 
+            // Declare counter variable
             await _countDeclaration.Execute(scope);
 
-            while (((BoolController) await _forBinary.Execute(scope)).Data && !InfiniteLoopDetected())
+            // Body of for loop
+            while (!InfiniteLoopDetected())
             {
-                if (InfiniteLoopDetected()) return new TextController(RecursiveError);
+                sw.Start();
+                if (!((BoolController)await _forBinary.Execute(scope)).Data)
+                {
+                    sw.Stop();
+                    break;
+                }
+                sw.Stop();
+                // Have we timed out?
+                if (false && _loopRef == RecursiveError) return new TextController(RecursiveError);
+
+                // Execute body
                 await _forBody.Execute(scope); 
+
+                // Increment counter
                 await _incrementExp.Execute(scope);
             }
 
@@ -44,7 +60,7 @@ namespace Dash
 
         private void WhileTimeout(object status) => _loopRef = RecursiveError;
 
-        private bool InfiniteLoopDetected() => _loopRef == RecursiveError;
+        private bool InfiniteLoopDetected() => false &&_loopRef == RecursiveError;
 
         public Op.Name GetOperatorName() => _opName;
 
