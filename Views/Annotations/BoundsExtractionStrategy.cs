@@ -545,7 +545,7 @@ namespace Dash
             return sections;
         }
 
-        private List<PDFSection> SplitIntoVagueSections(double wordSpacing, List<PDFSection> sections)
+        private List<PDFSection> SplitIntoVagueSections(double wordSpacing, double lineSpacing, List<PDFSection> sections)
         {
             var vagueSections = new List<PDFSection>();
             List <(double start, double end, PDFSection section)> sectionWidths = new List<(double, double, PDFSection)>();
@@ -565,8 +565,12 @@ namespace Dash
                                       (sectionWidth.end < vagueSection.Bounds.Right &&
                                        (sectionWidth.section.Bounds.Width < (vagueSection.Bounds.Width / 2) ||
                                         vagueSection.Bounds.Width < sectionWidth.section.Bounds.Width / 2));
+                    bool validY = Math.Abs(sectionWidth.section.Bounds.Top - vagueSection.Bounds.Bottom) <
+                                  lineSpacing * 8;
+                    bool inBetween = sectionWidth.start > vagueSection.Bounds.Left - wordSpacing * 4 &&
+                                     sectionWidth.end < vagueSection.Bounds.Right + wordSpacing * 4;
 
-                    if (validLeft && validRight)
+                    if ((validLeft && validRight))
                     {
                         vagueSection.SectionElements.AddRange(sectionWidth.section.SectionElements);
                         vagueSection.Bounds = RectHelper.Union(vagueSection.Bounds, sectionWidth.section.Bounds);
@@ -600,18 +604,33 @@ namespace Dash
 
             var sections = SplitIntoSections(charSpacing, wordSpacing, lineSpacing, lines);
 
-            var vagueSections = SplitIntoVagueSections(wordSpacing, sections);
+            var vagueSections = SplitIntoVagueSections(wordSpacing, lineSpacing, sections);
 
-            vagueSections.Sort((s1, s2) => Math.Sign(s1.Bounds.Left - s2.Bounds.Left));
+            vagueSections.Sort((s1, s2) => Math.Sign(s1.Bounds.Y - s2.Bounds.Y));
 
             var vagueSectionsSorted = new List<List<PDFSection>> {new List<PDFSection> {vagueSections.First()}};
             foreach (var vagueSection in vagueSections.Skip(1))
             {
-                if (Math.Abs(vagueSection.Bounds.Left - vagueSectionsSorted.Last().First().Bounds.Left) < wordSpacing * 4)
+                // Math.Abs(vagueSection.Bounds.Left - vagueSectionsSorted.Last().First().Bounds.Left) < wordSpacing * 4
+
+                bool foundSection = false;
+                foreach (var vaguerSection in vagueSectionsSorted)
                 {
-                    vagueSectionsSorted.Last().Add(vagueSection);
+                    bool vagueBtwnVaguer =
+                        vagueSection.Bounds.Top > vaguerSection.First().Bounds.Top - 8 * lineSpacing &&
+                        vagueSection.Bounds.Bottom < vaguerSection.First().Bounds.Bottom + 8 * lineSpacing;
+                    bool vaguerBtwnVague =
+                        vaguerSection.First().Bounds.Top < vagueSection.Bounds.Top - 8 * lineSpacing &&
+                        vaguerSection.First().Bounds.Bottom < vagueSection.Bounds.Bottom + 8 * lineSpacing;
+                    if (vaguerBtwnVague || vagueBtwnVaguer)
+                    {
+                        vaguerSection.Add(vagueSection);
+                        foundSection = true;
+                        break;
+                    }
                 }
-                else
+
+                if (!foundSection)
                 {
                     vagueSectionsSorted.Add(new List<PDFSection> { vagueSection });
                 }
@@ -619,7 +638,7 @@ namespace Dash
 
             foreach (var vagueSectionList in vagueSectionsSorted)
             {
-                vagueSectionList.Sort((s1, s2) => Math.Sign(s1.Bounds.Y - s2.Bounds.Y));
+                vagueSectionList.Sort((s1, s2) => Math.Sign(s1.Bounds.X - s2.Bounds.X));
             }
 
             //RemoveDuplicates(vagueSectionsSorted);
