@@ -9,6 +9,9 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
+    AllowDrop="True"
+    DragOver="UserControl_DragOver"
+    Drop="UserControl_Drop"
     PointerEntered="DocumentDecorations_OnPointerEntered"
     PointerExited="DocumentDecorations_OnPointerExited"
     d:DesignHeight="300"
@@ -71,7 +74,7 @@
                             <ColumnDefinition Width="25"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
-                        <Ellipse CanDrag="True" DragStarting="Ellipse_DragStarting" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="Blue" Width="20" Margin="-20 0 0 0" Height="20"/>
+                        <Ellipse CanDrag="True" DragStarting="Ellipse_DragStarting" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
                 </Grid>
                 </Canvas>
             </Grid>

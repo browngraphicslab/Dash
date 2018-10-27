@@ -35,7 +35,7 @@
         </Grid>
 
         <Grid x:Name="xValue"  Grid.Column="1" BorderBrush="DarkGray" BorderThickness="0.5 0 0 0" MinHeight="50">
-            <ContentPresenter x:Name="XValuePresenter" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{x:Bind Mode=OneWay, Path=Not(IsEditing)}"/>
+            <ContentPresenter x:Name="XValuePresenter" HorizontalAlignment="Stretch" MinWidth="50" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Visibility="{x:Bind Mode=OneWay, Path=Not(IsEditing)}"/>
             <TextBox x:Name="xEditBox" Visibility="{x:Bind Mode=OneWay, Path=IsEditing}"
                      GotFocus="XEditBox_OnGotFocus" LostFocus="XEditBox_OnLostFocus"
                      KeyDown="XEditBox_OnKeyDown" BorderThickness="3" BorderBrush="Crimson"/>

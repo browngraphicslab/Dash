@@ -461,7 +461,7 @@ namespace Dash
                 docs.Add(doc.DocumentController);
             }
 
-            args.Data.SetJoinModel(new JoinDragModel(docs, (sender as FrameworkElement).DataContext as KeyController));
+            args.Data.SetJoinModel(new JoinDragModel(ViewModel.ContainerDocument, docs, (sender as FrameworkElement).DataContext as KeyController));
         }
 
         private async void CollectionDBSchemaView_OnDrop(object sender, DragEventArgs e)

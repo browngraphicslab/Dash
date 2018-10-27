@@ -15,11 +15,11 @@ namespace Dash
         public UserControl UserControl => this;
         public CollectionDBView()
         {
-            this.InitializeComponent();
+            this.InitializeComponent(); 
             Loaded             += CollectionDBView_Loaded;
             Unloaded           += CollectionDBView_Unloaded;
             SizeChanged        += (sender, e) => updateChart(new Context(ParentDocument), true);
-            xParameter.Style    = Application.Current.Resources["xSearchTextBox"] as Style;
+            //xParameter.Style    = Application.Current.Resources["xSearchTextBox"] as Style;
             MinWidth = MinHeight = 50;
             xTagCloud.TermDragStarting += XTagCloud_TermDragStarting;
         }
@@ -69,12 +69,11 @@ namespace Dash
         }   
         
         //Input Keys
-        public static readonly KeyController FilterFieldKey = KeyController.Get("_FilterField");
-        public static readonly KeyController BucketsKey = KeyController.Get("_Buckets");
-        public static readonly KeyController SelectedKey = KeyController.Get("Selected");
-        public static readonly KeyController InputDocsKey = KeyController.Get("Dataset");
-        public static readonly KeyController AutoFitKey = KeyController.Get("_AutoFit");
-        public static readonly KeyController AvgResultKey = KeyController.Get("Avg");
+        public static readonly KeyController FilterFieldKey = KeyController.Get("DBChartField");
+        public static readonly KeyController BucketsKey = KeyController.Get("DBChartBuckets");
+        public static readonly KeyController SelectedKey = KeyController.Get("DBChartSelected");
+        public static readonly KeyController AutoFitKey = KeyController.Get("DBChartAutoFit");
+        public static readonly KeyController AvgResultKey = KeyController.Get("DBChartAvg");
 
 
         DocumentController _parentDocument;
@@ -96,7 +95,7 @@ namespace Dash
                         ParentDocument.SetField(SelectedKey, new ListController<NumberController>(), true);
                     ParentDocument.SetField(AvgResultKey, new NumberController(0), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
-                    xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController, TextController>()
+                    xParameter.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<KeyController, TextController>()
                     {
                         Mode = BindingMode.TwoWay,
                         Document = ParentDocument,
@@ -170,6 +169,7 @@ namespace Dash
 
         void updateChart(Context context, bool updateViewOnly=false)
         {
+            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             var dbDocs  = ParentDocument?.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
             var buckets = ParentDocument?.GetDereferencedField<ListController<NumberController>>(CollectionDBView.BucketsKey, context)?.Data;
             var pattern = ParentDocument?.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, context);
