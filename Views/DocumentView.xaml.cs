@@ -593,6 +593,16 @@ namespace Dash
         {
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
         }
+        /// <summary>
+        /// Opens in Chrome the context from which the document was made.
+        /// </summary>
+        public void ShowXaml()
+        {
+            var where = ViewModel.Position;
+            ParentCollection?.ViewModel.AddDocument(
+                new DataBox(new DocumentReferenceController(ViewModel.LayoutDocument, KeyStore.XamlKey), where.X, where.Y, 300, 400).Document
+            );
+        }
 
         public void GetJson()
         {
@@ -883,11 +893,11 @@ namespace Dash
 
         #endregion
 
-        public void This_Drop(object sender, DragEventArgs e)
+        public async void This_Drop(object sender, DragEventArgs e)
         {
             if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
                 return;
-
+            
             var dragModel = e.DataView.GetDragModel();
             if (dragModel != null)
             {
@@ -1087,7 +1097,7 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
-            if (ViewModel.Content is RichTextView)
+            if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
                 {
@@ -1095,6 +1105,24 @@ namespace Dash
                     Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.PlusCircle }
                 });
                 (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAddToActionMenu_Click;
+            }
+            if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                xMenuFlyout.Items.Add(new MenuFlyoutItem()
+                {
+                    Text = "Make Default Textbox",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.PlusCircle }
+                });
+                (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemMakeDefaultTextBox_Click;
+            }
+            if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                xMenuFlyout.Items.Add(new MenuFlyoutItem()
+                {
+                    Text = "Edit Xaml",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Xing }
+                });
+                (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutEditXaml_Click;
             }
 
             if (ViewModel.Content is CollectionView collectionView)
@@ -1124,6 +1152,22 @@ namespace Dash
             }
         }
 
+        private void MenuFlyoutEditXaml_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
+                    doc.ShowXaml();
+                }
+            }
+         }
+        private async void MenuFlyoutItemMakeDefaultTextBox_Click(object sender, RoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<CollectionView>()?.ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(
+                KeyStore.DefaultTextboxXamlKey,
+                ViewModel.LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey, null)?.Data, true);
+        }
         private async void MenuFlyoutItemAddToActionMenu_Click(object sender, RoutedEventArgs e)
         {
             (string name, string desc) = await MainPage.Instance.PromptNewTemplate();

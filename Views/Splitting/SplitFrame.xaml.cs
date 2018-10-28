@@ -190,13 +190,18 @@ namespace Dash
                 XTopRightResizer.ManipulationDelta -= _manipulationDeltaHandler;
                 XBottomLeftResizer.ManipulationDelta -= _manipulationDeltaHandler;
             }
+
+            if (CurrentSplitMode == DragSplitMode.None)
+            {
+                return;
+            }
+            var parentManager = this.GetFirstAncestorOfTypeFast<SplitManager>();
+            var splitDef = SplitPane.GetSplitLocation(this);
             switch (CurrentSplitMode)
             {
             case DragSplitMode.VerticalCollapsePrevious:
             case DragSplitMode.HorizontalCollapsePrevious:
                 {
-                    var parent = this.GetFirstAncestorOfType<SplitPane>();
-                    var splitDef = SplitPane.GetSplitLocation(this);
                     bool vertical = CurrentSplitMode == DragSplitMode.VerticalCollapsePrevious;
                     if (splitDef.Parent != null &&
                        (vertical && splitDef.Parent.Mode == SplitMode.Vertical ||
@@ -206,11 +211,12 @@ namespace Dash
                         if (previous)
                         {
                             var index = splitDef.Parent.Children.IndexOf(splitDef);
-                            parent.RemoveSplit(splitDef.Parent.Children[index - 1], SplitDefinition.JoinOption.JoinNext);
+                            var neighborSplit = splitDef.Parent.Children[index - 1];
+                            parentManager.Delete(neighborSplit, SplitDefinition.JoinOption.JoinNext);
                         }
                         else
                         {
-                            parent.RemoveSplit(splitDef, SplitDefinition.JoinOption.JoinPrevious);
+                            parentManager.Delete(splitDef, SplitDefinition.JoinOption.JoinPrevious);
                         }
                     }
 
@@ -219,8 +225,6 @@ namespace Dash
             case DragSplitMode.VerticalCollapseNext:
             case DragSplitMode.HorizontalCollapseNext:
                 {
-                    var parent = this.GetFirstAncestorOfType<SplitPane>();
-                    var splitDef = SplitPane.GetSplitLocation(this);
                     bool vertical = CurrentSplitMode == DragSplitMode.VerticalCollapseNext;
                     if (splitDef.Parent != null &&
                        (vertical && splitDef.Parent.Mode == SplitMode.Vertical ||
@@ -229,18 +233,20 @@ namespace Dash
                         bool previous = (vertical ? e.Cumulative.Translation.Y : e.Cumulative.Translation.X) < 0;
                         if (previous)
                         {
-                            parent.RemoveSplit(splitDef, SplitDefinition.JoinOption.JoinNext);
+                            parentManager.Delete(this, SplitDefinition.JoinOption.JoinNext);
                         }
                         else
                         {
                             var index = splitDef.Parent.Children.IndexOf(splitDef);
-                            parent.RemoveSplit(splitDef.Parent.Children[index + 1], SplitDefinition.JoinOption.JoinPrevious);
+                            var neighborSplit = splitDef.Parent.Children[index + 1];
+                            parentManager.Delete(neighborSplit, SplitDefinition.JoinOption.JoinPrevious);
                         }
                     }
 
                     break;
                 }
             }
+
             CurrentSplitMode = DragSplitMode.None;
         }
 
@@ -379,7 +385,7 @@ namespace Dash
                 _history.RemoveAt(_history.Count - 1);
                 _future.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) {IsDimensionless = true};
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true };
             }
         }
 
@@ -391,7 +397,7 @@ namespace Dash
                 _future.RemoveAt(_future.Count - 1);
                 _history.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) {IsDimensionless = true};
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true };
             }
         }
 

@@ -150,6 +150,8 @@ namespace Dash
 
         private Predicate<object> GetFilterPredicate(string filterText)
         {
+            if (filterText.Contains(":"))
+                filterText = filterText.Substring(0, filterText.IndexOf(":"));
             Predicate<object> predicate;
             if (string.IsNullOrWhiteSpace(filterText))
             {
@@ -205,10 +207,11 @@ namespace Dash
 
         public async void InvokeAction(string actionName, Point point)
         {
-            var action = Groups.FirstOrDefault()?.FirstOrDefault();
+            var action = Groups.Select((g) => g.FirstOrDefault()).Where((a) => a != null).FirstOrDefault();
             if (action != null)
             {
-                OnActionCommitted(await action.Action.Invoke(point));
+                var actionParams = actionName.Split(":").Where((s, i) => i > 0);
+                OnActionCommitted(await action.Action.Invoke(new ActionFuncParams() { Where = point, Params = actionParams }));
             }
         }
 
@@ -218,7 +221,7 @@ namespace Dash
         {
             var action = ((ActionViewModel)e.ClickedItem).Action;
             if (action != null) {
-                OnActionCommitted(await action.Invoke(_targetPoint));
+                OnActionCommitted(await action.Invoke(new ActionFuncParams() { Where = _targetPoint, Params=null }));
             }
         }
 

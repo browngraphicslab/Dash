@@ -44,6 +44,12 @@ namespace Dash
         public void Delete(SplitFrame splitFrame, SplitDefinition.JoinOption option = SplitDefinition.JoinOption.JoinMiddle)
         {
             var splitDef = SplitPane.GetSplitLocation(splitFrame);
+            Delete(splitDef, option);
+        }
+
+        public void Delete(SplitDefinition splitDef,
+            SplitDefinition.JoinOption option = SplitDefinition.JoinOption.JoinMiddle)
+        {
             if (splitDef != null)
             {
                 XSplitPane.RemoveSplit(splitDef, option);

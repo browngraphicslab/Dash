@@ -941,7 +941,6 @@ namespace Dash
                         {
                             var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
                             var newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
-                            CollectionViewModel.RouteDataBoxReferencesThroughCollection(newCollection, docss);
                             ViewModel.AddDocument(newCollection);
 
                             foreach (DocumentView v in views)
@@ -1235,7 +1234,6 @@ namespace Dash
             {
                 e.Handled = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                Debug.WriteLine("Where = " + where);
                 if (this.IsCtrlPressed())
                 {
                     //deals with control V pasting
@@ -1284,6 +1282,7 @@ namespace Dash
             }
         }
 
+
         public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
         {
             if (!loadingPermanentTextbox)
@@ -1302,6 +1301,11 @@ namespace Dash
                     } else
                     {
                         var postitNote = new RichTextNote(text: text).Document;
+                        var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
+                        if (!string.IsNullOrEmpty(defaultXaml))
+                        {
+                            postitNote.SetField<TextController>(KeyStore.XamlKey, defaultXaml, true);
+                        }
                         Actions.DisplayDocument(ViewModel, postitNote, where);
 
                         //move link activation stuff here
@@ -1441,6 +1445,10 @@ namespace Dash
                 if (loadingPermanentTextbox)
                 {
                     var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
+                    var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
+                    var editableScriptBox = documentView.GetDescendantsOfType<EditableScriptView>().FirstOrDefault();
+                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
+                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
                     if (richEditBox != null)
                     {
                         richEditBox.GotFocus -= RichEditBox_GotFocus;
@@ -1460,21 +1468,17 @@ namespace Dash
                         // previewSelectText = false;
                         //}
                     }
-                    var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
-                    if (textBox != null)
+                    else if (textBox != null)
                     {
                         textBox.Loaded -= TextBox_Loaded;
                         textBox.Loaded += TextBox_Loaded;
                     }
-                    var editableScriptBox = documentView.GetDescendantsOfType<EditableScriptView>().FirstOrDefault();
-                    if (editableScriptBox != null)
+                    else if (editableScriptBox != null)
                     {
                         editableScriptBox.Loaded -= EditableScriptView_Loaded;
                         editableScriptBox.Loaded += EditableScriptView_Loaded;
                     }
-                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
-                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
-                    if (editableMarkdownBox != null)
+                    else if (editableMarkdownBox != null)
                     {
                         editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
                         editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;

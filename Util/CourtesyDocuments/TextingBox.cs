@@ -68,7 +68,7 @@ namespace Dash
 
         #region Bindings
 
-        protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, KeyController key, Context context)
+        public static void SetupTextBinding(FrameworkElement element, DocumentController docController, KeyController key, Context context)
         {
             var binding = new FieldBinding<FieldControllerBase, TextController>()
             {
@@ -80,7 +80,9 @@ namespace Dash
                 FallbackValue = "<null>",
                 Tag = "TextingBox SetupTextBinding"
             };
-            element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
+            element.AddFieldBinding(element is EditableTextBlock ? EditableTextBlock.TextProperty:
+                               element is TextBlock ? TextBlock.TextProperty :
+                               element is TextBox ? TextBox.TextProperty : null, binding);
         }
 
         public class TypedTextAlignmentBinding : SafeDataToXamlConverter<List<object>, TextAlignment>

@@ -170,19 +170,19 @@ namespace Dash
         public void AddToMenu(ActionMenu menu)
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC", new ActionViewModel("Text", "Add a new text box!", AddTextNote, source));
+            menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)", "Add one or more images",  AddMultipleImages, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Collection", "Collection",AddCollection,source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)",        "Add one or more images",  AddMultipleImages, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Collection",      "Collection",AddCollection,source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
             foreach (var template in templates)
             {
                 var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,
-                    template.GetField<TextController>(KeyStore.CaptionKey).Data, point =>
+                    template.GetField<TextController>(KeyStore.CaptionKey).Data, actionParams  =>
                     {
-                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                         Actions.DisplayDocument(ViewModel, template.GetCopy(), colPoint);
                         return Task.FromResult(true);
                     }, source);
@@ -192,23 +192,23 @@ namespace Dash
 
         
 
-        private Task<bool> AddTextNote(Point point)
+        private Task<bool> AddTextNote(ActionFuncParams actionParams)
         {
             var postitNote = new RichTextNote().Document;
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
             return Task.FromResult(true);
         }
 
-        private Task<bool> AddCollection(Point point)
+        private Task<bool> AddCollection(ActionFuncParams actionParams)
         {
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
             var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Icon, 200, 75).Document;
             Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
 
-        private async Task<bool> AddMultipleImages(Point point)
+        private async Task<bool> AddMultipleImages(ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -230,7 +230,7 @@ namespace Dash
             {
                 double defaultLength = 200;
 
-                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                 var adornFormPoint = colPoint;
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
                 ViewModel.AddDocument(adorn);
@@ -256,7 +256,7 @@ namespace Dash
             return true;
         }
 
-        private async Task<bool> AddImageWithCaption(Point point)
+        private async Task<bool> AddImageWithCaption(ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -282,7 +282,7 @@ namespace Dash
                 {
                     double imageWidth = docController.GetWidth();
                     double imageHeight = docController.GetHeight();
-                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(point);
+                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                     var caption = new RichTextNote(docController.Title).Document;
                     caption.SetHorizontalAlignment(HorizontalAlignment.Center);
                     docController.SetWidth(double.NaN);
