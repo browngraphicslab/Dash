@@ -57,6 +57,7 @@ namespace Dash
         {
             var center = document.GetPosition() ?? new Point();
             var size = document.GetActualSize() ?? new Point();
+            Debug.WriteLine("POS: "+ActiveFrame.ViewModel.DocumentController.GetField(KeyStore.PanPositionKey));
             center.X += (size.X - ActiveFrame.ActualWidth) / 2;
             center.Y += (size.Y - ActiveFrame.ActualHeight) / 2;
             center.X = -center.X;
@@ -81,11 +82,13 @@ namespace Dash
 
             if (ActiveFrame.ViewModel.DataDocument.Equals(workspace.GetDataDocument())) //Collection is already open, so we need to animate to it
             {
+                Debug.WriteLine("collection already open");
                 ActiveFrame.AnimateToDocument(document);
                 return ActiveFrame.ViewModel.DocumentController;
             }
             else
             {
+                Debug.WriteLine("collection not open");
                 var center = document.GetPosition() ?? new Point();
                 var size = document.GetActualSize() ?? new Point();
                 center.X += (size.X - ActiveFrame.ActualWidth) / 2;
