@@ -505,7 +505,7 @@ namespace Dash
             var bkey = KeyController.Get("Birthday");
             var wkey = KeyController.Get("Wikipedia");
             var birthday = await QuerySnapshotOperator.QueryGoogle("birthday " + (actionParams.Params?.FirstOrDefault() ?? ""));
-            var wikipedia = "https://en.wikipedia.org/wiki/" + (actionParams.Params?.FirstOrDefault().Replace(" ", "_") ?? "");
+            var wikipedia = "https://en.wikipedia.org/wiki/" + (actionParams.Params?.FirstOrDefault()?.Replace(" ", "_") ?? "");
             var stack = new CollectionNote(actionParams.Where, CollectionView.CollectionViewType.Stacking, 400,600).Document;
             var stackData = stack.GetDataDocument();
             stackData.SetTitle(actionParams.Params.FirstOrDefault() ?? "<null>");
