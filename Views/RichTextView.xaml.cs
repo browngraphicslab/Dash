@@ -291,8 +291,7 @@ namespace Dash
                 var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
                 if (documentView != null)
                 {
-                    rtv.xRichEditBox.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case);
-                    if (rtv.xRichEditBox.Document.Selection.StartPosition != rtv.xRichEditBox.Document.Selection.EndPosition)
+                    if (rtv.xRichEditBox.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
                     {
                         var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
                         var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
