@@ -42,10 +42,10 @@
         <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False" FontSize="12">
             <controls:DataGrid.Resources>
                 <Style TargetType="TextBlock">
-                    <Setter Property="RequestedTheme" Value="Light"></Setter>
-                    <Setter Property="Padding" Value="3,2,3,2"></Setter>
-                    <Setter Property="FontSize" Value="12"></Setter>
-                    <Setter Property="FontFamily" Value="Segoe UI"></Setter>
+                    <Setter Property="RequestedTheme" Value="Light"/>
+                    <Setter Property="Padding" Value="3,2,3,2"/>
+                    <Setter Property="local:BindingHelper.FontSize" Value="CellFontSize"/> <!-- Sigh, can't set a binding directly in a setter Property="FontSize" Value={Binding CellFontSize} -->
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
                 </Style>
             </controls:DataGrid.Resources>
         </controls:DataGrid>

@@ -29,12 +29,21 @@ namespace Dash
         private static ICollectionView _previousDragEntered;
         private bool _canDragItems = true;
         private bool _isSelected = false;
+        private double _cellFontSize = 9;
         public bool IsLoaded => _refCount > 0;
         private DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
         public InkController InkController => ContainerDocument.GetDataDocument().GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
+        public double CellFontSize
+        {
+            get => _cellFontSize;
+            set
+            {
+                this.SetProperty<double>(ref _cellFontSize, value);
+            }
+        }
         public bool IsSelected {
             get => _isSelected;
             set {

@@ -458,9 +458,14 @@ namespace Dash
         {
             AddNewColumn();
         }
-
+        
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            if (this.IsCtrlPressed())
+            {
+                var delta = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
+                ViewModel.CellFontSize = Math.Max(2, ViewModel.CellFontSize * (delta > 0 ? 0.95 : 1.05));
+            }
             e.Handled = true;
         }
 
@@ -558,6 +563,35 @@ namespace Dash
         }
     }
 
+    public class BindingHelper
+    {
+        public static readonly DependencyProperty FontSizeProperty =
+        DependencyProperty.RegisterAttached("FontSize", typeof(string), typeof(BindingHelper),
+            new PropertyMetadata(null, new PropertyChangedCallback(FontSizePropertyChanged)));
+
+        public static string GetFontSize(DependencyObject obj)
+        {
+            return (string)obj.GetValue(FontSizeProperty);
+        }
+
+        public static void SetFontSize(DependencyObject obj, string value)
+        {
+            obj.SetValue(FontSizeProperty, value);
+        }
+
+        private static void FontSizePropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is string propertyPath && obj is TextBlock textBlock)
+            {
+                // ugh ... the textBlock's dataContext is it's row's document view model, so we need to get the collection view model from the tag
+                if (textBlock.Tag is CollectionViewModel collectionViewModel)
+                {
+                    BindingOperations.SetBinding(textBlock,  TextBlock.FontSizeProperty,
+                                           new Binding { Source = collectionViewModel, Path = new PropertyPath(propertyPath)});
+                }
+            }
+        }
+    }
     public class ColumnHeaderViewModel :ViewModelBase
     {
         private Visibility _isSelected = Visibility.Collapsed;
@@ -611,34 +645,29 @@ namespace Dash
         }
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
-            var doc = ((DocumentViewModel)dataItem).DataDocument;
-            var textblock = new TextBlock
-            {
-                IsDoubleTapEnabled = false
-            };
+            var textblock = new TextBlock { IsDoubleTapEnabled = false, IsHitTestVisible = false, Tag = Parent.ViewModel };
             textblock.DataContextChanged += Textblock_DataContextChanged;
-            var binding = new FieldBinding<FieldControllerBase, TextController>
-            {
-                Document = doc,
-                Key = Key,
-                Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay,
-                FallbackValue = "<null>"
-            };
-            textblock.AddFieldBinding(TextBlock.TextProperty, binding);
             return textblock;
         }
 
         private void Textblock_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var binding = new FieldBinding<FieldControllerBase, TextController>
+            if (sender.DataContext is DocumentViewModel)
             {
-                Document = (sender.DataContext as DocumentViewModel).DataDocument,
-                Key = Key,
-                Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay,
-            };
-            sender.AddFieldBinding(TextBlock.TextProperty, binding);
+                var binding = new FieldBinding<FieldControllerBase, TextController>
+                {
+                    Document = (sender.DataContext as DocumentViewModel).DataDocument,
+                    Key = Key,
+                    Converter = new ObjectToStringConverter(),
+                    Mode = BindingMode.OneWay,
+                };
+                sender.AddFieldBinding(TextBlock.TextProperty, binding);
+                BindingOperations.SetBinding(
+                         sender,
+                         TextBlock.FontSizeProperty,
+                         new Binding { Source = Parent.ViewModel,
+                             Path = new PropertyPath("CellFontSize")});
+            }
         }
 
         protected override object PrepareCellForEdit(FrameworkElement editingElement,
