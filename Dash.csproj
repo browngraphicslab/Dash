@@ -177,7 +177,11 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>OperatorTemplate1.cs</LastGenOutput>
     </Content>
+    <Compile Include="Controllers\Functions\DocumentationFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
+    <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -264,7 +268,6 @@
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
-    <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
     <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
@@ -1530,7 +1533,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controllers\Functions\Operators\" />
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
     <Folder Include="Util\Parser\" />
