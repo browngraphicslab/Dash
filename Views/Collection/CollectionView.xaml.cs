@@ -130,13 +130,11 @@ namespace Dash
 
         private void ParentDocumentView_DocumentDeselected(DocumentView obj)
         {
-            ViewModel.IsSelected = false;
             CurrentView.OnDocumentSelected(false);
         }
 
         private void ParentDocumentView_DocumentSelected(DocumentView obj)
         {
-            ViewModel.IsSelected = true;
             CurrentView.OnDocumentSelected(true);
         }
 

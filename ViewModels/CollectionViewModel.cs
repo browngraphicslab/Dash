@@ -28,7 +28,6 @@ namespace Dash
     {
         private static ICollectionView _previousDragEntered;
         private bool _canDragItems = true;
-        private bool _isSelected = false;
         private double _cellFontSize = 9;
         public bool IsLoaded => _refCount > 0;
         private DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
@@ -42,12 +41,6 @@ namespace Dash
             set
             {
                 this.SetProperty<double>(ref _cellFontSize, value);
-            }
-        }
-        public bool IsSelected {
-            get => _isSelected;
-            set {
-                this.SetProperty<bool>(ref _isSelected, value);
             }
         }
         public TransformGroupData TransformGroup

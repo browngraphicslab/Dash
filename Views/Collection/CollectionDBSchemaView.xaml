@@ -25,7 +25,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                <TextBlock Text="{Binding}" FontSize="{Binding CollectionViewModel.CellFontSize}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
                                 <Border Background="{StaticResource DashDarkBlue}" CornerRadius="500" CanDrag="True" Width="25" Height="25" 
                                         HorizontalAlignment="Left" Visibility="{Binding IsSelected}" Tapped="Border_Tapped" Margin="-5 0 5 0"
                                         DragStarting="Join_DragStarting">
@@ -45,6 +45,11 @@
                     <Setter Property="RequestedTheme" Value="Light"/>
                     <Setter Property="Padding" Value="3,2,3,2"/>
                     <Setter Property="local:BindingHelper.FontSize" Value="CellFontSize"/> <!-- Sigh, can't set a binding directly in a setter Property="FontSize" Value={Binding CellFontSize} -->
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                </Style>
+                    <Style TargetType="local:ActionTextBox">
+                        <Setter Property="local:BindingHelper.FontSize" Value="CellFontSize"/>
+                        <!-- Sigh, can't set a binding directly in a setter Property="FontSize" Value={Binding CellFontSize} -->
                     <Setter Property="FontFamily" Value="Segoe UI"/>
                 </Style>
             </controls:DataGrid.Resources>

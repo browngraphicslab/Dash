@@ -581,22 +581,26 @@ namespace Dash
 
         private static void FontSizePropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            if (e.NewValue is string propertyPath && obj is TextBlock textBlock)
+            if (e.NewValue is string propertyPath)
             {
                 // ugh ... the textBlock's dataContext is it's row's document view model, so we need to get the collection view model from the tag
-                if (textBlock.Tag is CollectionViewModel collectionViewModel)
+                if (obj is TextBlock textBlock && textBlock.Tag is CollectionViewModel collectionViewModel)
                 {
                     BindingOperations.SetBinding(textBlock,  TextBlock.FontSizeProperty,
                                            new Binding { Source = collectionViewModel, Path = new PropertyPath(propertyPath)});
+                }
+                if (obj is ActionTextBox aTextBox && aTextBox.Tag is CollectionViewModel collectionViewModel2)
+                {
+                    BindingOperations.SetBinding(aTextBox, ActionTextBox.FontSizeProperty,
+                                           new Binding { Source = collectionViewModel2, Path = new PropertyPath(propertyPath) });
                 }
             }
         }
     }
     public class ColumnHeaderViewModel :ViewModelBase
     {
-        private Visibility _isSelected = Visibility.Collapsed;
-        public KeyController Key { get; private set; }
-        public Visibility IsSelected
+        private Visibility          _isSelected = Visibility.Collapsed;
+        public Visibility            IsSelected
         {
             get => _isSelected;
             set
@@ -604,11 +608,15 @@ namespace Dash
                 SetProperty<Visibility>(ref _isSelected, value);
             }
         }
-        public ColumnHeaderViewModel(KeyController key)
+        public KeyController         Key                 { get; private set; }
+        public CollectionViewModel   CollectionViewModel { get; private set; }
+        public ColumnHeaderViewModel(CollectionViewModel cvm, KeyController key)
         {
+            CollectionViewModel = cvm;
             Key = key;
             IsSelected = Visibility.Collapsed;
         }
+
         public override string ToString()
         {
             return Key?.ToString();
@@ -622,16 +630,13 @@ namespace Dash
         public CollectionDBSchemaView Parent { get; }
         public WindowsDictionaryColumn(KeyController key, CollectionDBSchemaView parent)
         {
-            Header = new ColumnHeaderViewModel(key);
+            Header = new ColumnHeaderViewModel(parent.ViewModel, key);
             Parent = parent;
         }
 
         protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
         {
-            var atb = new ActionTextBox
-            {
-                IsSpellCheckEnabled = false
-            };
+            var atb = new ActionTextBox {  IsSpellCheckEnabled = false, Tag = Parent.ViewModel }; // must set Tag so that BindingHelper can find CollectionViewModel
             atb.AddKeyHandler(VirtualKey.Enter, async args =>
             {
                 if (cell.IsCtrlPressed())
@@ -645,7 +650,7 @@ namespace Dash
         }
         protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
         {
-            var textblock = new TextBlock { IsDoubleTapEnabled = false, IsHitTestVisible = false, Tag = Parent.ViewModel };
+            var textblock = new TextBlock { IsDoubleTapEnabled = false, Tag = Parent.ViewModel }; // must set Tag so that BindingHelper can find CollectionViewModel
             textblock.DataContextChanged += Textblock_DataContextChanged;
             return textblock;
         }
@@ -662,11 +667,6 @@ namespace Dash
                     Mode = BindingMode.OneWay,
                 };
                 sender.AddFieldBinding(TextBlock.TextProperty, binding);
-                BindingOperations.SetBinding(
-                         sender,
-                         TextBlock.FontSizeProperty,
-                         new Binding { Source = Parent.ViewModel,
-                             Path = new PropertyPath("CellFontSize")});
             }
         }
 
