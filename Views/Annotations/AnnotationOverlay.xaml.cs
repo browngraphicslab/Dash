@@ -71,17 +71,18 @@ namespace Dash
 
             AnnotationManager = new AnnotationManager(this);
 
-            if (MainPage.Instance.xSettingsView.UseInkCanvas)
-            {
+           
+            //if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            //{
                 XInkCanvas = new InkCanvas();
                 XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
                 XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
                 XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
                 XInkCanvas.InkPresenter.IsInputEnabled = false;
                 XInkCanvas.IsHitTestVisible = false;
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
-            }
-
+                //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+           // }
+          
             Loaded   += onLoaded;
             Unloaded += onUnloaded;
 

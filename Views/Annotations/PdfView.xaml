@@ -236,7 +236,7 @@
 
             </StackPanel>
 
-            <ScrollViewer x:Name="BottomScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
+            <ScrollViewer x:Name="BottomScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" PointerEntered="BottomScrollViewer_OnPointerEntered" PointerCaptureLost="BottomScrollViewer_OnPointerCaptureLost">
 
                 <Viewbox  Stretch="UniformToFill">
                     <Grid>

@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Storage;
@@ -749,7 +750,7 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _downPt = e.GetCurrentPoint(this).Position;
+                                                                                                                           _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
@@ -1472,6 +1473,34 @@ namespace Dash
                 LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
             else
                 LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+        }
+
+        /// <summary>
+        /// Enable scrolling when 2 fingers are on the pdf
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BottomScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (TouchInteractions.NumFingers >= 2)
+            {
+                BottomScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+            }
+
+            e.Handled = false;
+        }
+
+        /// <summary>
+        /// Disable scrolling if 2 fingers are not on the pdf
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BottomScrollViewer_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            if (TouchInteractions.NumFingers < 2 && e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
+            {
+                BottomScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+            }
         }
     }
 }
