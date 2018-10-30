@@ -108,6 +108,11 @@ namespace Dash
             {
                 return OpenDocument(doc ?? DocumentController);
             }
+
+            if (doc == null && this.IsCtrlPressed())
+            {
+                doc = DocumentController;
+            }
             return this.GetFirstAncestorOfTypeFast<SplitManager>()?.Split(this, dir, doc, autosize);
         }
 
@@ -119,7 +124,7 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle > 135 || angle < -150)
             {
-                Split(SplitDirection.Right, DocumentController);
+                Split(SplitDirection.Right);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
@@ -129,7 +134,7 @@ namespace Dash
             }
             else if (angle <= 135 && angle > 60)
             {
-                Split(SplitDirection.Up, DocumentController);
+                Split(SplitDirection.Up);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
@@ -156,7 +161,7 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle < 30 && angle > -45)
             {
-                Split(SplitDirection.Left, DocumentController);
+                Split(SplitDirection.Left);
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
@@ -167,7 +172,7 @@ namespace Dash
             }
             else if (angle <= -45 && angle > -120)
             {
-                Split(SplitDirection.Down, DocumentController);
+                Split(SplitDirection.Down);
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
