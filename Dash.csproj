@@ -268,7 +268,6 @@
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
-    <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
     <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
