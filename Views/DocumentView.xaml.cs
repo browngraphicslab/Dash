@@ -628,11 +628,13 @@ namespace Dash
 
         public void OnSelected()
         {
+            ViewModel.IsSelected = true;
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
+            ViewModel.IsSelected = false;
             DocumentDeselected?.Invoke(this);
         }
 

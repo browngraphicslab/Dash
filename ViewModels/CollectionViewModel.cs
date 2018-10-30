@@ -26,14 +26,21 @@ namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-        static ICollectionView _previousDragEntered;
-        bool _canDragItems = true;
+        private static ICollectionView _previousDragEntered;
+        private bool _canDragItems = true;
+        private bool _isSelected = false;
         public bool IsLoaded => _refCount > 0;
-        DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
+        private DocumentController _lastContainerDocument; // if the ContainerDocument changes, this stores the previous value which is used to cleanup listener references
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
         public InkController InkController => ContainerDocument.GetDataDocument().GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
 
+        public bool IsSelected {
+            get => _isSelected;
+            set {
+                this.SetProperty<bool>(ref _isSelected, value);
+            }
+        }
         public TransformGroupData TransformGroup
 
         {
@@ -226,16 +233,17 @@ namespace Dash
                 _lastContainerDocument.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             }
         }
-        void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+
+        private void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
         }
-        void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
                 FitContents();   // pan/zoom collection so all of its contents are visible
         }
-        void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
+        private void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
         {
             if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
             {
@@ -262,7 +270,7 @@ namespace Dash
         private Storyboard _lateralAdjustment = new Storyboard();
         private Storyboard _verticalAdjustment = new Storyboard();
 
-        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
+        private void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
         {
             switch (args.ListAction)
             {

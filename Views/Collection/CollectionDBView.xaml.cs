@@ -66,8 +66,11 @@ namespace Dash
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             updateChart(new Context(ParentDocument));
-        }   
-        
+        }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
+
         //Input Keys
         public static readonly KeyController FilterFieldKey = KeyController.Get("DBChartField");
         public static readonly KeyController BucketsKey = KeyController.Get("DBChartBuckets");

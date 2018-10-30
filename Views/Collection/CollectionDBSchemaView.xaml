@@ -22,14 +22,14 @@
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <Border Background="{StaticResource DashDarkBlue}" CornerRadius="500" CanDrag="True"
-                                        Grid.Column="0" HorizontalAlignment="Left" Width="25" Height="25"
+                                <Border Background="{StaticResource DashDarkBlue}" CornerRadius="500" CanDrag="True" Width="25" Height="25" 
+                                        HorizontalAlignment="Left" Visibility="{Binding IsSelected}" Tapped="Border_Tapped" Margin="-5 0 5 0"
                                         DragStarting="Join_DragStarting">
-                                    <TextBlock FontFamily="{StaticResource FontAwesome}" Text="{StaticResource JoinIcon}"
+                                    <TextBlock FontFamily="{StaticResource FontAwesome}" Text="{StaticResource JoinIcon}" 
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                FontSize="20" Foreground="White" />
                                 </Border>
@@ -39,8 +39,17 @@
                 </Setter>
             </Style>
         </Grid.Resources>
-        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False">
+        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False" FontSize="12">
+            <controls:DataGrid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="RequestedTheme" Value="Light"></Setter>
+                    <Setter Property="Padding" Value="3,2,3,2"></Setter>
+                    <Setter Property="FontSize" Value="12"></Setter>
+                    <Setter Property="FontFamily" Value="Segoe UI"></Setter>
+                </Style>
+            </controls:DataGrid.Resources>
         </controls:DataGrid>
+
 
         <Button HorizontalAlignment="Left" VerticalAlignment="Bottom" Tapped="AddRow_OnTapped" Padding="4">
             <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;"/>

@@ -60,6 +60,9 @@ namespace Dash
             }
             xGridView.SelectionChanged += XGridView_SelectionChanged;
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         private void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

@@ -42,6 +42,9 @@ namespace Dash
                 }
             };
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         private async void EnterPressed(KeyRoutedEventArgs obj)
         {

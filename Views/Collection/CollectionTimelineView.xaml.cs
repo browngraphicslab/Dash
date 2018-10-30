@@ -171,6 +171,9 @@ namespace Dash
         {
             SetTimelineFormatting();
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         #region Selection
 

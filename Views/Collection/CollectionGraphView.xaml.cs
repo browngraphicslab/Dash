@@ -104,6 +104,9 @@ namespace Dash
                 _parentDocument = value;
             }
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         public ObservableCollection<GraphConnection> Links { get; set; }
         public ObservableCollection<GraphNodeViewModel> Nodes { get; set; }
