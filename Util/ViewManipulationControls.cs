@@ -98,7 +98,7 @@ namespace Dash
 
         private void DragManipCompletedTouch(object sender, EventArgs e)
         {
-            TouchInteractions.NumFingers--;
+            TouchInteractions.NumFingers = 0;
             TouchInteractions.DraggingDoc = false;
             TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
             SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;         

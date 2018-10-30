@@ -188,6 +188,7 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
+                Debug.WriteLine("Pointer Pressed: " + TouchInteractions.NumFingers);
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -210,6 +211,7 @@ namespace Dash
             };
             PointerReleased += (sender, e) =>
             {
+                Debug.WriteLine("Pointer Released: " + TouchInteractions.NumFingers);
                 if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null &&
                     !TouchInteractions.handledTouch.Contains(e))
                 {
@@ -243,12 +245,26 @@ namespace Dash
                     {
                         e.Handled = true;
                     }
+                } 
+            };
+            ManipulationDelta +=  (s, e) =>
+            {
+                if ((e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2 &&
+                     (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
+                {
+                    //var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
+                    //var pointerPosition2 = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
+                    //var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
+
+                    //new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
+
+                    //this.Resize(this, e, true, false, true);
                 }
             };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) =>
             {
-                TouchInteractions.NumFingers--;
+                TouchInteractions.NumFingers = 0;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 SelectionManager.DropCompleted(this, s, e);
             };
