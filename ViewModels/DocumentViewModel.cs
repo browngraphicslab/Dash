@@ -19,6 +19,9 @@ namespace Dash
         private bool               _showLocalContext;
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
+        private SolidColorBrush    _searchHighlightBrush;
+        private bool               _isDimensionless = false;
+        private bool               _isSelected = false;
 
         public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
 
@@ -42,13 +45,11 @@ namespace Dash
             DocumentController.AddFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
-
         public void UnLoad()
         {
             DocumentController.RemoveFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
-
 
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
@@ -61,10 +62,8 @@ namespace Dash
             set => SetProperty(ref _showLocalContext, value);
         }
 
-        private SolidColorBrush _searchHighlightBrush;
-        private bool _isNotBackgroundPinned = true;
-        
-        public bool IsDimensionless = false;
+        public bool IsSelected { get => _isSelected; set => _isSelected = value; }
+        public bool IsDimensionless { get => _isDimensionless; set => _isDimensionless = value; }
         public bool AreContentsHitTestVisible
         {
             get => DocumentController.GetAreContentsHitTestVisible();

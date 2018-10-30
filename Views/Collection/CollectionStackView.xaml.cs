@@ -27,6 +27,9 @@ namespace Dash.Views.Collection
         {
             XDropIndicationRectangle.Fill = fill;
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         public void SetupContextMenu(MenuFlyout contextMenu)
         {

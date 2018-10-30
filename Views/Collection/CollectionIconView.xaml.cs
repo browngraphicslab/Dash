@@ -91,6 +91,9 @@ namespace Dash.Views.Collection
                 xFolderIcon.Content    = new DocumentView() { ViewModel = new DocumentViewModel(dbf) { IsDimensionless = true } };
             }
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         public UserControl UserControl => this;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }

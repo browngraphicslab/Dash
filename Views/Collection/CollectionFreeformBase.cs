@@ -182,6 +182,9 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
 
         #region Manipulation

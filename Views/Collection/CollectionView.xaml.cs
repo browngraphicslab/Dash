@@ -16,13 +16,13 @@ using Dash.Views.Collection;
 
 namespace Dash
 {
-    public sealed partial class CollectionView : UserControl, ICollectionView
+    public sealed partial class CollectionView : UserControl
     {
         public UserControl UserControl => this;
         public enum CollectionViewType { Freeform, Grid, Page, DB, Stacking, Schema, TreeView, Timeline, Graph, Icon }
 
-        CollectionViewModel _lastViewModel = null;
-        CollectionViewType  _viewType;
+        private CollectionViewModel _lastViewModel = null;
+        private CollectionViewType  _viewType;
 
         public int MaxZ { get; set; }
         public ICollectionView CurrentView { get; set; }
@@ -90,8 +90,7 @@ namespace Dash
                 docview.ManipulationMode = ManipulationModes.None;
             }
         }
-
-        private int count = 0;
+        
         private static int COLid = 0;
         private int id = 0;
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -118,11 +117,25 @@ namespace Dash
             var cp = ParentDocumentView.GetFirstDescendantOfType<CollectionView>();
             if (cp != this)
                 return;
+            ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
+            ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
+            ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
+            ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
 
             #region CollectionView context menu 
 
             SetView(_viewType);
         #endregion
+        }
+
+        private void ParentDocumentView_DocumentDeselected(DocumentView obj)
+        {
+            CurrentView.OnDocumentSelected(false);
+        }
+
+        private void ParentDocumentView_DocumentSelected(DocumentView obj)
+        {
+            CurrentView.OnDocumentSelected(true);
         }
 
         public void SetupContextMenu(MenuFlyout contextMenu)

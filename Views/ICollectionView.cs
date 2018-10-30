@@ -9,6 +9,7 @@ namespace Dash
         void SetDropIndicationFill(Brush fill);
         UserControl  UserControl { get; }
 
+        void OnDocumentSelected(bool selected);
         void SetupContextMenu(MenuFlyout contextMenu);
     }
 }

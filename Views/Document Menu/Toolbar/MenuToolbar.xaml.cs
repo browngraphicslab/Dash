@@ -550,7 +550,7 @@ namespace Dash
                     d.ViewModel.LayoutDocument.SetWidth(double.NaN);
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 }
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
+                d.GetFirstAncestorOfType<CollectionView>()?.ViewModel.FitContents();
             }
         }
         // copy btn

@@ -304,7 +304,7 @@ namespace Dash
             this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
 
-            ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
+            ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null ? Visibility.Collapsed : Visibility.Visible;
 
             rebuildMenuIfNeeded();
 

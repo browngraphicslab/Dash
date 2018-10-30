@@ -53,6 +53,9 @@ namespace Dash
         {
 
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         public void SetUseActiveFrame(bool useActiveFrame)
         {

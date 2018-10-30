@@ -628,11 +628,13 @@ namespace Dash
 
         public void OnSelected()
         {
+            ViewModel.IsSelected = true;
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
+            ViewModel.IsSelected = false;
             DocumentDeselected?.Invoke(this);
         }
 
@@ -1261,7 +1263,7 @@ namespace Dash
                 //ensures zoom level can't be less than 1
                 if (xContentTransform.Matrix.M11 * deltaScale <= 1) deltaScale = 1 / xContentTransform.Matrix.M11;
 
-                ScaleTransform scale = new ScaleTransform();
+                var scale = new ScaleTransform();
                 scale.ScaleX = deltaScale;
                 scale.ScaleY = deltaScale;
 

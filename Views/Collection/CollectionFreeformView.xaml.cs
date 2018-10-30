@@ -46,6 +46,9 @@ namespace Dash
         private void OnLoad(object sender, RoutedEventArgs e)
         {
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         public override Panel GetCanvas()
         {
