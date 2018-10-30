@@ -43,6 +43,14 @@
                    DragEnter="DropTarget_OnDragEnter"
                    DragLeave="DropTarget_OnDragLeave"
                    Drop="XBottomDropTarget_OnDrop" AllowDrop="True"/>
+        <Ellipse x:Name="XCenterDropTarget" Height="40" Width="40"
+                 Visibility="Collapsed"
+                 Canvas.ZIndex="1" Fill="#10101010"
+                 VerticalAlignment="Top" HorizontalAlignment="Center"
+                 DragEnter="DropTarget_OnDragEnter"
+                 DragLeave="DropTarget_OnDragLeave"
+                 Drop="XCenterDropTarget_OnDrop" AllowDrop="True"
+                 Margin="0 30 0 0"/>
         <local:DocumentPathView x:Name="XPathView" Canvas.ZIndex="2" Margin="15 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom"></local:DocumentPathView>
     </Grid>
 
