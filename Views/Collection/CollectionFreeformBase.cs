@@ -748,11 +748,7 @@ namespace Dash
 		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !TouchInteractions.handledTouch.Contains(args))
 		    {
 		        TouchInteractions.handledTouch.Add(args);
-		        TouchInteractions.NumFingers++;
-                //var docview = this.GetFirstAncestorOfType<DocumentView>();
-                //      if (SelectionManager.IsSelected(docview))
-                //    //SelectionManager.Select(docview, false);
-                //SelectionManager.TryInitiateDragDrop(docview, args, null);
+		         TouchInteractions.NumFingers++;
 		        TouchInteractions.isPanning = false;
 
             }

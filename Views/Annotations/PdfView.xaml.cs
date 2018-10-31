@@ -707,6 +707,8 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            TouchInteractions.NumFingers--;
+            Debug.WriteLine("PDF POINTER RELEASED: " + TouchInteractions.NumFingers);
             (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonReleased)
@@ -750,7 +752,8 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-                                                                                                                           _downPt = e.GetCurrentPoint(this).Position;
+            Debug.WriteLine("PDF POINTER PRESSED: " + TouchInteractions.NumFingers);
+            _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
             var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
@@ -758,6 +761,11 @@ namespace Dash
                 overlay.StartAnnotation(CurrentAnnotationType, e.GetCurrentPoint(overlay).Position);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
+            }
+
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                e.Handled = true;
             }
         }
 
@@ -1482,9 +1490,15 @@ namespace Dash
         /// <param name="e"></param>
         private void BottomScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (TouchInteractions.NumFingers >= 2)
+            TouchInteractions.NumFingers++;
+             Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
+            if (TouchInteractions.NumFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
                 BottomScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+            }
+            else
+            {
+                BottomScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
             }
 
             e.Handled = false;
@@ -1497,10 +1511,13 @@ namespace Dash
         /// <param name="e"></param>
         private void BottomScrollViewer_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            if (TouchInteractions.NumFingers < 2 && e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
-            {
-                BottomScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-            }
+            TouchInteractions.NumFingers--;
+            Debug.WriteLine("POINTER LOST: " + TouchInteractions.NumFingers);
+           // if (TouchInteractions.NumFingers < 2 && e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
+           // {
+           //     BottomScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+           //     
+           // }
         }
     }
 }

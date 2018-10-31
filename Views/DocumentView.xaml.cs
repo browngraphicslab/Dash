@@ -235,11 +235,20 @@ namespace Dash
             };
 
             ManipulationMode = ManipulationModes.All;
-            ManipulationStarted += (s, e) =>
+            ManipulationStarted += async (s, e) =>
             {
+                if (e.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    await Task.Delay(40);
+                }
                 if ((this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible) || (e.PointerDeviceType == PointerDeviceType.Touch &&
                     (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
+                    //case where we want the pdf to scroll, rather than be moved
+                    if (e.PointerDeviceType == PointerDeviceType.Touch && this.GetFirstDescendantOfType<PdfView>() != null && TouchInteractions.NumFingers == 2)
+                    {
+                        return;
+                    }
                     TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                     {
