@@ -1118,7 +1118,7 @@ namespace Dash
                 <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
             </StackPanel>
         </Grid>
-        <Grid
+          <Grid
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:dash="using:Dash"
@@ -1132,7 +1132,7 @@ namespace Dash
                     <Border Grid.Row="1" Background="CadetBlue">
                         <StackPanel Orientation="Horizontal">
                             <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="500" VerticalAlignment="Top" />
-                            <dash:CollectionView x:Name="xCollectionFieldAnnotations" Width="500" HorizontalContentAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
+                            <dash:CollectionView x:Name="xCollectionFieldAnnotations" Width="5000" Background="Yellow" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
                         </StackPanel>
                     </Border>
                     <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White">
