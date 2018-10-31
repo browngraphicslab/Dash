@@ -112,18 +112,21 @@ namespace Dash
             {
                 var foundFields = await GetDocuments(missingIds);
                 var foundFieldsDict = foundFields.ToDictionary(fm => fm.Id, fm => fm);
-                var controllers = new List<FieldControllerBase>(foundFields.Count);
-                for (int i = 0; i < foundFields.Count; i++)
+                for (int i = 0; i < missingIds.Count; i++)
                 {
                     var f = foundFieldsDict[missingIds[i]];
-                    var field = FieldControllerFactory.CreateFromModel(f);
-                    Debug.Assert(!_cache.ContainsKey(missingIds[i]));
-                    _cache[missingIds[i]] = field;
-                    controllers.Add(field);
+                    FieldControllerBase field;
+                    if (_cache.TryGetValue(missingIds[i], out var getField))
+                    {
+                        field = getField;
+                    } else
+                    {
+                        field = FieldControllerFactory.CreateFromModel(f);
+                        _cache[missingIds[i]] = field;
+                        await field.InitializeAsync();
+                    }
                     fields[missingIdxs[i]] = field;
                 }
-
-                await Task.WhenAll(controllers.Select(c => c.InitializeAsync()));
             }
 
             return fields;
@@ -135,7 +138,7 @@ namespace Dash
             var typedFields = fields.OfType<V>().ToList();
             if (typedFields.Count != fields.Count)
             {
-                throw new ArgumentException("Some of the fields where of the wrong type", nameof(ids));
+                throw new ArgumentException("Some of the fields were of the wrong type", nameof(ids));
             }
 
             return typedFields;

@@ -275,7 +275,7 @@ namespace Dash
                 var binding = new FieldBinding<TextController>
                 {
                     Mode = BindingMode.OneWay,
-                    Document = dvm.DocumentController,
+                    Document = dvm.DocumentController.GetDataDocument(),
                     Key = KeyStore.TitleKey,
                 };
                 sender.AddFieldBinding(TextBlock.TextProperty, binding);
