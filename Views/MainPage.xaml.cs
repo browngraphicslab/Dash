@@ -125,9 +125,6 @@ namespace Dash
 
             xToolbar.SetValue(Canvas.ZIndexProperty, 20);
 
-            xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
-            xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
-
             SplitFrame.ActiveDocumentChanged += frame =>
             {
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
@@ -153,16 +150,6 @@ namespace Dash
             Debug.WriteLine("val = " + value);
         }
 
-        private void HideLinkInputBox()
-        {
-            xLinkInputBox.ClearHandlers(VirtualKey.Enter);
-            xLinkInputOut.Begin();
-            xLinkInputOut.Completed += (o, o1) =>
-            {
-                xLinkInputBox.Text = "";
-                xLinkInputBox.Visibility = Visibility.Collapsed;
-            };
-        }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
