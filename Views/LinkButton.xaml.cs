@@ -3,6 +3,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
@@ -77,22 +78,23 @@ namespace Dash
 
         private void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            _tooltip.IsOpen = false;
-            e.Handled = true;
-            _docdecs.CurrentLinks = _docdecs.TagMap[_text];
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+            //_tooltip.IsOpen = false;
+            //e.Handled = true;
+            //_docdecs.CurrentLinks = _docdecs.TagMap[_text];
 
-            _docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
-            if (_docdecs.CurrentLinks.Count == 1)
-                foreach (var actualchild in _docdecs.XTagContainer.Children.OfType<Tag>())
-                {
-                    if (actualchild.Text == _text)
-                    {
-                        actualchild.Select();
-                    } else
-                    {
-                        actualchild.Deselect();
-                    }
-                }
+            //_docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
+            //if (_docdecs.CurrentLinks.Count == 1)
+            //    foreach (var actualchild in _docdecs.XTagContainer.Children.OfType<Tag>())
+            //    {
+            //        if (actualchild.Text == _text)
+            //        {
+            //            actualchild.Select();
+            //        } else
+            //        {
+            //            actualchild.Deselect();
+            //        }
+            //    }
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
