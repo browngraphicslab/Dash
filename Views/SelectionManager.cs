@@ -16,6 +16,7 @@ using Windows.Graphics.Imaging;
 using Windows.UI.Input;
 using MyToolkit.Mathematics;
 using System.Threading.Tasks;
+using Windows.Devices.Input;
 
 namespace Dash
 {
@@ -241,7 +242,7 @@ namespace Dash
         }
         public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
-            if (TouchInteractions.NumFingers != 1 && e != null)
+            if (TouchInteractions.NumFingers != 1 && e != null && e.PointerDeviceType == PointerDeviceType.Touch)
             {
                 e.Handled = true;
                 return;

@@ -250,6 +250,7 @@ namespace Dash
                         return;
                     }
                     TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
+                    //TODO: get rid on link icon
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                     {
                         e.Handled = true;
@@ -261,6 +262,7 @@ namespace Dash
                 if ((e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2 &&
                      (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
+                    TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
                     var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                     var pointerPosition2 = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                     var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
@@ -270,7 +272,14 @@ namespace Dash
                     this.Resize(this, e, true, false, true);
                 }
             };
-            ManipulationCompleted += (s, e) => { if(e.PointerDeviceType == PointerDeviceType.Touch) { TouchInteractions.NumFingers = TouchInteractions.NumFingers - 2; } };
+            ManipulationCompleted += (s, e) =>
+            {
+                if (e.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    TouchInteractions.NumFingers = TouchInteractions.NumFingers - 2;
+                    TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+                }
+            };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) =>
             {
