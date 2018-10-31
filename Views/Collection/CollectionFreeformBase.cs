@@ -627,6 +627,7 @@ namespace Dash
             {
                 TouchInteractions.handledTouch.Add(e);
                 if (TouchInteractions.NumFingers > 0) TouchInteractions.NumFingers--;
+                e.Handled = true;
             }
             if (_marquee != null)
             {
@@ -750,8 +751,9 @@ namespace Dash
 		        TouchInteractions.handledTouch.Add(args);
 		         TouchInteractions.NumFingers++;
 		        TouchInteractions.isPanning = false;
+		        args.Handled = true;
 
-            }
+		    }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
 			{

@@ -708,6 +708,10 @@ namespace Dash
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             TouchInteractions.NumFingers--;
+            if (TouchInteractions.NumFingers == 0)
+            {
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+            }
             Debug.WriteLine("PDF POINTER RELEASED: " + TouchInteractions.NumFingers);
             (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
             var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
@@ -745,7 +749,10 @@ namespace Dash
                 overlay.UpdateAnnotation(e.GetCurrentPoint(overlay).Position);
             }
 
-            //e.Handled = true;
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                e.Handled = true;
+            }
         }
 
         Point _downPt = new Point();
@@ -766,6 +773,7 @@ namespace Dash
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
                 e.Handled = true;
+                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
             }
         }
 
@@ -1495,6 +1503,7 @@ namespace Dash
             if (TouchInteractions.NumFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
                 BottomScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+                e.Handled = true;
             }
             else
             {

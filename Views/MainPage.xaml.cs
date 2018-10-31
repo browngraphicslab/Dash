@@ -968,6 +968,16 @@ namespace Dash
 
             return results;
         }
+
+        private void MainPage_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            TouchInteractions.NumFingers++;
+        }
+
+        private void MainPage_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            TouchInteractions.NumFingers--;
+        }
     }
 
 
