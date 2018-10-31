@@ -580,8 +580,7 @@ namespace Dash
 
         }
 
-        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-            Context c)
+        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             UpdatePaths();
         }

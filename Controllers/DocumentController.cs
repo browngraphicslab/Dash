@@ -21,7 +21,7 @@ namespace Dash
     //[DebuggerDisplay("DocumentController")]
     public sealed class DocumentController : FieldModelController<DocumentModel>
     {
-        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context);
+        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// </summary>
@@ -535,7 +535,7 @@ namespace Dash
             void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
                 var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                generateDocumentFieldUpdatedEvents(updateArgs, new Context());
+                generateDocumentFieldUpdatedEvents(updateArgs);
             }
             //TODO RefCount
             ReferenceField(field);
@@ -874,7 +874,7 @@ namespace Dash
             ReleaseContainedField(key, value);
             proto._fields.Remove(key);
 
-            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
+            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false));
 
             return true;
         }
@@ -922,11 +922,11 @@ namespace Dash
         /// <param name="field"></param>
         /// <param name="forceMask"></param>
         /// <returns></returns>
-        (bool updated, DocumentFieldUpdatedEventArgs args, Context c) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        (bool updated, DocumentFieldUpdatedEventArgs args) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             if (field == null)
             {
-                return (RemoveField(key), null, null);
+                return (RemoveField(key), null);
             }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
@@ -975,9 +975,9 @@ namespace Dash
                 //else
                 //    setupFieldChangedListeners(key, field, oldField, new Context(doc));
 
-                return (true, updateArgs, new Context(doc));
+                return (true, updateArgs);
             }
-            return (false, null, null);
+            return (false, null);
         }
 
 
@@ -1004,13 +1004,13 @@ namespace Dash
             UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false),
                 () => SetField(key, oldVal, forceMask, false));
 
-            var (fieldChanged, args, c) = SetFieldHelper(key, field, forceMask);
+            var (fieldChanged, args) = SetFieldHelper(key, field, forceMask);
             if (fieldChanged)
             {
                 UpdateOnServer(withUndo ? newEvent : null);
                 if (args != null)
                 {
-                    generateDocumentFieldUpdatedEvents(args, c);
+                    generateDocumentFieldUpdatedEvents(args);
                 }
             }
 
@@ -1082,22 +1082,22 @@ namespace Dash
                 oldFields[kv.Key] = GetField(kv.Key);
             }
 
-            var argList = new List<(DocumentFieldUpdatedEventArgs args, Context c)>(keyValuePairs.Count);
+            var argList = new List<DocumentFieldUpdatedEventArgs>(keyValuePairs.Count);
 
             // update with each of the new fields
             foreach (var field in keyValuePairs.Where((f) => f.Key != null))
             {
-                var (updated, args, c) = SetFieldHelper(field.Key, field.Value, forceMask);
+                var (updated, args) = SetFieldHelper(field.Key, field.Value, forceMask);
                 shouldSave |= updated;
                 if (args != null)
                 {
-                    argList.Add((args, c));
+                    argList.Add(args);
                 }
             }
 
-            foreach (var (args, c) in argList)
+            foreach (var args in argList)
             {
-                generateDocumentFieldUpdatedEvents(args, c);
+                generateDocumentFieldUpdatedEvents(args);
             }
 
             if (shouldSave)
@@ -1111,7 +1111,7 @@ namespace Dash
         /// Returns the Field at the given KeyController's key. If the field is a Reference to another
         /// field, follows the regerences up until a non-reference field is found and returns that.
         /// </summary>
-        public FieldControllerBase GetDereferencedField(KeyController key, Context context)
+        public FieldControllerBase GetDereferencedField(KeyController key, Context context = null)
         {
             // TODO this should cause an operator to execute and return the proper value
             context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
@@ -1198,9 +1198,8 @@ namespace Dash
         ///     2. the input contains the updated key or the output contains the updated key
         /// </para>
         /// </summary>
-        public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
+        public void ShouldExecute(KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
-            context = context ?? new Context(this);
             var usedOperators = new HashSet<Type>();
             var ops           = new List<OperatorController>();
             var remOps        = new List<OperatorController>();
@@ -1225,17 +1224,13 @@ namespace Dash
             {
                 if (opField.Inputs.Any(i => i.Key.Equals(updatedKey)))
                 {
-                    Execute(opField, context, update, args);
+                    Execute(opField, update, args);
                 }
             }
         }
 
-        public async void Execute(OperatorController opField, Context oldContext, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
+        public async void Execute(OperatorController opField, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
         {
-            // add this document to the context
-            var context = new Context(oldContext);
-            context.AddDocumentContext(this);
-
             // create dictionaries to hold the inputs and outputs, these are being prepared
             // to be used in the actual operator's execute method
             var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
@@ -1248,7 +1243,7 @@ namespace Dash
                 // get the operator inputs based on the input keys (these are always references)
                 var field = GetField(opFieldInput.Key);
                 // dereference the inputs so that the field is now the actual field from the output document
-                field = field?.DereferenceToRoot(context);
+                field = field?.DereferenceToRoot(null);
 
                 if (field == null && opFieldInput.Value.IsRequired)
                 {
@@ -1427,7 +1422,7 @@ namespace Dash
 
         static string spaces = "";
 
-        void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
+        void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args)
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
             //TODO: If operators are added, the operator should be run, and if an operator is removed it's outputs should maybe be removed
@@ -1436,8 +1431,8 @@ namespace Dash
                 return;
             }
             spaces += "  ";
-            ShouldExecute(newContext, args.Reference.FieldKey, args);
-            OnDocumentFieldUpdated(this, args, newContext, true);
+            ShouldExecute(args.Reference.FieldKey, args);
+            OnDocumentFieldUpdated(this, args, true);
             try
             {
                 spaces = spaces.Substring(2);
@@ -1456,16 +1451,16 @@ namespace Dash
         /// listeners to <see cref="DocumentFieldUpdated"/>
         /// </summary>
         /// <param name="updateDelegates">whether to bubble event down to delegates</param>
-        private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
+        private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {
             // this invokes listeners which have been added on a per key level of granularity
             if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
-                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
 
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
             {
-                OnFieldModelUpdated(args, c);
+                OnFieldModelUpdated(args);
             }
 
             // bubbles event down to delegates
@@ -1476,7 +1471,7 @@ namespace Dash
             foreach (var d in GetDelegates().TypedData)
             {
                 if (d.GetField(args.Reference.FieldKey, true) == null)
-                    d.generateDocumentFieldUpdatedEvents(args, c);
+                    d.generateDocumentFieldUpdatedEvents(args);
             }
         }
 

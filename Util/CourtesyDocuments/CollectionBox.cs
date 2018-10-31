@@ -41,7 +41,7 @@ namespace Dash
 
                 var view = new CollectionView(collectionViewModel);
 
-                void docContextChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+                void docContextChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
                     collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
                 }

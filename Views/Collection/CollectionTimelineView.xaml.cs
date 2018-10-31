@@ -476,7 +476,7 @@ namespace Dash
         }
 
         // Sort the modified key
-        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             UpdateTimeline();
         }

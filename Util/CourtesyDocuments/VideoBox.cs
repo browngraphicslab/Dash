@@ -69,33 +69,32 @@ namespace Dash
 				//add fieldUpdatedListener to the doc controller of the reference
 				var dataDoc = reference.GetDocumentController(context);
 				dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-					delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+					delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
 					{
 						var doc = sender;
 						var dargs = args;
 						if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
 							return;
 						//bind the MediaPlayerElement source to the new video
-						BindVideoSource(video, doc, c, reference.FieldKey);
+						BindVideoSource(video, doc, reference.FieldKey);
 					});
 			}
-			BindVideoSource(video, controller, context, KeyStore.DataKey);
+			BindVideoSource(video, controller, KeyStore.DataKey);
 		}
 
 		/// <summary>
 		///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the video.
 		/// </summary>
-		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, Context context,
+		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController,
 			KeyController key)
 		{
-			var data = docController.GetDereferencedField(key, context) as VideoController;
+			var data = docController.GetDereferencedField(key, null) as VideoController;
 			Debug.Assert(data != null);
 			var binding = new FieldBinding<VideoController>
 			{
 				Document = docController,
 				Key = KeyStore.DataKey,
 				Mode = BindingMode.OneWay,
-				Context = context,
 				//converts uri to source data of the MediaPlayerElement
 				Converter = UriToIMediaPlayBackSourceConverter.Instance
 			};

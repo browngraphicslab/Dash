@@ -53,7 +53,7 @@ namespace Dash
         /// <summary>
         /// Update the text in the autosuggestbox when the input text changes
         /// </summary>
-        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
             if (xAutoSuggestBox.Text != tfmc.Data)

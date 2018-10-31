@@ -252,18 +252,17 @@ namespace Dash
         private static void AddOneWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
         {
             DocumentController.DocumentUpdatedHandler handler =
-                (sender, args, context) =>
+                (sender, args) =>
                 {
                     if (binding.Context == null)
                     {
-                        binding.ConvertToXaml(element, property, context);
+                        binding.ConvertToXaml(element, property, null);
 
                     }
                     else
                     //if (binding.Context.IsCompatibleWith(context))
                     {
-                        var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
+                        binding.ConvertToXaml(element, property, null);
                     }
                 };
 
@@ -348,19 +347,17 @@ namespace Dash
             //int id = ID++;
             bool updateUI = true;
             DocumentController.DocumentUpdatedHandler handler =
-                (sender, args, context) =>
+                (sender, args) =>
                 {
                     updateUI = false;
                     if (binding.Context == null)
                     {
-                        binding.ConvertToXaml(element, property, context);
-
+                        binding.ConvertToXaml(element, property, null);
                     }
                     else
                     //if (binding.Context.IsCompatibleWith(context))
                     {
-                        var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
+                        binding.ConvertToXaml(element, property, binding.Context);
                     }
                     updateUI = true;
                 };

@@ -205,7 +205,7 @@ namespace Dash
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 // force the view to refresh now that everything is loaded.  These changed handlers will cause the
                 // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
-                PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
+                PanZoomFieldChanged(null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
                 if (CollectionController != null)
                 {
@@ -223,7 +223,7 @@ namespace Dash
                         AddViewModels(new List<DocumentController>{newDoc.Doc}, newDoc.Index);
                     }
                 }
-                ActualSizeFieldChanged(null, null, null);
+                ActualSizeFieldChanged(null, null);
 
                 _lastContainerDocument = ContainerDocument;
             }
@@ -236,16 +236,16 @@ namespace Dash
             }
         }
 
-        private void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             OnPropertyChanged(nameof(TransformGroup));
         }
-        private void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             if (!MainPage.Instance.IsShiftPressed())
                 FitContents();   // pan/zoom collection so all of its contents are visible
         }
-        private void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
+        private void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
             {
