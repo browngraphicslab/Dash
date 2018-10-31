@@ -10,8 +10,10 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Windows.System;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using MyToolkit.UI;
 using Telerik.UI.Xaml.Controls.Chart;
 using static Dash.DataTransferTypeInfo;
 
@@ -388,14 +390,27 @@ namespace Dash
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
 
+                // filtering
+
                 if (_currentSelection != "None")
                 {
-                    if (res.ViewDocument.GetDocType() != _currentSelection)
+                    if (_currentSelection == "Author")
+                    {
+                        if (xAdvSearch.Text != res.DataDocument.GetAuthor())
+                        {
+                            continue;
+                        }
+                    }
+                    else if (res.ViewDocument.GetDocType() != _currentSelection)
                     {
                         continue;
                     }
                 }
+
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
+
+                // removing copies 
+
                 var numOfCopies = resList.Value.Count;
                 newVm.Copies = numOfCopies;
                 if (numOfCopies > 1)
@@ -591,10 +606,59 @@ namespace Dash
             case "Collection":
                 _currentSelection = "Collection Box";
                 break;
+            case "Author":
+                _currentSelection = "Author";
+                var nodes = DocumentTree.MainPageTree;
+                foreach (var node in nodes)
+                {
+                    Debug.WriteLine(node.DataDocument.GetType());
+                    Debug.WriteLine(node.DataDocument.GetAuthor());
+                }
+                break;
             default:
                 _currentSelection = "None";
                 break;
             }
+            xAdvSearch.Text = selection;
+        }
+
+        private void Filter_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+        }
+
+        private void Author_OnClick(object sender, RoutedEventArgs e)
+        {
+            //var mF = new MenuFlyout();
+            var subitem = sender as MenuFlyoutSubItem;
+            Debug.WriteLine(subitem?.Text);
+            var nodes = DocumentTree.MainPageTree;
+            var authorList = new HashSet<string>();
+            foreach (var node in nodes)
+            {
+                var author = node.DataDocument.GetAuthor();
+                if (!authorList.Contains(author) && author!=null)
+                {
+                    authorList.Add(author);
+                }
+            }
+            foreach (var auth in authorList)
+            {
+                var pickAuthor = new MenuFlyoutItem
+                {
+                    Text = auth,
+                };
+                subitem?.Items?.Add(pickAuthor);
+                pickAuthor.Click += PickAuthorOnClick;
+            }
+            //mF.ShowAt((FrameworkElement)sender);
+        }
+
+        private void PickAuthorOnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            var mf = sender as MenuFlyoutItem;
+            _currentSelection = mf?.Text;
+            xAdvSearch.Text = _currentSelection;
         }
     }
 }

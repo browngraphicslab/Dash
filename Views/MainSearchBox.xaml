@@ -24,6 +24,7 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" CanDrag="True">
             <TextBlock x:Name="xCollDragIcon" 
@@ -35,7 +36,7 @@
                        VerticalAlignment="Center"
             />
         </Border>
-        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped"  HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="1" >
+        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped"  HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="1" Width="40" >
             <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" HorizontalAlignment="Center">
                 
             </TextBlock>
@@ -176,11 +177,29 @@
                 <x:String>Audio</x:String>
                 <x:String>PDF</x:String>
                 <x:String>Collection</x:String>
+                <x:String>Author</x:String>
             </ComboBox>
         </Grid>
         
         <Grid x:Name="xMoreSearch" Grid.Row="2" Grid.Column="0"  Visibility="Visible" Grid.ColumnSpan="2">
-            <TextBox x:Name="xAdvSearch" PlaceholderText="Type..."/>
+            <TextBox x:Name="xAdvSearch" PlaceholderText="Current Selection..."/>
         </Grid>
+        
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Filter by:" Tapped="Filter_Tapped" >
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutSubItem Text="Document">
+                        <MenuFlyoutItem Text="Image"/>
+                        <MenuFlyoutItem Text="Text"/>
+                        <MenuFlyoutItem Text="Audio"/>
+                        <MenuFlyoutItem Text="Video"/>
+                        <MenuFlyoutItem Text="PDF"/>
+                        <MenuFlyoutItem Text="Collection"/>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem Text="Author" Loaded="Author_OnClick">
+                    </MenuFlyoutSubItem>
+                </MenuFlyout>
+            </FlyoutBase.AttachedFlyout>
+        </TextBlock>
     </Grid>
 </UserControl>
