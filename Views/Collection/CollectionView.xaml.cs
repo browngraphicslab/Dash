@@ -308,7 +308,7 @@ namespace Dash
             ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
         }
 
-        private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             SetView(ViewModel.ViewType);
         }

@@ -31,9 +31,9 @@ namespace Dash
 
         private DocumentController _lastDoc = null;
 
-        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            OnFieldModelUpdated(args?.FieldArgs, c);
+            OnFieldModelUpdated(args?.FieldArgs);
         }
 
         protected void DocumentChanged()

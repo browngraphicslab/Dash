@@ -305,8 +305,7 @@ namespace Dash
                 }
             }
         }
-        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-            Context context)
+        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             if (args.NewValue == null || (sender.GetField(KeyStore.GoToRegionKey) == null && sender.GetField(KeyStore.GoToRegionLinkKey) == null))
             {

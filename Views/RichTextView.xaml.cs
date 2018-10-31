@@ -807,7 +807,7 @@ namespace Dash
 
         #region load/unload
         // Someone please find out why this is being called twice
-        private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e, Context c)
+        private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e)
         {
             _searchHighlight = true;
             MatchQuery(getSelected());
