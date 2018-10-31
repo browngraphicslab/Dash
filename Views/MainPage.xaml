@@ -143,6 +143,8 @@
             </Grid>
 
         </Canvas>
+        
+        <Grid x:Name="XGrid" Grid.Column="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 
         <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1" x:FieldModifier="public"></Canvas>
 

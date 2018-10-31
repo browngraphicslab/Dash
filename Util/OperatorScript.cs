@@ -278,7 +278,7 @@ namespace Dash
             return Run(op, args, scope);
         }
 
-        public static async Task<FieldControllerBase> Run(OperatorController op, List<FieldControllerBase> args, Scope scope)
+        public static async Task<FieldControllerBase> Run(OperatorController op, List<FieldControllerBase> args, Scope scope = null)
         {
             var outDict = new Dictionary<KeyController, FieldControllerBase>();
 

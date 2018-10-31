@@ -196,13 +196,13 @@ namespace Dash
 
                 if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
-                    if(!SelectionManager.IsSelected(this))
+                    if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
                     SelectionManager.TryInitiateDragDrop(this, e, null);
                 }
 
                 e.Handled = true;
-                
+
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
                     e.Handled = false;
@@ -786,7 +786,7 @@ namespace Dash
             }
         }
 
-        
+
         private void MenuFlyoutItemToggleAsButton_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -899,7 +899,7 @@ namespace Dash
         {
             if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
                 return;
-            
+
             var dragModel = e.DataView.GetDragModel();
             if (dragModel != null)
             {
@@ -1017,7 +1017,7 @@ namespace Dash
             }
         }
 
-        private void xMenuFlyout_Opening(object sender, object e)
+        private async void xMenuFlyout_Opening(object sender, object e)
         {
             xMenuFlyout.Items.Clear();
 
@@ -1096,9 +1096,28 @@ namespace Dash
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false ? "Remove Button Behavior" : "Add Button Behavior",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.AddressBook }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add Tapped Behavior",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Plus }
+            });
+            var script = "function(doc) {" +
+                         "  var funcText = text_input();" +
+                         "  var op = exec(funcText);" +
+                         "  if(doc.TappedEvent == null) {" +
+                         "     doc.TappedEvent = [op];" +
+                         "  } else {" +
+                         "      doc.TappedEvent = doc.TappedEvent + op;" +
+                         "  }" +
+                         "}";
+            var addOp = await new DSL().Run(script, true) as OperatorController;
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
+                {
+                    await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
+                };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1163,7 +1182,7 @@ namespace Dash
                     doc.ShowXaml();
                 }
             }
-         }
+        }
         private async void MenuFlyoutItemMakeDefaultTextBox_Click(object sender, RoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<CollectionView>()?.ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(
@@ -1202,8 +1221,8 @@ namespace Dash
         {
             get => ViewModel.AreContentsHitTestVisible;
             set => ViewModel.AreContentsHitTestVisible = !ViewModel.DocumentController.GetAreContentsHitTestVisible();
-                //xBackgroundPin.Text = "" + (char)(!ViewModel.DocumentController.GetAreContentsHitTestVisible() ? 0xE840 : 0xE77A);
-            
+            //xBackgroundPin.Text = "" + (char)(!ViewModel.DocumentController.GetAreContentsHitTestVisible() ? 0xE840 : 0xE77A);
+
         }
 
         /// <summary>
