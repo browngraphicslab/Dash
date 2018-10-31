@@ -241,7 +241,7 @@ namespace Dash
         }
         public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
-            if (TouchInteractions.NumFingers != 1)
+            if (TouchInteractions.NumFingers != 1 && e != null)
             {
                 e.Handled = true;
                 return;

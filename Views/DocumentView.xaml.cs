@@ -261,15 +261,16 @@ namespace Dash
                 if ((e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2 &&
                      (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
-                    //var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
-                    //var pointerPosition2 = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
-                    //var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
+                    var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
+                    var pointerPosition2 = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
+                    var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
-                    //new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
+                    new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
 
-                    //this.Resize(this, e, true, false, true);
+                    this.Resize(this, e, true, false, true);
                 }
             };
+            ManipulationCompleted += (s, e) => { if(e.PointerDeviceType == PointerDeviceType.Touch) { TouchInteractions.NumFingers = TouchInteractions.NumFingers - 2; } };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) =>
             {
