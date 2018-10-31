@@ -170,6 +170,14 @@ namespace Dash
             }
             FieldControllerBase.MakeRoot(MainDocument);
 
+            var l = new ListController<TextController>();
+            for (int i = 0; i < 2000; i++)
+            {
+                l.Add(new TextController());
+            }
+
+            MainDocument.SetField(KeyController.Get("some string it doesnt matter"), l, true);
+
             LoadSettings();
 
             //get current presentations if any and set data context of pres view to pres view model
