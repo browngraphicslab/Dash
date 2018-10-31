@@ -139,41 +139,6 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
         {
-            // Replace this method with a proper search function
-            //foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
-            //    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
-            //    {
-            //        var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
-            //        if (primaryKeys != null)
-            //        {
-            //            bool found = true;
-            //            foreach (var value in primaryKeyValues)
-            //            {
-            //                bool foundValue = false;
-            //                foreach (var key in primaryKeys.Data)
-            //                {
-            //                    var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
-            //                    if (derefValue != null)
-            //                    {
-            //                        if (value == derefValue)
-            //                        {
-            //                            foundValue = true;
-            //                            break;
-            //                        }
-            //                    }
-            //                }
-            //                if (!foundValue)
-            //                {
-            //                    found = false;
-            //                    break;
-            //                }
-            //            }
-            //            if (found)
-            //            {
-            //                return dmc;
-            //            }
-            //        }
-            //    }
             return null;
         }
         DocumentController lookupOperator(string opname)
@@ -1318,21 +1283,37 @@ namespace Dash
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+                TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
             var editTextFields = g.GetDescendantsOfType<EditableTextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
             foreach (var fieldReplacement in editTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+                TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
             var richTextFields = g.GetDescendantsOfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                RichTextBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+                RichTextBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var pdfFields = g.GetDescendantsOfType<PdfView>().Where((rtv) => rtv.Name.StartsWith("xPdfField"));
+            foreach (var fieldReplacement in pdfFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xPdfField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                PdfBox.SetupPdfBinding(fieldReplacement, GetDataDocument().GetDataDocument(), null);
+            }
+            var listFields = g.GetDescendantsOfType<CollectionView>().Where((rtv) => rtv.Name.StartsWith("xCollectionField"));
+            foreach (var fieldReplacement in listFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xCollectionField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                var cvm = new CollectionViewModel(this, fieldKey);
+                cvm.AddDocument(new RichTextNote("SOMETHING TO FILL THIS SPACE").Document);
+                fieldReplacement.DataContext = cvm;
             }
         }
 

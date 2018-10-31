@@ -37,9 +37,10 @@ namespace Dash
                 ViewModel.ContainerDocument.GetFitToParent() && CurrentView is CollectionFreeformView freeform)
             {
                 var parSize = ViewModel.ContainerDocument.GetActualSize() ?? new Point();
-                var r = freeform.GetItemsControl().ItemsPanelRoot.Children.OfType<ContentPresenter>().Select((cp) => cp.GetFirstDescendantOfType<DocumentView>())
+                var ar = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>().Select((cp) => cp.GetFirstDescendantOfType<DocumentView>())
                     .Aggregate(Rect.Empty, (rect,dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
-                if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
+               
+                if (ar is Rect r && !r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
                     var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
@@ -65,6 +66,22 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
+        public CollectionView()
+        {
+            Loaded += CollectionView_Loaded;
+            Unloaded += CollectionView_Unloaded;
+            InitializeComponent();
+
+            SetView(CollectionViewType.Freeform);
+            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
+            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
+            DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
+            Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
+            id = COLid++;
+
+            xOuterGrid.PointerPressed += OnPointerPressed;
+            var color = xOuterGrid.Background;
+        }
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
@@ -129,28 +146,31 @@ namespace Dash
         {
             //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
             _lastViewModel = ViewModel;
-            ViewModel.Loaded(true);
-            AddViewTypeHandler();
-
-            // ParentDocument can be null if we are rendering collections for thumbnails
-            if (ParentDocumentView == null)
+            if (ViewModel != null)
             {
+                ViewModel.Loaded(true);
+                AddViewTypeHandler();
+
+                // ParentDocument can be null if we are rendering collections for thumbnails
+                if (ParentDocumentView == null)
+                {
+                    SetView(_viewType);
+                    return;
+                }
+
+                var cp = ParentDocumentView.GetFirstDescendantOfType<CollectionView>();
+                if (cp != this)
+                    return;
+                ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
+                ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
+                ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
+                ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
+
+                #region CollectionView context menu 
+
                 SetView(_viewType);
-                return;
+                #endregion
             }
-
-            var cp = ParentDocumentView.GetFirstDescendantOfType<CollectionView>();
-            if (cp != this)
-                return;
-            ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
-            ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
-            ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
-            ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
-
-            #region CollectionView context menu 
-
-            SetView(_viewType);
-        #endregion
         }
 
         private void ParentDocumentView_DocumentDeselected(DocumentView obj)
@@ -393,7 +413,7 @@ namespace Dash
             }
 
             xContentControl.Content = CurrentView;
-            if (ViewModel.ViewType != _viewType)
+            if (ViewModel != null && ViewModel.ViewType != _viewType)
                 ViewModel.ViewType = viewType;
         }
 

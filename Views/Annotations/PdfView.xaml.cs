@@ -34,20 +34,34 @@ namespace Dash
 {
     public sealed partial class PdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
+        public event EventHandler DocumentLoaded;
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(PdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
 
         private List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
+        private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
+        private double            _pdfMaxWidth;
+        private double            _pdfTotalHeight;
+        private Stack<double>     _topBackStack;
+        private Stack<double>     _bottomBackStack;
+        private Stack<double>     _topForwardStack;
+        private Stack<double>     _bottomForwardStack;
+        private DispatcherTimer   _topTimer;
+        private DispatcherTimer   _bottomTimer;
+        private AnnotationOverlay _topAnnotationOverlay;
+        private AnnotationOverlay _bottomAnnotationOverlay;
+        private DocumentView       getDocView()   { return this.GetFirstAncestorOfType<DocumentView>(); }
+        private DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
+        private DocumentController getDataDoc()   { return getDocView()?.ViewModel.DataDocument; }
+        public DocumentController  DataDocument => getDataDoc();
+        public DocumentController  LayoutDocument => getLayoutDoc();
 
-        public Uri PdfUri
+        public Uri                                PdfUri
         {
             get => (Uri)GetValue(PdfUriProperty);
             set => SetValue(PdfUriProperty, value);
         }
-
-        private double _pdfMaxWidth;
-
-        public double PdfMaxWidth
+        public double                             PdfMaxWidth
         {
             get => _pdfMaxWidth;
             set
@@ -56,10 +70,7 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-
-        private double _pdfTotalHeight;
-
-        public double PdfTotalHeight
+        public double                             PdfTotalHeight
         {
             get => _pdfTotalHeight;
             set
@@ -68,15 +79,11 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-
-        public event EventHandler DocumentLoaded;
-
-        public DataVirtualizationSource TopPages { get; set; }
-
-        public DataVirtualizationSource BottomPages { get; set; }
-
-        private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
-
+        public WPdf.PdfDocument                   PDFdoc { get; private set; }
+        public DataVirtualizationSource           TopPages { get; set; }
+        public DataVirtualizationSource           BottomPages { get; set; }
+        public Grid                               TopAnnotationBox => xTopAnnotationBox;
+        public Grid                               BottomAnnotationBox => xBottomAnnotationBox;
         public ObservableCollection<DocumentView> TopAnnotations
         {
             get => _topAnnotationList;
@@ -86,7 +93,6 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-
         public ObservableCollection<DocumentView> BottomAnnotations
         {
             get => _bottomAnnotationList;
@@ -96,37 +102,29 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-
-        public List<DocumentController> DocControllers { get; set; }
-
-        public DocumentController LayoutDocument { get; }
-        public DocumentController DataDocument { get; }
-
+        public List<DocumentController>           DocControllers { get; set; }
         //This makes the assumption that both pdf views are always in the same annotation mode
-        public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
+        public AnnotationType                     CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
 
-
-        private Stack<double> _topBackStack;
-        private Stack<double> _bottomBackStack;
-
-        private Stack<double> _topForwardStack;
-        private Stack<double> _bottomForwardStack;
-
-        private DispatcherTimer _topTimer;
-        private DispatcherTimer _bottomTimer;
-
-        public Grid TopAnnotationBox => xTopAnnotationBox;
-        public Grid BottomAnnotationBox => xBottomAnnotationBox;
-
-        public WPdf.PdfDocument PDFdoc { get; private set; }
         private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-            this.KeyDown += CustomPdfView_KeyDown;
+            KeyDown += CustomPdfView_KeyDown;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
+            if (_bottomAnnotationOverlay == null)
+            {
+                _bottomAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
+            }
+            if (_topAnnotationOverlay == null)
+            {
+                _topAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                xTopPdfGrid.Children.Add(_topAnnotationOverlay);
+                SetAnnotationType(AnnotationType.Region);
+            }
         }
 
-        class SelRange
+        private class SelRange
         {
             public KeyValuePair<int, int> Range;
             public Rect ClipRect;
@@ -134,7 +132,6 @@ namespace Dash
 
         private void CustomPdfView_KeyDown(object sender, KeyRoutedEventArgs args)
         {
-
             if (args.Key == VirtualKey.Space)
                 MainPage.Instance.xToolbar.xPdfToolbar.Update(
                     CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
@@ -325,31 +322,21 @@ namespace Dash
 
         private void CustomPdfView_Unloaded(object sender, RoutedEventArgs e)
         {
-            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+            LayoutDocument?.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             _bottomAnnotationOverlay.TextSelectableElements?.Clear();
             _topAnnotationOverlay.TextSelectableElements?.Clear();
             SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
         }
 
-        private readonly AnnotationOverlay _topAnnotationOverlay;
-        private readonly AnnotationOverlay _bottomAnnotationOverlay;
-
-        public PdfView(DocumentController document)
+        public PdfView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             SetUpToolTips();
-            LayoutDocument = document;
-            DataDocument = document.GetDataDocument();
             TopPages = new DataVirtualizationSource(this, TopScrollViewer, TopPageItemsControl);
             BottomPages = new DataVirtualizationSource(this, BottomScrollViewer, BottomPageItemsControl);
 
             Loaded += CustomPdfView_Loaded;
             Unloaded += CustomPdfView_Unloaded;
-
-            _bottomAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-            _topAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-            xTopPdfGrid.Children.Add(_topAnnotationOverlay);
-            xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
 
             BottomScrollViewer.SizeChanged += (ss, ee) =>
             {
@@ -390,8 +377,6 @@ namespace Dash
 
             _topTimer.Start();
             _bottomTimer.Start();
-
-            SetAnnotationType(AnnotationType.Region);
         }
         ~PdfView()
         {
@@ -668,8 +653,6 @@ namespace Dash
             {
                 child.HelpRenderRegion();
             }
-
-            MainPage.Instance.ClosePopup();
         }
 
         public BoundsExtractionStrategy Strategy { get; set; }

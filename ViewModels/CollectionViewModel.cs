@@ -122,6 +122,10 @@ namespace Dash
             {
                 Loaded(true);
             }
+            if (!IsLoaded && !wasLoaded)
+            {
+                Loaded(true);
+            }
             _lastContainerDocument = ContainerDocument;
         }
         /// <summary>

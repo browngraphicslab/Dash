@@ -112,21 +112,23 @@ namespace Dash
             {
                 var foundFields = await GetDocuments(missingIds);
                 var foundFieldsDict = foundFields.ToDictionary(fm => fm.Id, fm => fm);
+                var initFields = new List<FieldControllerBase>();
                 for (int i = 0; i < missingIds.Count; i++)
                 {
-                    var f = foundFieldsDict[missingIds[i]];
                     FieldControllerBase field;
                     if (_cache.TryGetValue(missingIds[i], out var getField))
                     {
                         field = getField;
                     } else
                     {
+                        var f = foundFieldsDict[missingIds[i]];
                         field = FieldControllerFactory.CreateFromModel(f);
                         _cache[missingIds[i]] = field;
-                        await field.InitializeAsync();
+                        initFields.Add(field);
                     }
                     fields[missingIdxs[i]] = field;
                 }
+                initFields.ForEach(async (f) => await f.InitializeAsync());
             }
 
             return fields;

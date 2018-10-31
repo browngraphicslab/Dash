@@ -1095,6 +1095,62 @@ namespace Dash
                 <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
             </StackPanel>
         </Grid>
+        <Grid
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:dash="using:Dash"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+                <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
+                    <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
+                </Border>
+                <Border Grid.Row="1" Background="CadetBlue" >
+                    <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+                </Border>
+            <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
+                <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <dash:EditableTextBlock x:Name="xTextFieldAuthor" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0" />
+                <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+        <Grid
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:dash="using:Dash"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                    <Border Grid.Row="1" Background="CadetBlue">
+                        <StackPanel Orientation="Horizontal">
+                            <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="500" VerticalAlignment="Top" />
+                            <dash:CollectionView x:Name="xCollectionFieldAnnotations" Width="500" HorizontalContentAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White">
+                        <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0"/>
+                        <TextBlock x:Name="xTextFieldAuthor" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0"/>
+                        <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0"/>
+                        <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                    </StackPanel>
+            </Grid>
+            <Grid IsHitTestVisible="False" Opacity="0.3" HorizontalAlignment="Right" Margin="0 0 -85 0">
+                <Grid.RenderTransform>
+                    <RotateTransform Angle="45" CenterX="55" CenterY="50"/>
+                </Grid.RenderTransform>
+                 <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White" Width="195" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Padding="23 0 0 0" Height="25" VerticalAlignment="Top" />
+                </Border>
+            </Grid>
+        </Grid>
         */
 
 

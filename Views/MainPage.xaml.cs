@@ -909,24 +909,6 @@ namespace Dash
             xOverlay.Visibility = Visibility.Visible;
         }
 
-        public void TogglePopup()
-        {
-            //xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            //xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
-            //xLoadingPopup.IsOpen = true;
-            //Load.Begin();
-        }
-
-        public void ClosePopup()
-        {
-            //Load.Stop();
-            //xLoadingPopup.HorizontalOffset = 0;
-            //xLoadingPopup.VerticalOffset = 0;
-            //xLoadingPopup.IsOpen = false;
-
-        }
-
-
         private void SetUpToolTips()
         {
             const PlacementMode placementMode = PlacementMode.Bottom;

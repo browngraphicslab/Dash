@@ -40,7 +40,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public static void SetupTextBinding(RichTextView element, DocumentController docController, KeyController key, Context context)
+        public static void SetupBindings(RichTextView element, DocumentController docController, KeyController key, Context context)
         {
             var binding = new FieldBinding<RichTextController>()
             {
@@ -88,7 +88,7 @@ namespace Dash
             //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
-            SetupTextBinding(rtv, docController, key, context);
+            SetupBindings(rtv, docController, key, context);
             return rtv;
         }
 
