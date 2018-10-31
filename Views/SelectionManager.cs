@@ -339,6 +339,14 @@ namespace Dash
 
         private static async Task CreateDragDropBitmap(DocumentView docView, FrameworkElement renderTarget, DragStartingEventArgs args, Rect dragBounds)
         {
+            var (finalBitmap,scaling)  = await ExtractDocumentBitmap(renderTarget, dragBounds);
+            var cursorPt      = args.GetPosition(MainPage.Instance.MainSplitter);
+            var topLeft       = docView.TransformToVisual(MainPage.Instance.MainSplitter).TransformPoint(new Point());
+            args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, new Point(cursorPt.X - topLeft.X - (dragBounds.X - topLeft.X)*scaling, 
+                                                                            cursorPt.Y - topLeft.Y - (dragBounds.Y - topLeft.Y)*scaling));
+        }
+        public static async Task<(SoftwareBitmap, double)> ExtractDocumentBitmap(FrameworkElement renderTarget, Rect dragBounds)
+        {
             var rtb           = new RenderTargetBitmap();
             var screenscaling = renderTarget.GetBoundingRect(MainPage.Instance.MainSplitter).Width / renderTarget.ActualWidth;
             var deviceScaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
@@ -354,16 +362,13 @@ namespace Dash
             parentBitmap.Blit(new Point(renderBounds.Left*scaling - dragBounds.X*scaling, renderBounds.Top*scaling - dragBounds.Y*scaling),
                                 miniBitmap,
                                 new Rect(0, 0, miniBitmap.PixelWidth, miniBitmap.PixelHeight),
-                                Colors.White, WriteableBitmapExtensions.BlendMode.Additive);
-                
+                                Colors.White, WriteableBitmapExtensions.BlendMode.None);
+
             // Convert the dragged documents' bitmap into a software bitmap that can be used for the Drag/Drop UI
             // and offset it to pick correlate properly with the cursor.
-            var finalBitmap   = SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
-                                                                    parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied);
-            var cursorPt      = args.GetPosition(MainPage.Instance.MainSplitter);
-            var topLeft       = docView.TransformToVisual(MainPage.Instance.MainSplitter).TransformPoint(new Point());
-            args.DragUI.SetContentFromSoftwareBitmap(finalBitmap, new Point(cursorPt.X - topLeft.X - (dragBounds.X - topLeft.X)*scaling, 
-                                                                            cursorPt.Y - topLeft.Y - (dragBounds.Y - topLeft.Y)*scaling));
+            return (SoftwareBitmap.CreateCopyFromBuffer(parentBitmap.PixelBuffer, BitmapPixelFormat.Bgra8, parentBitmap.PixelWidth,
+                                                       parentBitmap.PixelHeight, BitmapAlphaMode.Premultiplied),
+                    scaling);
         }
 
         #endregion

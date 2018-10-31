@@ -133,22 +133,22 @@ namespace Dash
         public void UpdateAlignmentBindings()
         {
             var doc = ViewModel?.LayoutDocument;
-            var isFreeform = !this.IsInVisualTree() || this.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView;
-            if (isFreeform)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left;
-                VerticalAlignment = VerticalAlignment.Top;
-                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
-                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
-                ViewModel.LayoutDocument.SetWidth( ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
-                    (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) ? ViewModel.LayoutDocument.GetWidth() :
-                       ViewModel.LayoutDocument.GetActualSize().Value.X));
-                ViewModel.LayoutDocument.SetHeight(ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
-                    (!double.IsNaN(ViewModel.LayoutDocument.GetHeight()) ? ViewModel.LayoutDocument.GetHeight() :
-                       ViewModel.LayoutDocument.GetActualSize().Value.Y));
-            }
-            else
-            {
+            //var isFreeform = !this.IsInVisualTree() || this.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView;
+            //if (isFreeform)
+            //{
+            //    HorizontalAlignment = HorizontalAlignment.Left;
+            //    VerticalAlignment = VerticalAlignment.Top;
+            //    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+            //    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+            //    ViewModel.LayoutDocument.SetWidth( ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
+            //        (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) ? ViewModel.LayoutDocument.GetWidth() :
+            //           ViewModel.LayoutDocument.GetActualSize().Value.X));
+            //    ViewModel.LayoutDocument.SetHeight(ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
+            //        (!double.IsNaN(ViewModel.LayoutDocument.GetHeight()) ? ViewModel.LayoutDocument.GetHeight() :
+            //           ViewModel.LayoutDocument.GetActualSize().Value.Y));
+            //}
+            //else
+            //{
                 if (ViewModel?.IsDimensionless == true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -161,7 +161,7 @@ namespace Dash
                     CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
                     CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
                 }
-            }
+            //}
         }
 
         // == CONSTRUCTORs ==
