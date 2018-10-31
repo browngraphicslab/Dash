@@ -146,6 +146,12 @@ namespace Dash
 
             contextMenu.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Convert to Template",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => Templatize();
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Iconify",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
             });
@@ -255,6 +261,10 @@ namespace Dash
         }
 
         #region Menu
+        public void Templatize()
+        {
+            CollectionViewModel.ConvertToTemplate(ViewModel.ContainerDocument, ViewModel.ContainerDocument);
+        }
         public void Iconify() 
         {
             SetView(CollectionViewType.Icon);

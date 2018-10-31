@@ -40,7 +40,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        protected static void SetupTextBinding(RichTextView element, DocumentController docController, KeyController key, Context context)
+        public static void SetupTextBinding(RichTextView element, DocumentController docController, KeyController key, Context context)
         {
             var binding = new FieldBinding<RichTextController>()
             {
@@ -75,12 +75,12 @@ namespace Dash
             RichTextView rtv = null;
             var dataField = docController.GetField(key);
             var refToRichText = dataField as ReferenceController;
-            rtv = new RichTextView()
-            {
-                LayoutDocument = docController,
-                // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument
-                DataDocument = refToRichText?.GetDocumentController(context).GetDataDocument() ?? docController.GetDataDocument()
-            };
+            rtv = new RichTextView();
+            //{
+            //    LayoutDocument = docController,
+            //    // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument
+            //    DataDocument = refToRichText?.GetDocumentController(context).GetDataDocument() ?? docController.GetDataDocument()
+            //};
             rtv.ManipulationMode = ManipulationModes.All;
             rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
             rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;

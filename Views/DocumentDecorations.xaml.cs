@@ -1051,5 +1051,56 @@ namespace Dash
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
+
+        private async void UserControl_Drop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+            var txt = await e.DataView.GetTextAsync();
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var d in SelectedDocs)
+                {
+                    var xml = txt.Replace("\"", "'");
+                    d.ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, xml, true);
+                    var pc = d.ParentCollection;
+                    var dc = d.ViewModel.DocumentController;
+                    pc.ViewModel.RemoveDocument(dc);
+                    pc.ViewModel.AddDocument(dc);
+                }
+            }
+        }
+
+        // try dropping the Xaml style below onto the blue frame of one or more selected text documents:
+        /*
+        <Grid
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:dash="using:Dash"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+                <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
+                    <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
+                </Border>
+                <Border Grid.Row="1" Background="CadetBlue" >
+                    <dash:RichTextView x:Name="xRichTextFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+                </Border>
+            <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
+                <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <dash:EditableTextBlock x:Name="xTextFieldAuthor" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0" />
+                <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+        */
+
+
+        private void UserControl_DragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = e.DataView.AvailableFormats.Contains(StandardDataFormats.Text) ? DataPackageOperation.Copy : DataPackageOperation.None;
+        }
     }
 }
