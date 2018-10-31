@@ -736,6 +736,9 @@
     <Compile Include="Views\LinkButton.xaml.cs">
       <DependentUpon>LinkButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\LinkMenu.xaml.cs">
+      <DependentUpon>LinkMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
     </Compile>
@@ -1347,6 +1350,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\LinkButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LinkMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

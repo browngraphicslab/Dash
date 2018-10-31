@@ -78,10 +78,12 @@ namespace Dash
 
         private void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+
+            _tooltip.IsOpen = false;
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-            //_tooltip.IsOpen = false;
-            //e.Handled = true;
-            //_docdecs.CurrentLinks = _docdecs.TagMap[_text];
+
+            e.Handled = true;
+            _docdecs.CurrentLinks = _docdecs.TagMap[_text];
 
             //_docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
             //if (_docdecs.CurrentLinks.Count == 1)
@@ -90,7 +92,8 @@ namespace Dash
             //        if (actualchild.Text == _text)
             //        {
             //            actualchild.Select();
-            //        } else
+            //        }
+            //        else
             //        {
             //            actualchild.Deselect();
             //        }
