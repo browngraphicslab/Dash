@@ -29,6 +29,17 @@ namespace Dash
 
         private int _currentHistoryIndex;
 
+        private static readonly Dictionary<char, char> PairMap = new Dictionary<char, char>()
+        {
+            { '(', ')' },
+            { '[', ']' },
+            { '{', '}' },
+            { '<', '>' },
+            { '\"', '\"' },
+            { '\'', '\'' }
+        };
+        
+
         //TODO Make this be a list of some class that knows if its a function, name, etc so that SelectPopup can be much simpler
         //TODO This also shouldn't be static
         private static List<ReplPopupSuggestion> _dataset;
@@ -566,15 +577,8 @@ namespace Dash
                 FieldControllerBase retVal;
                 try
                 {
-                    var mySw = new Stopwatch();
-                    ForExpression.sw.Reset();
-                    mySw.Restart();
                     retVal = await _dsl.Run(command, true);
-                    if (retVal is TextController text && IsNullOrEmpty(text.Data)) text.Data = "\"\"";
-
-                    mySw.Stop();
-                    Debug.WriteLine($"For time {ForExpression.sw.ElapsedMilliseconds}");
-                    Debug.WriteLine($"Total time {mySw.ElapsedMilliseconds}");
+                    if (retVal is TextController text && IsNullOrEmpty(text.Data)) text.Data = "\"\"";;
                 }
                 catch (Exception ex)
                 {
@@ -671,7 +675,7 @@ namespace Dash
                     xTextBox.Text = "";
             }
 
-            void AutoPair(string pairStart, string pairEnd, bool enter = false)
+            void AutoPair(string pairStart, string pairEnd, bool enter = false, bool ctrlpressed = false)
             {
                 if (pairStart == pairEnd && AutoPairClose(pairEnd))
                 {
@@ -680,9 +684,23 @@ namespace Dash
                 var index = xTextBox.SelectionStart;
                 var text = xTextBox.Text;
                 text = text.Insert(index, pairStart);
-                var offset = pairStart.Length;
 
-                while (index + offset < text.Length && IsProperLetter(text[index + offset])) { offset++; }
+                if (index < text.Length - 1 && IsPair(text.Substring(index, 2)) && !text[index - 1].Equals(text[index]))
+                {
+                    xTextBox.Text = text;
+                    xTextBox.SelectionStart = index + 1;
+                    return;
+                }
+
+                var offset = 1;
+                if (ctrlpressed)
+                {
+                    offset = pairStart.Length;
+                    while (index + offset < text.Length && IsProperLetter(text[index + offset]))
+                    {
+                        offset++;
+                    }
+                }
 
                 if (enter)
                 {
@@ -717,26 +735,28 @@ namespace Dash
             xTextBox.AddKeyHandler(VirtualKey.Delete, DeletePressed);
             xTextBox.AddKeyHandler((VirtualKey)222, args => // "/' key
             {
+                bool ctrlpressed = MainPage.Instance.IsCtrlPressed();
                 if (MainPage.Instance.IsShiftPressed())//"
                 {
-                    AutoPair("\"", "\"");
+                    AutoPair("\"", "\"", ctrlpressed: ctrlpressed);
                 }
                 else//'
                 {
-                    AutoPair("'", "'");
+                    AutoPair("'", "'", ctrlpressed: ctrlpressed);
                 }
 
                 args.Handled = true;
             });
             xTextBox.AddKeyHandler((VirtualKey)219, args => // [/{ key
             {
+                bool ctrlpressed = MainPage.Instance.IsCtrlPressed();
                 if (MainPage.Instance.IsShiftPressed())//{
                 {
-                    AutoPair("{", "}", true);
+                    AutoPair("{", "}", true, ctrlpressed);
                 }
                 else//[
                 {
-                    AutoPair("[", "]");
+                    AutoPair("[", "]", ctrlpressed: ctrlpressed);
                 }
 
                 args.Handled = true;
@@ -749,7 +769,7 @@ namespace Dash
             {
                 if (MainPage.Instance.IsShiftPressed())
                 {
-                    AutoPair("(", ")");
+                    AutoPair("(", ")", ctrlpressed: MainPage.Instance.IsCtrlPressed());
                     args.Handled = true;
                 }
             });
@@ -764,7 +784,7 @@ namespace Dash
             {
                 if (MainPage.Instance.IsShiftPressed())
                 {
-                    AutoPair("<", ">");
+                    AutoPair("<", ">", ctrlpressed: MainPage.Instance.IsCtrlPressed());
                     args.Handled = true;
                 }
             });
@@ -785,7 +805,24 @@ namespace Dash
                 }
             });
 
-        }
+            xTextBox.AddKeyHandler(VirtualKey.Back, args =>
+            {
+                var index = xTextBox.SelectionStart;
+                var text = xTextBox.Text;
+                if (index < text.Length && index > 0 && IsPair(text.Substring(index - 1, 2)))
+                {
+                    xTextBox.Text = text.Substring(0, index - 1) + text.Substring(index + 1);
+                    xTextBox.SelectionStart = index - 1;
+                    args.Handled = true;
+                }
+            });
+
+            bool IsPair(string pair)
+            {
+                char opener = pair[0];
+                return PairMap.ContainsKey(opener) && PairMap[opener].Equals(pair[1]);
+            }
+    }
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {

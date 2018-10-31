@@ -58,7 +58,7 @@ namespace Dash
 
             var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
 
-            outputs[ResultDocKey] = new TextController(feedback + fieldValue.GetValue(null));
+            outputs[ResultDocKey] = new TextController(feedback + (fieldValue?.GetValue(null) ?? "null"));
 
             return Task.CompletedTask;
         }
