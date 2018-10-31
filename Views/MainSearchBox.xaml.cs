@@ -224,6 +224,8 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
+                xFilterBox.Visibility = Visibility.Collapsed;
+                //xComboBox.PlaceholderText = "Filter by:";
 
             }
             else
@@ -235,6 +237,7 @@ namespace Dash
                     easingType: EasingType.Default).Start();
                 xSearchCodeBox.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
+                xFilterBox.Visibility = Visibility.Visible;
             }
         }
 
@@ -322,7 +325,7 @@ namespace Dash
         #endregion
 
         #region Search
-        private static void ExecuteDishSearch(AutoSuggestBox searchBox)
+        private void ExecuteDishSearch(AutoSuggestBox searchBox)
         {
             if (searchBox == null) return;
 
@@ -384,7 +387,14 @@ namespace Dash
                 {
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
-                Debug.WriteLine("RES:" + res);
+
+                if (_currentSelection != "None")
+                {
+                    if (res.ViewDocument.GetDocType() != _currentSelection)
+                    {
+                        continue;
+                    }
+                }
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
                 var numOfCopies = resList.Value.Count;
                 newVm.Copies = numOfCopies;
@@ -396,17 +406,14 @@ namespace Dash
                         newVm.svmCopies.Add(DocumentSearchResultToViewModel(sr));
                     }
                 }
-                
+
                 vmGroups.Add(newVm);
             }
-
-            Debug.WriteLine("Length of vmGroups: " + vmGroups.Count);
 
             var first = vmGroups
                 .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
-            Debug.WriteLine("Length of First:" + first.Length);
             var docsToHighlight = new List<DocumentController>();
 
             foreach (var searchResultViewModel in first)
@@ -534,7 +541,6 @@ namespace Dash
         private void XDropDown_OnPointerPressed(object sender, TappedRoutedEventArgs e)
         {
             var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
-            Debug.WriteLine(viewModel.Copies);
             var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
             if (viewModel?.DropDownText == ">")
             {
@@ -546,15 +552,49 @@ namespace Dash
             }
             else
             {
-                viewModel.DropDownText = ">";
-                foreach (var svm in viewModel.svmCopies)
+                if (viewModel != null)
                 {
-                    itemsSource?.Remove(svm);
+                    viewModel.DropDownText = ">";
+                    foreach (var svm in viewModel.svmCopies)
+                    {
+                        itemsSource?.Remove(svm);
+                    }
                 }
             }
 
             e.Handled = true;
 
+        }
+
+        private string _currentSelection = "None";
+
+        private void xComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selection = e.AddedItems[0].ToString();
+            switch (selection)
+            {
+            case "Image":
+                _currentSelection = "Image Box";
+                break;
+            case "Text":
+                _currentSelection = "Rich Text Box";
+                break;
+            case "Video":
+                _currentSelection = "Video Box";
+                break;
+            case "Audio":
+                _currentSelection = "Audio Box";
+                break;
+            case "PDF":
+                _currentSelection = "Pdf Box";
+                break;
+            case "Collection":
+                _currentSelection = "Collection Box";
+                break;
+            default:
+                _currentSelection = "None";
+                break;
+            }
         }
     }
 }

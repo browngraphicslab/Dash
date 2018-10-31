@@ -23,19 +23,20 @@
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" Margin="-35, 0, 0, 0" CanDrag="True">
+        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" CanDrag="True">
             <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
                        FontSize="{StaticResource DefaultFontSize}" 
                        Text="{StaticResource CollectionIcon}" 
-                       HorizontalAlignment="Stretch"
+                       HorizontalAlignment="Center"
                        VerticalAlignment="Center"
             />
         </Border>
-        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped" Width="35">
-            <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" Margin="4 1 0 0">
+        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped"  HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="1" >
+            <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" HorizontalAlignment="Center">
                 
             </TextBlock>
 
@@ -144,9 +145,9 @@
                 <ColumnDefinition Width="12"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <FontIcon x:Name="xDragScript" Grid.Column="1"
-                          FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
+                      Glyph="&#x03A3;" FontFamily="Candara" FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
             <TextBox x:Name="xSearchCode" FontSize="14" PlaceholderText="Run on each document" Grid.Column="0" BorderThickness="0" Margin="0 0 0 0"
-                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting" ></TextBox>
+                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting"/>
 
             <Grid.Resources>
                 <Storyboard x:Name="xFadeAnimationIn">
@@ -164,6 +165,22 @@
                     />
                 </Storyboard>
             </Grid.Resources>
+        </Grid>
+        
+        <Grid x:Name="xFilterBox" Height="32" Grid.Row="1" Grid.Column="0" Visibility="Collapsed" Grid.ColumnSpan="2">
+            <ComboBox x:Name="xComboBox" PlaceholderText="Filter by:" SelectionChanged="xComboBox_OnSelectionChanged">
+                <x:String>None</x:String>
+                <x:String>Image</x:String>
+                <x:String>Text</x:String>
+                <x:String>Video</x:String>
+                <x:String>Audio</x:String>
+                <x:String>PDF</x:String>
+                <x:String>Collection</x:String>
+            </ComboBox>
+        </Grid>
+        
+        <Grid x:Name="xMoreSearch" Grid.Row="2" Grid.Column="0"  Visibility="Visible" Grid.ColumnSpan="2">
+            <TextBox x:Name="xAdvSearch" PlaceholderText="Type..."/>
         </Grid>
     </Grid>
 </UserControl>
