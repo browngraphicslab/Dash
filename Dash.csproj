@@ -182,9 +182,21 @@
     </Compile>
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
     <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\SelectionFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\UtilFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\DateOperator.cs" />
@@ -213,6 +225,9 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TextInputPopup.xaml.cs">
+      <DependentUpon>TextInputPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
     <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />
@@ -1084,6 +1099,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\NewTemplatePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TextInputPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

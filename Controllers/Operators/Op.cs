@@ -197,7 +197,10 @@ namespace Dash
             // HELP
 
             help,
-            print
+            print,
+            get_selected_docs,
+            text_input,
+            copy
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

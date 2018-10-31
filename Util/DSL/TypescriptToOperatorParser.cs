@@ -777,7 +777,16 @@ namespace Dash
             case SyntaxKind.FunctionDeclaration:
                 var funDec = (node as FunctionDeclaration);
 
-                return new VariableDeclarationExpression(funDec.IdentifierStr, new FunctionDeclarationExpression(funDec.Body.GetText(), funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None), _undoVar);
+                var declarationExpression = new FunctionDeclarationExpression(funDec.Body.GetText(), funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None);
+
+                if (funDec.IdentifierStr == null)
+                {
+                    return declarationExpression;
+                }
+                else
+                {
+                    return new VariableDeclarationExpression(funDec.IdentifierStr, declarationExpression, _undoVar);
+                }
             case SyntaxKind.ClassDeclaration:
                 break;
             case SyntaxKind.InterfaceDeclaration:
