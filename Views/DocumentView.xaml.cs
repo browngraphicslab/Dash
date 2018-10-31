@@ -28,12 +28,11 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
+        private readonly Flyout   _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
-        private Point _pointerPoint = new Point(0, 0);
-
-        static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        private Point             _pointerPoint = new Point(0, 0);
+        private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
+        private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
 
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
@@ -130,21 +129,42 @@ namespace Dash
                 FallbackValue = true
             };
             LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
-
-            if (ViewModel?.IsDimensionless == true)
+        }
+        public void UpdateAlignmentBindings()
+        {
+            var doc = ViewModel?.LayoutDocument;
+            var isFreeform = !this.IsInVisualTree() || this.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView;
+            if (isFreeform)
             {
-                HorizontalAlignment = HorizontalAlignment.Stretch;
-                VerticalAlignment = VerticalAlignment.Stretch;
+                HorizontalAlignment = HorizontalAlignment.Left;
+                VerticalAlignment = VerticalAlignment.Top;
+                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+                ViewModel.LayoutDocument.SetWidth( ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
+                    (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) ? ViewModel.LayoutDocument.GetWidth() :
+                       ViewModel.LayoutDocument.GetActualSize().Value.X));
+                ViewModel.LayoutDocument.SetHeight(ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
+                    (!double.IsNaN(ViewModel.LayoutDocument.GetHeight()) ? ViewModel.LayoutDocument.GetHeight() :
+                       ViewModel.LayoutDocument.GetActualSize().Value.Y));
             }
             else
             {
-                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
-                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+                if (ViewModel?.IsDimensionless == true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch;
+                    VerticalAlignment = VerticalAlignment.Stretch;
+                    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+                    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+                }
+                else
+                {
+                    CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                    CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+                }
             }
         }
 
         // == CONSTRUCTORs ==
-        private static int DOCID = 0;
         public DocumentView()
         {
             InitializeComponent();
@@ -170,6 +190,7 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 PointerWheelChanged += wheelChangedHandler;
 
+                this.UpdateAlignmentBindings();
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
@@ -237,6 +258,7 @@ namespace Dash
         {
             UpdateRenderTransformBinding();
             UpdateVisibilityBinding();
+            UpdateAlignmentBindings();
 
             this.BindBackgroundColor();
             ViewModel?.Load();
@@ -628,13 +650,11 @@ namespace Dash
 
         public void OnSelected()
         {
-            ViewModel.IsSelected = true;
             DocumentSelected?.Invoke(this);
         }
 
         public void OnDeselected()
         {
-            ViewModel.IsSelected = false;
             DocumentDeselected?.Invoke(this);
         }
 
@@ -820,7 +840,7 @@ namespace Dash
                     collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel
                         .ContainerDocument.GetFitToParent());
                     if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
-                        collectionView.ViewModel.FitContents();
+                        collectionView.FitContents();
                 }
             }
         }

@@ -27,6 +27,31 @@ namespace Dash
         public int MaxZ { get; set; }
         public ICollectionView CurrentView { get; set; }
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
+        /// <summary>
+        /// pan/zooms the document so that all of its contents are visible.  
+        /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
+        /// </summary>
+        public void FitContents()
+        {
+            if (!LocalSqliteEndpoint.SuspendTimer &&
+                ViewModel.ContainerDocument.GetFitToParent() && CurrentView is CollectionFreeformView freeform)
+            {
+                var parSize = ViewModel.ContainerDocument.GetActualSize() ?? new Point();
+                var r = freeform.GetItemsControl().ItemsPanelRoot.Children.OfType<ContentPresenter>().Select((cp) => cp.GetFirstDescendantOfType<DocumentView>())
+                    .Aggregate(Rect.Empty, (rect,dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
+                if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
+                {
+                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                    var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
+                    if (scaleAmt > 0)
+                    {
+                        ViewModel.TransformGroup = new TransformGroupData(trans, new Point(scaleAmt, scaleAmt));
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null

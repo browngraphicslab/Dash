@@ -26,6 +26,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using static Dash.DocumentController;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -453,13 +454,10 @@ namespace Dash
                 xLeftStack.Children.Add(xMapDocumentView);
                 xLeftStack.Children.Add(overlay);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) =>
-                {
-                    var cview = xMapDocumentView.ViewModel.Content as CollectionView;
-                    cview?.ViewModel?.FitContents();
-                };
+                mapTimer.Tick += (ss, ee) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-            }
+            } 
+
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
             mapTimer.Start();

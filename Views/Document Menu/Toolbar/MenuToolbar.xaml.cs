@@ -524,36 +524,26 @@ namespace Dash
                 //xFloating.Floating_SizeChanged(null, null);
             }
         }
-
-        // copy btn
-        private void Copy(object sender, RoutedEventArgs e)
-        {
-            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
-            {
-                d.CopyDocument();
-            }
-        }
-        // copy btn
+        
         private void FitWidth(object sender, RoutedEventArgs e)
         {
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
                 {
-                    d.ViewModel.LayoutDocument.SetWidth(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey,null)?.Data ?? 
-                           d.ViewModel.LayoutDocument.GetActualSize().Value.X);
+                    d.ViewModel.LayoutDocument.SetWidth(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
+                        (!double.IsNaN(d.ViewModel.LayoutDocument.GetWidth()) ? d.ViewModel.LayoutDocument.GetWidth() :
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.X));
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
                 }
-                else
+                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView))
                 {
                     d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, d.ViewModel.LayoutDocument.GetWidth(), true);
                     d.ViewModel.LayoutDocument.SetWidth(double.NaN);
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 }
-                d.GetFirstAncestorOfType<CollectionView>()?.ViewModel.FitContents();
             }
         }
-        // copy btn
         private void FitHeight(object sender, RoutedEventArgs e)
         {
             foreach (var d in SelectionManager.GetSelectedDocs())
@@ -561,19 +551,18 @@ namespace Dash
                 if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
                 {
                     d.ViewModel.LayoutDocument.SetHeight(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
-                           d.ViewModel.LayoutDocument.GetActualSize().Value.Y);
+                        (!double.IsNaN(d.ViewModel.LayoutDocument.GetHeight()) ? d.ViewModel.LayoutDocument.GetHeight() :
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.Y));
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 }
-                else
+                else if(!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView))
                 {
                     d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, d.ViewModel.LayoutDocument.GetHeight(), true);
                     d.ViewModel.LayoutDocument.SetHeight(double.NaN);
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
                 }
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents();
             }
         }
-        // free contetns
         private void FreezeContents(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -585,7 +574,13 @@ namespace Dash
                 }
             }
         }
-        // copy btn
+        private void Copy(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                SelectionManager.GetSelectedDocs().ForEach((d) => d.CopyDocument());
+            }
+        }
         private void MakeInstance(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -596,8 +591,7 @@ namespace Dash
                 }
             }
         }
-
-        // delete btn
+        
         private void Delete(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
