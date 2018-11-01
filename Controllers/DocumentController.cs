@@ -11,6 +11,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -22,6 +23,7 @@ namespace Dash
     public sealed class DocumentController : FieldModelController<DocumentModel>
     {
         public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
+
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// </summary>
@@ -945,6 +947,10 @@ namespace Dash
             return (false, null);
         }
 
+        public void SendMessage(KeyController key, FieldControllerBase value)
+        {
+            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(null, value, FieldUpdatedAction.Add, new DocumentFieldReference(this, key), null, false));
+        }
 
         /// <summary>
         ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
@@ -1385,6 +1391,27 @@ namespace Dash
                 _fieldUpdatedDictionary[key] += handler;
             else
                 _fieldUpdatedDictionary[key] = handler;
+        }
+
+        /// <summary>
+        /// This acts the same as <see cref="AddFieldUpdatedListener"/> except it adds a weak handler, and so should usually be used  instead if adding an event from a view
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        /// <param name="key"></param>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        public WeakEventListener<T, DocumentController, DocumentFieldUpdatedEventArgs>
+            AddWeakFieldUpdatedListener<T>(T instance, KeyController key,
+            Action<T, DocumentController, DocumentFieldUpdatedEventArgs> handler) where T : class
+        {
+            var weakHandler = new WeakEventListener<T, DocumentController, DocumentFieldUpdatedEventArgs>(instance)
+            {
+                OnEventAction = handler,
+                OnDetachAction = listener => RemoveFieldUpdatedListener(key, listener.OnEvent)
+            };
+            AddFieldUpdatedListener(key, weakHandler.OnEvent);
+            return weakHandler;
         }
 
         /// <summary>
