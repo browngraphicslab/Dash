@@ -142,10 +142,12 @@ namespace Dash
             var cp = ParentDocumentView.GetFirstDescendantOfType<CollectionView>();
             if (cp != this)
                 return;
-            ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
-            ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
-            ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
-            ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
+
+            //TODO This causes a memory leak currently
+            //ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
+            //ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
+            //ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
+            //ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
 
             #region CollectionView context menu 
 
