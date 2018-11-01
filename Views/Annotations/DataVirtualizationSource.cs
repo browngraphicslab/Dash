@@ -35,13 +35,15 @@ namespace Dash
             //Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
 
+        public double ScrollViewerContentWidth = 1;
+
         /// <summary>
         /// Given a vertical offset, return the corresponding 0-index page
         /// </summary>
         public int GetIndex(double verticalOffset)
         {
             var index = 0;
-            var scale = _scrollViewer.ActualWidth / _view.PdfMaxWidth;
+            var scale = ScrollViewerContentWidth / _view.PdfMaxWidth;
             var currOffset = verticalOffset - PageSizes[index].Height * scale;
             while (currOffset > 0)
             {
@@ -53,6 +55,7 @@ namespace Dash
 
             return index;
         }
+        public double Scaling = 1;
         private void View_Loaded(object sender, EventArgs eventArgs)
         {
             _visibleElements.Clear();
@@ -81,8 +84,8 @@ namespace Dash
             _verticalOffset = scrollOffset;
             if (_scrollViewer.ActualHeight != 0)
             {
-                var endIndex   = GetIndex(_scrollViewer.ActualHeight + scrollOffset) + 1;
-                var startIndex = GetIndex(Math.Min(scrollOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight)) - 1;
+                var endIndex   = GetIndex(_scrollViewer.ActualHeight/Scaling + _verticalOffset) + 1;
+                var startIndex = GetIndex(Math.Min(_verticalOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight)) - 1;
                 var pageBuffer = (endIndex - startIndex) / 2;
                 startIndex = Math.Max(startIndex - pageBuffer, 0);
                 endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);

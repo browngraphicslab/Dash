@@ -42,6 +42,7 @@ namespace Dash
         private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
         private double            _pdfMaxWidth;
         private double            _pdfTotalHeight;
+        private double            _pdfBotTotalHeight;
         private Stack<double>     _topBackStack;
         private Stack<double>     _bottomBackStack;
         private Stack<double>     _topForwardStack;
@@ -70,6 +71,15 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
+        public double PdfBotTotalHeight
+        {
+            get => _pdfBotTotalHeight;
+            set
+            {
+                _pdfBotTotalHeight = value;
+                OnPropertyChanged();
+            }
+        }
         public double                             PdfTotalHeight
         {
             get => _pdfTotalHeight;
@@ -82,8 +92,8 @@ namespace Dash
         public WPdf.PdfDocument                   PDFdoc { get; private set; }
         public DataVirtualizationSource           TopPages { get; set; }
         public DataVirtualizationSource           BottomPages { get; set; }
-        public Grid                               TopAnnotationBox => xTopAnnotationBox;
-        public Grid                               BottomAnnotationBox => xBottomAnnotationBox;
+        public Panel                              TopAnnotationBox => xTopAnnotationBox;
+        public Panel                              BottomAnnotationBox => xBottomAnnotationBox;
         public ObservableCollection<DocumentView> TopAnnotations
         {
             get => _topAnnotationList;
@@ -108,6 +118,8 @@ namespace Dash
 
         private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            TopPages.ScrollViewerContentWidth = this.ActualWidth;
+            BottomPages.ScrollViewerContentWidth = this.ActualWidth;
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             KeyDown += CustomPdfView_KeyDown;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
@@ -122,6 +134,8 @@ namespace Dash
                 xTopPdfGrid.Children.Add(_topAnnotationOverlay);
                 SetAnnotationType(AnnotationType.Region);
             }
+            this.xTopCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            this.xBottomCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
         }
 
         private class SelRange
@@ -544,8 +558,8 @@ namespace Dash
 
         private Point calculateClosestPointOnPDF(Point p)
         {
-            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
-                             p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
+            return new Point(p.X < 0 ? 30 : p.X > xBottomPdfGrid.ActualWidth ? xBottomPdfGrid.ActualWidth - 30 : p.X,
+                             p.Y < 0 ? 30 : p.Y > xBottomPdfGrid.ActualHeight ? xBottomPdfGrid.ActualHeight - 30 : p.Y);
         }
 
         private static DocumentController RegionGetter(AnnotationType type)
@@ -645,7 +659,7 @@ namespace Dash
 
             reader.Close();
             pdfDocument.Close();
-            PdfTotalHeight = offset - 10;
+            PdfBotTotalHeight = PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
 
             foreach (var child in this.GetDescendantsOfType<TextAnnotation>())
@@ -798,7 +812,7 @@ namespace Dash
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets == null) return;
 
-            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (ActualWidth / PdfMaxWidth)).ToList();
+            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (xBottomPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
 
             var currOffset = relativeOffsets.First();
             var firstOffset = relativeOffsets.First();
@@ -891,10 +905,10 @@ namespace Dash
 
                     botOffset += (size.Height * scale) + 15;
                 }
-
+                
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, relativeOffsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
+                BottomScrollViewer.ChangeView(null, (relativeOffsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2), null);
             }
         }
 
@@ -964,17 +978,11 @@ namespace Dash
 
         private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (xTopAnnotationBox.Width.Equals(0))
-            {
-                xTopAnnotationBox.Width = 200;
-                xBottomAnnotationBox.Width = 200;
-
-            }
-            else
-            {
-                xTopAnnotationBox.Width = 0;
-                xBottomAnnotationBox.Width = 0;
-            }
+            this.xTopPdfCol.Width = new GridLength(ActualWidth / 2);
+        }
+        private void XBotAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.xBotPdfCol.Width = new GridLength(ActualWidth / 2);
         }
 
         private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -1269,14 +1277,7 @@ namespace Dash
                 backstack.Push(pop);
             }
         }
-
-        private void Test(object sender, KeyRoutedEventArgs e)
-        {
-
-        }
-
-
-
+        
         public void HidePdfControls()
         {
             xTopButtonPanel.Visibility = Visibility.Collapsed;
@@ -1454,6 +1455,38 @@ namespace Dash
                 LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
             else
                 LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
+        }
+
+        private void TopGridSplitter_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xTopPdfCol.Width = new GridLength(0);
+        }
+        private void BotGridSplitter_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xBotPdfNotesCol.Width = new GridLength(0);
+        }
+
+        private void xTopPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (xTopPdfGrid.ActualWidth > 0)
+            {
+                var ratio = xTopPdfGridContainer.ActualWidth / xTopPdfGrid.ActualWidth;
+                xTopAnnotationBox.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
+
+                if (xTopPdfGridContainer.ActualWidth > this.PdfMaxWidth)
+                    (xTopViewbox as Viewbox).Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
+                else (xTopViewbox as Viewbox).Stretch = Windows.UI.Xaml.Media.Stretch.Uniform;
+            }
+        }
+        private void xBotPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (PdfMaxWidth > 0)
+            {
+                var ratio = xBottomPdfGrid.ActualWidth / PdfMaxWidth;
+                PdfBotTotalHeight = PdfTotalHeight * ratio;
+                BottomPages.ScrollViewerContentWidth = xBotPdfCol.ActualWidth;
+                BottomPageItemsControl.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
+            }
         }
     }
 }
