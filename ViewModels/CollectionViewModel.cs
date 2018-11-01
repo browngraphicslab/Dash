@@ -741,7 +741,7 @@ namespace Dash
                                       isCopying        ? DataPackageOperation.Copy : 
                                       DataPackageOperation.None;
 
-                RemoveDragDropIndication(sender as ICollectionView);
+                RemoveDragDropIndication(sender as CollectionView);
                 
                 var where = new Point();
                 if ((sender as CollectionView)?.CurrentView is CollectionFreeformBase freeformBase)
@@ -862,7 +862,7 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            HighlightPotentialDropTarget(sender as ICollectionView);
+            HighlightPotentialDropTarget(sender as CollectionView);
 
             if (e.DragUIOverride != null)
             {
@@ -883,7 +883,7 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
-            HighlightPotentialDropTarget(sender as ICollectionView);
+            HighlightPotentialDropTarget(sender as CollectionView);
 
             if (e.DragUIOverride != null)
             {
@@ -908,28 +908,28 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            RemoveDragDropIndication(sender as ICollectionView);
+            RemoveDragDropIndication(sender as CollectionView);
             e.Handled = true;
         }
 
         /// <summary>
         /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
         /// </summary>
-        private void HighlightPotentialDropTarget(ICollectionView element)
+        private void HighlightPotentialDropTarget(CollectionView element)
         {
             // only one collection should be highlighted at a time
             _previousDragEntered?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            element?.SetDropIndicationFill((SolidColorBrush)App.Instance.Resources["DragHighlight"]);
-            _previousDragEntered = element;
+            element.CurrentView?.SetDropIndicationFill((SolidColorBrush)App.Instance.Resources["DragHighlight"]);
+            _previousDragEntered = element.CurrentView;
         }
 
         /// <summary>
         /// Remove highlight from target drop collection and border from DocumentView being dragged
         /// </summary>
         /// <param name="element"></param>
-        private void RemoveDragDropIndication(ICollectionView element)
+        private void RemoveDragDropIndication(CollectionView element)
         {
-            element?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
+            element.CurrentView?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
             _previousDragEntered = null;
         }
         #endregion

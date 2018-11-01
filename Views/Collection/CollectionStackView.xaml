@@ -38,6 +38,6 @@
 
 
         </ListView>
-        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xGridView, Path=Width}" Height="{Binding ElementName=xGridView, Path=Height}" IsHitTestVisible="False"></Rectangle>
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" IsHitTestVisible="False"></Rectangle>
     </Grid>
 </UserControl>
