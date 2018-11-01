@@ -819,7 +819,6 @@ namespace Dash
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;
             SetSelected("");
-            DataDocument?.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 
@@ -843,7 +842,7 @@ namespace Dash
             }
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
-            DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
             Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
