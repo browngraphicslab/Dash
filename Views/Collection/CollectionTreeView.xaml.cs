@@ -19,6 +19,7 @@ namespace Dash
     public sealed partial class CollectionTreeView : ICollectionView
     {
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.TreeView;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public CollectionTreeView()
@@ -79,7 +80,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 Debug.Assert(ViewModel != null, "ViewModel != null");
-                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 ViewModel.AddDocument(documentController);
             }
         }

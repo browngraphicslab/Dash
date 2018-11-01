@@ -1168,7 +1168,11 @@ namespace Dash
 
             if (ViewModel.Content is CollectionView collectionView)
             {
-                collectionView.SetupContextMenu(this.xMenuFlyout);
+                collectionView.SetupContextMenu(xMenuFlyout);
+            }
+            else if (ViewModel.Content.GetFirstDescendantOfType<CollectionView>() is CollectionView cView)
+            {
+                cView.SetupContextMenu(this.xMenuFlyout);
             }
             if ((ViewModel.Content is ContentPresenter cpresent) &&
                 (cpresent.Content is CollectionView collectionView2))

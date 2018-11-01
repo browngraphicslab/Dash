@@ -561,7 +561,7 @@ namespace Dash
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            return new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+            return new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs

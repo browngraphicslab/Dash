@@ -17,7 +17,7 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
                 e.GetPosition(MainPage.Instance));
             
-            collection.ViewModel.AddDocument(new CollectionNote(where, CollectionView.CollectionViewType.Freeform).Document);
+            collection.ViewModel.AddDocument(new CollectionNote(where, CollectionViewType.Freeform).Document);
         }
         public static void HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {

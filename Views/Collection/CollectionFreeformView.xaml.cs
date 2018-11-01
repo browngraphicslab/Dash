@@ -60,8 +60,6 @@ namespace Dash
 
         public override CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
-        public override CollectionView.CollectionViewType Type => CollectionView.CollectionViewType.Freeform;
-
         public override ItemsControl GetItemsControl()
         {
             return xItemsControl;
@@ -206,7 +204,7 @@ namespace Dash
         private Task<bool> AddCollection(ActionFuncParams actionParams)
         {
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Icon, 200, 75).Document;
+            var cnote = new CollectionNote(new Point(), CollectionViewType.Icon, 200, 75).Document;
             Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
@@ -292,7 +290,7 @@ namespace Dash
                     docController.SetHeight(double.NaN);
                     docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                     docController.SetVerticalAlignment(VerticalAlignment.Top);
-                    var adorn = new CollectionNote(new Point(imagePt.X, imagePt.Y), CollectionView.CollectionViewType.Stacking, 300, imageHeight / imageWidth * 300 + 30, new DocumentController[] { docController, caption });
+                    var adorn = new CollectionNote(new Point(imagePt.X, imagePt.Y), CollectionViewType.Stacking, 300, imageHeight / imageWidth * 300 + 30, new DocumentController[] { docController, caption });
                     ViewModel.AddDocument(adorn.Document);
                 }
             }

@@ -164,7 +164,7 @@ namespace Dash
             }
             else
             {
-                MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                MainDocument = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                 MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
@@ -188,7 +188,7 @@ namespace Dash
             DocumentController lastWorkspace;
             if (col.Count == 0)
             {
-                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 col.Add(documentController);
                 lastWorkspace = documentController;
             }
@@ -427,7 +427,7 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);

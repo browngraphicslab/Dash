@@ -82,7 +82,7 @@ namespace Dash
         {
             var pages = await _currentPdfView.ExplodePages();
 
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, 200, 200, pages).Document;
+            var cnote = new CollectionNote(new Point(), CollectionViewType.Page, 200, 200, pages).Document;
 
             xExplodePages.IsChecked = false;
             MainPage.Instance.AddFloatingDoc(cnote);

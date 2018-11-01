@@ -1307,7 +1307,6 @@ namespace Dash
                 var fieldName = fieldReplacement.Name.Replace("xCollectionField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 var cvm = new CollectionViewModel(this, fieldKey);
-                cvm.AddDocument(new RichTextNote("SOMETHING TO FILL THIS SPACE").Document);
                 fieldReplacement.DataContext = cvm;
             }
         }

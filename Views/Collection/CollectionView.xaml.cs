@@ -19,7 +19,6 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public UserControl UserControl => this;
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Stacking, Schema, TreeView, Timeline, Graph, Icon }
 
         private CollectionViewModel _lastViewModel = null;
         private CollectionViewType  _viewType;
@@ -68,37 +67,24 @@ namespace Dash
 
         public CollectionView()
         {
-            Loaded += CollectionView_Loaded;
+            Loaded   += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
             InitializeComponent();
 
-            SetView(CollectionViewType.Freeform);
+            InitializeView(CollectionViewType.Freeform);
             DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
             DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
-            id = COLid++;
+            DataContextChanged += CollectionView_DataContextChanged;
 
             xOuterGrid.PointerPressed += OnPointerPressed;
             var color = xOuterGrid.Background;
         }
-        public CollectionView(CollectionViewModel vm)
+
+        private void CollectionView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            Loaded += CollectionView_Loaded;
-            Unloaded += CollectionView_Unloaded;
-            InitializeComponent();
-
-            DataContext = vm;
-            _lastViewModel = vm;
-            SetView(vm.ViewType);
-            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
-            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
-            DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
-            Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
-            id = COLid++;
-
-            xOuterGrid.PointerPressed += OnPointerPressed;
-            var color = xOuterGrid.Background;
+            AddViewTypeHandler();
         }
 
         ~CollectionView()
@@ -133,8 +119,6 @@ namespace Dash
             }
         }
         
-        private static int COLid = 0;
-        private int id = 0;
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
@@ -144,33 +128,14 @@ namespace Dash
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
+            ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
+            ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
+            ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
+            ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
+
             //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
             _lastViewModel = ViewModel;
-            if (ViewModel != null)
-            {
-                ViewModel.Loaded(true);
-                AddViewTypeHandler();
-
-                // ParentDocument can be null if we are rendering collections for thumbnails
-                if (ParentDocumentView == null)
-                {
-                    SetView(_viewType);
-                    return;
-                }
-
-                var cp = ParentDocumentView.GetFirstDescendantOfType<CollectionView>();
-                if (cp != this)
-                    return;
-                ParentDocumentView.DocumentSelected -= ParentDocumentView_DocumentSelected;
-                ParentDocumentView.DocumentSelected += ParentDocumentView_DocumentSelected;
-                ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
-                ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
-
-                #region CollectionView context menu 
-
-                SetView(_viewType);
-                #endregion
-            }
+            ViewModel?.Loaded(true);
         }
 
         private void ParentDocumentView_DocumentDeselected(DocumentView obj)
@@ -233,7 +198,7 @@ namespace Dash
                 ((contextMenu.Items.Last() as MenuFlyoutSubItem).Items.Last() as MenuFlyoutItem).Click += (ss, ee) => {
                     using (UndoManager.GetBatchHandle())
                     {
-                        SetView(n);
+                        ViewModel.ViewType = n;
                     }
                 };
             }
@@ -305,12 +270,15 @@ namespace Dash
 
         private void AddViewTypeHandler()
         {
+            ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler); 
             ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+
+            InitializeView(ViewModel?.ViewType ?? CurrentView.ViewType);
         }
 
         private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            SetView(ViewModel.ViewType);
+            InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
         }
 
         private void RemoveViewTypeHandler()
@@ -325,7 +293,7 @@ namespace Dash
         }
         public void Iconify() 
         {
-            SetView(CollectionViewType.Icon);
+            ViewModel.ViewType = CollectionViewType.Icon;
             ViewModel.ContainerDocument.SetWidth(double.NaN);
             ViewModel.ContainerDocument.SetHeight(double.NaN);
         }
@@ -346,74 +314,47 @@ namespace Dash
             thisView.ParentCollection?.ViewModel.AddDocument(newdoc);
             thisView.DeleteDocument();
         }
-        public void SetView(CollectionViewType viewType)
+        private void InitializeView(CollectionViewType viewType)
         {
             var initialViewType = _viewType;
             _viewType = viewType;
             if (CurrentView?.UserControl != null)
                 CurrentView.UserControl.Loaded -= CurrentView_Loaded;
+            if (CurrentView?.ViewType == _viewType)
+                return;
             switch (_viewType)
             {
-            case CollectionViewType.Freeform:
-                if (CurrentView is CollectionFreeformView) return;
-                CurrentView = new CollectionFreeformView();
-                break;
             case CollectionViewType.Icon:
-                if (CurrentView is CollectionIconView) return;
-                if (CurrentView != null && CurrentView.ViewModel.ViewType != CollectionViewType.Icon)
+                if (CurrentView != null && CurrentView.ViewType != CollectionViewType.Icon)
                 {
-                    ViewModel.ContainerDocument.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CurrentView.ViewModel.ViewType.ToString(), true);
-                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey,  ViewModel.ContainerDocument.GetWidth(), true);
-                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, ViewModel.ContainerDocument.GetHeight(), true);
+                    ViewModel.ContainerDocument.SetField<TextController>  (KeyStore.CollectionOpenViewTypeKey, CurrentView.ViewType.ToString(), true);
+                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey,    ViewModel.ContainerDocument.GetWidth(), true);
+                    ViewModel.ContainerDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey,   ViewModel.ContainerDocument.GetHeight(), true);
                 }
                 CurrentView = new CollectionIconView();
                 break;
-            case CollectionViewType.Stacking:
-                if (CurrentView is CollectionStackView) return;
-                CurrentView = new CollectionStackView();
-                break;
-            case CollectionViewType.Grid:
-                if (CurrentView is CollectionGridView) return;
-                CurrentView = new CollectionGridView();
-                break;
-            case CollectionViewType.Page:
-                if (CurrentView is CollectionPageView) return;
-                CurrentView = new CollectionPageView();
-                break;
-            case CollectionViewType.DB:
-                if (CurrentView is CollectionDBView) return;
-                CurrentView = new CollectionDBView();
-                break;
-            case CollectionViewType.Schema:
-                if (CurrentView is CollectionDBSchemaView) return;
-                CurrentView = new CollectionDBSchemaView();
-                break;
-            case CollectionViewType.TreeView:
-                if (CurrentView is CollectionTreeView) return;
-                CurrentView = new CollectionTreeView();
-                break;
-            case CollectionViewType.Timeline:
-                if (CurrentView is CollectionTimelineView) return;
-                CurrentView = new CollectionTimelineView();
-                break;
-            case CollectionViewType.Graph:
-                if (CurrentView is CollectionGraphView) return;
-                CurrentView = new CollectionGraphView();
-                break;
+            case CollectionViewType.Freeform: CurrentView = new CollectionFreeformView(); break;
+            case CollectionViewType.Stacking: CurrentView = new CollectionStackView(); break;
+            case CollectionViewType.Grid:     CurrentView = new CollectionGridView(); break;
+            case CollectionViewType.Page:     CurrentView = new CollectionPageView();  break;
+            case CollectionViewType.DB:       CurrentView = new CollectionDBView(); break;
+            case CollectionViewType.Schema:   CurrentView = new CollectionDBSchemaView(); break;
+            case CollectionViewType.TreeView: CurrentView = new CollectionTreeView();  break;
+            case CollectionViewType.Timeline: CurrentView = new CollectionTimelineView(); break;
+            case CollectionViewType.Graph:    CurrentView = new CollectionGraphView(); break;
             default:
                 throw new NotImplementedException("You need to add support for your collectionview here");
             }
-            CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             CurrentView.UserControl.Loaded += CurrentView_Loaded;
 
-            if (initialViewType == CollectionViewType.Icon && CurrentView?.ViewModel?.ViewType != CollectionViewType.Icon)
+            if (initialViewType == CollectionViewType.Icon && CurrentView.ViewType != CollectionViewType.Icon)
             {
-                ViewModel.ContainerDocument.SetWidth(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey)?.Data ?? 300) ;
+                ViewModel.ContainerDocument.SetWidth (ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey)?.Data ?? 300) ;
                 ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey)?.Data ?? 300);
             }
 
             xContentControl.Content = CurrentView;
-            if (ViewModel != null && ViewModel.ViewType != _viewType)
+            if (ViewModel != null)
                 ViewModel.ViewType = viewType;
         }
 
