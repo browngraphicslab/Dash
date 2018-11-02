@@ -13,7 +13,7 @@
     d:DesignWidth="400"
     SizeChanged="CustomPdfView_OnSizeChanged">
     <Grid x:Name="xPdfContainer" MinWidth="50"
-          Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered"
+          Background="White" PointerEntered="Scrollviewer_OnPointerEntered"
           PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="xFirstPanelRow" Height="0*"/>
@@ -104,27 +104,31 @@
 
             </StackPanel>
             <ScrollViewer  x:Name="TopScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
-                <Grid Height="{x:Bind PdfTotalHeight, Mode=OneWay}" >
+                <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
+                        <ColumnDefinition  x:Name="xTopPdfCol"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="0" x:Name="xTopPdfCol"/>
+                        <ColumnDefinition Width="0"  x:Name="xTopPdfNotesCol"/>
                     </Grid.ColumnDefinitions>
-                    <Grid x:Name="xTopPdfGridContainer" SizeChanged="xTopPdfGrid_SizeChanged">
-                        <Viewbox x:Name="xTopViewbox"  Stretch="UniformToFill">
-                            <!--This Grid will have the width and height of the pdf that is being displayed-->
-                            <Grid x:Name="xTopPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
-                                      PointerPressed="XPdfGrid_PointerPressed"  PointerReleased="XPdfGrid_PointerReleased" 
-                                      DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                                <!-- ItemsControl that stores the page images -->
-                                <ItemsControl x:Name="TopPageItemsControl" x:FieldModifier="public"/>
-                            </Grid>
-                        </Viewbox>
-                    </Grid>
-                    <controls:GridSplitter Grid.Column="1" Width="7" Tapped="TopGridSplitter_Tapped"/>
+                    <Viewbox Stretch="UniformToFill"  SizeChanged="xTopPdfGrid_SizeChanged">
+                        <!--This Grid will have the width and height of the pdf that is being displayed-->
+                        <Grid x:Name="xTopPdfGrid" Background="Transparent" PointerPressed="XPdfGrid_PointerPressed"  PointerReleased="XPdfGrid_PointerReleased"  DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                            <!-- ItemsControl that stores the page images -->
+                            <ItemsControl x:Name="TopPageItemsControl" x:FieldModifier="public"/>
+                        </Grid>
+                    </Viewbox>
 
-                    <Canvas x:Name="xTopAnnotationBox" Background="white" Grid.Column="2" >
-                        <local:CollectionView x:Name="xTopCollectionView" HorizontalAlignment="Left" VerticalAlignment="Top" Width="10000" Height="{x:Bind PdfTotalHeight, Mode=OneWay}"></local:CollectionView>
+                    <controls:GridSplitter Grid.Column="1" Tapped="TopGridSplitter_Tapped"  Width="0" MinWidth="0"
+                               ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed" >
+                        <controls:GridSplitter.Element>
+                            <Canvas>
+                                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top"/>
+                                <Rectangle  Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="{x:Bind PdfTotalHeight, Mode=OneWay}"   Margin="0 25 0 0" />
+                            </Canvas>
+                        </controls:GridSplitter.Element>
+                    </controls:GridSplitter>
+                    <Canvas Grid.Column="2" Background="white" >
+                        <local:CollectionView  x:Name="xTopAnnotationBox" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="1000"/>
                     </Canvas>
                 </Grid>
             </ScrollViewer>
@@ -217,23 +221,29 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition x:Name="xBotPdfCol"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
                         <ColumnDefinition Width="0" x:Name="xBotPdfNotesCol"/>
                     </Grid.ColumnDefinitions>
                     <!--This Grid will have the width and height of the pdf that is being displayed-->
-                    <Grid x:Name="xBottomPdfGrid" Background="Transparent" SizeChanged="xBotPdfGrid_SizeChanged"
-                           PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased"
-                           DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                        <!-- ItemsControl that stores the page images -->
-                        <Canvas  Height="{x:Bind PdfBotTotalHeight, Mode=OneWay}" >
+                    <Viewbox Stretch="UniformToFill"  SizeChanged="xBotPdfGrid_SizeChanged">
+                        <Grid x:Name="xBottomPdfGrid" Background="Transparent" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                            <!-- ItemsControl that stores the page images -->
                             <ItemsControl x:Name="BottomPageItemsControl" x:FieldModifier="public"/>
-                        </Canvas>
-                    </Grid>
+                        </Grid>
+                    </Viewbox>
 
-                    <controls:GridSplitter Grid.Column="1" Width="7" Tapped="BotGridSplitter_Tapped"/>
+                    <controls:GridSplitter Grid.Column="1" Tapped="BotGridSplitter_Tapped"  Width="0" MinWidth="0"
+                               ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed" >
+                        <controls:GridSplitter.Element>
+                            <Canvas>
+                                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top"/>
+                                <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="{x:Bind PdfTotalHeight, Mode=OneWay}"   Margin="0 25 0 0" />
+                            </Canvas>
+                        </controls:GridSplitter.Element>
+                    </controls:GridSplitter>
 
-                    <Canvas x:Name="xBottomAnnotationBox" Background="white" Grid.Column="2" Width="10000" >
-                        <local:CollectionView x:Name="xBottomCollectionView" HorizontalAlignment="Left"  Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="10000" />
+                    <Canvas x:Name="xBottomAnnotationBox" Background="white" Grid.Column="2">
+                        <local:CollectionView x:Name="xBottomCollectionView" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="1000" />
                     </Canvas>
                 </Grid>
             </ScrollViewer>

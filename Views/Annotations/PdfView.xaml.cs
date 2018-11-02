@@ -38,11 +38,10 @@ namespace Dash
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(PdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
 
-        private List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
+        private List<PDFRegionMarker>              _markers = new List<PDFRegionMarker>();
         private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
         private double            _pdfMaxWidth;
         private double            _pdfTotalHeight;
-        private double            _pdfBotTotalHeight;
         private Stack<double>     _topBackStack;
         private Stack<double>     _bottomBackStack;
         private Stack<double>     _topForwardStack;
@@ -51,12 +50,8 @@ namespace Dash
         private DispatcherTimer   _bottomTimer;
         private AnnotationOverlay _topAnnotationOverlay;
         private AnnotationOverlay _bottomAnnotationOverlay;
-        private DocumentView       getDocView()   { return this.GetFirstAncestorOfType<DocumentView>(); }
-        private DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
-        private DocumentController getDataDoc()   { return getDocView()?.ViewModel.DataDocument; }
-        public DocumentController  DataDocument => getDataDoc();
-        public DocumentController  LayoutDocument => getLayoutDoc();
-
+        public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
+        public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
         public Uri                                PdfUri
         {
             get => (Uri)GetValue(PdfUriProperty);
@@ -68,15 +63,6 @@ namespace Dash
             set
             {
                 _pdfMaxWidth = value;
-                OnPropertyChanged();
-            }
-        }
-        public double PdfBotTotalHeight
-        {
-            get => _pdfBotTotalHeight;
-            set
-            {
-                _pdfBotTotalHeight = value;
                 OnPropertyChanged();
             }
         }
@@ -92,8 +78,6 @@ namespace Dash
         public WPdf.PdfDocument                   PDFdoc { get; private set; }
         public DataVirtualizationSource           TopPages { get; set; }
         public DataVirtualizationSource           BottomPages { get; set; }
-        public Panel                              TopAnnotationBox => xTopAnnotationBox;
-        public Panel                              BottomAnnotationBox => xBottomAnnotationBox;
         public ObservableCollection<DocumentView> TopAnnotations
         {
             get => _topAnnotationList;
@@ -112,14 +96,13 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        public List<DocumentController>           DocControllers { get; set; }
         //This makes the assumption that both pdf views are always in the same annotation mode
         public AnnotationType                     CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
 
         private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            TopPages.ScrollViewerContentWidth = this.ActualWidth;
-            BottomPages.ScrollViewerContentWidth = this.ActualWidth;
+            TopPages.ScrollViewerContentWidth = ActualWidth;
+            BottomPages.ScrollViewerContentWidth = ActualWidth;
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
             KeyDown += CustomPdfView_KeyDown;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
@@ -134,8 +117,8 @@ namespace Dash
                 xTopPdfGrid.Children.Add(_topAnnotationOverlay);
                 SetAnnotationType(AnnotationType.Region);
             }
-            this.xTopCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
-            this.xBottomCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            xTopAnnotationBox.DataContext     = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            xBottomCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
         }
 
         private class SelRange
@@ -397,17 +380,21 @@ namespace Dash
             //Debug.WriteLine("FINALIZING PdfView");
         }
 
-
         private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
             if (SelectionManager.IsSelected(docview))
             {
-                ShowPdfControls();
+                xTopButtonPanel.Visibility = Visibility.Visible;
+                xBottomButtonPanel.Visibility = Visibility.Visible;
+
+                xFadeAnimation.Begin();
+                xFadeAnimation2.Begin();
             }
             else
             {
-                HidePdfControls();
+                xTopButtonPanel.Visibility = Visibility.Collapsed;
+                xBottomButtonPanel.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -449,11 +436,6 @@ namespace Dash
 
                 SetAnnotationsVisibleOnScroll(null);
             }
-        }
-
-        public void CheckForVisibilityButtonToggle()
-        {
-
         }
 
         public void SetAnnotationType(AnnotationType type)
@@ -569,8 +551,7 @@ namespace Dash
 
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
-
-        StorageFile _file;
+        private StorageFile _file;
         private async Task OnPdfUriChanged()
         {
             if (PdfUri == null)
@@ -650,16 +631,16 @@ namespace Dash
             }
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.TextSelectableElements = selectableElements;
-            _topAnnotationOverlay.PageEndIndices = pages;
-            _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
-            _bottomAnnotationOverlay.PageEndIndices = pages;
+            //_topAnnotationOverlay.TextSelectableElements = selectableElements;
+            //_topAnnotationOverlay.PageEndIndices = pages;
+            //_bottomAnnotationOverlay.TextSelectableElements = selectableElements;
+            //_bottomAnnotationOverlay.PageEndIndices = pages;
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
             reader.Close();
             pdfDocument.Close();
-            PdfBotTotalHeight = PdfTotalHeight = offset - 10;
+            PdfTotalHeight = offset - 10;
             DocumentLoaded?.Invoke(this, new EventArgs());
 
             foreach (var child in this.GetDescendantsOfType<TextAnnotation>())
@@ -737,11 +718,9 @@ namespace Dash
             {
                 overlay.UpdateAnnotation(e.GetCurrentPoint(overlay).Position);
             }
-
-            //e.Handled = true;
         }
 
-        Point _downPt = new Point();
+        private Point _downPt = new Point();
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -754,6 +733,7 @@ namespace Dash
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             }
+            e.Handled = true;
         }
 
         #endregion
@@ -761,7 +741,6 @@ namespace Dash
         // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private double _topScrollRatio;
         private double _bottomScrollRatio;
-        private double _height;
         private ObservableCollection<DocumentView> _bottomAnnotationList = new ObservableCollection<DocumentView>();
 
         public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -780,11 +759,7 @@ namespace Dash
             {
                 _bottomScrollRatio = e.FinalView.VerticalOffset / BottomScrollViewer.ExtentHeight;
             }
-
-
-            //LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _topScrollRatio, true);
         }
-
 
         public void ScrollToPosition(double pos)
         {
@@ -980,6 +955,7 @@ namespace Dash
         {
             this.xTopPdfCol.Width = new GridLength(ActualWidth / 2);
         }
+
         private void XBotAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.xBotPdfCol.Width = new GridLength(ActualWidth / 2);
@@ -990,7 +966,6 @@ namespace Dash
 
             e.Handled = true;
         }
-
 
         private void XPdfDivider_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -1034,6 +1009,11 @@ namespace Dash
             PopBackStack(_bottomBackStack, _bottomForwardStack, BottomScrollViewer);
         }
 
+        private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopForwardStack(_bottomForwardStack, _bottomBackStack, BottomScrollViewer);
+        }
+
         private void XTopNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext(TopScrollViewer);
@@ -1050,6 +1030,11 @@ namespace Dash
             _topBackStack.Push(0);
         }
 
+        private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            PopForwardStack(_topForwardStack, _topBackStack, TopScrollViewer);
+        }
+        
         private void XTopScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PopBackStack(_topBackStack, _topForwardStack, TopScrollViewer);
@@ -1205,7 +1190,7 @@ namespace Dash
             {
                 xToggleButtonStack2.Visibility = Visibility.Collapsed;
             }
-
+            e.Handled = true;
         }
 
         private void XTopControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1219,6 +1204,7 @@ namespace Dash
             {
                 xTopToggleButtonStack.Visibility = Visibility.Collapsed;
             }
+            e.Handled = true;
         }
 
         public void ShowRegions()
@@ -1258,16 +1244,6 @@ namespace Dash
             return LinkHandledResult.Unhandled;
         }
 
-        private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PopForwardStack(_topForwardStack, _topBackStack, TopScrollViewer);
-        }
-
-        private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PopForwardStack(_bottomForwardStack, _bottomBackStack, BottomScrollViewer);
-        }
-
         private void PopForwardStack(Stack<double> forwardstack, Stack<double> backstack, ScrollViewer viewer)
         {
             if (forwardstack.Any() && forwardstack.Peek() != double.NaN)
@@ -1276,21 +1252,6 @@ namespace Dash
                 viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
                 backstack.Push(pop);
             }
-        }
-        
-        public void HidePdfControls()
-        {
-            xTopButtonPanel.Visibility = Visibility.Collapsed;
-            xBottomButtonPanel.Visibility = Visibility.Collapsed;
-        }
-
-        public void ShowPdfControls()
-        {
-            xTopButtonPanel.Visibility = Visibility.Visible;
-            xBottomButtonPanel.Visibility = Visibility.Visible;
-
-            xFadeAnimation.Begin();
-            xFadeAnimation2.Begin();
         }
 
         private void SetUpToolTips()
@@ -1446,6 +1407,7 @@ namespace Dash
         private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
+            e.Handled = true;
         }
 
         public void SetActivationMode(bool onoff)
@@ -1459,33 +1421,25 @@ namespace Dash
 
         private void TopGridSplitter_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xTopPdfCol.Width = new GridLength(0);
+            xTopPdfNotesCol.Width = new GridLength(0);
         }
         private void BotGridSplitter_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xBotPdfNotesCol.Width = new GridLength(0);
+            xBotPdfCol.Width = new GridLength(ActualWidth);
         }
-
+        
         private void xTopPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (xTopPdfGrid.ActualWidth > 0)
+            if (PdfMaxWidth > 0)
             {
-                var ratio = xTopPdfGridContainer.ActualWidth / xTopPdfGrid.ActualWidth;
-                xTopAnnotationBox.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
-
-                if (xTopPdfGridContainer.ActualWidth > this.PdfMaxWidth)
-                    (xTopViewbox as Viewbox).Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
-                else (xTopViewbox as Viewbox).Stretch = Windows.UI.Xaml.Media.Stretch.Uniform;
+                TopPages.ScrollViewerContentWidth = xTopPdfCol.ActualWidth;
             }
         }
         private void xBotPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (PdfMaxWidth > 0)
             {
-                var ratio = xBottomPdfGrid.ActualWidth / PdfMaxWidth;
-                PdfBotTotalHeight = PdfTotalHeight * ratio;
                 BottomPages.ScrollViewerContentWidth = xBotPdfCol.ActualWidth;
-                BottomPageItemsControl.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
             }
         }
     }

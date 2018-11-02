@@ -754,9 +754,6 @@
     <Compile Include="Views\Annotations\PDFRegionMarker.xaml.cs">
       <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Annotations\PdfSideAnnotation.xaml.cs">
-      <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
     </Compile>
@@ -1366,10 +1363,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Annotations\PDFRegionMarker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Annotations\PdfSideAnnotation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
