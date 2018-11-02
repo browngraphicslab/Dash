@@ -18,17 +18,16 @@ namespace Dash
         private readonly List<double> _visibleElementsTargetedWidth = new List<double>();
         private readonly List<bool>   _visibleElementsIsRendering = new List<bool>();
         private readonly ScrollViewer _scrollViewer;
-        private readonly PdfView _view;
+        private readonly PdfAnnotationView _view;
         private double  _verticalOffset;
         public List<Size> PageSizes;
 
-        public DataVirtualizationSource(PdfView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
+        public DataVirtualizationSource(PdfAnnotationView view, ScrollViewer scrollviewer, ItemsControl pageItemsControl)
         {
             _view = view;
             _scrollViewer = scrollviewer;
             PageSizes = new List<Size>();
             pageItemsControl.ItemsSource = _visibleElements;
-            view.DocumentLoaded += View_Loaded;
         }
         ~DataVirtualizationSource()
         {
@@ -56,10 +55,10 @@ namespace Dash
             return index;
         }
         public double Scaling = 1;
-        private void View_Loaded(object sender, EventArgs eventArgs)
+        public void Initialize()
         {
             _visibleElements.Clear();
-            for (var i = 0; i < _view.PDFdoc?.PageCount; i++)
+            for (var i = 0; i < _view.Pages.PageSizes.Count; i++)
             {
                 _visibleElements.Add(new Image() { Margin = new Thickness(0, 0, 0, 10), Height=PageSizes[i].Height, Width=PageSizes[i].Width });
                 _visibleElementsTargetedWidth.Add(-1);
@@ -69,15 +68,7 @@ namespace Dash
             
             _scrollViewer.ViewChanging  += (s,e) => RenderIndices(e.FinalView.VerticalOffset);
             _scrollViewer.SizeChanged   += (s,e) => RenderIndices(_verticalOffset);
-
-            _scrollViewer.UpdateLayout(); // bcz: Ugh!  _scrollViewer's ExtentHeight and ActualHeight aren't set when this gets loaded, so we're forced to update it here
-            var scrollRatio = _view.LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey)?.Data ?? 0;
-            if (scrollRatio != 0)
-            {
-                _scrollViewer.ChangeView(null, scrollRatio * _scrollViewer.ExtentHeight, null, true);
-            }
-            else
-                RenderIndices(0);
+            RenderPage(0);
         }
         private void RenderIndices(double scrollOffset)
         {
@@ -96,7 +87,7 @@ namespace Dash
                     {
                         _visibleElementsIsRendering[i] = true;
                         _visibleElementsTargetedWidth[i] = targetWidth;
-                        if (_view.PdfUri != null)
+                        //if (_view.PdfUri != null)
                             RenderPage(i);
                     }
                     else
@@ -108,6 +99,10 @@ namespace Dash
         }
         private async void RenderPage(int pageNum)
         {
+            if (_view.PDFdoc == null)
+            {
+                return;
+            }
             using (var page = _view.PDFdoc.GetPage((uint)pageNum))
             { 
                 while (_visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])

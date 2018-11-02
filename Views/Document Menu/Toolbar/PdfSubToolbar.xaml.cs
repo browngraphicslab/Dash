@@ -180,7 +180,7 @@ namespace Dash
 			            //xFadeAnimationOut.Begin();
 			            return;
 		            }
-		            if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
+		            if (pageNum > _currentPdfView.DefaultView.Pages.PageSizes.Count)
 		            {
 			            xToPageBox.PlaceholderText = "Error: invalid page #";
 			            xToPageBox.Text = "";

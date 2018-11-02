@@ -259,6 +259,9 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
+      <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
@@ -1127,6 +1130,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\PdfAnnotationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

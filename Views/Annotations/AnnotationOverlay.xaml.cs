@@ -821,7 +821,7 @@ namespace Dash
         /// <returns></returns>
         public int GetPageOf(double yOffset)
         {
-            var pages = this.GetFirstAncestorOfType<PdfView>().BottomPages.PageSizes;
+            var pages = this.GetFirstAncestorOfType<PdfView>().DefaultView.Pages.PageSizes;
             var currOffset = 0.0;
             var i = 0;
             do
