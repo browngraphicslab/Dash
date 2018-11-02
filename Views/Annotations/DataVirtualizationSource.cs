@@ -99,13 +99,9 @@ namespace Dash
         }
         private async void RenderPage(int pageNum)
         {
-            if (_view.PDFdoc == null)
-            {
-                return;
-            }
-            using (var page = _view.PDFdoc.GetPage((uint)pageNum))
+            using (var page = _view.PDFdoc?.GetPage((uint)pageNum))
             { 
-                while (_visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])
+                while (page != null && _visibleElementsRenderedWidth[pageNum] != _visibleElementsTargetedWidth[pageNum])
                 {
                     BitmapSource source = null;
                     var targetWidth = _visibleElementsTargetedWidth[pageNum];
