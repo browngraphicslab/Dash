@@ -116,11 +116,12 @@ namespace Dash
     
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
-            var ParentDocumentView = this.GetFirstAncestorOfType<DocumentView>();
-            ParentDocumentView.DocumentSelected   -= ParentDocumentView_DocumentSelected;
-            ParentDocumentView.DocumentSelected   += ParentDocumentView_DocumentSelected;
-            ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
-            ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
+            //TODO This causes a memory leak currently
+            //var ParentDocumentView = this.GetFirstAncestorOfType<DocumentView>();
+            //ParentDocumentView.DocumentSelected   -= ParentDocumentView_DocumentSelected;
+            //ParentDocumentView.DocumentSelected   += ParentDocumentView_DocumentSelected;
+            //ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
+            //ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
 
             //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
             ViewModel?.Loaded(true);

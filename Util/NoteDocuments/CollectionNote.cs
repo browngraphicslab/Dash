@@ -19,7 +19,7 @@ namespace Dash
                 // [KeyStore.DataKey] = new ListController<DocumentController>(),
                 [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() }),
-                [KeyStore.FolderIconKey] = new ImageController(new Uri("https://opengameart.org/sites/default/files/Flat%20Folder%20icon.png"))
+                [KeyStore.FolderIconKey] = new ImageController(new Uri("https://image.freepik.com/free-vector/illustration-of-data-folder-icon_53876-6329.jpg"))
             };
             return new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
         }
