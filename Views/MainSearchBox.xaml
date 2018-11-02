@@ -10,11 +10,7 @@
     d:DesignWidth="400"
     >
 
-
-   
-    
-
-    <Grid>
+    <Grid HorizontalAlignment="Stretch" Margin="-50,0,0,0" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
@@ -167,39 +163,29 @@
                 </Storyboard>
             </Grid.Resources>
         </Grid>
-        
-        <Grid x:Name="xFilterBox" Height="32" Grid.Row="1" Grid.Column="0" Visibility="Collapsed" Grid.ColumnSpan="2">
-            <ComboBox x:Name="xComboBox" PlaceholderText="Filter by:" SelectionChanged="xComboBox_OnSelectionChanged">
-                <x:String>None</x:String>
-                <x:String>Image</x:String>
-                <x:String>Text</x:String>
-                <x:String>Video</x:String>
-                <x:String>Audio</x:String>
-                <x:String>PDF</x:String>
-                <x:String>Collection</x:String>
-                <x:String>Author</x:String>
-            </ComboBox>
+
+
+
+        <Grid x:Name="xMoreSearch" Grid.Row="2" Grid.Column="0"  Visibility="Collapsed"  HorizontalAlignment="Left">
+            <TextBlock x:Name="xAdvSearch" Text="Filter.."/>
         </Grid>
         
-        <Grid x:Name="xMoreSearch" Grid.Row="2" Grid.Column="0"  Visibility="Visible" Grid.ColumnSpan="2">
-            <TextBox x:Name="xAdvSearch" PlaceholderText="Current Selection..."/>
-        </Grid>
-        
-        <TextBlock Grid.Row="3" Grid.Column="0" Text="Filter by:" Tapped="Filter_Tapped" >
+        <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" 
+                Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Right" >
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout>
                     <MenuFlyoutSubItem Text="Document">
-                        <MenuFlyoutItem Text="Image"/>
-                        <MenuFlyoutItem Text="Text"/>
-                        <MenuFlyoutItem Text="Audio"/>
-                        <MenuFlyoutItem Text="Video"/>
-                        <MenuFlyoutItem Text="PDF"/>
-                        <MenuFlyoutItem Text="Collection"/>
+                        <MenuFlyoutItem Text="Image" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="Text" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="Audio" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="Video" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="PDF" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="Collection" Tapped="xDocumentFilter_SelectionChanged"/>
                     </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem Text="Author" Loaded="Author_OnClick">
+                    <MenuFlyoutSubItem Text="Author" Loaded="Author_OnLoaded">
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
-        </TextBlock>
+        </Button>
     </Grid>
 </UserControl>

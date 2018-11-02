@@ -226,7 +226,8 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
-                xFilterBox.Visibility = Visibility.Collapsed;
+                xMoreSearch.Visibility = Visibility.Collapsed;
+                xFilterButton.Visibility = Visibility.Collapsed;
                 //xComboBox.PlaceholderText = "Filter by:";
 
             }
@@ -239,7 +240,8 @@ namespace Dash
                     easingType: EasingType.Default).Start();
                 xSearchCodeBox.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
-                xFilterBox.Visibility = Visibility.Visible;
+                xMoreSearch.Visibility = Visibility.Visible;
+                xFilterButton.Visibility = Visibility.Visible;
             }
         }
 
@@ -583,65 +585,39 @@ namespace Dash
 
         private string _currentSelection = "None";
 
-        private void xComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void xDocumentFilter_SelectionChanged(object sender, TappedRoutedEventArgs e)
         {
-            string selection = e.AddedItems[0].ToString();
-            switch (selection)
-            {
-            case "Image":
-                _currentSelection = "Image Box";
-                break;
-            case "Text":
-                _currentSelection = "Rich Text Box";
-                break;
-            case "Video":
-                _currentSelection = "Video Box";
-                break;
-            case "Audio":
-                _currentSelection = "Audio Box";
-                break;
-            case "PDF":
-                _currentSelection = "Pdf Box";
-                break;
-            case "Collection":
-                _currentSelection = "Collection Box";
-                break;
-            case "Author":
-                _currentSelection = "Author";
-                var nodes = DocumentTree.MainPageTree;
-                foreach (var node in nodes)
-                {
-                    Debug.WriteLine(node.DataDocument.GetType());
-                    Debug.WriteLine(node.DataDocument.GetAuthor());
-                }
-                break;
-            default:
-                _currentSelection = "None";
-                break;
-            }
-            xAdvSearch.Text = selection;
+            var mf = sender as MenuFlyoutItem;
+            _currentSelection = mf?.Text;
+            xAdvSearch.Text = _currentSelection;
         }
 
-        private void Filter_Tapped(object sender, TappedRoutedEventArgs e)
+        private void Filter_Tapped(object sender, RoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }
 
-        private void Author_OnClick(object sender, RoutedEventArgs e)
+        private void Author_OnLoaded(object sender, RoutedEventArgs e)
         {
             //var mF = new MenuFlyout();
             var subitem = sender as MenuFlyoutSubItem;
-            Debug.WriteLine(subitem?.Text);
+            subitem?.Items?.Clear();
+            Debug.WriteLine(subitem?.Items?.Count);
             var nodes = DocumentTree.MainPageTree;
             var authorList = new HashSet<string>();
             foreach (var node in nodes)
             {
-                var author = node.DataDocument.GetAuthor();
-                if (!authorList.Contains(author) && author!=null)
+                if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 {
-                    authorList.Add(author);
+                    var author = node.DataDocument.GetAuthor();
+                    if (!authorList.Contains(author) && author != null)
+                    {
+                        authorList.Add(author);
+                        Debug.WriteLine(author);
+                    }
                 }
             }
+            Debug.WriteLine(authorList.Count);
             foreach (var auth in authorList)
             {
                 var pickAuthor = new MenuFlyoutItem
@@ -651,14 +627,17 @@ namespace Dash
                 subitem?.Items?.Add(pickAuthor);
                 pickAuthor.Click += PickAuthorOnClick;
             }
+            _authorList = authorList;
             //mF.ShowAt((FrameworkElement)sender);
         }
+
+        private HashSet<string> _authorList;
 
         private void PickAuthorOnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             var mf = sender as MenuFlyoutItem;
-            _currentSelection = mf?.Text;
-            xAdvSearch.Text = _currentSelection;
+            _currentSelection = "Author";
+            xAdvSearch.Text = mf?.Text;
         }
     }
 }
