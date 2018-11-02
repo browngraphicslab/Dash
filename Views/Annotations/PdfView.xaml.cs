@@ -41,9 +41,7 @@ namespace Dash
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private StorageFile       _file;
-        private int               _currentPageCount = -1;
         private double            _pdfMaxWidth;
-        private double            _pdfTotalHeight;
         public PdfAnnotationView                  DefaultView => _botPdf;
         public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
         public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
@@ -61,16 +59,6 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        public double                             PdfTotalHeight
-        {
-            get => _pdfTotalHeight;
-            set
-            {
-                _pdfTotalHeight = value;
-                OnPropertyChanged();
-            }
-        }
-        public WPdf.PdfDocument                   PDFdoc { get; private set; }
         //This makes the assumption that both pdf views are always in the same annotation mode
         public AnnotationType                     CurrentAnnotationType => _botPdf.AnnotationOverlay.CurrentAnnotationType;
 
@@ -157,14 +145,6 @@ namespace Dash
         {
             _botPdf.SetAnnotationsVisibleOnScroll(visibleOnScroll);
         }
-        public void SetActivationMode(bool onoff)
-        {
-            xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
-            if (onoff)
-                LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
-            else
-                LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
-        }
         public void SetAnnotationType(AnnotationType type)
         {
             _botPdf.AnnotationOverlay.CurrentAnnotationType = type;
@@ -205,8 +185,8 @@ namespace Dash
         {
             try
             {
-                _file = (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://")) ? 
-                    await StorageFile.GetFileFromApplicationUriAsync(PdfUri):
+                _file = (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://")) ?
+                    await StorageFile.GetFileFromApplicationUriAsync(PdfUri) :
                     await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
             }
             catch (ArgumentException)
@@ -214,9 +194,21 @@ namespace Dash
                 return;
             }
 
-            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
-            PdfDocument pdfDocument = new PdfDocument(reader);
-            var strategy = new BoundsExtractionStrategy();
+            var reader      = new PdfReader(await _file.OpenStreamForReadAsync());
+            var pdfDocument = new PdfDocument(reader);
+            _topPdf.PdfMaxWidth    = _botPdf.PdfMaxWidth = PdfMaxWidth = CalculateMaxPDFWidth(pdfDocument);
+            _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = await LoadPdfFromFile(pdfDocument);
+            reader.Close();
+            pdfDocument.Close();
+
+            _botPdf.Pages.Initialize();
+            _topPdf.Pages.Initialize();
+
+            this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
+        }
+
+        private double CalculateMaxPDFWidth(PdfDocument pdfDocument)
+        {
             var maxWidth = 0.0;
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
@@ -225,29 +217,28 @@ namespace Dash
                 _botPdf.Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
-            _topPdf.PdfMaxWidth = _botPdf.PdfMaxWidth = PdfMaxWidth = maxWidth;
+            return maxWidth;
+        }
 
-            _topPdf.PDFdoc = _botPdf.PDFdoc = PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
-            if (PDFdoc.PageCount != _currentPageCount)
-            {
-                _currentPageCount = (int)PDFdoc.PageCount;
-            }
-
-            var offset = 0.0;
+        private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument)
+        {
+            var strategy       = new BoundsExtractionStrategy();
+            var pdfTotalHeight = 0.0;
             await Task.Run(() =>
             {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
-                    offset += page.GetPageSize().GetHeight() + 10;
+                    pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
                     if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
                     {
-                        strategy.SetPage(i - 1, offset, page.GetPageSize(), page.GetRotation());
+                        strategy.SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
                         new PdfCanvasProcessor(strategy).ProcessPageContent(page);
                     }
                 }
             });
 
+            _topPdf.PDFdoc = _botPdf.PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             try
             {
@@ -258,16 +249,7 @@ namespace Dash
             {
                 Console.WriteLine(ex.ToString());
             }
-
-            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-
-            reader.Close();
-            pdfDocument.Close();
-            _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = PdfTotalHeight = offset - 10;
-            _botPdf.Pages.Initialize();
-            _topPdf.Pages.Initialize();
-
-            this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
+            return pdfTotalHeight-10;
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject,
@@ -367,11 +349,6 @@ namespace Dash
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
-        private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
-            e.Handled = true;
-        }
     }
 }
 

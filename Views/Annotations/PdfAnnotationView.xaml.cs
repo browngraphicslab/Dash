@@ -47,6 +47,7 @@ namespace Dash
         private Stack<double> _ForwardStack;
         private double _pdfMaxWidth = -1;
         private double _pdfTotalHeight;
+        private DocumentViewModel _lastVm = null;
         private Point _downPt = new Point();
         private double _ScrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private DispatcherTimer _Timer;
@@ -152,7 +153,7 @@ namespace Dash
         {
             var sizes = Pages.PageSizes;
             var botOffset = 0.0;
-            var annoWidth = xAnnotationBox.ActualWidth;
+            var annoWidth = xCollectionView.ActualWidth;
             foreach (var size in sizes)
             {
                 var scale = (ScrollViewer.ViewportWidth - annoWidth) / size.Width;
@@ -212,7 +213,7 @@ namespace Dash
             Debug.WriteLine($"{splits} screen splits are needed to show everything");
 
             var sizes = Pages.PageSizes;
-            var annoWidth = xAnnotationBox.ActualWidth;
+            var annoWidth = xCollectionView.ActualWidth;
             var botOffset = 0.0;
             foreach (var size in sizes)
             {
@@ -485,8 +486,10 @@ namespace Dash
 
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            (xCollectionView.CurrentView as CollectionFreeformView)?.ViewManipulationControls.SetDisableScrollWheel(true);
             Pages.ScrollViewerContentWidth = ActualWidth;
             LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
+            _lastVm = DataContext as DocumentViewModel;
             KeyDown += PdfAnnotationView_KeyDown;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
             if (AnnotationOverlay == null)
@@ -502,7 +505,7 @@ namespace Dash
 
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
-            LayoutDocument?.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
+            _lastVm.LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
             _AnnotationOverlay.TextSelectableElements?.Clear();
             SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
         }
@@ -510,16 +513,7 @@ namespace Dash
         private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (SelectionManager.IsSelected(docview))
-            {
-                xButtonPanel.Visibility = Visibility.Visible;
-
-                xFadeAnimation.Begin();
-            }
-            else
-            {
-                xButtonPanel.Visibility = Visibility.Collapsed;
-            }
+            xButtonPanel.Visibility = SelectionManager.IsSelected(docview) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -527,6 +521,8 @@ namespace Dash
             if (PdfMaxWidth > 0)
             {
                 Pages.ScrollViewerContentWidth = xPdfCol.ActualWidth;
+                var ratio = xPdfCol.ActualWidth / PdfMaxWidth;
+                xCollectionView.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
             }
         }
 
@@ -640,36 +636,10 @@ namespace Dash
         {
             e.Handled = true;
         }
-
-        private void xMenuControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (xToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
-            {
-                xToggleButtonStack.Visibility = Visibility.Visible;
-                xFadeAnimation.Begin();
-            }
-            else
-            {
-                xToggleButtonStack.Visibility = Visibility.Collapsed;
-            }
-            e.Handled = true;
-        }
-
-        private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            this.GetFirstAncestorOfType<PdfView>().SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
-            e.Handled = true;
-        }
         
         private void xSidebarToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            this.xPdfCol.Width = new GridLength(ActualWidth / 2);
-        }
-
-        private void XScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            ScrollViewer.ChangeView(null, 0, null);
-            _BackStack.Push(0);
+            xPdfCol.Width = new GridLength(ActualWidth / 2);
         }
 
         private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -779,14 +749,6 @@ namespace Dash
             var placementMode = PlacementMode.Bottom;
             const int offset = 0;
 
-            var _controls = new ToolTip()
-            {
-                Content = "Toggle Menu Controls",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xAnnotationsToggleButton, _controls);
-
             var _next = new ToolTip()
             {
                 Content = "Next page",
@@ -802,14 +764,6 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xPreviousPageButton, _prev);
-
-            var _up = new ToolTip()
-            {
-                Content = "Scroll to top",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xScrollToTop, _up);
 
             var _back = new ToolTip()
             {
@@ -845,7 +799,7 @@ namespace Dash
         
         private void GridSplitter_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xPdfCol.Width = new GridLength(ActualWidth);
+            xPdfCol.Width = xPdfCol.ActualWidth == ActualWidth-10 ? new GridLength(ActualWidth/2) : new GridLength(ActualWidth-10);
         }
     }
 }

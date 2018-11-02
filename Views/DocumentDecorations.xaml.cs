@@ -283,10 +283,13 @@ namespace Dash
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
             var parentIsFreeform = true;
+            var parentIsPDF = false;
             foreach (var doc in SelectedDocs)
             {
                 if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
                     parentIsFreeform = false;
+                if (doc.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType))
+                    parentIsPDF = true;
                 var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                 topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
@@ -303,6 +306,7 @@ namespace Dash
             }
             this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            this.xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null ? Visibility.Collapsed : Visibility.Visible;
 
@@ -560,7 +564,24 @@ namespace Dash
                         e.GetPosition(doc));
             }
         }
-
+        private void xToggleActivationButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (SelectedDocs.FirstOrDefault() is DocumentView first)
+            {
+                var onoff = !LinkActivationManager.ActivatedDocs.Contains(first);
+                if (onoff)
+                {
+                    xActivationButton.Fill = new SolidColorBrush(Colors.Red);
+                    LinkActivationManager.ActivateDoc(first);
+                }
+                else
+                {
+                    xActivationButton.Fill = new SolidColorBrush(Colors.LightSkyBlue);
+                    LinkActivationManager.DeactivateDoc(first);
+                }
+            }
+        }
+        
 
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
