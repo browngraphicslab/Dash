@@ -43,20 +43,20 @@ namespace Dash
         }
         public void OnDocumentLoaded(DocumentController layoutDocument) { DocumentLoaded?.Invoke(layoutDocument, new EventArgs()); }
         private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
-        private Stack<double> _BackStack;
-        private Stack<double> _ForwardStack;
-        private double _pdfMaxWidth = -1;
-        private double _pdfTotalHeight;
+        private Stack<double>     _BackStack;
+        private Stack<double>     _ForwardStack;
+        private double            _pdfMaxWidth = -1;
+        private double            _pdfTotalHeight;
         private DocumentViewModel _lastVm = null;
-        private Point _downPt = new Point();
-        private double _ScrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
-        private DispatcherTimer _Timer;
-        private AnnotationOverlay _AnnotationOverlay;
-        public AnnotationOverlay AnnotationOverlay => _AnnotationOverlay;
-        public DocumentController DataDocument => (DataContext as DocumentViewModel).DataDocument;
-        public DocumentController LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
-        public DataVirtualizationSource Pages { get; set; }
-        public WPdf.PdfDocument PDFdoc { get; set; }
+        private Point             _downPt = new Point();
+        private double            _scrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
+        private DispatcherTimer   _scrollTimer;
+        private AnnotationOverlay _annotationOverlay;
+        public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
+        public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
+        public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
+        public DataVirtualizationSource           Pages { get; set; }
+        public WPdf.PdfDocument                   PDFdoc { get; set; }
         public ObservableCollection<DocumentView> Annotations
         {
             get => _annotationList;
@@ -66,7 +66,7 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        public double PdfMaxWidth
+        public double                             PdfMaxWidth
         {
             get => _pdfMaxWidth;
             set
@@ -75,7 +75,7 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        public double PdfTotalHeight
+        public double                             PdfTotalHeight
         {
             get => _pdfTotalHeight;
             set
@@ -88,7 +88,6 @@ namespace Dash
         public PdfAnnotationView()
         {
             InitializeComponent();
-            SetUpToolTips();
             Pages = new DataVirtualizationSource(this, ScrollViewer, PageItemsControl);
 
             Loaded += PdfAnnotationView_Loaded;
@@ -102,11 +101,14 @@ namespace Dash
 
             Canvas.SetZIndex(xButtonPanel, 999);
 
+            _scrollTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
+            _scrollTimer.Tick += (s, e) =>
+            {
+                _scrollTimer.Stop();
+                AddToStack(_BackStack, ScrollViewer);
+            };
 
-            _Timer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
-            _Timer.Tick += TimerTick;
-
-            _Timer.Start();
+            _scrollTimer.Start();
         }
         ~PdfAnnotationView()
         {
@@ -115,7 +117,7 @@ namespace Dash
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (_AnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
+            if (_annotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
                 .GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
@@ -123,7 +125,7 @@ namespace Dash
             }
 
             var target = linkDoc.GetLinkedDocument(direction);
-            if (_AnnotationOverlay.RegionDocsList.Contains(target))
+            if (_annotationOverlay.RegionDocsList.Contains(target))
             {
                 ScrollToRegion(target, linkDoc.GetLinkedDocument(direction, true));
                 return LinkHandledResult.HandledClose;
@@ -300,7 +302,7 @@ namespace Dash
             if (args.NewValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
             {
                 ScrollToRegion(args.NewValue as DocumentController);
-                _AnnotationOverlay.SelectRegion(args.NewValue as DocumentController);
+                _annotationOverlay.SelectRegion(args.NewValue as DocumentController);
 
                 sender.RemoveField(KeyStore.GoToRegionKey);
                 sender.RemoveField(KeyStore.GoToRegionLinkKey);
@@ -309,7 +311,7 @@ namespace Dash
 
         private void PdfAnnotationView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ScrollViewer.ChangeView(null, _ScrollRatio * ScrollViewer.ExtentHeight, null, true);
+            ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
         }
 
         private void PdfAnnotationView_KeyDown(object sender, KeyRoutedEventArgs args)
@@ -346,7 +348,7 @@ namespace Dash
                     {
                         for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
                         {
-                            var ele = _AnnotationOverlay.TextSelectableElements[i];
+                            var ele = _annotationOverlay.TextSelectableElements[i];
                             var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
                             ;
                             var correctedFont = fontFamily;
@@ -381,7 +383,7 @@ namespace Dash
                         {
                             if (!indices.Contains(i))
                             {
-                                var eleBounds = _AnnotationOverlay.TextSelectableElements[i].Bounds;
+                                var eleBounds = _annotationOverlay.TextSelectableElements[i].Bounds;
                                 if (selection.ClipRect == null || selection.ClipRect == Rect.Empty ||
                                     selection.ClipRect.Contains(new Point(eleBounds.X + eleBounds.Width / 2,
                                         eleBounds.Y + eleBounds.Height / 2)))
@@ -403,14 +405,14 @@ namespace Dash
                             sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
                         }
 
-                        var selectableElement = _AnnotationOverlay.TextSelectableElements[index];
+                        var selectableElement = _annotationOverlay.TextSelectableElements[index];
                         var nchar = ((string)selectableElement.Contents).First();
                         if (prevIndex > 0 && sb.Length > 0 &&
                             (nchar > 128 || char.IsUpper(nchar) ||
                              (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
                               !char.IsLower(sb[sb.Length - 1]))) &&
-                            _AnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
-                            _AnnotationOverlay.TextSelectableElements[index].Bounds.Top)
+                            _annotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
+                            _annotationOverlay.TextSelectableElements[index].Bounds.Top)
                         {
                             sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
                         }
@@ -494,9 +496,9 @@ namespace Dash
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
             if (AnnotationOverlay == null)
             {
-                _AnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
                 xPdfGrid.Children.Add(AnnotationOverlay);
-                _AnnotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
+                _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
             xCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
             if (Pages.PageSizes.Count != 0)
@@ -506,7 +508,7 @@ namespace Dash
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
             _lastVm.LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
-            _AnnotationOverlay.TextSelectableElements?.Clear();
+            _annotationOverlay.TextSelectableElements?.Clear();
             SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
         }
 
@@ -526,12 +528,6 @@ namespace Dash
             }
         }
 
-        private void TimerTick(object sender, object o)
-        {
-            _Timer.Stop();
-            AddToStack(_BackStack, ScrollViewer);
-        }
-
         [NotifyPropertyChangedInvocator]
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -540,11 +536,11 @@ namespace Dash
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (_AnnotationOverlay.CurrentAnnotationType == AnnotationType.Region)
+            if (_annotationOverlay.CurrentAnnotationType == AnnotationType.Region)
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    _AnnotationOverlay.EmbedDocumentWithPin(e.GetPosition(_AnnotationOverlay));
+                    _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
                 }
             }
         }
@@ -555,7 +551,7 @@ namespace Dash
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
-                _AnnotationOverlay.EndAnnotation(e.GetCurrentPoint(_AnnotationOverlay).Position);
+                _annotationOverlay.EndAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
                 e.Handled = true;
                 var curPt = e.GetCurrentPoint(this).Position;
                 var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
@@ -574,11 +570,11 @@ namespace Dash
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
-                _AnnotationOverlay.EndAnnotation(e.GetCurrentPoint(_AnnotationOverlay).Position);
+                _annotationOverlay.EndAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
             }
             else if (currentPoint.Properties.IsLeftButtonPressed)
             {
-                _AnnotationOverlay.UpdateAnnotation(e.GetCurrentPoint(_AnnotationOverlay).Position);
+                _annotationOverlay.UpdateAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
             }
         }
 
@@ -588,7 +584,7 @@ namespace Dash
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                _AnnotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, e.GetCurrentPoint(_AnnotationOverlay).Position);
+                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, e.GetCurrentPoint(_annotationOverlay).Position);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             }
@@ -599,8 +595,8 @@ namespace Dash
         {
             if (ScrollViewer.ExtentHeight != 0)
             {
-                _Timer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-                _Timer.Start();
+                _scrollTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                _scrollTimer.Start();
             }
 
             SetAnnotationsVisibleOnScroll(null);
@@ -608,7 +604,7 @@ namespace Dash
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _ScrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
+            _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
         }
 
         private void Divider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -742,44 +738,6 @@ namespace Dash
                 viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
                 backstack.Push(pop);
             }
-        }
-
-        private void SetUpToolTips()
-        {
-            var placementMode = PlacementMode.Bottom;
-            const int offset = 0;
-
-            var _next = new ToolTip()
-            {
-                Content = "Next page",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xNextPageButton, _next);
-
-            var _prev = new ToolTip()
-            {
-                Content = "Previous page",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xPreviousPageButton, _prev);
-
-            var _back = new ToolTip()
-            {
-                Content = "Scroll backward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xScrollBack, _back);
-
-            var _forward = new ToolTip()
-            {
-                Content = "Scroll forward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xScrollForward, _forward);
         }
 
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)

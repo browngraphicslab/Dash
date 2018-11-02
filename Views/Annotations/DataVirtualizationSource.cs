@@ -68,7 +68,7 @@ namespace Dash
             
             _scrollViewer.ViewChanging  += (s,e) => RenderIndices(e.FinalView.VerticalOffset);
             _scrollViewer.SizeChanged   += (s,e) => RenderIndices(_verticalOffset);
-            RenderPage(0);
+            RenderIndices(0);
         }
         private void RenderIndices(double scrollOffset)
         {
