@@ -201,24 +201,13 @@ namespace Dash
             return new RichTextNote().Document;
         }
 
-        private async Task OnPdfUriChanged(bool force = false)
+        private async Task OnPdfUriChanged()
         {
-            if (PdfUri == null)
-            {
-                return;
-            }
-
             try
             {
-                if (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://"))
-                {
-                    _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
-                }
-                else
-                {
-                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
-
-                }
+                _file = (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://")) ? 
+                    await StorageFile.GetFileFromApplicationUriAsync(PdfUri):
+                    await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
             }
             catch (ArgumentException)
             {
@@ -226,19 +215,9 @@ namespace Dash
             }
 
             var reader = new PdfReader(await _file.OpenStreamForReadAsync());
-            PdfDocument pdfDocument;
-            try
-            {
-                pdfDocument = new PdfDocument(reader);
-            }
-            catch (BadPasswordException)
-            {
-                return;
-            }
+            PdfDocument pdfDocument = new PdfDocument(reader);
             var strategy = new BoundsExtractionStrategy();
-            var processor = new PdfCanvasProcessor(strategy);
-            double offset = 0;
-            double maxWidth = 0;
+            var maxWidth = 0.0;
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
@@ -246,7 +225,6 @@ namespace Dash
                 _botPdf.Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
-
             _topPdf.PdfMaxWidth = _botPdf.PdfMaxWidth = PdfMaxWidth = maxWidth;
 
             _topPdf.PDFdoc = _botPdf.PDFdoc = PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
@@ -255,35 +233,28 @@ namespace Dash
                 _currentPageCount = (int)PDFdoc.PageCount;
             }
 
-            if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
-            {
-                await Task.Run(() =>
-                {
-                    for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-                    {
-                        var page = pdfDocument.GetPage(i);
-                        var size = page.GetPageSize();
-                        strategy.SetPage(i - 1, offset, size, page.GetRotation());
-                        offset += page.GetPageSize().GetHeight() + 10;
-                        processor.ProcessPageContent(page);
-                    }
-                });
-            }
-            else
+            var offset = 0.0;
+            await Task.Run(() =>
             {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
                     offset += page.GetPageSize().GetHeight() + 10;
+                    if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
+                    {
+                        strategy.SetPage(i - 1, offset, page.GetPageSize(), page.GetRotation());
+                        new PdfCanvasProcessor(strategy).ProcessPageContent(page);
+                    }
                 }
-            }
+            });
 
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
             try
             {
                 _botPdf.AnnotationOverlay.TextSelectableElements = selectableElements;
                 _botPdf.AnnotationOverlay.PageEndIndices = pages;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
@@ -296,16 +267,22 @@ namespace Dash
             _botPdf.Pages.Initialize();
             _topPdf.Pages.Initialize();
 
-            foreach (var child in this.GetDescendantsOfType<TextAnnotation>())
-            {
-                child.HelpRenderRegion();
-            }
+            this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject,
             DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
-            await ((PdfView)dependencyObject).OnPdfUriChanged();
+            if (dependencyObject is PdfView pdfView && pdfView.PdfUri != null)
+            {
+                try
+                {
+                    await pdfView.OnPdfUriChanged();
+                }
+                catch (BadPasswordException)
+                {
+                }
+            }
         }
 
         [NotifyPropertyChangedInvocator]
@@ -365,7 +342,6 @@ namespace Dash
         
         private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-
             e.Handled = true;
         }
 
