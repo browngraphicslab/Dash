@@ -787,7 +787,7 @@ namespace Dash
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets == null) return;
 
-            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (xBottomPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
+            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (xBotPdfCol.ActualWidth / PdfMaxWidth)).ToList();
 
             var currOffset = relativeOffsets.First();
             var firstOffset = relativeOffsets.First();
