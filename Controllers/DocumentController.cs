@@ -900,8 +900,7 @@ namespace Dash
             var doc = forceMask ? this : proto;
 
             // get the old value of the field
-            FieldControllerBase oldField;
-            proto._fields.TryGetValue(key, out oldField);
+            proto._fields.TryGetValue(key, out var oldField);
             var overwrittenField = (forceMask && !this.Equals(proto)) ? null : oldField;
 
             // if the old and new field reference the exact same controller then we're done unless we're force-masking a field
@@ -911,9 +910,6 @@ namespace Dash
                 //{
                 //    return false;
                 //}
-
-                //field.SaveOnServer();
-
 
                 if (doc == proto && oldField != null)
                 {
@@ -930,17 +926,9 @@ namespace Dash
                 }
 
                 // fire document field updated if the field has been replaced or if it did not exist before
-                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference = new DocumentFieldReference(doc, key);
+                var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+                var reference  = new DocumentFieldReference(doc, key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
-
-                //TODO RefCount
-                //if (key.Equals(KeyStore.PrototypeKey))
-                //    ; // need to see if any prototype operators need to be run
-                //else if (key.Equals(KeyStore.DocumentContextKey))
-                //    ; // do we need to watch anything when the DocumentContext field is set?
-                //else
-                //    setupFieldChangedListeners(key, field, oldField, new Context(doc));
 
                 return (true, updateArgs);
             }
