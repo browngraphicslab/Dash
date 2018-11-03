@@ -984,6 +984,11 @@
     <Compile Include="Views\Tag.xaml.cs">
       <DependentUpon>Tag.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Templates\TemplateGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TemplateGenerator.tt</DependentUpon>
+    </Compile>
     <Compile Include="Views\TreeView\TreeView.xaml.cs">
       <DependentUpon>TreeView.xaml</DependentUpon>
     </Compile>
