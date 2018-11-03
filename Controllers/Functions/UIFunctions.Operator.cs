@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -31,13 +31,13 @@ public sealed class TextInputOperator : OperatorController
 
     public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
     {
-        [Output0Key] = DashShared.TypeInfo.Text,
+        [Output0Key] = DashShared.TypeInfo.Operator,
     };
 
     public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
                                  DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
-        var output0 = await Dash.UIFunctions.TextInput();
-        outputs[Output0Key] = output0;
+        var output0 = await Dash.UIFunctions.ManageBehaviors();
+        outputs[Output0Key] = new ListController<OperatorController>(output0);
     }
 
 }

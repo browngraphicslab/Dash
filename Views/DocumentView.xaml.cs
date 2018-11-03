@@ -19,6 +19,7 @@ using Dash.Controllers.Operators;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.FontIcons;
 using Dash.Converters;
+using Dash.Popups;
 using DashShared;
 using Dash.Views.Collection;
 
@@ -1115,24 +1116,18 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false ? "Remove Button Behavior" : "Add Button Behavior",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.AddressBook }
+                Text = AnyScripts() ? "Manage Behaviors" : "Add Behaviors",
+                Icon = new FontIcons.FontAwesome { Icon = AnyScripts() ? FontAwesomeIcon.AddressBook : FontAwesomeIcon.Plus }
             });
-            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
-            xMenuFlyout.Items.Add(new MenuFlyoutItem()
-            {
-                Text = "Add Tapped Behavior",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Plus }
-            });
-            var script = "function(doc) {" +
-                         "  var funcText = text_input();" +
-                         "  var op = exec(funcText);" +
-                         "  if(doc.TappedEvent == null) {" +
-                         "     doc.TappedEvent = [op];" +
-                         "  } else {" +
-                         "      doc.TappedEvent = doc.TappedEvent + op;" +
-                         "  }" +
-                         "}";
+            const string script = "function(doc) {" +
+                                  "  var funcText = text_input();" +
+                                  "  var op = exec(funcText);" +
+                                  "  if(doc.TappedEvent == null) {" +
+                                  "     doc.TappedEvent = [op];" +
+                                  "  } else {" +
+                                  "      doc.TappedEvent = doc.TappedEvent + op;" +
+                                  "  }" +
+                                  "}";
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
                 {
@@ -1180,6 +1175,8 @@ namespace Dash
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
             }
         }
+
+        private bool AnyScripts() => ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false;
 
         private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
         {

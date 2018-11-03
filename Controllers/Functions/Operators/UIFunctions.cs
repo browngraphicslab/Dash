@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dash.Popups;
 
 namespace Dash
 {
@@ -26,5 +27,18 @@ namespace Dash
 
             return null;
         }
-    }
+
+        public static async Task<List<OperatorController>> ManageBehaviors()
+        {
+            var manageBehaviors = new ManageBehaviorsPopup();
+
+            var newBehaviors = new List<OperatorController>(); 
+            if ((newBehaviors = await manageBehaviors.OpenAsync()) != null)
+            {
+                
+            }
+
+            return null;
+        }
+    } 
 }

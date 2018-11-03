@@ -637,7 +637,7 @@ namespace Dash
         /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
         /// </summary>
         /// <param name="popup"></param>
-        private void SetUpPopup(DashPopup popup)
+        public void SetUpPopup(DashPopup popup)
         {
             ActivePopup = popup;
             xOverlay.Visibility = Visibility.Visible;
@@ -650,7 +650,7 @@ namespace Dash
         /// <summary>
         /// This method is called after a popup closes, to remove it from the page.
         /// </summary>
-        private void UnsetPopup()
+        public void UnsetPopup()
         {
             xOverlay.Visibility = Visibility.Collapsed;
             if (ActivePopup != null)

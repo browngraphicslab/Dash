@@ -38,16 +38,6 @@ namespace Dash
             // Body of for loop
             while (!InfiniteLoopDetected())
             {
-                sw.Start();
-                if (!((BoolController)await _forBinary.Execute(scope)).Data)
-                {
-                    sw.Stop();
-                    break;
-                }
-                sw.Stop();
-                // Have we timed out?
-                if (false && _loopRef == RecursiveError) return new TextController(RecursiveError);
-
                 // Execute body
                 await _forBody.Execute(scope); 
 
@@ -60,7 +50,7 @@ namespace Dash
 
         private void WhileTimeout(object status) => _loopRef = RecursiveError;
 
-        private bool InfiniteLoopDetected() => false &&_loopRef == RecursiveError;
+        private bool InfiniteLoopDetected() => _loopRef == RecursiveError;
 
         public Op.Name GetOperatorName() => _opName;
 
