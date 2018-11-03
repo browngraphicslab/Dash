@@ -14,12 +14,12 @@ namespace Dash
 
         public override Task<FieldControllerBase> Execute(Scope scope)
         {
-            return Task.FromResult(_field);
+            return Task.FromResult(_field.Copy());
         }
 
         public FieldControllerBase GetField()
         {
-            return _field;
+            return _field.Copy();
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

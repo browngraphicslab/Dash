@@ -82,7 +82,14 @@
             <Border Grid.RowSpan="2"  VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
-            <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
+        <Canvas x:Name="xActivationCanvas" VerticalAlignment="Bottom" Grid.Column="1" Width="26" Margin="-70 0 0 30">
+            <Grid  x:Name="xToggleActivationButton" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="xToggleActivationButton_OnTapped">
+                <Ellipse x:Name="xActivationButton"/>
+                <TextBlock FontFamily="Segoe MDL2 Assets" x:Name="xToggleActivationText"  Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+            </Grid>
+        </Canvas>
+        <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
                 <Grid x:Name="xAnnotationButtonsStack" Padding="5 0 0 0" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -99,7 +106,7 @@
                         </ToolTipService.ToolTip>
                     </Grid>
                     <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
-              </Grid>
+                 </Grid>
             </Canvas>
 
         <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="2" Grid.Column="0" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">

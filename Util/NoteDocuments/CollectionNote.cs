@@ -19,17 +19,17 @@ namespace Dash
                 // [KeyStore.DataKey] = new ListController<DocumentController>(),
                 [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() }),
-                [KeyStore.FolderIconKey] = new ImageController(new Uri("https://opengameart.org/sites/default/files/Flat%20Folder%20icon.png"))
+                [KeyStore.FolderIconKey] = new ImageController(new Uri("https://image.freepik.com/free-vector/illustration-of-data-folder-icon_53876-6329.jpg"))
             };
             return new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
         }
 
-        DocumentController CreateLayout(DocumentController dataDoc, CollectionView.CollectionViewType viewType, Point where, Size size)
+        DocumentController CreateLayout(DocumentController dataDoc, CollectionViewType viewType, Point where, Size size)
         {
             return new CollectionBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height, viewType).Document;
         }
         static int count = 1;
-        public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300, IEnumerable<DocumentController> collectedDocuments = null) :
+        public CollectionNote(Point where, CollectionViewType viewtype, double width = 500, double height = 300, IEnumerable<DocumentController> collectedDocuments = null) :
             base(_prototypeID)
         {
             DocumentController dataDocument = makeDataDelegate(new ListController<DocumentController>());
@@ -37,9 +37,9 @@ namespace Dash
             dataDocument.Tag = "Collection Note Data " + count;
             Document.Tag = "Collection Note Layout" + count++;
 
-            if (viewtype == CollectionView.CollectionViewType.Icon)
+            if (viewtype == CollectionViewType.Icon)
             {
-                Document.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CollectionView.CollectionViewType.Freeform.ToString(), true);
+                Document.SetField<TextController>(KeyStore.CollectionOpenViewTypeKey, CollectionViewType.Freeform.ToString(), true);
             }
 
             dataDocument.SetField(KeyStore.InkDataKey, new InkController(), true);

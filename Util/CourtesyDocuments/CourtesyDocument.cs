@@ -79,36 +79,6 @@ namespace Dash
             //dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
-        protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
-
-
-        [Obsolete("Use FieldBindings and AddFieldBinding instead")]
-        protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate) where T : FrameworkElement
-        {
-            DocumentController.DocumentUpdatedHandler handler = (sender, args, c) =>
-            {
-                if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
-                bindingDelegate(element, sender, c); //TODO Should be context or args.Context?
-            };
-
-            AddHandlers(element, docController, k, context, bindingDelegate, handler);
-        }
-
-        protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate, DocumentController.DocumentUpdatedHandler handler) where T : FrameworkElement
-        {
-            element.Loaded += delegate
-            {
-                bindingDelegate(element, docController, context);
-                docController.AddFieldUpdatedListener(k, handler);
-            };
-            element.Unloaded += delegate
-            {
-                docController.RemoveFieldUpdatedListener(k, handler);
-            };
-        }
-
         public static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
             FieldBinding<NumberController> binding = new FieldBinding<NumberController>()

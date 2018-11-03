@@ -182,9 +182,21 @@
     </Compile>
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
     <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\SelectionFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\UtilFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\DateOperator.cs" />
@@ -215,6 +227,9 @@
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
     <Compile Include="Util\DSL\Error Models\IncompleteVariableDeclarationErrorModel.cs" />
     <Compile Include="Util\DSL\UserPromptException.cs" />
+    <Compile Include="Popups\TextInputPopup.xaml.cs">
+      <DependentUpon>TextInputPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
     <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />
@@ -246,6 +261,9 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
+      <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
@@ -741,9 +759,6 @@
     <Compile Include="Views\Annotations\PDFRegionMarker.xaml.cs">
       <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Annotations\PdfSideAnnotation.xaml.cs">
-      <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
     </Compile>
@@ -915,15 +930,6 @@
     <Compile Include="Sources\Api\XAML Elements\ApiProperty.xaml.cs">
       <DependentUpon>ApiProperty.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Sources\FilePicker\FilePickerDisplay.xaml.cs">
-      <DependentUpon>FilePickerDisplay.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\PDFFilePicker.xaml.cs">
-      <DependentUpon>PDFFilePicker.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\PDF\PDFViewer.xaml.cs">
-      <DependentUpon>PDFViewer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
@@ -1089,6 +1095,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TextInputPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Util\InkSubToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1122,6 +1132,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\PdfAnnotationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1361,10 +1375,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Annotations\PdfSideAnnotation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Collection\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1450,18 +1460,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionGridView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\FilePicker\PDFFilePicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\FilePicker\PDF\PDFViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

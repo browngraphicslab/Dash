@@ -26,6 +26,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using static Dash.DocumentController;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -124,9 +125,6 @@ namespace Dash
 
             xToolbar.SetValue(Canvas.ZIndexProperty, 20);
 
-            xLinkInputBox.AddKeyHandler(VirtualKey.Escape, args => { HideLinkInputBox(); });
-            xLinkInputBox.LostFocus += (sender, args) => { HideLinkInputBox(); };
-
             SplitFrame.ActiveDocumentChanged += frame =>
             {
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
@@ -152,16 +150,6 @@ namespace Dash
             Debug.WriteLine("val = " + value);
         }
 
-        private void HideLinkInputBox()
-        {
-            xLinkInputBox.ClearHandlers(VirtualKey.Enter);
-            xLinkInputOut.Begin();
-            xLinkInputOut.Completed += (o, o1) =>
-            {
-                xLinkInputBox.Text = "";
-                xLinkInputBox.Visibility = Visibility.Collapsed;
-            };
-        }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -176,11 +164,19 @@ namespace Dash
             }
             else
             {
-                MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                MainDocument = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                 MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
             FieldControllerBase.MakeRoot(MainDocument);
+
+            var l = new ListController<TextController>();
+            for (int i = 0; i < 2000; i++)
+            {
+                l.Add(new TextController());
+            }
+
+            MainDocument.SetField(KeyController.Get("some string it doesnt matter"), l, true);
 
             LoadSettings();
 
@@ -192,7 +188,7 @@ namespace Dash
             DocumentController lastWorkspace;
             if (col.Count == 0)
             {
-                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 col.Add(documentController);
                 lastWorkspace = documentController;
             }
@@ -431,7 +427,7 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
@@ -453,13 +449,10 @@ namespace Dash
                 xLeftStack.Children.Add(xMapDocumentView);
                 xLeftStack.Children.Add(overlay);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) =>
-                {
-                    var cview = xMapDocumentView.ViewModel.Content as CollectionView;
-                    cview?.ViewModel?.FitContents();
-                };
+                mapTimer.Tick += (ss, ee) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-            }
+            } 
+
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
             mapTimer.Start();
@@ -915,24 +908,6 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Visible;
         }
-
-        public void TogglePopup()
-        {
-            //xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            //xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
-            //xLoadingPopup.IsOpen = true;
-            //Load.Begin();
-        }
-
-        public void ClosePopup()
-        {
-            //Load.Stop();
-            //xLoadingPopup.HorizontalOffset = 0;
-            //xLoadingPopup.VerticalOffset = 0;
-            //xLoadingPopup.IsOpen = false;
-
-        }
-
 
         private void SetUpToolTips()
         {

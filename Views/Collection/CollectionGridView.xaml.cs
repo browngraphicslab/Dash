@@ -16,9 +16,10 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
-        int _cellSize = 250;
+        private int _cellSize = 250;
         public UserControl         UserControl => this;
-        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
+        public CollectionViewModel ViewModel   => DataContext as CollectionViewModel;
+        public CollectionViewType ViewType => CollectionViewType.Grid;
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()
         {

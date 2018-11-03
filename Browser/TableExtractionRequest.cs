@@ -40,7 +40,7 @@ namespace Dash
         {
             if (rows.Count() > 0)
             {
-                var prototype = new CollectionNote(new Point(), CollectionView.CollectionViewType.Stacking, 200, 200).Document;
+                var prototype = new CollectionNote(new Point(), CollectionViewType.Stacking, 200, 200).Document;
                 prototype.GetDataDocument().SetTitle("Prototype Row Record");
                 prototype.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
 
@@ -61,7 +61,7 @@ namespace Dash
                     CollectionDBSchemaView.AddDataBoxForKey(key, prototype);
                 }
                 var docs = rows.Select((jobj) => ParseRow(jobj, primaryKey, prototype, parser));
-                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, collectedDocuments: docs).Document;
+                var cnote = new CollectionNote(where, CollectionViewType.Schema, collectedDocuments: docs).Document;
                 cnote.GetDataDocument().SetTitle("Table " + rows.Count());
                 cnote.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, prototype, true);
                 cnote.SetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns, listOfColumns, true);
