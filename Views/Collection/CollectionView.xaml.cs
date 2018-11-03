@@ -1,6 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using Windows.Devices.Enumeration;
 using Windows.Foundation;
+using Windows.Media.Capture;
+using Windows.Media.MediaProperties;
+using Windows.Media.SpeechSynthesis;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -180,60 +187,7 @@ namespace Dash
             CurrentViewLoaded?.Invoke(sender, e);
         }
 
-        private static uint HResultPrivacyStatementDeclined = 0x80045509;
-
-        private async void MakeSpeechDoc(object sender)
-        {
-            try
-            {
-                // Create an instance of SpeechRecognizer.
-                var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
-
-                // Listen for audio input issues.
-                //speechRecognizer.RecognitionQualityDegrading += speechRecognizer_RecognitionQualityDegrading;
-
-                // Add a web search grammar to the recognizer.
-                //var webSearchGrammar = new Windows.Media.SpeechRecognition.SpeechRecognitionTopicConstraint(Windows.Media.SpeechRecognition.SpeechRecognitionScenario.WebSearch, "webSearch");
-
-                speechRecognizer.UIOptions.AudiblePrompt = "Say what you want to search for...";
-                speechRecognizer.UIOptions.ExampleText = @"Ex. 'weather for London'";
-                //speechRecognizer.Constraints.Add(webSearchGrammar);
-                // speechRecognizer.Constraints.Add(new SpeechRecognitionVoiceCommandDefinitionConstraint());
-                //TODO: look into creating a SpeechRecognitionVoiceCommandDefinitionConstraint for speech commands
-
-                // Compile the dictation grammar by default.
-                await speechRecognizer.CompileConstraintsAsync();
-
-                // Start recognition.
-                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeWithUIAsync();
-
-                // Make doc out of result
-                var newDoc = new RichTextNote(text: speechRecognitionResult.Text, size: new Size(300, double.NaN)).Document;
-                var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
-                var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-                var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
-                Actions.DisplayDocument(this.ViewModel, newDoc, where);
-            }
-            catch (Exception exception)
-            {
-                // Handle the speech privacy policy error.
-                if ((uint)exception.HResult == HResultPrivacyStatementDeclined)
-                {
-                    var messageDialog = new Windows.UI.Popups.MessageDialog("The privacy statement was declined. " +
-                                           "Go to Settings -> Privacy -> Speech, inking and typing, and ensure you " +
-                                           "have viewed the privacy policy, and 'Get To Know You' is enabled.");
-                    await messageDialog.ShowAsync();
-                    // Open the privacy/speech, inking, and typing settings page.
-                    await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-accounts"));
-                }
-                else
-                {
-                    var messageDialog = new Windows.UI.Popups.MessageDialog(exception.Message, "Exception");
-                    await messageDialog.ShowAsync();
-                }
-            }
-        }
-
+      
         #region Menu
         public void SetupContextMenu(MenuFlyout contextMenu)
         {
@@ -251,7 +205,7 @@ namespace Dash
                 Text = "Make Speech Document",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Microphone }
             });
-            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => MakeSpeechDoc(ss);
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += MakeSpeechDoc;
 
             var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.AreContentsHitTestVisible == true;
             contextMenu.Items.Add(new MenuFlyoutItem()
@@ -331,6 +285,78 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMaximize }
             });
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += ScriptEdit_OnClick;
+        }
+
+        private static uint HResultPrivacyStatementDeclined = 0x80045509;
+        private async void MakeSpeechDoc(object sender, RoutedEventArgs e)
+        {
+            var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
+            var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            //TODO: offset where by menu height
+
+            try
+            {
+                // Create an instance of SpeechRecognizer.
+                var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
+
+                // Listen for audio input issues.
+                //speechRecognizer.RecognitionQualityDegrading += speechRecognizer_RecognitionQualityDegrading;
+
+                // Add a web search grammar to the recognizer.
+                //var webSearchGrammar = new Windows.Media.SpeechRecognition.SpeechRecognitionTopicConstraint(Windows.Media.SpeechRecognition.SpeechRecognitionScenario.WebSearch, "webSearch");
+
+                speechRecognizer.UIOptions.AudiblePrompt = "Say what you want to save...";
+                speechRecognizer.UIOptions.ExampleText = @"Ex. 'this document explains...'";
+                //speechRecognizer.Constraints.Add(webSearchGrammar);
+                // speechRecognizer.Constraints.Add(new SpeechRecognitionVoiceCommandDefinitionConstraint());
+                //TODO: look into creating a SpeechRecognitionVoiceCommandDefinitionConstraint for speech commands
+
+                // Compile the dictation grammar by default.
+                await speechRecognizer.CompileConstraintsAsync();
+
+                // Start recognition.
+                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeWithUIAsync();
+
+                // Make doc out of result
+                var textDoc = new RichTextNote(text: "text", where: where, size: new Size(300, double.NaN)).Document;
+                Actions.DisplayDocument(this.ViewModel, textDoc, where);
+                
+                //generate audio for this text
+                // The object for controlling the speech synthesis engine (voice).
+                var synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
+                // Generate the audio stream from plain text.
+                SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync("text");
+                var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                StorageFile file = await localFolder.CreateFileAsync("audio.mp3", CreationCollisionOption.GenerateUniqueName);
+                using (var reader = new DataReader(stream))
+                {
+                    await reader.LoadAsync((uint)stream.Size);
+                    IBuffer buffer = reader.ReadBuffer((uint)stream.Size);
+                    await FileIO.WriteBufferAsync(file, buffer);
+                }
+                
+                var audDoc = new AudioNote(new Uri(file.Path)).Document;
+                Actions.DisplayDocument(this.ViewModel, audDoc, new Point(where.X, where.Y + 40));
+            }
+            catch (Exception exception)
+            {
+                // Handle the speech privacy policy error.
+                if ((uint)exception.HResult == HResultPrivacyStatementDeclined)
+                {
+                    var messageDialog = new Windows.UI.Popups.MessageDialog("The privacy statement was declined. " +
+                                           "Go to Settings -> Privacy -> Speech, inking and typing, and ensure you " +
+                                           "have viewed the privacy policy, and 'Get To Know You' is enabled.");
+                    await messageDialog.ShowAsync();
+                    // Open the privacy/speech, inking, and typing settings page.
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-accounts"));
+                }
+                else
+                {
+                    var messageDialog = new Windows.UI.Popups.MessageDialog(exception.Message, "Exception");
+                    await messageDialog.ShowAsync();
+                }
+            }
         }
 
         private void ScriptEdit_OnClick(object sender, RoutedEventArgs e)
