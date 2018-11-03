@@ -16,7 +16,7 @@
     Height="22">
 
     <FlyoutBase.AttachedFlyout>
-        <Flyout Placement="Right">
+        <Flyout Placement="Right" x:Name="xFlyout">
             <local:LinkMenu></local:LinkMenu>
         </Flyout>
 

@@ -30,20 +30,20 @@ namespace Dash
 	    }
         private string _text;
         private Color _color;
-        private DocumentDecorations _docdecs;
+        private LinkMenu _linkMenu;
         public Grid XTagContainer
         {
             get => xTagContainer;
             set { xTagContainer = value; }
         }
 
-		public Tag(DocumentDecorations docdecs, String text, Color color)
+		public Tag(LinkMenu linkMenu, String text, Color color)
         {
             this.InitializeComponent();
             xTagContainer.Background = new SolidColorBrush(color);
             xTagText.Text = text;
             _text = text;
-            _docdecs = docdecs;
+            _linkMenu = linkMenu;
             _color = color;
         }
 
@@ -126,12 +126,12 @@ namespace Dash
         public void Select()
         {
 
-            foreach (var tag in _docdecs._tagNameDict)
+            foreach (var tag in _linkMenu._tagNameDict)
             {
                 tag.Value.Deselect();
             }
 
-            foreach (var tag in _docdecs.RecentTags)
+            foreach (var tag in _linkMenu.RecentTags)
             {
                 tag.Deselect();
             }
@@ -145,7 +145,7 @@ namespace Dash
 
 
             bool unique = true;
-            foreach (var recent in _docdecs.RecentTags)
+            foreach (var recent in _linkMenu.RecentTags)
             {
                 if (recent.Text == _text)
                 {
@@ -159,42 +159,39 @@ namespace Dash
 
             if (unique)
             {
-                if (_docdecs.RecentTags.Count < 5)
+                if (_linkMenu.RecentTags.Count < 5)
                 {
-                    _docdecs.RecentTags.Enqueue(this);
-                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
+                    _linkMenu.RecentTags.Enqueue(this);
+                    //_docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
                 }
                 else
                 {
-                    _docdecs.RecentTags.Dequeue();
-                    _docdecs.RecentTagsSave.RemoveAt(0);
-                    _docdecs.RecentTags.Enqueue(this);
-                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
+                    _linkMenu.RecentTags.Dequeue();
+                    //_linkMenu.RecentTagsSave.RemoveAt(0);
+                    _linkMenu.RecentTags.Enqueue(this);
+                    //_docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
                 }
             }
 
-            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-            if (_docdecs.SelectedDocs.Count == 1)
-            {
-                //foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-                    foreach (var link in _docdecs.CurrentLinks)
-                    {
-                        //if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-                        //{
-                        //    AddTag(link);
-                        //    break;
-                        //}
+            //var firstDoc = _linkMenu.SelectedDocs.FirstOrDefault();
+            //if (_linkMenu.SelectedDocs.Count == 1)
+            //{
+            //    //foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
+            //        foreach (var link in _linkMenu.CurrentLinks)
+            //        {
+            //            //if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
+            //            //{
+            //            //    AddTag(link);
+            //            //    break;
+            //            //}
 
-                        if (link.GetDataDocument().GetLinkTag() != null)
-                        {
-                            AddTag(link);
-                            break;
-                        }
-                    }
-            }
-
-
-            _docdecs.SetPositionAndSize();
+            //            if (link.GetDataDocument().GetLinkTag() != null)
+            //            {
+            //                AddTag(link);
+            //                break;
+            //            }
+            //        }
+            //}
         }
 
         public void RidSelectionBorder()
@@ -227,12 +224,12 @@ namespace Dash
             List<string> childList = new List<string>();
             List<string> recentList = new List<string>();
 
-            foreach (var tag in _docdecs.XTagContainer.Children)
+            foreach (var tag in _linkMenu.XTagContainer.Children)
             {
                 childList.Add((tag as Tag).Text);
             }
 
-            foreach (var tag in _docdecs.RecentTags)
+            foreach (var tag in _linkMenu.RecentTags)
             {
                 recentList.Add(tag.Text);
             }
@@ -241,56 +238,56 @@ namespace Dash
 
 
             DeleteTag();
-            if (_docdecs.RecentTags.Contains(this))
+            if (_linkMenu.RecentTags.Contains(this))
             {
 
-                _docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
+                //_docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
                 var temp = new List<Tag>();
-                while (_docdecs.RecentTags.Any())
+                while (_linkMenu.RecentTags.Any())
                 {
-                    var currtag = _docdecs.RecentTags.Dequeue();
+                    var currtag = _linkMenu.RecentTags.Dequeue();
                     if (currtag.Text != Text)
                     {
                         temp.Add(currtag);
                     }
-                    _docdecs.Tags.Remove(currtag);
+                    _linkMenu._tagNameDict.Remove(currtag.Text);
                     
 
 
                 }
 
-                _docdecs.RecentTags.Clear();
+                _linkMenu.RecentTags.Clear();
                 foreach (var tag in temp)
                 {
-                    _docdecs.RecentTags.Enqueue(tag);
-                    _docdecs.Tags.Add(tag);
-                    _docdecs.RecentTags.Enqueue(tag);
-                    _docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == tag.Text));
+                    _linkMenu.RecentTags.Enqueue(tag);
+                    _linkMenu._tagNameDict.Add(tag.Name, tag);
+                    _linkMenu.RecentTags.Enqueue(tag);
+                    //_linkMenu.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == tag.Text));
                 }
 
-                if (_docdecs.InLineTags.Any())
-                {
-                    var pop = _docdecs.InLineTags.Pop();
+                //if (_docdecs.InLineTags.Any())
+                //{
+                //    var pop = _docdecs.InLineTags.Pop();
 
-                    _docdecs.RecentTags.Enqueue(pop);
-                    var doc = new DocumentController();
-                    doc.SetField<TextController>(KeyStore.DataKey, pop.Text, true);
-                    doc.SetField<ColorController>(KeyStore.BackgroundColorKey, pop.Color, true);
+                //    _docdecs.RecentTags.Enqueue(pop);
+                //    var doc = new DocumentController();
+                //    doc.SetField<TextController>(KeyStore.DataKey, pop.Text, true);
+                //    doc.SetField<ColorController>(KeyStore.BackgroundColorKey, pop.Color, true);
 
-                    _docdecs.RecentTagsSave.Add(doc);
+                //    _docdecs.RecentTagsSave.Add(doc);
 
-                    var tags = new List<Tag>();
-                    foreach (var tag in _docdecs.XTagContainer.Children)
-                    {
-                        tags.Add((tag as Tag));
-                    }
-                    _docdecs.XTagContainer.Children.Clear();
-                    _docdecs.XTagContainer.Children.Add(pop);
-                    foreach (var tag in tags)
-                    {
-                        _docdecs.XTagContainer.Children.Add(tag);
-                    }
-                }
+                //    var tags = new List<Tag>();
+                //    foreach (var tag in _docdecs.XTagContainer.Children)
+                //    {
+                //        tags.Add((tag as Tag));
+                //    }
+                //    _docdecs.XTagContainer.Children.Clear();
+                //    _docdecs.XTagContainer.Children.Add(pop);
+                //    foreach (var tag in tags)
+                //    {
+                //        _docdecs.XTagContainer.Children.Add(tag);
+                //    }
+                //}
 
                 temp.Reverse();
 
@@ -299,7 +296,7 @@ namespace Dash
                     var doc = new DocumentController();
                     doc.SetField<TextController>(KeyStore.DataKey, tag.Text, true);
                     doc.SetField<ColorController>(KeyStore.BackgroundColorKey, tag.Color, true);
-                    _docdecs.RecentTagsSave.Add(doc);
+                    //_docdecs.RecentTagsSave.Add(doc);
                 }
                 
             }
@@ -308,28 +305,28 @@ namespace Dash
 
         private void DeleteTag()
         {
-            if (_docdecs.Tags.Count > 1 && _docdecs.Tags.Contains(this))
-            {
-                if (!this.Text.Equals("Annotation"))
-                {
-                    if (_docdecs.TagMap.TryGetValue(Text, out var list))
-                    {
-                        var newlinks = list;
-                        _docdecs.TagMap.Remove(Text);
-                        var oldlinks = _docdecs.TagMap["Annotation"];
-                        oldlinks.AddRange(newlinks);
-                        _docdecs.TagMap["Annotation"] = oldlinks;
-                    }
+            //if (_linkMenu._tagNameDict.Count > 1 && _linkMenu._tagNameDict.Contains(this.Name, this))
+            //{
+            //    if (!this.Text.Equals("Annotation"))
+            //    {
+            //        if (_docdecs.TagMap.TryGetValue(Text, out var list))
+            //        {
+            //            var newlinks = list;
+            //            _docdecs.TagMap.Remove(Text);
+            //            var oldlinks = _docdecs.TagMap["Annotation"];
+            //            oldlinks.AddRange(newlinks);
+            //            _docdecs.TagMap["Annotation"] = oldlinks;
+            //        }
 
-                    _docdecs.Tags.Remove(this);
-                    _docdecs.TagsSave.Remove(_docdecs.TagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
-                    _docdecs._tagNameDict.Remove(Text);
+            //        _docdecs.Tags.Remove(this);
+            //        _docdecs.TagsSave.Remove(_docdecs.TagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
+            //        _docdecs._tagNameDict.Remove(Text);
 
 
 
-                    _docdecs.XTagContainer.Children.Remove(this as UIElement);
-                }
-            }
+            //        _docdecs.XTagContainer.Children.Remove(this as UIElement);
+            //    }
+            //}
         }
     }
 }

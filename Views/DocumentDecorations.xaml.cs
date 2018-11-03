@@ -242,19 +242,19 @@ namespace Dash
             TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
             foreach (var documentController in RecentTagsSave)
             {
-                RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-                    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+                //RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
+                //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
                 xRecentTagsDivider.Visibility = Visibility.Visible;
             }
 
             foreach (var documentController in TagsSave)
             {
-                var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-                    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
-                Tags.Add(tag);
-                _tagNameDict.Add(tag.Text, tag);
-                //possibly repopulate the TagMap here??
-                xRecentTagsDivider.Visibility = Visibility.Visible;
+                //var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
+                //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
+                //Tags.Add(tag);
+                //_tagNameDict.Add(tag.Text, tag);
+                ////possibly repopulate the TagMap here??
+                //xRecentTagsDivider.Visibility = Visibility.Visible;
             }
 
             //graphically displays the reloaded recent tags
@@ -387,8 +387,8 @@ namespace Dash
             }
             else
             {
-                //otherwise a new tag is created and is added to the tag dictionary and the list of tags
-                tag = new Tag(this, linkName, hexColor);
+                ////otherwise a new tag is created and is added to the tag dictionary and the list of tags
+                //tag = new Tag(this, linkName, hexColor);
 
                 Tags.Add(tag);
                 _tagNameDict.Add(linkName, tag);
@@ -416,11 +416,11 @@ namespace Dash
                 }
 
                 //replace the default recent tags to include the newest tag
-                xTagContainer.Children.Clear();
-                foreach (var recent in _recentTags.Reverse())
-                {
-                    xTagContainer.Children.Add(recent);
-                }
+                //xTagContainer.Children.Clear();
+                //foreach (var recent in _recentTags.Reverse())
+                //{
+                //    xTagContainer.Children.Add(recent);
+                //}
             }
 
             //if (links != null)
@@ -669,7 +669,7 @@ namespace Dash
                         {
                             xTagContainer.Children.Add(recent);
                         }
-                        
+
                     }
                 }
                 else
