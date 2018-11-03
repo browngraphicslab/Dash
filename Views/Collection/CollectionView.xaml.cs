@@ -180,6 +180,60 @@ namespace Dash
             CurrentViewLoaded?.Invoke(sender, e);
         }
 
+        private static uint HResultPrivacyStatementDeclined = 0x80045509;
+
+        private async void MakeSpeechDoc(object sender)
+        {
+            try
+            {
+                // Create an instance of SpeechRecognizer.
+                var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
+
+                // Listen for audio input issues.
+                //speechRecognizer.RecognitionQualityDegrading += speechRecognizer_RecognitionQualityDegrading;
+
+                // Add a web search grammar to the recognizer.
+                //var webSearchGrammar = new Windows.Media.SpeechRecognition.SpeechRecognitionTopicConstraint(Windows.Media.SpeechRecognition.SpeechRecognitionScenario.WebSearch, "webSearch");
+
+                speechRecognizer.UIOptions.AudiblePrompt = "Say what you want to search for...";
+                speechRecognizer.UIOptions.ExampleText = @"Ex. 'weather for London'";
+                //speechRecognizer.Constraints.Add(webSearchGrammar);
+                // speechRecognizer.Constraints.Add(new SpeechRecognitionVoiceCommandDefinitionConstraint());
+                //TODO: look into creating a SpeechRecognitionVoiceCommandDefinitionConstraint for speech commands
+
+                // Compile the dictation grammar by default.
+                await speechRecognizer.CompileConstraintsAsync();
+
+                // Start recognition.
+                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeWithUIAsync();
+
+                // Make doc out of result
+                var newDoc = new RichTextNote(text: speechRecognitionResult.Text, size: new Size(300, double.NaN)).Document;
+                var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
+                var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
+                var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+                Actions.DisplayDocument(this.ViewModel, newDoc, where);
+            }
+            catch (Exception exception)
+            {
+                // Handle the speech privacy policy error.
+                if ((uint)exception.HResult == HResultPrivacyStatementDeclined)
+                {
+                    var messageDialog = new Windows.UI.Popups.MessageDialog("The privacy statement was declined. " +
+                                           "Go to Settings -> Privacy -> Speech, inking and typing, and ensure you " +
+                                           "have viewed the privacy policy, and 'Get To Know You' is enabled.");
+                    await messageDialog.ShowAsync();
+                    // Open the privacy/speech, inking, and typing settings page.
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:privacy-accounts"));
+                }
+                else
+                {
+                    var messageDialog = new Windows.UI.Popups.MessageDialog(exception.Message, "Exception");
+                    await messageDialog.ShowAsync();
+                }
+            }
+        }
+
         #region Menu
         public void SetupContextMenu(MenuFlyout contextMenu)
         {
@@ -191,6 +245,13 @@ namespace Dash
                 FontWeight = Windows.UI.Text.FontWeights.Bold
             });
             contextMenu.Items.Add(new MenuFlyoutSeparator());
+
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Make Speech Document",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Microphone }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => MakeSpeechDoc(ss);
 
             var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.AreContentsHitTestVisible == true;
             contextMenu.Items.Add(new MenuFlyoutItem()
