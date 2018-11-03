@@ -160,6 +160,10 @@
     <Content Include="ChromeExt2\popup.html" />
     <Content Include="ChromeExt2\popup.js" />
     <Content Include="HtmlAgilityPack.UWP.csproj" />
+    <Content Include="Views\Templates\TemplateGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TemplateGenerator.cs</LastGenOutput>
+    </Content>
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1512,6 +1516,10 @@
     <Page Include="Views\Tag.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\NoteTemplate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TreeView\TreeView.xaml">
       <SubType>Designer</SubType>
