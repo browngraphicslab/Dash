@@ -826,7 +826,7 @@ namespace Dash
         /// field exists in the document's Prototype, since documents cannot remove inherited fields
         /// (only the owner of a field can remove it.)
         /// </summary>
-        public bool RemoveField(KeyController key)
+        public bool RemoveField(KeyController key, bool withUndo = true)
         {
             var proto = GetPrototypeWithFieldKey(key);
             if (proto == null)
@@ -840,6 +840,9 @@ namespace Dash
 
             ReleaseContainedField(key, value);
             proto._fields.Remove(key);
+            proto.DocumentModel.Fields.Remove(key.Id);
+
+            UpdateOnServer(withUndo ? new UndoCommand(() => proto.RemoveField(key, false), () => proto.SetField(key, value, true, withUndo:false)) : null);
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false));
 
