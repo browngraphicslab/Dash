@@ -32,7 +32,14 @@ namespace Dash
         /// </summary>
         public bool MakeCollection { get; set; } = false;
 
+        /**
+         * Search result variables
+         */
         public bool DragCopy { get; set; } = false;
+
+        public bool SearchCol { get; set; } = false;
+
+        public string SearchText { get; set; } = "";
 
         public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
         public bool DraggingJoinButton { get; set; } = false;
@@ -138,7 +145,24 @@ namespace Dash
                 }
             }
 
-            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(), ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
+            if (MakeCollection)
+            {
+                var cnote = new CollectionNote(where ?? new Point(), ViewType, double.NaN, double.NaN,
+                    collectedDocuments: docs).Document;
+                if (SearchCol)
+                {
+                    cnote.GetDataDocument().SetField<TextController>(KeyController.Get("Search query"), SearchText, true);
+                    SearchCol = false;
+                }
+
+                return new List<DocumentController> {cnote};
+            }
+            else
+            {
+                return docs;
+            }
+
+            //return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(), ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
         }
 
         //TODO do we want to create link here?

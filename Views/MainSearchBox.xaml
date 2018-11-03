@@ -164,28 +164,30 @@
             </Grid.Resources>
         </Grid>
 
-
-
-        <Grid x:Name="xMoreSearch" Grid.Row="2" Grid.Column="0"  Visibility="Collapsed"  HorizontalAlignment="Left">
-            <TextBlock x:Name="xAdvSearch" Text="Filter.."/>
-        </Grid>
-        
-        <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" 
-                Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Right" >
+        <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="2" 
+                Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Left" >
             <FlyoutBase.AttachedFlyout>
-                <MenuFlyout>
+                <MenuFlyout Opening="FlyoutBase_OnOpening">
                     <MenuFlyoutSubItem Text="Document">
-                        <MenuFlyoutItem Text="Image" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="None" Tapped="xDocumentFilter_SelectionChanged"/>
+                            <MenuFlyoutItem Text="Image" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Text" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Audio" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Video" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="PDF" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Collection" Tapped="xDocumentFilter_SelectionChanged"/>
                     </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem Text="Author" Loaded="Author_OnLoaded">
+                    <MenuFlyoutSubItem x:Name="xAuthorSubItem" Text="Author">
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
         </Button>
+
+
+        <Grid x:Name="xMoreSearch" Grid.Row="2" Grid.Column="0"  Visibility="Collapsed" Grid.ColumnSpan="2" HorizontalAlignment="Left">
+            <TextBlock x:Name="xAdvSearch" Text="None" FontFamily="{StaticResource FontAwesome}"/>
+        </Grid>
+        
+        
     </Grid>
 </UserControl>

@@ -25,6 +25,7 @@ namespace Dash
     {
         private int _selectedIndex = -1;
         private bool _arrowBlock = false;
+        private Dictionary<string, string> selectDictionary;
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -34,6 +35,7 @@ namespace Dash
         {
             InitializeComponent();
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
+            this.InitializeSelectionDictionary();
 
             _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
             _searchTimer.Tick += SearchTimerOnTick;
@@ -43,6 +45,19 @@ namespace Dash
         {
             ExecuteDishSearch(xAutoSuggestBox);
             _searchTimer.Stop();
+        }
+
+        private void InitializeSelectionDictionary()
+        {
+            selectDictionary = new Dictionary<string, string>();
+            selectDictionary["None"] = "None";
+            selectDictionary["Image"] = "Image Box";
+            selectDictionary["Text"] = "Rich Text Box";
+            selectDictionary["Audio"] = "Audio Box";
+            selectDictionary["Video"] = "Video Box";
+            selectDictionary["PDF"] = "Pdf Box";
+            selectDictionary["Collection"] = "Collection Box";
+            selectDictionary["Author"] = "Author";
         }
 
         #endregion
@@ -169,7 +184,12 @@ namespace Dash
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionView.CollectionViewType.Page));
+            var dragModel = new DragDocumentModel(docs, CollectionView.CollectionViewType.Page)
+            {
+                SearchCol = true,
+                SearchText = xAutoSuggestBox.Text
+            };
+            args.Data.SetDragModel(dragModel);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -392,18 +412,20 @@ namespace Dash
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
 
+                selectDictionary.TryGetValue(_currentSelection, out var dictSelection);
+
                 // filtering
 
-                if (_currentSelection != "None")
+                if (dictSelection != "None")
                 {
-                    if (_currentSelection == "Author")
+                    if (dictSelection == "Author")
                     {
                         if (xAdvSearch.Text != res.DataDocument.GetAuthor())
                         {
                             continue;
                         }
                     }
-                    else if (res.ViewDocument.GetDocType() != _currentSelection)
+                    else if (res.ViewDocument.GetDocType() != dictSelection)
                     {
                         continue;
                     }
@@ -590,6 +612,7 @@ namespace Dash
             var mf = sender as MenuFlyoutItem;
             _currentSelection = mf?.Text;
             xAdvSearch.Text = _currentSelection;
+            mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
@@ -599,7 +622,7 @@ namespace Dash
 
         private void Author_OnLoaded(object sender, RoutedEventArgs e)
         {
-            //var mF = new MenuFlyout();
+            var mF = new MenuFlyout();
             var subitem = sender as MenuFlyoutSubItem;
             subitem?.Items?.Clear();
             Debug.WriteLine(subitem?.Items?.Count);
@@ -626,9 +649,10 @@ namespace Dash
                 };
                 subitem?.Items?.Add(pickAuthor);
                 pickAuthor.Click += PickAuthorOnClick;
+                mF.Items.Add(pickAuthor);
             }
             _authorList = authorList;
-            //mF.ShowAt((FrameworkElement)sender);
+           // mF.ShowAt((FrameworkElement)sender);
         }
 
         private HashSet<string> _authorList;
@@ -638,6 +662,38 @@ namespace Dash
             var mf = sender as MenuFlyoutItem;
             _currentSelection = "Author";
             xAdvSearch.Text = mf?.Text;
+        }
+
+        private void FlyoutBase_OnOpening(object sender, object e)
+        {
+            xAuthorSubItem?.Items?.Clear();
+            Debug.WriteLine(xAuthorSubItem?.Items?.Count);
+            var nodes = DocumentTree.MainPageTree;
+            var authorList = new HashSet<string>();
+            foreach (var node in nodes)
+            {
+                if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+                {
+                    var author = node.DataDocument.GetAuthor();
+                    if (!authorList.Contains(author) && author != null)
+                    {
+                        authorList.Add(author);
+                        Debug.WriteLine(author);
+                    }
+                }
+            }
+            Debug.WriteLine(authorList.Count);
+            foreach (var auth in authorList)
+            {
+                var pickAuthor = new MenuFlyoutItem
+                {
+                    Text = auth,
+                };
+                xAuthorSubItem?.Items?.Add(pickAuthor);
+                pickAuthor.Click += PickAuthorOnClick;
+            }
+            _authorList = authorList;
+
         }
     }
 }
