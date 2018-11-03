@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using MyToolkit.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -103,6 +104,15 @@ namespace Dash
 
         public DocumentController Split(SplitDirection dir, DocumentController doc = null, bool autosize = false)
         {
+            if (dir == SplitDirection.InPlace)
+            {
+                return OpenDocument(doc ?? DocumentController);
+            }
+
+            if (doc == null && this.IsCtrlPressed())
+            {
+                doc = DocumentController;
+            }
             return this.GetFirstAncestorOfTypeFast<SplitManager>()?.Split(this, dir, doc, autosize);
         }
 
@@ -114,7 +124,7 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle > 135 || angle < -150)
             {
-                Split(SplitDirection.Right, DocumentController);
+                Split(SplitDirection.Right);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
@@ -124,7 +134,7 @@ namespace Dash
             }
             else if (angle <= 135 && angle > 60)
             {
-                Split(SplitDirection.Up, DocumentController);
+                Split(SplitDirection.Up);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
@@ -151,7 +161,7 @@ namespace Dash
             angle = angle * 180 / Math.PI;
             if (angle < 30 && angle > -45)
             {
-                Split(SplitDirection.Left, DocumentController);
+                Split(SplitDirection.Left);
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
@@ -162,7 +172,7 @@ namespace Dash
             }
             else if (angle <= -45 && angle > -120)
             {
-                Split(SplitDirection.Down, DocumentController);
+                Split(SplitDirection.Down);
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
@@ -190,13 +200,18 @@ namespace Dash
                 XTopRightResizer.ManipulationDelta -= _manipulationDeltaHandler;
                 XBottomLeftResizer.ManipulationDelta -= _manipulationDeltaHandler;
             }
+
+            if (CurrentSplitMode == DragSplitMode.None)
+            {
+                return;
+            }
+            var parentManager = this.GetFirstAncestorOfTypeFast<SplitManager>();
+            var splitDef = SplitPane.GetSplitLocation(this);
             switch (CurrentSplitMode)
             {
             case DragSplitMode.VerticalCollapsePrevious:
             case DragSplitMode.HorizontalCollapsePrevious:
                 {
-                    var parent = this.GetFirstAncestorOfType<SplitPane>();
-                    var splitDef = SplitPane.GetSplitLocation(this);
                     bool vertical = CurrentSplitMode == DragSplitMode.VerticalCollapsePrevious;
                     if (splitDef.Parent != null &&
                        (vertical && splitDef.Parent.Mode == SplitMode.Vertical ||
@@ -206,11 +221,12 @@ namespace Dash
                         if (previous)
                         {
                             var index = splitDef.Parent.Children.IndexOf(splitDef);
-                            parent.RemoveSplit(splitDef.Parent.Children[index - 1], SplitDefinition.JoinOption.JoinNext);
+                            var neighborSplit = splitDef.Parent.Children[index - 1];
+                            parentManager.Delete(neighborSplit, SplitDefinition.JoinOption.JoinNext);
                         }
                         else
                         {
-                            parent.RemoveSplit(splitDef, SplitDefinition.JoinOption.JoinPrevious);
+                            parentManager.Delete(splitDef, SplitDefinition.JoinOption.JoinPrevious);
                         }
                     }
 
@@ -219,8 +235,6 @@ namespace Dash
             case DragSplitMode.VerticalCollapseNext:
             case DragSplitMode.HorizontalCollapseNext:
                 {
-                    var parent = this.GetFirstAncestorOfType<SplitPane>();
-                    var splitDef = SplitPane.GetSplitLocation(this);
                     bool vertical = CurrentSplitMode == DragSplitMode.VerticalCollapseNext;
                     if (splitDef.Parent != null &&
                        (vertical && splitDef.Parent.Mode == SplitMode.Vertical ||
@@ -229,18 +243,20 @@ namespace Dash
                         bool previous = (vertical ? e.Cumulative.Translation.Y : e.Cumulative.Translation.X) < 0;
                         if (previous)
                         {
-                            parent.RemoveSplit(splitDef, SplitDefinition.JoinOption.JoinNext);
+                            parentManager.Delete(this, SplitDefinition.JoinOption.JoinNext);
                         }
                         else
                         {
                             var index = splitDef.Parent.Children.IndexOf(splitDef);
-                            parent.RemoveSplit(splitDef.Parent.Children[index + 1], SplitDefinition.JoinOption.JoinPrevious);
+                            var neighborSplit = splitDef.Parent.Children[index + 1];
+                            parentManager.Delete(neighborSplit, SplitDefinition.JoinOption.JoinPrevious);
                         }
                     }
 
                     break;
                 }
             }
+
             CurrentSplitMode = DragSplitMode.None;
         }
 
@@ -255,7 +271,7 @@ namespace Dash
 
         private void DropTarget_OnDragEnter(object sender, DragEventArgs e)
         {
-            (sender as Rectangle).Fill = Yellow;
+            (sender as Shape).Fill = Yellow;
             if (e.DataView.HasDataOfType(DataTransferTypeInfo.Any))
             {
                 e.AcceptedOperation = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
@@ -270,7 +286,7 @@ namespace Dash
 
         private void DropTarget_OnDragLeave(object sender, DragEventArgs e)
         {
-            (sender as Rectangle).Fill = new SolidColorBrush(Color.FromArgb(0x10, 0x10, 0x10, 0x10));
+            (sender as Shape).Fill = new SolidColorBrush(Color.FromArgb(0x10, 0x10, 0x10, 0x10));
             e.Handled = true;
         }
 
@@ -299,7 +315,7 @@ namespace Dash
                                           DataPackageOperation.None;
 
                     var docs = await CollectionViewModel.AddDroppedDocuments(this, docsToAdd, dragModel, isMoving, null);
-                    var doc = docs.Count == 1 ? docs[0] :  new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
+                    var doc = docs.Count == 1 ? docs[0] :  new CollectionNote(new Point(), CollectionViewType.Freeform, collectedDocuments: docs).Document;
 
                     Split(dir, doc, true);
                     e.DataView.ReportOperationCompleted(e.AcceptedOperation);
@@ -333,6 +349,13 @@ namespace Dash
             (sender as Rectangle).Fill = Transparent;
             e.Handled = true;
             await DropHandler(e, SplitDirection.Up);
+        }
+
+        private async void XCenterDropTarget_OnDrop(object sender, DragEventArgs e)
+        {
+            (sender as Shape).Fill = Transparent;
+            e.Handled = true;
+            await DropHandler(e, SplitDirection.InPlace);
         }
 
         private List<DocumentController> _history = new List<DocumentController>();
@@ -379,7 +402,7 @@ namespace Dash
                 _history.RemoveAt(_history.Count - 1);
                 _future.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) {IsDimensionless = true};
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true };
             }
         }
 
@@ -391,7 +414,7 @@ namespace Dash
                 _future.RemoveAt(_future.Count - 1);
                 _history.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) {IsDimensionless = true};
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true };
             }
         }
 
@@ -410,6 +433,8 @@ namespace Dash
             XLeftDropTarget.Visibility = Visibility.Visible;
             XTopDropTarget.Visibility = Visibility.Visible;
             XBottomDropTarget.Visibility = Visibility.Visible;
+            XCenterDropTarget.Visibility = Visibility.Visible;
+
             this.RemoveHandler(DragOverEvent, _draggedOver);
             this.AddHandler(PointerMovedEvent, _pointerMoved, true);
         }
@@ -420,6 +445,7 @@ namespace Dash
             XLeftDropTarget.Visibility = Visibility.Collapsed;
             XTopDropTarget.Visibility = Visibility.Collapsed;
             XBottomDropTarget.Visibility = Visibility.Collapsed;
+            XCenterDropTarget.Visibility = Visibility.Collapsed;
             this.AddHandler(DragOverEvent, _draggedOver, true);
             this.RemoveHandler(PointerMovedEvent, _pointerMoved);
         }

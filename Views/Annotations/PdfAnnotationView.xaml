@@ -1,0 +1,86 @@
+﻿<UserControl
+    x:Class="Dash.PdfAnnotationView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    x:Name="Control"
+    IsTabStop="True"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    SizeChanged="PdfAnnotationView_OnSizeChanged">
+    <Grid x:Name="xPdfContainer" MinWidth="50" Background="white" VerticalAlignment="Top">
+        <Grid x:Name="xButtonPanel" Visibility="Collapsed">
+            <StackPanel x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+                <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </StackPanel>
+            <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="0"  />
+                    </ToolTipService.ToolTip>
+                </Grid>
+                <Grid x:Name="xScrollForward" PointerPressed="XScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </StackPanel>
+
+        </Grid>
+        <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="xPdfCol"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
+                </Grid.ColumnDefinitions>
+                <!--This Grid will have the width and height of the pdf that is being displayed-->
+                <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
+                    <Grid x:Name="xPdfGrid" Background="Transparent" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                        <!-- ItemsControl that stores the page images -->
+                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+                    </Grid>
+                </Viewbox>
+
+                <controls:GridSplitter Grid.Column="1" Tapped="GridSplitter_Tapped"  Width="0" MinWidth="0"
+                               ManipulationStarted="Divider_OnManipulationStarted" ManipulationDelta="Divider_OnManipulationDelta" ManipulationCompleted="Divider_OnManipulationCompleted" PointerPressed="Divider_OnPointerPressed" >
+                    <controls:GridSplitter.Element>
+                        <Canvas>
+                            <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top">
+                                <Grid.Clip>
+                                    <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
+                                </Grid.Clip>
+                            </Grid>
+                            <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="{x:Bind PdfTotalHeight, Mode=OneWay}"  />
+                        </Canvas>
+                    </controls:GridSplitter.Element>
+                </controls:GridSplitter>
+
+                <Canvas x:Name="xAnnotationBox" Background="white" Grid.Column="2">
+                    <local:CollectionView x:Name="xCollectionView" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="1000" />
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

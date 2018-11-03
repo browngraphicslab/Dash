@@ -17,7 +17,8 @@ namespace Dash.Views.Collection
     public sealed partial class CollectionStackView : UserControl, ICollectionView
     {
         public UserControl UserControl => this;
-        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
+        public CollectionViewType ViewType => CollectionViewType.Stacking;
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
         public CollectionStackView()
         {
             this.InitializeComponent();
@@ -26,6 +27,9 @@ namespace Dash.Views.Collection
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         public void SetupContextMenu(MenuFlyout contextMenu)

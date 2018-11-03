@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -24,15 +26,6 @@ namespace Dash
             InitializeComponent();
             Loaded += WebBoxView_Loaded;
             Unloaded += WebBoxView_Unloaded;
-
-            var binding = new FieldBinding<ImageController>
-            {
-                Document = LayoutDocument,
-                Key = KeyStore.SettingsBackupIntervalKey,
-                Mode = BindingMode.OneWay,
-                Converter = UriToBitmapImageConverter.Instance
-            };
-            xCacheBitmap.AddFieldBinding(Image.SourceProperty, binding);
         }
 
         private void WebBoxView_Unloaded(object sender, RoutedEventArgs e)
@@ -44,7 +37,7 @@ namespace Dash
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
             if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) ||
-                LayoutDocument.GetField<ImageController>(KeyStore.SettingsBackupIntervalKey)?.Data == null)
+                xWebViewRectangleBrush.Fill == null)
             {
                 Unfreeze();
             }
@@ -58,44 +51,25 @@ namespace Dash
                 Unfreeze();
             } 
             else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) || 
-                (xCacheBitmap.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
+                (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
             {
                 Freeze();
             }
         }
 
-        private async Task Freeze()
+        private async void Freeze()
         {
-            var rtb = new RenderTargetBitmap();
-            var size = new Point(Math.Round(ActualWidth), Math.Round(ActualHeight));
-            //var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
-            //var rect = transformToVisual.TransformBounds(new Rect(0, 0, size.X, size.Y));
-            //size = new Point(rect.Width, rect.Height);
-            if (size.X > 0 && size.Y > 0)
-            {
-                try
-                {
-                    await rtb.RenderAsync(_xWebView, (int)size.X, (int)size.Y);
-                    var buf = await rtb.GetPixelsAsync();
-
-                    var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
-                    var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
-                    await Util.SaveSoftwareBitmapToFile(sb, localFile);
-                    LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
-                } catch (Exception) { }
-                _xWebView.Visibility = Visibility.Collapsed;
-                xCacheBitmap.Visibility = Visibility.Visible;
-                if (xTextBlock != null)
-                    xTextBlock.Visibility = Visibility.Collapsed;
-                if (_xWebView != null)
-                    _xWebView.Tag = AllowManipulation;
-            } 
-            else // if the web view hasn't been constructed fully yet, wait 250ms and try again
-            {
-                var dp = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 250) };
-                dp.Tick += (s, e) => { Freeze();  dp.Stop(); };
-                dp.Start();
-            }
+            var b = new WebViewBrush();
+            b.SourceName = "_xWebView";
+            b.Redraw();
+            xWebViewRectangleBrush.Fill = b;
+            
+            xWebViewRectangleBrush.Visibility = Visibility.Visible;
+            _xWebView.Visibility = Visibility.Collapsed;
+            if (xTextBlock != null)
+                xTextBlock.Visibility = Visibility.Collapsed;
+            if (_xWebView != null)
+                _xWebView.Tag = AllowManipulation;
         }
 
         private void Unfreeze()
@@ -107,7 +81,7 @@ namespace Dash
             }
             if (_xWebView.Visibility == Visibility.Collapsed)
             {
-                xCacheBitmap.Visibility = Visibility.Collapsed;
+                xWebViewRectangleBrush.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 _xWebView.Visibility = Visibility.Visible;
                 _xWebView.Tag = BlockManipulation;
                 if (xTextBlock != null)
@@ -120,6 +94,7 @@ namespace Dash
         private void constructWebBrowserViewer()
         {
             _xWebView = new WebView(WebViewExecutionMode.SeparateThread);
+            _xWebView.Name = "_xWebView";
             _xWebView.Tag = BlockManipulation;
             var html = LayoutDocument.GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?.Data;
             var htmlAddress = LayoutDocument.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey)?.Data;

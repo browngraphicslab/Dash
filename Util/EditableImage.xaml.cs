@@ -149,7 +149,7 @@ namespace Dash
             _cropControl = new StateCropControl(LayoutDocument, this);
         }
 
-        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             if (args.NewValue != null)
             {

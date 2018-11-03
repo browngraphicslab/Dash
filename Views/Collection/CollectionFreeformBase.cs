@@ -37,6 +37,8 @@ namespace Dash
 {
     public abstract class CollectionFreeformBase : UserControl, ICollectionView
     {
+        public CollectionViewType ViewType => CollectionViewType.Freeform;
+
         private MatrixTransform _transformBeingAnimated;// Transform being updated during animation
 
         private Panel _itemsPanelCanvas => GetCanvas();
@@ -49,7 +51,6 @@ namespace Dash
         public bool TagMode { get; set; }
         public KeyController TagKey { get; set; }
         public abstract CollectionViewModel ViewModel { get; }
-        public abstract CollectionView.CollectionViewType Type { get; }
         private Mutex _mutex = new Mutex();
         public void SetupContextMenu(MenuFlyout contextMenu)
         {
@@ -181,6 +182,9 @@ namespace Dash
             {
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
 
@@ -917,7 +921,7 @@ namespace Dash
                 ResetMarquee(false);
             }
 
-            var type = CollectionView.CollectionViewType.Freeform;
+            var type = CollectionViewType.Freeform;
 
             var deselect = false;
             if (!(this.IsAltPressed()))
@@ -934,7 +938,7 @@ namespace Dash
                     deselect = true;
                     break;
                 case VirtualKey.T:
-                    type = CollectionView.CollectionViewType.Schema;
+                    type = CollectionViewType.Schema;
                     goto case VirtualKey.C;
                 case VirtualKey.C:
                     DoAction((views, where, size) =>

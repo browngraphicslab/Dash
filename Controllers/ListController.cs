@@ -18,6 +18,14 @@ namespace Dash
         public static bool Enabled = false;
     }
 
+    public static class ListExtensions
+    {
+        public static ListController<T> ToListController<T>(this IEnumerable<T> enumerable) where T : FieldControllerBase
+        {
+            return new ListController<T>(enumerable);
+        }
+    }
+
     public class ListController<T> : BaseListController, /*/*INotifyCollectionChanged, */IList<T> where T : FieldControllerBase
     {
         private const bool AvoidDuplicates = false;

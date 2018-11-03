@@ -228,7 +228,7 @@ namespace Dash
             CreateLinks();
             xTitleBlock.SizeChanged += Title_OnSizeChanged;
 
-            DocumentController_TitleUpdated(null, null, null);
+            DocumentController_TitleUpdated(null, null);
 
             // listen for title updates and link updates
             ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
@@ -267,7 +267,7 @@ namespace Dash
             if (fromConnections > 1) CreateLink(dataDoc, KeyStore.LinkFromKey);
         }
 
-        private void LinkFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void LinkFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args)
         {
             // get the list of changed documents from args
             var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
@@ -415,8 +415,7 @@ namespace Dash
             }
         }
 
-        private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args,
-            Context context)
+        private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args)
         {
             UpdateTitleBlock();
             AppendToTitle();

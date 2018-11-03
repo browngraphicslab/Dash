@@ -34,7 +34,7 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "TextingBox Prototype Layout", fields);
         }
 
-        protected static void SetupBindings(EditableTextBlock element, DocumentController docController, KeyController key, Context context)
+        public static void SetupBindings(FrameworkElement element, DocumentController docController, KeyController key, Context context)
         {
             BindFontWeight(element, docController, context);
             BindFontSize(element, docController, context);
@@ -68,7 +68,7 @@ namespace Dash
 
         #region Bindings
 
-        public static void SetupTextBinding(FrameworkElement element, DocumentController docController, KeyController key, Context context)
+        private static void SetupTextBinding(FrameworkElement element, DocumentController docController, KeyController key, Context context)
         {
             var binding = new FieldBinding<FieldControllerBase, TextController>()
             {
@@ -81,8 +81,8 @@ namespace Dash
                 Tag = "TextingBox SetupTextBinding"
             };
             element.AddFieldBinding(element is EditableTextBlock ? EditableTextBlock.TextProperty:
-                               element is TextBlock ? TextBlock.TextProperty :
-                               element is TextBox ? TextBox.TextProperty : null, binding);
+                                    element is TextBlock ? TextBlock.TextProperty :
+                                    element is TextBox ? TextBox.TextProperty : null, binding);
         }
 
         public class TypedTextAlignmentBinding : SafeDataToXamlConverter<List<object>, TextAlignment>
@@ -112,7 +112,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
+        protected static void BindTextAlignment(FrameworkElement element, DocumentController docController, Context context)
         {
             var dataRef = new DocumentFieldReference(docController, TextAlignmentKey);
             var sideCountRef = new DocumentFieldReference(docController, KeyStore.DataKey);
@@ -124,10 +124,13 @@ namespace Dash
                 Context = context,
                 CanBeNull = true
             };
-            element.AddFieldBinding(EditableTextBlock.TextAlignmentProperty, alignmentBinding);
+            element.AddFieldBinding(element is EditableTextBlock ? EditableTextBlock.TextAlignmentProperty :
+                                   element is TextBlock ? TextBlock.TextAlignmentProperty :
+                                   element is TextBox ? TextBox.TextAlignmentProperty : null, alignmentBinding);
+
         }
 
-        protected static void BindBackgroundColor(EditableTextBlock element, DocumentController docController, Context context)
+        protected static void BindBackgroundColor(FrameworkElement element, DocumentController docController, Context context)
         {
             var backgroundBinding = new FieldBinding<TextController>()
             {
@@ -137,10 +140,13 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context
             };
-            element.TextBackground.AddFieldBinding(Grid.BackgroundProperty, backgroundBinding);
+            if (element is EditableTextBlock edBlock)
+                edBlock.TextBackground.AddFieldBinding(Grid.BackgroundProperty, backgroundBinding);
+            else if (element is TextBox tbox)
+                tbox.AddFieldBinding(TextBox.BackgroundProperty, backgroundBinding);
         }
 
-        protected static void BindFontWeight(EditableTextBlock element, DocumentController docController, Context context)
+        protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
         {
             var fontWeightBinding = new FieldBinding<NumberController>()
             {
@@ -150,10 +156,12 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context
             };
-            element.AddFieldBinding(Control.FontWeightProperty, fontWeightBinding);
+            element.AddFieldBinding(element is EditableTextBlock ? Control.FontWeightProperty :
+                                    element is TextBlock ? TextBlock.FontWeightProperty :
+                                    element is TextBox ? TextBox.FontWeightProperty : null, fontWeightBinding);
         }
 
-        protected static void BindFontSize(EditableTextBlock element, DocumentController docController, Context context)
+        protected static void BindFontSize(FrameworkElement element, DocumentController docController, Context context)
         {
             var fontSizeBinding = new FieldBinding<NumberController>()
             {
@@ -162,7 +170,9 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context
             };
-            element.AddFieldBinding(Control.FontSizeProperty, fontSizeBinding);
+            element.AddFieldBinding(element is EditableTextBlock ? Control.FontSizeProperty :
+                                    element is TextBlock ? TextBlock.FontSizeProperty :
+                                    element is TextBox ? TextBox.FontSizeProperty : null, fontSizeBinding);
         }
 
         #endregion

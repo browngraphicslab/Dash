@@ -193,7 +193,7 @@ namespace Dash
         /// <returns></returns>
         public DocumentController MakeNewPres(string title = "New Presentation")
         {
-            var pres = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+            var pres = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
             pres.GetDataDocument().SetTitle(title);
             _listController.Add(pres);
             _presentations.Add(pres);
