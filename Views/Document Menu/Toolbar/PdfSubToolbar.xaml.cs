@@ -82,7 +82,7 @@ namespace Dash
         {
             var pages = await _currentPdfView.ExplodePages();
 
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, 200, 200, pages).Document;
+            var cnote = new CollectionNote(new Point(), CollectionViewType.Page, 200, 200, pages).Document;
 
             xExplodePages.IsChecked = false;
             MainPage.Instance.AddFloatingDoc(cnote);
@@ -180,7 +180,7 @@ namespace Dash
 			            //xFadeAnimationOut.Begin();
 			            return;
 		            }
-		            if (pageNum > _currentPdfView.BottomPages.PageSizes.Count)
+		            if (pageNum > _currentPdfView.DefaultView.Pages.PageSizes.Count)
 		            {
 			            xToPageBox.PlaceholderText = "Error: invalid page #";
 			            xToPageBox.Text = "";

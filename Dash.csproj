@@ -259,6 +259,9 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
+      <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
@@ -754,9 +757,6 @@
     <Compile Include="Views\Annotations\PDFRegionMarker.xaml.cs">
       <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Annotations\PdfSideAnnotation.xaml.cs">
-      <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
     </Compile>
@@ -927,15 +927,6 @@
     </Compile>
     <Compile Include="Sources\Api\XAML Elements\ApiProperty.xaml.cs">
       <DependentUpon>ApiProperty.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\FilePickerDisplay.xaml.cs">
-      <DependentUpon>FilePickerDisplay.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\PDFFilePicker.xaml.cs">
-      <DependentUpon>PDFFilePicker.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\PDF\PDFViewer.xaml.cs">
-      <DependentUpon>PDFViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
@@ -1139,6 +1130,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\PdfAnnotationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1378,10 +1373,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Annotations\PdfSideAnnotation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Collection\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1467,18 +1458,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionGridView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\FilePicker\PDFFilePicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\FilePicker\PDF\PDFViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

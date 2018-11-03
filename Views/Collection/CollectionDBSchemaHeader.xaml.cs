@@ -65,7 +65,8 @@ namespace Dash
             if (ParentCollection != null)
             {
                 ViewModel.SchemaDocument.SetField(CollectionDBView.FilterFieldKey, ViewModel.FieldKey, true);
-                ParentCollection.SetView(CollectionView.CollectionViewType.DB);
+                ParentCollection.ViewModel.ViewType = CollectionViewType.DB;
+                //ParentCollection.SetView(CollectionView.CollectionViewType.DB);
             }
         }
 

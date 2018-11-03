@@ -33,10 +33,8 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            MainPage.Instance.TogglePopup();
-            var pdfView = new PdfView(docController);
+            var pdfView = new PdfView();
             SetupPdfBinding(pdfView, docController, context);
-            
             return pdfView;
         }
 
@@ -50,22 +48,8 @@ namespace Dash
             return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
 
-        protected static void SetupPdfBinding(PdfView pdf, DocumentController controller,
-            Context context)
+        public static void SetupPdfBinding(PdfView pdf, DocumentController controller, Context context)
         {
-
-            //controller.AddFieldUpdatedListener(KeyStore.PdfVOffsetFieldKey, 
-            //    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-            //    {
-            //        if (!pdf.IsPointerOver())
-            //        {
-            //            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //            System.Diagnostics.Debug.WriteLine("Telling me" + ((dargs.NewValue as NumberController)?.Data ?? 0));
-            //            pdf.ScrollToVerticalOffset((dargs.NewValue as NumberController)?.Data ?? 0);
-            //        }
-            //    });
-
-
             BindPdfSource(pdf, controller, context);
         }
 

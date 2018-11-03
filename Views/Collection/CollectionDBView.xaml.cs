@@ -13,6 +13,7 @@ namespace Dash
     public sealed partial class CollectionDBView : ICollectionView
     {
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.DB;
         public CollectionDBView()
         {
             this.InitializeComponent(); 
@@ -48,7 +49,7 @@ namespace Dash
                 return rnote;
             });
 
-            args.Data.SetDragModel(new DragDocumentModel(collection.Where((c) => c != null).ToList(), CollectionView.CollectionViewType.Schema));
+            args.Data.SetDragModel(new DragDocumentModel(collection.Where((c) => c != null).ToList(), CollectionViewType.Schema));
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
