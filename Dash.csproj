@@ -204,6 +204,9 @@
     <Compile Include="Popups\JoinGroupMenuPopup.xaml.cs">
       <DependentUpon>JoinGroupMenuPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\LayoutTemplatesPopup.xaml.cs">
+      <DependentUpon>LayoutTemplatesPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\NewTemplatePopup.xaml.cs">
       <DependentUpon>NewTemplatePopup.xaml</DependentUpon>
     </Compile>
@@ -1077,6 +1080,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Popups\JoinGroupMenuPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\LayoutTemplatesPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -584,6 +584,16 @@ namespace Dash
             return mode;
         }
 
+        public async Task<int> GetLayoutTemplate()
+        {
+            var popup = new LayoutTemplatesPopup();
+            SetUpPopup(popup);
+
+            var template = await popup.GetTemplate();
+            UnsetPopup();
+            return 1;
+        }
+
         public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
             var importPopup = new HTMLRTFPopup();

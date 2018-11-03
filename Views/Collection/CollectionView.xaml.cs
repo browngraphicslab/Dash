@@ -190,6 +190,14 @@ namespace Dash
             });
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += ParentDocumentView.MenuFlyoutItemFitToParent_Click;
 
+            //Add the Layout Template Popup
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Document Layouts",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += ParentDocumentView.MenuFlyoutItemLayoutTemplates_Click;
+
             // add a horizontal separator in context menu
             contextMenu.Items.Add(new MenuFlyoutSeparator());
             contextMenu.Items.Add(new MenuFlyoutItem()

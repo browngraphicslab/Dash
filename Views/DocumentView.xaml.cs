@@ -823,6 +823,14 @@ namespace Dash
             }
         }
 
+        public void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var template = MainPage.Instance.GetLayoutTemplate();
+            }
+        }
+
         private void MenuFlyoutItemCopyPath_Click(object sender, RoutedEventArgs e)
         {
             var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
