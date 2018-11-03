@@ -20,20 +20,32 @@ namespace Dash
             _bodyToExecute = bodyToExecute;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             scope = new Scope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
-            var list = await _listToExecute.Execute(scope) as BaseListController;
+            var (field, _) = await _listToExecute.Execute(scope);
+            var list = field as BaseListController;
+            if (list == null)
+            {
+                return (null, ControlFlowFlag.None);
+            }
 
-            for (var i = 0; i < list?.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 scope.SetVariable(_subVarName, list.GetValue(i));
-                await _bodyToExecute.Execute(scope);
+                var (field2, flags) = await _bodyToExecute.Execute(scope);
+                switch (flags)
+                {
+                case ControlFlowFlag.Return:
+                    return (field2, flags);
+                case ControlFlowFlag.Break:
+                    break;
+                }
                 list.SetValue(i, scope.GetVariable(_subVarName));
             }
 
-            return list;
+            return (null, ControlFlowFlag.None);
         }
 
         public Op.Name GetOperatorName() => _opName;

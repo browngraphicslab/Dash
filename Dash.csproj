@@ -462,9 +462,7 @@
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
     <Compile Include="Util\DSL\ReplPopupSuggestion.cs" />
-    <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
-    <Compile Include="Util\DSL\ReturnScope.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />

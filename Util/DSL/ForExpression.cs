@@ -25,21 +25,30 @@ namespace Dash
             _forBody = forBody;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             var timer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
             _loopRef = "";
 
             await _countDeclaration.Execute(scope);
 
-            while (((BoolController) await _forBinary.Execute(scope)).Data && !InfiniteLoopDetected())
+            while (((BoolController) (await _forBinary.Execute(scope)).Item1).Data && !InfiniteLoopDetected())
             {
-                if (InfiniteLoopDetected()) return new TextController(RecursiveError);
-                await _forBody.Execute(scope); 
+                //TODO This should probably throw an exception
+                if (InfiniteLoopDetected()) return (new TextController(RecursiveError), ControlFlowFlag.None);
+                var (field, flags) = await _forBody.Execute(scope);
+                switch (flags)
+                {
+                case ControlFlowFlag.Return:
+                    return (field, flags);
+                case ControlFlowFlag.Break:
+                    break;
+                //Continue gets handled lower down
+                }
                 await _incrementExp.Execute(scope);
             }
 
-            return new TextController("");
+            return (null, ControlFlowFlag.None);
         }
 
         private void WhileTimeout(object status) => _loopRef = RecursiveError;

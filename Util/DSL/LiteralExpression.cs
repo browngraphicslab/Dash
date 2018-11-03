@@ -12,9 +12,9 @@ namespace Dash
             this._field = field;
         }
 
-        public override Task<FieldControllerBase> Execute(Scope scope)
+        public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            return Task.FromResult(_field.Copy());
+            return Task.FromResult((_field.Copy(), ControlFlowFlag.None));
         }
 
         public FieldControllerBase GetField()

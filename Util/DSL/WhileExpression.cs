@@ -20,13 +20,8 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            //var inputs = new Dictionary<KeyController, FieldControllerBase>
-            //{
-            //    { WhileOperatorController.BoolKey, await _parameters[WhileOperatorController.BoolKey].Execute(scope) }
-            //};
-
             var blockKey = WhileOperatorController.BlockKey;
             
             //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
@@ -36,11 +31,18 @@ namespace Dash
             while (_output != _recursiveError)
             {
                 //see if boolean is true or false
-                var boolRes = ((BoolController)await _parameters[WhileOperatorController.BoolKey].Execute(scope)).Data;
+                var boolRes = ((BoolController)(await _parameters[WhileOperatorController.BoolKey].Execute(scope)).Item1).Data;
                  if (boolRes)
                 {
                     //boolean is true, so execute block again
-                    await _parameters[blockKey].Execute(scope);
+                    var (field, flags) = await _parameters[blockKey].Execute(scope);
+                    switch (flags)
+                    {
+                    case ControlFlowFlag.Return:
+                        return (field, flags);
+                    case ControlFlowFlag.Break:
+                        break;
+                    }
                 }
                 else
                 {
@@ -49,7 +51,7 @@ namespace Dash
                 }
             }
 
-            return _output;
+            return (null, ControlFlowFlag.None);
         }
 
         //set the output to an infinite recursion error

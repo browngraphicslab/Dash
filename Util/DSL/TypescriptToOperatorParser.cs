@@ -125,14 +125,8 @@ namespace Dash
             {
                 //turn script string into function expression
                 var se = ParseToExpression(script);
-                try
-                {
-                    return await se?.Execute(scope ?? new Scope());
-                }
-                catch (ReturnException)
-                {
-                    return scope?.GetReturn;
-                }
+                var (field, _) = await se.Execute(scope ?? new Scope());
+                return field;
             }
             catch (ScriptException scriptException)
             {

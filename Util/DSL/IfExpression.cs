@@ -15,39 +15,20 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            //var inputs = new Dictionary<KeyController, FieldControllerBase>
-            //{
-            //    {IfOperatorController.BoolKey, _parameters[IfOperatorController.BoolKey].Execute(scope)}
-            //};
-            var boolRes = ((BoolController)await _parameters[IfOperatorController.BoolKey].Execute(scope)).Data;
+            var boolRes = ((BoolController)(await _parameters[IfOperatorController.BoolKey].Execute(scope)).Item1).Data;
 
             var ifKey = IfOperatorController.IfBlockKey;
             var elseKey = IfOperatorController.ElseBlockKey;
 
             if (boolRes)
             {
-                //inputs.Add(ifKey, _parameters[ifKey].Execute(scope));
-                //inputs.Add(elseKey, null);
                 return await _parameters[ifKey].Execute(scope);
             }
             else
             {
-                //inputs.Add(ifKey, null);
-                //inputs.Add(elseKey, _parameters[elseKey].Execute(scope));
-                return _parameters[elseKey] != null ? await _parameters[elseKey].Execute(scope) : new TextController("");
-            }
-
-            try
-            {
-                //TODO
-                //var output = OperatorScript.Run(_opName, inputs, scope);
-                //return output;
-            }
-            catch (Exception e)
-            {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+                return _parameters[elseKey] != null ? await _parameters[elseKey].Execute(scope) : (null, ControlFlowFlag.None);
             }
         }
 
