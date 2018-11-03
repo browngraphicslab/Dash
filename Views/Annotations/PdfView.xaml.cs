@@ -35,20 +35,23 @@ namespace Dash
 {
     public sealed partial class PdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
+        public event PropertyChangedEventHandler PropertyChanged;
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
             "PdfUri", typeof(Uri), typeof(PdfView), new PropertyMetadata(default(Uri), PropertyChangedCallback));
 
-        private List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
-
-        public Uri PdfUri
+        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
+        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
+        private StorageFile       _file;
+        private double            _pdfMaxWidth;
+        public PdfAnnotationView                  DefaultView => _botPdf;
+        public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
+        public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
+        public Uri                                PdfUri
         {
             get => (Uri)GetValue(PdfUriProperty);
             set => SetValue(PdfUriProperty, value);
         }
-
-        private double _pdfMaxWidth;
-
-        public double PdfMaxWidth
+        public double                             PdfMaxWidth
         {
             get => _pdfMaxWidth;
             set
@@ -57,306 +60,18 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-
-        private double _pdfTotalHeight;
-
-        public double PdfTotalHeight
-        {
-            get => _pdfTotalHeight;
-            set
-            {
-                _pdfTotalHeight = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public event EventHandler DocumentLoaded;
-
-        public DataVirtualizationSource TopPages { get; set; }
-
-        public DataVirtualizationSource BottomPages { get; set; }
-
-        private ObservableCollection<DocumentView> _topAnnotationList = new ObservableCollection<DocumentView>();
-
-        public ObservableCollection<DocumentView> TopAnnotations
-        {
-            get => _topAnnotationList;
-            set
-            {
-                _topAnnotationList = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public ObservableCollection<DocumentView> BottomAnnotations
-        {
-            get => _bottomAnnotationList;
-            set
-            {
-                _bottomAnnotationList = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public List<DocumentController> DocControllers { get; set; }
-
-        public DocumentController LayoutDocument { get; }
-        public DocumentController DataDocument { get; }
-
         //This makes the assumption that both pdf views are always in the same annotation mode
-        public AnnotationType CurrentAnnotationType => _bottomAnnotationOverlay.CurrentAnnotationType;
+        public AnnotationType                     CurrentAnnotationType => _botPdf.AnnotationOverlay.CurrentAnnotationType;
 
-
-        private Stack<double> _topBackStack;
-        private Stack<double> _bottomBackStack;
-
-        private Stack<double> _topForwardStack;
-        private Stack<double> _bottomForwardStack;
-
-        private DispatcherTimer _topTimer;
-        private DispatcherTimer _bottomTimer;
-
-        public Grid TopAnnotationBox => xTopAnnotationBox;
-        public Grid BottomAnnotationBox => xBottomAnnotationBox;
-
-        public WPdf.PdfDocument PDFdoc { get; private set; }
-        private void CustomPdfView_Loaded(object sender, RoutedEventArgs routedEventArgs)
+        public PdfView()
         {
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-            this.KeyDown += CustomPdfView_KeyDown;
-            SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
-        }
+            InitializeComponent();
 
-        class SelRange
-        {
-            public KeyValuePair<int, int> Range;
-            public Rect ClipRect;
-        }
-
-        private void CustomPdfView_KeyDown(object sender, KeyRoutedEventArgs args)
-        {
-
-            if (args.Key == VirtualKey.Space)
-                MainPage.Instance.xToolbar.xPdfToolbar.Update(
-                    CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
-            if (!MainPage.Instance.IsShiftPressed())
-            {
-                if (args.Key == VirtualKey.PageDown)
-                    PageNext(BottomScrollViewer);
-                if (args.Key == VirtualKey.PageUp)
-                    PagePrev(BottomScrollViewer);
-            }
-            if (this.IsCtrlPressed())
-            {
-                var bottomTextAnnos = _bottomAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
-                var bottomSelections = bottomTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
-                var bottomClipRects = bottomTextAnnos.Select(i => i.ClipRect);
-                var topTextAnnos = _topAnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
-                var topSelections = topTextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
-                var topClipRects = topTextAnnos.Select(i => i.ClipRect);
-
-                var selections = new List<List<SelRange>>
-                {
-                    bottomSelections.Zip(bottomClipRects, (map, clip) => new SelRange() {Range = map, ClipRect = clip}).ToList(),
-                    topSelections.Zip(topClipRects, (map, clip) => new SelRange() {Range = map, ClipRect = clip}).ToList()
-                };
-                var allSelections = selections.SelectMany(s => s.ToList()).ToList();
-                if (args.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
-                {
-                    Debug.Assert(allSelections.Last().Range.Value != -1);
-                    Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
-                    StringBuilder fontStringBuilder = new StringBuilder("\\fonttbl ");
-                    Dictionary<string, int> fontMap = new Dictionary<string, int>();
-                    int fontNum = 0;
-                    foreach (var selection in allSelections)
-                    {
-                        for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
-                        {
-                            var ele = _bottomAnnotationOverlay.TextSelectableElements[i];
-                            var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
-                            ;
-                            var correctedFont = fontFamily;
-                            if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
-                            {
-                                correctedFont = "Georgia";
-                            }
-                            else if (fontFamily?.Contains("Impact", StringComparison.OrdinalIgnoreCase) ?? false)
-                            {
-                                correctedFont = "Impact";
-                            }
-
-                            if (!fontMap.ContainsKey(fontFamily))
-                            {
-                                fontMap.Add(fontFamily, fontNum);
-                                fontStringBuilder.Append("\\f" + fontNum + " " + correctedFont + "; ");
-                                fontNum++;
-                            }
-                        }
-                    }
-
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append("{\\rtf1\\ansi {" + fontStringBuilder + "}\\pard{\\sa120 ");
-                    allSelections.Sort((s1, s2) => Math.Sign(s1.Range.Key - s2.Range.Key));
-
-                    // get the indices from our selections and ignore any duplicate selections
-                    var indices = new List<int>();
-                    foreach (var selection in allSelections)
-                    {
-                        for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
-                        {
-                            if (!indices.Contains(i))
-                            {
-                                var eleBounds = _bottomAnnotationOverlay.TextSelectableElements[i].Bounds;
-                                if (selection.ClipRect == null || selection.ClipRect == Rect.Empty ||
-                                    selection.ClipRect.Contains(new Point(eleBounds.X + eleBounds.Width / 2,
-                                        eleBounds.Y + eleBounds.Height / 2)))
-                                    indices.Add(i);
-                            }
-                        }
-                    }
-
-                    // if there's ever a jump in our indices, insert two line breaks before adding the next index
-                    var prevIndex = indices.First() - 1;
-                    var currentFontSize = 0;
-                    var isItalic = false;
-                    var isBold = false;
-                    var currentFont = "";
-                    foreach (var index in indices)
-                    {
-                        if (prevIndex + 1 != index)
-                        {
-                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
-                        }
-
-                        var selectableElement = _bottomAnnotationOverlay.TextSelectableElements[index];
-                        var nchar = ((string)selectableElement.Contents).First();
-                        if (prevIndex > 0 && sb.Length > 0 &&
-                            (nchar > 128 || char.IsUpper(nchar) ||
-                             (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
-                              !char.IsLower(sb[sb.Length - 1]))) &&
-                            _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
-                            _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
-                        {
-                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
-                        }
-                        var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                            .GetFontName();
-                        if (selectableElement.Type == SelectableElement.ElementType.Text)
-                        {
-                            var dpi = DisplayInformation.GetForCurrentView().LogicalDpi;
-                            var fontSize = (int) (selectableElement.Bounds.Height * 72 / dpi);
-                            if (fontSize != currentFontSize)
-                            {
-                                sb.Append("\\fs" + 2 * fontSize);
-                                currentFontSize = fontSize;
-                            }
-
-                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
-                            {
-                                sb.Append("{\\b");
-                                isBold = true;
-                            }
-                            else if (isBold && selectableElement.Bounds.Width <
-                                     1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
-                            {
-                                sb.Append("}");
-                                isBold = false;
-                            }
-
-                            //if (isBold && !font.Contains("Bold"))
-                            //{
-                            //    sb.Append("}");
-                            //    isBold = false;
-                            //}
-                            //else if (!isBold && font.Contains("Bold"))
-                            //{
-                            //    sb.Append("{\\sa120\\b");
-                            //    sb.Append("\\fs" + 2 * fontSize);
-                            //    isBold = true;
-                            //}
-
-                            if (font != currentFont)
-                            {
-                                sb.Append("}{\\sa120\\f" + fontMap[font]);
-                                sb.Append("\\fs" + 2 * fontSize);
-                                currentFont = font;
-                            }
-
-                            var contents = (string)selectableElement.Contents;
-                            if (char.IsWhiteSpace(contents, 0))
-                            {
-                                sb.Append("\\~");
-                            }
-                            else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
-                            {
-                                sb.Append("\\_");
-                            }
-                            else
-                            {
-                                sb.Append((string)selectableElement.Contents);
-                            }
-                        }
-
-                        prevIndex = index;
-                    }
-
-                    var dataPackage = new DataPackage();
-                    dataPackage.SetRtf(sb.ToString());
-                    dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
-                    Clipboard.SetContent(dataPackage);
-                    args.Handled = true;
-                }
-            }
-        }
-        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-            Context context)
-        {
-            if (args.NewValue == null || (sender.GetField(KeyStore.GoToRegionKey) == null && sender.GetField(KeyStore.GoToRegionLinkKey) == null))
-            {
-                return;
-            }
-
-            ScrollToRegion(args.NewValue as DocumentController);
-            _bottomAnnotationOverlay.SelectRegion(args.NewValue as DocumentController);
-
-            sender.RemoveField(KeyStore.GoToRegionKey);
-            sender.RemoveField(KeyStore.GoToRegionLinkKey);
-        }
-
-        private void CustomPdfView_Unloaded(object sender, RoutedEventArgs e)
-        {
-            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-            _bottomAnnotationOverlay.TextSelectableElements?.Clear();
-            _topAnnotationOverlay.TextSelectableElements?.Clear();
-            SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
-        }
-
-        private readonly AnnotationOverlay _topAnnotationOverlay;
-        private readonly AnnotationOverlay _bottomAnnotationOverlay;
-
-        public PdfView(DocumentController document)
-        {
-            this.InitializeComponent();
-            SetUpToolTips();
-            LayoutDocument = document;
-            DataDocument = document.GetDataDocument();
-            TopPages = new DataVirtualizationSource(this, TopScrollViewer, TopPageItemsControl);
-            BottomPages = new DataVirtualizationSource(this, BottomScrollViewer, BottomPageItemsControl);
-
-            Loaded += CustomPdfView_Loaded;
-            Unloaded += CustomPdfView_Unloaded;
-
-            _bottomAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-            _topAnnotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-            xTopPdfGrid.Children.Add(_topAnnotationOverlay);
-            xBottomPdfGrid.Children.Add(_bottomAnnotationOverlay);
-
-            BottomScrollViewer.SizeChanged += (ss, ee) =>
+            SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
                 {
-                    xBar.Width = BottomScrollViewer.ExtentWidth;
+                    xBar.Width = ActualWidth;
                 }
             };
 
@@ -369,166 +84,12 @@ namespace Dash
                 }
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
-
-            _topBackStack = new Stack<double>();
-            _topBackStack.Push(0);
-            _bottomBackStack = new Stack<double>();
-            _bottomBackStack.Push(0);
-            _topForwardStack = new Stack<double>();
-            _bottomForwardStack = new Stack<double>();
-
-            BottomScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
-            TopScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
-
-            Canvas.SetZIndex(xBottomButtonPanel, 999);
-            Canvas.SetZIndex(xTopButtonPanel, 999);
-
-            _topTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
-            _topTimer.Tick += TimerTick;
-
-            _bottomTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
-            _bottomTimer.Tick += TimerTick;
-
-            _topTimer.Start();
-            _bottomTimer.Start();
-
-            SetAnnotationType(AnnotationType.Region);
         }
         ~PdfView()
         {
-
             //Debug.WriteLine("FINALIZING PdfView");
         }
-
-
-        private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            if (SelectionManager.IsSelected(docview))
-            {
-                ShowPdfControls();
-            }
-            else
-            {
-                HidePdfControls();
-            }
-        }
-
-        private void TimerTick(object sender, object o)
-        {
-            if (sender.Equals(_topTimer))
-            {
-                _topTimer.Stop();
-                AddToStack(_topBackStack, TopScrollViewer);
-                //_topTimer.Start();
-
-            }
-            else if (sender.Equals(_bottomTimer))
-            {
-                _bottomTimer.Stop();
-                AddToStack(_bottomBackStack, BottomScrollViewer);
-                //_bottomTimer.Start();
-            }
-        }
-
-        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (sender.Equals(TopScrollViewer))
-            {
-                if (TopScrollViewer.ExtentHeight != 0)
-                {
-                    _topTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-                    _topTimer.Start();
-                }
-            }
-
-            else if (sender.Equals(BottomScrollViewer))
-            {
-                if (BottomScrollViewer.ExtentHeight != 0)
-                {
-                    _bottomTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-                    _bottomTimer.Start();
-                }
-
-                SetAnnotationsVisibleOnScroll(null);
-            }
-        }
-
-        public void CheckForVisibilityButtonToggle()
-        {
-
-        }
-
-        public void SetAnnotationType(AnnotationType type)
-        {
-            _bottomAnnotationOverlay.CurrentAnnotationType = type;
-            _topAnnotationOverlay.CurrentAnnotationType = type;
-        }
-
-        //private void OnNewRegionMade(object sender, RegionEventArgs e)
-        //{
-        //    MakeRegionMarker(TopScrollViewer.VerticalOffset, e.Link);
-        //}
-
-        // adds to the side of the PDFView
-        private void MakeRegionMarker(double offset, DocumentController dc)
-        {
-            var newMarker = new PDFRegionMarker();
-            newMarker.SetScrollPosition(offset, TopScrollViewer.ExtentHeight);
-            newMarker.LinkTo = dc;
-            newMarker.Offset = offset;
-            newMarker.PointerPressed += xMarker_OnPointerPressed;
-            xAnnotationMarkers.Children.Add(newMarker);
-            _markers.Add(newMarker);
-
-            xAnnotationMarkers.Visibility = Visibility.Visible;
-        }
-
-        //private void OnRegionRemoved(object sender, RegionEventArgs e)
-        //{
-        //    foreach (var child in xAnnotationMarkers.Children.ToList())
-        //    {
-        //        if (child is PDFRegionMarker box)
-        //        {
-        //            if (box.LinkTo.Equals(e.Link))
-        //            {
-        //                xAnnotationMarkers.Children.Remove(child);
-        //                _markers.Remove(box);
-
-        //                if (_markers.Count == 0)
-        //                {
-        //                    xAnnotationMarkers.Visibility = Visibility.Collapsed;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// This creates a region document at a Point specified in the coordinates of the containing DocumentView
-        /// </summary>
-        /// <param name="docViewPoint"></param>
-        /// <returns></returns>
-        public DocumentController GetRegionDocument(Point? docViewPoint = null)
-        {
-            var regionDoc = _bottomAnnotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null)
-            {
-                if (docViewPoint != null)
-                {
-
-                    //else, make a new push pin region closest to given point
-                    var bottomOverlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _bottomAnnotationOverlay);
-                    var newPoint = calculateClosestPointOnPDF(bottomOverlayPoint);
-
-                    regionDoc = _bottomAnnotationOverlay.CreatePinRegion(newPoint);
-                }
-                else
-                    regionDoc = LayoutDocument;
-            }
-            return regionDoc;
-        }
-
+        
         public async Task<List<DocumentController>> ExplodePages()
         {
             var pages = new List<DocumentController>();
@@ -558,11 +119,62 @@ namespace Dash
             pdfDocument.Close();
             return pages;
         }
-
-        private Point calculateClosestPointOnPDF(Point p)
+        public void GoToPage(double pageNum)
         {
-            return new Point(p.X < 0 ? 30 : p.X > this._bottomAnnotationOverlay.ActualWidth ? this._bottomAnnotationOverlay.ActualWidth - 30 : p.X,
-                             p.Y < 0 ? 30 : p.Y > this._bottomAnnotationOverlay.ActualHeight ? this._bottomAnnotationOverlay.ActualHeight - 30 : p.Y);
+            _botPdf.GoToPage(pageNum);
+        }
+        public void ShowRegions()
+        {
+            _topPdf.AnnotationOverlay.Visibility = Visibility.Visible;
+            _botPdf.AnnotationOverlay.Visibility = Visibility.Visible;
+        }
+        public void HideRegions()
+        {
+            _topPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
+            _botPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
+        }
+        public bool AreAnnotationsVisible()
+        {
+            //This makes the assumption that both overlays are kept in sync
+            return _botPdf.AnnotationOverlay.Visibility == Visibility.Visible;
+        }
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            return _botPdf.HandleLink(linkDoc, direction);
+        }
+        public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
+        {
+            _botPdf.SetAnnotationsVisibleOnScroll(visibleOnScroll);
+        }
+        public void SetAnnotationType(AnnotationType type)
+        {
+            _botPdf.AnnotationOverlay.CurrentAnnotationType = type;
+            _topPdf.AnnotationOverlay.CurrentAnnotationType = type;
+        }
+        /// <summary>
+        /// This creates a region document at a Point specified in the coordinates of the containing DocumentView
+        /// </summary>
+        /// <param name="docViewPoint"></param>
+        /// <returns></returns>
+        public DocumentController GetRegionDocument(Point? docViewPoint = null)
+        {
+            return _botPdf.GetRegionDocument(docViewPoint);
+        }
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+                tip.IsOpen = true;
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+
         }
 
         private static DocumentController RegionGetter(AnnotationType type)
@@ -570,120 +182,92 @@ namespace Dash
             return new RichTextNote().Document;
         }
 
-        //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
-        private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
-
-        StorageFile _file;
         private async Task OnPdfUriChanged()
         {
-            if (PdfUri == null)
-            {
-                return;
-            }
-
             try
             {
-                if (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://"))
-                {
-                    _file = await StorageFile.GetFileFromApplicationUriAsync(PdfUri);
-                }
-                else
-                {
-                    _file = await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
-
-                }
+                _file = (PdfUri.AbsoluteUri.StartsWith("ms-appx://") || PdfUri.AbsoluteUri.StartsWith("ms-appdata://")) ?
+                    await StorageFile.GetFileFromApplicationUriAsync(PdfUri) :
+                    await StorageFile.GetFileFromPathAsync(PdfUri.LocalPath);
             }
             catch (ArgumentException)
             {
                 return;
             }
 
-            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
-            PdfDocument pdfDocument;
-            try
-            {
-                pdfDocument = new PdfDocument(reader);
-            }
-            catch (BadPasswordException)
-            {
-                return;
-            }
-            var strategy = new BoundsExtractionStrategy();
-            var processor = new PdfCanvasProcessor(strategy);
-            double offset = 0;
-            double maxWidth = 0;
+            var reader      = new PdfReader(await _file.OpenStreamForReadAsync());
+            var pdfDocument = new PdfDocument(reader);
+            _topPdf.PdfMaxWidth    = _botPdf.PdfMaxWidth = PdfMaxWidth = CalculateMaxPDFWidth(pdfDocument);
+            _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = await LoadPdfFromFile(pdfDocument);
+            reader.Close();
+            pdfDocument.Close();
+
+            _botPdf.Pages.Initialize();
+            _topPdf.Pages.Initialize();
+
+            this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
+        }
+
+        private double CalculateMaxPDFWidth(PdfDocument pdfDocument)
+        {
+            var maxWidth = 0.0;
             for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
-                TopPages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
-                BottomPages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                _topPdf.Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
+                _botPdf.Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
                 maxWidth = Math.Max(maxWidth, page.GetPageSize().GetWidth());
             }
+            return maxWidth;
+        }
 
-            PdfMaxWidth = maxWidth;
-
-            PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
-            bool add = PDFdoc.PageCount != _currentPageCount;
-            if (add)
-            {
-                _currentPageCount = (int)PDFdoc.PageCount;
-            }
-
-            if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
-            {
-                await Task.Run(() =>
-                {
-                    for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-                    {
-                        var page = pdfDocument.GetPage(i);
-                        var size = page.GetPageSize();
-                        strategy.SetPage(i - 1, offset, size, page.GetRotation());
-                        offset += page.GetPageSize().GetHeight() + 10;
-                        processor.ProcessPageContent(page);
-                    }
-                });
-            }
-            else
+        private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument)
+        {
+            var strategy       = new BoundsExtractionStrategy();
+            var pdfTotalHeight = 0.0;
+            await Task.Run(() =>
             {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
-                    offset += page.GetPageSize().GetHeight() + 10;
+                    pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
+                    if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
+                    {
+                        strategy.SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
+                        new PdfCanvasProcessor(strategy).ProcessPageContent(page);
+                    }
                 }
-            }
+            });
 
+            _topPdf.PDFdoc = _botPdf.PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
             var (selectableElements, text, pages) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-            _topAnnotationOverlay.TextSelectableElements = selectableElements;
-            _topAnnotationOverlay.PageEndIndices = pages;
-            _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
-            _bottomAnnotationOverlay.PageEndIndices = pages;
-
-            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-
-            reader.Close();
-            pdfDocument.Close();
-            PdfTotalHeight = offset - 10;
-            DocumentLoaded?.Invoke(this, new EventArgs());
-
-            foreach (var child in this.GetDescendantsOfType<TextAnnotation>())
+            try
             {
-                child.HelpRenderRegion();
+                _botPdf.AnnotationOverlay.TextSelectableElements = selectableElements;
+                _botPdf.AnnotationOverlay.PageEndIndices = pages;
             }
-
-            MainPage.Instance.ClosePopup();
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return pdfTotalHeight-10;
         }
-
-        public BoundsExtractionStrategy Strategy { get; set; }
-
-        private int _currentPageCount = -1;
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject,
             DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
-            await ((PdfView)dependencyObject).OnPdfUriChanged();
-        }
+            if (dependencyObject is PdfView pdfView && pdfView.PdfUri != null)
+            {
+                try
+                {
+                    await pdfView.OnPdfUriChanged();
+                }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+                catch (BadPasswordException)
+                {
+                }
+            }
+        }
 
         [NotifyPropertyChangedInvocator]
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -691,333 +275,59 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (CurrentAnnotationType == AnnotationType.Region)
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-                    overlay.EmbedDocumentWithPin(e.GetPosition(overlay));
-                }
-            }
-        }
-
-        #region Region/Selection Events
-
-        private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            TouchInteractions.NumFingers--;
-            if (TouchInteractions.NumFingers == 0)
-            {
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
-            }
-            Debug.WriteLine("PDF POINTER RELEASED: " + TouchInteractions.NumFingers);
-            (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
-            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
-            if (currentPoint.Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonReleased)
-            {
-                return;
-            }
-
-            var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-            overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
-            e.Handled = true;
-            var curPt = e.GetCurrentPoint(this).Position;
-            var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
-            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
-            {
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
-            }
-
-            this.Focus(FocusState.Pointer);
-        }
-
-        private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
-            var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-            {
-                overlay.EndAnnotation(e.GetCurrentPoint(overlay).Position);
-                return;
-            }
-
-            if (currentPoint.Properties.IsLeftButtonPressed)
-            {
-                overlay.UpdateAnnotation(e.GetCurrentPoint(overlay).Position);
-            }
-
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            {
-                e.Handled = true;
-            }
-        }
-
-        Point _downPt = new Point();
-
-        private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("PDF POINTER PRESSED: " + TouchInteractions.NumFingers);
-            _downPt = e.GetCurrentPoint(this).Position;
-            var currentPoint = e.GetCurrentPoint(TopPageItemsControl);
-            var overlay = sender == xTopPdfGrid ? _topAnnotationOverlay : _bottomAnnotationOverlay;
-            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
-            {
-                overlay.StartAnnotation(CurrentAnnotationType, e.GetCurrentPoint(overlay).Position);
-                (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
-                (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
-            }
-
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            {
-                e.Handled = true;
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
-            }
-        }
-
-        #endregion
-
-        // ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
-        private double _topScrollRatio;
-        private double _bottomScrollRatio;
-        private double _height;
-        private ObservableCollection<DocumentView> _bottomAnnotationList = new ObservableCollection<DocumentView>();
-
-        public void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            TopScrollViewer.ChangeView(null, _topScrollRatio * TopScrollViewer.ExtentHeight, null, true);
-            BottomScrollViewer.ChangeView(null, _bottomScrollRatio * BottomScrollViewer.ExtentHeight, null, true);
-        }
-
-        private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
-        {
-            if (sender.Equals(TopScrollViewer))
-            {
-                _topScrollRatio = e.FinalView.VerticalOffset / TopScrollViewer.ExtentHeight;
-            }
-            else if (sender.Equals(BottomScrollViewer))
-            {
-                _bottomScrollRatio = e.FinalView.VerticalOffset / BottomScrollViewer.ExtentHeight;
-            }
-
-
-            //LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _topScrollRatio, true);
-        }
-
-
-        public void ScrollToPosition(double pos)
-        {
-            var sizes = BottomPages.PageSizes;
-            var botOffset = 0.0;
-            var annoWidth = xBottomAnnotationBox.ActualWidth;
-            foreach (var size in sizes)
-            {
-                var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
-                if (botOffset + (size.Height * scale) - pos > 1)
-                {
-                    break;
-                }
-
-                botOffset += (size.Height * scale) + 15;
-            }
-
-            xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
-            xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-            BottomScrollViewer.ChangeView(null, botOffset, null);
-        }
-
         public void ScrollToRegion(DocumentController target, DocumentController source = null)
         {
-            var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            if (absoluteOffsets == null) return;
-
-            var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (ActualWidth / PdfMaxWidth)).ToList();
-
-            var currOffset = relativeOffsets.First();
-            var firstOffset = relativeOffsets.First();
-            var maxOffset = BottomScrollViewer.ViewportHeight;
-            var splits = new List<double>();
-
-
-            if (source != null)
-            {
-                currOffset = 0;
-                foreach (var offset in relativeOffsets)
-                {
-                    if (currOffset == 0 || offset - currOffset > maxOffset)
-                    {
-                        splits.Add(offset);
-                        currOffset = offset;
-                    }
-                }
-
-                var off = source.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey)[0].Data.Y *
-                          BottomScrollViewer.ExtentHeight;
-                splits.Insert(1, off);
-                relativeOffsets.Insert(1, off);
-            }
-            else
-            {
-                foreach (var offset in relativeOffsets.Skip(1))
-                {
-                    if (offset - currOffset > maxOffset)
-                    {
-                        splits.Add(offset);
-                        currOffset = offset;
-                    }
-                }
-            }
-
-            Debug.WriteLine($"{splits} screen splits are needed to show everything");
-
-            var sizes = BottomPages.PageSizes;
+            _botPdf.ScrollToRegion(target, source);
+            
             // TODO: functionality for more than one split maybe?
-            if (splits.Any())
+            // if (splits.Any())
+            // {
+            //    var botOffset = 0.0;
+            //    var annoWidth = xBottomAnnotationBox.ActualWidth;
+            //    foreach (var size in sizes)
+            //    {
+            //        var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+            //        if (botOffset + (size.Height * scale) + 15 - splits[0] >= -1)
+
+            //        {
+            //            break;
+            //        }
+
+            //        botOffset += (size.Height * scale) + 15;
+            //    }
+
+            //    var topOffset = 0.0;
+            //    annoWidth = xTopAnnotationBox.ActualWidth;
+            //    foreach (var size in sizes)
+            //    {
+            //        var scale = (TopScrollViewer.ViewportWidth - annoWidth) / size.Width;
+
+            //        if (topOffset + (size.Height * scale) + 15 - firstOffset >= -1)
+            //        {
+            //            break;
+            //        }
+
+            //        topOffset += size.Height * scale + 15;
+            //    }
+
+               //xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
+               //xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+            //    TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
+            //    BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
+            //}
+            //else
             {
-                var botOffset = 0.0;
-                var annoWidth = xBottomAnnotationBox.ActualWidth;
-                foreach (var size in sizes)
-                {
-                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
-
-                    if (botOffset + (size.Height * scale) + 15 - splits[0] >= -1)
-
-                    {
-                        break;
-                    }
-
-                    botOffset += (size.Height * scale) + 15;
-                }
-
-                var topOffset = 0.0;
-                annoWidth = xTopAnnotationBox.ActualWidth;
-                foreach (var size in sizes)
-                {
-                    var scale = (TopScrollViewer.ViewportWidth - annoWidth) / size.Width;
-
-                    if (topOffset + (size.Height * scale) + 15 - firstOffset >= -1)
-                    {
-                        break;
-                    }
-
-                    topOffset += size.Height * scale + 15;
-                }
-
-                xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-                BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
-            }
-            else
-            {
-                var annoWidth = xBottomAnnotationBox.ActualWidth;
-                var botOffset = 0.0;
-                foreach (var size in sizes)
-                {
-                    var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
-
-                    if (botOffset + (size.Height * scale) + 15 - firstOffset >= -1)
-
-                    {
-                        break;
-                    }
-
-                    botOffset += (size.Height * scale) + 15;
-                }
-
+                
                 xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-                BottomScrollViewer.ChangeView(null, relativeOffsets.First() - (TopScrollViewer.ViewportHeight + BottomScrollViewer.ViewportHeight) / 2, null);
             }
         }
-
-        // when the sidebar marker gets pressed
-        private void xMarker_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            //MarkerSelected((PDFRegionMarker)sender);
-            //AnnotationManager.SelectRegionFromParent(((PDFRegionMarker)sender).LinkTo);
-            //e.Handled = true;
-        }
-
-        // moves to the region's offset
-        // moves to the region's offset
-        private void MarkerSelected(PDFRegionMarker region)
-        {
-            if (region != null)
-            {
-                // todo: do we need the zoom factor multiplied by offset here?
-                TopScrollViewer.ChangeView(null, region.Offset, null);
-
-            }
-        }
-
-        private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var currOffset = TopScrollViewer.VerticalOffset;
-            PDFRegionMarker nextOffset = null;
-
-            foreach (var region in _markers)
-            {
-                if (region.Offset > currOffset && Math.Abs(region.Offset - currOffset) > 1 &&
-                    (nextOffset == null || region.Offset < nextOffset.Offset))
-                {
-                    nextOffset = region;
-                }
-            }
-
-            MarkerSelected(nextOffset);
-        }
-
-        private void xPrevAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var currOffset = TopScrollViewer.VerticalOffset;
-            PDFRegionMarker prevOffset = null;
-
-            foreach (var region in _markers)
-            {
-                if (region.Offset < currOffset && Math.Abs(region.Offset - currOffset) > 1 &&
-                    (prevOffset == null || region.Offset > prevOffset.Offset))
-                {
-                    prevOffset = region;
-                }
-            }
-
-            MarkerSelected(prevOffset);
-        }
-
-        private void Scrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            if (_markers.Count > 0) xAnnotationNavigation.Opacity = 0.8;
-        }
-
-        private void Scrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            xAnnotationNavigation.Opacity = 0;
-        }
-
-        private void XTopAnnotationsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (xTopAnnotationBox.Width.Equals(0))
-            {
-                xTopAnnotationBox.Width = 200;
-                xBottomAnnotationBox.Width = 200;
-
-            }
-            else
-            {
-                xTopAnnotationBox.Width = 0;
-                xBottomAnnotationBox.Width = 0;
-            }
-        }
-
+        
         private void XPdfDivider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-
             e.Handled = true;
         }
-
 
         private void XPdfDivider_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -1039,495 +349,7 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XBottomScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            BottomScrollViewer.ChangeView(null, 0, null);
-            _bottomBackStack.Push(0);
-        }
-
-        private void XBottomNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PageNext(BottomScrollViewer);
-
-        }
-
-        private void XBottomPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PagePrev(BottomScrollViewer);
-        }
-
-        private void XBottomScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PopBackStack(_bottomBackStack, _bottomForwardStack, BottomScrollViewer);
-        }
-
-        private void XTopNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PageNext(TopScrollViewer);
-        }
-
-        private void XTopPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PagePrev(TopScrollViewer);
-        }
-
-        private void XTopScrollToTop_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            TopScrollViewer.ChangeView(null, 0, null);
-            _topBackStack.Push(0);
-        }
-
-        private void XTopScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PopBackStack(_topBackStack, _topForwardStack, TopScrollViewer);
-        }
-
-
-        private void PagePrev(ScrollViewer scroller)
-        {
-            DataVirtualizationSource pages;
-            double annoWidth = 0;
-            if (scroller.Equals(TopScrollViewer))
-            {
-                pages = TopPages;
-                annoWidth = xTopAnnotationBox.Width;
-            }
-            else
-            {
-                pages = BottomPages;
-                annoWidth = xBottomAnnotationBox.Width;
-            }
-
-            var sizes = pages.PageSizes;
-            var currOffset = 0.0;
-            foreach (var size in sizes)
-            {
-                var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-
-                if (currOffset + (size.Height + 10) * scale - scroller.VerticalOffset >= -1)
-                {
-                    break;
-                }
-
-                currOffset += (size.Height + 10) * scale;
-            }
-
-            scroller.ChangeView(null, currOffset, 1);
-            if (scroller.Equals(TopScrollViewer))
-            {
-                _topBackStack.Push(currOffset / TopScrollViewer.ExtentHeight);
-            }
-            else if (scroller.Equals(BottomScrollViewer))
-            {
-                _bottomBackStack.Push(currOffset / BottomScrollViewer.ExtentHeight);
-            }
-
-        }
-
-        private void PageNext(ScrollViewer scroller)
-        {
-            DataVirtualizationSource pages;
-            double annoWidth;
-            if (scroller.Equals(TopScrollViewer))
-            {
-
-                pages = TopPages;
-                annoWidth = xTopAnnotationBox.Width;
-
-            }
-
-            else
-            {
-                pages = BottomPages;
-                annoWidth = xBottomAnnotationBox.Width;
-
-            }
-
-            var sizes = pages.PageSizes;
-            var currOffset = 0.0;
-            foreach (var size in sizes)
-            {
-                var scale = (scroller.ViewportWidth - annoWidth) / size.Width;
-                currOffset += (size.Height + 10) * scale;
-                if (currOffset - scroller.VerticalOffset > 1)
-                {
-                    break;
-                }
-
-            }
-
-            scroller.ChangeView(null, currOffset, 1);
-            if (scroller.Equals(TopScrollViewer))
-            {
-                _topBackStack.Push(currOffset / TopScrollViewer.ExtentHeight);
-            }
-            else if (scroller.Equals(BottomScrollViewer))
-            {
-                _bottomBackStack.Push(currOffset / BottomScrollViewer.ExtentHeight);
-            }
-
-        }
-
-        public void GoToPage(double pageNum)
-        {
-
-            var sizes = BottomPages.PageSizes;
-            var currOffset = 0.0;
-
-            for (var i = 0; i < pageNum - 1; i++)
-            {
-                var scale = (BottomScrollViewer.ViewportWidth - xBottomAnnotationBox.Width) / sizes[i].Width;
-                currOffset += (sizes[i].Height + 10) * scale;
-            }
-
-            BottomScrollViewer.ChangeView(null, currOffset, 1);
-            TopScrollViewer.ChangeView(null, currOffset, 1);
-
-        }
-
-        private void AddToStack(Stack<double> stack, ScrollViewer viewer)
-        {
-            if (!stack.Count().Equals(0))
-            {
-                if (!stack.Peek().Equals(viewer.VerticalOffset / viewer.ExtentHeight))
-                {
-                    stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
-                }
-            }
-            else
-            {
-                stack.Push(0);
-                stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
-            }
-        }
-
-        private void PopBackStack(Stack<double> backstack, Stack<double> forwardstack, ScrollViewer viewer)
-        {
-            if (backstack.Any())
-            {
-                var pop = backstack.Pop();
-                if (backstack.Count > 0 && !backstack.Peek().Equals(Double.NaN) &&
-                    !viewer.ExtentHeight.Equals(Double.NaN))
-                {
-                    viewer.ChangeView(null, backstack.Peek() * viewer.ExtentHeight, 1);
-                }
-                else
-                {
-                    viewer.ChangeView(null, 0, 1);
-                }
-
-                //viewer.ChangeView(null, backstack.Any() ? backstack.Peek() * viewer.ExtentHeight : 0, 1);
-                forwardstack.Push(pop);
-            }
-        }
-
-        private void XBottomControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (xToggleButtonStack2.Visibility.Equals(Visibility.Collapsed))
-            {
-                xToggleButtonStack2.Visibility = Visibility.Visible;
-                xFadeAnimation2.Begin();
-            }
-            else
-            {
-                xToggleButtonStack2.Visibility = Visibility.Collapsed;
-            }
-
-        }
-
-        private void XTopControlsToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (xTopToggleButtonStack.Visibility.Equals(Visibility.Collapsed))
-            {
-                xTopToggleButtonStack.Visibility = Visibility.Visible;
-                xFadeAnimation.Begin();
-            }
-            else
-            {
-                xTopToggleButtonStack.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        public void ShowRegions()
-        {
-            _topAnnotationOverlay.Visibility = Visibility.Visible;
-            _bottomAnnotationOverlay.Visibility = Visibility.Visible;
-        }
-
-        public void HideRegions()
-        {
-            _topAnnotationOverlay.Visibility = Visibility.Collapsed;
-            _bottomAnnotationOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        public bool AreAnnotationsVisible()
-        {
-            //This makes the assumption that both overlays are kept in sync
-            return _bottomAnnotationOverlay.Visibility == Visibility.Visible;
-        }
-
-        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
-        {
-            if (_bottomAnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
-                .GetField<DocumentController>(KeyStore.LinkSourceKey)))
-            {
-                var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
-                ScrollToRegion(src);
-            }
-
-            var target = linkDoc.GetLinkedDocument(direction);
-            if (_bottomAnnotationOverlay.RegionDocsList.Contains(target))
-            {
-                ScrollToRegion(target, linkDoc.GetLinkedDocument(direction, true));
-                return LinkHandledResult.HandledClose;
-            }
-
-            return LinkHandledResult.Unhandled;
-        }
-
-        private void XTopScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PopForwardStack(_topForwardStack, _topBackStack, TopScrollViewer);
-        }
-
-        private void XBottomScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PopForwardStack(_bottomForwardStack, _bottomBackStack, BottomScrollViewer);
-        }
-
-        private void PopForwardStack(Stack<double> forwardstack, Stack<double> backstack, ScrollViewer viewer)
-        {
-            if (forwardstack.Any() && forwardstack.Peek() != double.NaN)
-            {
-                var pop = forwardstack.Pop();
-                viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
-                backstack.Push(pop);
-            }
-        }
-
-        private void Test(object sender, KeyRoutedEventArgs e)
-        {
-
-        }
-
-
-
-        public void HidePdfControls()
-        {
-            xTopButtonPanel.Visibility = Visibility.Collapsed;
-            xBottomButtonPanel.Visibility = Visibility.Collapsed;
-        }
-
-        public void ShowPdfControls()
-        {
-            xTopButtonPanel.Visibility = Visibility.Visible;
-            xBottomButtonPanel.Visibility = Visibility.Visible;
-
-            xFadeAnimation.Begin();
-            xFadeAnimation2.Begin();
-        }
-
-        private void SetUpToolTips()
-        {
-            var placementMode = PlacementMode.Bottom;
-            const int offset = 0;
-
-            var _controlsTop = new ToolTip()
-            {
-                Content = "Toggle controls",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xTopAnnotationsToggleButton, _controlsTop);
-
-            var _controlsBottom = new ToolTip()
-            {
-                Content = "Toggle controls",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBottomAnnotationsToggleButton, _controlsBottom);
-
-            var _nextTop = new ToolTip()
-            {
-                Content = "Next page",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xTopNextPageButton, _nextTop);
-
-            var _nextBottom = new ToolTip()
-            {
-                Content = "Next page",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBottomNextPageButton, _nextBottom);
-
-            var _prevTop = new ToolTip()
-            {
-                Content = "Previous page",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xTopPreviousPageButton, _prevTop);
-
-            var _prevBottom = new ToolTip()
-            {
-                Content = "Previous page",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBottomPreviousPageButton, _prevBottom);
-
-            var _upTop = new ToolTip()
-            {
-                Content = "Scroll to top",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xTopScrollToTop, _upTop);
-
-            var _upBottom = new ToolTip()
-            {
-                Content = "Scroll to top",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBottomScrollToTop, _upBottom);
-
-            var _backTop = new ToolTip()
-            {
-                Content = "Scroll backward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xTopScrollBack, _backTop);
-
-            var _backBottom = new ToolTip()
-            {
-                Content = "Scroll backward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBottomScrollBack, _backBottom);
-
-            var _forwardTop = new ToolTip()
-            {
-                Content = "Scroll forward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xTopScrollForward, _forwardTop);
-
-            var _forwardBottom = new ToolTip()
-            {
-                Content = "Scroll forward",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xBottomScrollForward, _forwardBottom);
-
-
-
-        }
-
-        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
-                tip.IsOpen = true;
-        }
-
-        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
-        }
-
-        public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
-        {
-            foreach (var annotation in _bottomAnnotationOverlay.XAnnotationCanvas.Children.OfType<AnchorableAnnotation>())
-            {
-                //get linked annotations
-                var regionDoc = (annotation.DataContext as AnchorableAnnotation.Selection)?.RegionDocument;
-                if (regionDoc != null)
-                {
-                    //bool for checking whether child is currently in view of scrollviewer
-                    var inView = annotation.IsInView(BottomScrollViewer.GetBoundingRect(annotation));
-
-                    foreach (var link in regionDoc.GetDataDocument().GetLinks(null))
-                    {
-                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ??
-                                        !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
-                        if (visibleOnScroll.HasValue)
-                        {
-                            link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, visibleOnScroll.Value, true);
-                            pinned = visibleOnScroll.Value;
-                        }
-
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!pinned && !inView);
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!pinned && !inView);
-                    }
-                }
-            }
-        }
-
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
-
-        private void xToggleActivationButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            SetActivationMode(!LinkActivationManager.ActivatedDocs.Contains(this.GetFirstAncestorOfType<DocumentView>()));
-        }
-
-        public void SetActivationMode(bool onoff)
-        {
-            xActivationMode.Visibility = onoff ? Visibility.Visible : Visibility.Collapsed;
-            if (onoff)
-                LinkActivationManager.ActivateDoc(this.GetFirstAncestorOfType<DocumentView>());
-            else
-                LinkActivationManager.DeactivateDoc(this.GetFirstAncestorOfType<DocumentView>());
-        }
-
-        /// <summary>
-        /// Enable scrolling when 2 fingers are on the pdf
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BottomScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            TouchInteractions.NumFingers++;
-             Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
-            if (TouchInteractions.NumFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            {
-                BottomScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
-                e.Handled = true;
-            }
-            else
-            {
-                BottomScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-            }
-
-            e.Handled = false;
-        }
-
-        /// <summary>
-        /// Disable scrolling if 2 fingers are not on the pdf
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BottomScrollViewer_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-        {
-            TouchInteractions.NumFingers--;
-            Debug.WriteLine("POINTER LOST: " + TouchInteractions.NumFingers);
-           // if (TouchInteractions.NumFingers < 2 && e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
-           // {
-           //     BottomScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-           //     
-           // }
-        }
     }
 }
 

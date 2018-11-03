@@ -20,6 +20,7 @@ namespace Dash.Views.Collection
 {
     public sealed partial class CollectionIconView : UserControl, ICollectionView
     {
+        public CollectionViewType ViewType => CollectionViewType.Icon;
         public CollectionIconView()
         {
             this.InitializeComponent();
@@ -32,7 +33,7 @@ namespace Dash.Views.Collection
             using (UndoManager.GetBatchHandle())
             {
                 var doc = ViewModel.ContainerDocument.GetViewCopy();
-                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString(), true);
+                ViewModel.ViewType = Enum.Parse<CollectionViewType>(ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionViewType.Freeform.ToString());
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
                 doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -90,6 +91,9 @@ namespace Dash.Views.Collection
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
                 xFolderIcon.Content    = new DocumentView() { ViewModel = new DocumentViewModel(dbf) { IsDimensionless = true } };
             }
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         public UserControl UserControl => this;

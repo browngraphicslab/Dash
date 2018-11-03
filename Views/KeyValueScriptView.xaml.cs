@@ -142,7 +142,7 @@ namespace Dash
                 return;
             }
 
-            void fieldChanged(DocumentController ss, DocumentController.DocumentFieldUpdatedEventArgs ee, Context c)
+            void fieldChanged(DocumentController ss, DocumentController.DocumentFieldUpdatedEventArgs ee)
             {
                 if (ee.Action == DocumentController.FieldUpdatedAction.Replace)
                 {

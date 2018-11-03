@@ -23,6 +23,21 @@ namespace Dash
         }
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class OperatorFunctionNameAttribute : Attribute
+    {
+        public string[] Names { get; }
+        public OperatorFunctionNameAttribute(params string[] names)
+        {
+            Names = names;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class GeneratorIgnoreAttribute : Attribute
+    {
+    }
+
 #if false
     public class Test
     {

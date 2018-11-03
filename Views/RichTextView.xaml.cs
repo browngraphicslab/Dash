@@ -293,8 +293,7 @@ namespace Dash
                 var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
                 if (documentView != null)
                 {
-                    rtv.xRichEditBox.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case);
-                    if (rtv.xRichEditBox.Document.Selection.StartPosition != rtv.xRichEditBox.Document.Selection.EndPosition)
+                    if (rtv.xRichEditBox.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
                     {
                         var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
                         var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
@@ -508,8 +507,8 @@ namespace Dash
             var bkey = KeyController.Get("Birthday");
             var wkey = KeyController.Get("Wikipedia");
             var birthday = await QuerySnapshotOperator.QueryGoogle("birthday " + (actionParams.Params?.FirstOrDefault() ?? ""));
-            var wikipedia = "https://en.wikipedia.org/wiki/" + (actionParams.Params?.FirstOrDefault().Replace(" ", "_") ?? "");
-            var stack = new CollectionNote(actionParams.Where, CollectionView.CollectionViewType.Stacking, 400,600).Document;
+            var wikipedia = "https://en.wikipedia.org/wiki/" + (actionParams.Params?.FirstOrDefault()?.Replace(" ", "_") ?? "");
+            var stack = new CollectionNote(actionParams.Where, CollectionViewType.Stacking, 400,600).Document;
             var stackData = stack.GetDataDocument();
             stackData.SetTitle(actionParams.Params.FirstOrDefault() ?? "<null>");
             stackData.SetField<TextController>(bkey, birthday, true);
@@ -810,7 +809,7 @@ namespace Dash
 
         #region load/unload
         // Someone please find out why this is being called twice
-        private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e, Context c)
+        private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e)
         {
             _searchHighlight = true;
             MatchQuery(getSelected());
@@ -822,7 +821,6 @@ namespace Dash
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;
             SetSelected("");
-            DataDocument?.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 
@@ -846,7 +844,7 @@ namespace Dash
             }
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
-            DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
             Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;

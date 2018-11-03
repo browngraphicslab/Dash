@@ -32,7 +32,7 @@ namespace Dash
         /// </summary>
         public bool MakeCollection { get; set; } = false;
 
-        public CollectionView.CollectionViewType ViewType { get; set; } = CollectionView.CollectionViewType.Freeform;
+        public CollectionViewType ViewType { get; set; } = CollectionViewType.Freeform;
         public bool DraggingJoinButton { get; set; } = false;
 
         public DragDocumentModel(DocumentController draggedDocument)
@@ -55,7 +55,7 @@ namespace Dash
             Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionView.CollectionViewType viewType)
+        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType)
         {
             DraggedDocuments = draggedDocuments;
             ViewType = viewType;

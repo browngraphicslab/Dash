@@ -22,11 +22,19 @@
 <#+ 
         private void EmitFunction((string functionName, string scriptName, bool isAsync, string methodNamespace,
                     List<(string name, string type, bool required)>,
-                    List<(string name, string type)>) args) {
-            var (functionName, scriptName, isAsync, methodNamespace, inputs, outputs) = args;
+                    List<(string name, string type)>, List<string> attribs) args) {
+            var (functionName, scriptName, isAsync, methodNamespace, inputs, outputs, attribs) = args;
             var className = $"{functionName}Operator";
+            if(attribs == null) {
             #>
 [OperatorType(Op.Name.<#= ToSnakeCase(scriptName) #>)]
+<#+
+            } else {
+#>
+[OperatorType(<#= string.Join(", ", attribs.Select(s => "Op.Name." + s)) #>)]
+<#+
+            }
+#>
 public sealed class <#= className #> : OperatorController
 {
 <#+
@@ -238,6 +246,11 @@ namespace Dash
                 manager.StartNewFile($"{filename}.Operator.cs");
                 foreach (var methodDeclarationSyntax in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
                 {
+                    var attribs = methodDeclarationSyntax.AttributeLists;
+                    var (skip, parsedAttribs) = ParseAttribs(attribs);
+                    if(skip){
+                        continue;
+                    }
                     string methodNamespace = "";
                     SyntaxNode node = methodDeclarationSyntax.Parent;
                     while (node != null)
@@ -261,20 +274,55 @@ namespace Dash
 
                         node = node.Parent;
                     }
-                    var attribs = methodDeclarationSyntax.AttributeLists;
                     var name = methodDeclarationSyntax.Identifier.ValueText;
                     var retType = methodDeclarationSyntax.ReturnType;
                     var paramList = methodDeclarationSyntax.ParameterList;
                     var inputs = ParseInputs(paramList);
                     var (outputs, isAsync) = ParseOutputs(retType, attribs);
 
-                    EmitFunction((name, name, isAsync, methodNamespace, inputs, outputs));
+                    EmitFunction((name, name, isAsync, methodNamespace, inputs, outputs, parsedAttribs));
                 }
 
                 manager.EndBlock();
             }
 
             manager.Process(true);
+        }
+
+        private (bool skip, List<string> operatorNames) ParseAttribs(SyntaxList<AttributeListSyntax> attribs) {
+            bool skip = false;
+            List<string> attributes = null;
+            foreach (var attributeListSyntax in attribs)
+            {
+                foreach (var attributeSyntax in attributeListSyntax.Attributes)
+                {
+                    var attName = attributeSyntax.Name;
+                    if (attName is IdentifierNameSyntax ident)
+                    {
+                        var identName = ident.Identifier.ValueText;
+                        switch (identName)
+                        {
+                        case "OperatorFunctionName":
+                        case "OperatorFunctionNameAttribute":
+                            var args = attributeSyntax.ArgumentList.Arguments;
+                            attributes = new List<String>();
+                            foreach(var arg in args) {
+                                if (arg.Expression is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.StringLiteralExpression)
+                                {
+                                    var token = literal.Token.ValueText;
+                                    attributes.Add(token);
+                                }
+                            }
+                            break;
+                        case "GeneratorIgnore":
+                        case "GeneratorIgnoreAttribute":
+                            skip = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return (skip, attributes);
         }
 
         private List<(string name, string type, bool required)> ParseInputs(ParameterListSyntax parameterList)

@@ -22,6 +22,7 @@ namespace Dash
 {
     public sealed partial class CollectionPageView : ICollectionView
     {
+        public CollectionViewType ViewType => CollectionViewType.Page;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         private bool _templateMode;
@@ -41,6 +42,9 @@ namespace Dash
                     xThumbs.SelectedIndex = 0;
                 }
             };
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         private async void EnterPressed(KeyRoutedEventArgs obj)
@@ -257,7 +261,7 @@ namespace Dash
             _templateDocument = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.CollectionItemLayoutPrototypeKey, null);
             if (_templateDocument == null)
             {
-                var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN);
+                var cnote = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN);
                 _templateDocument = cnote.Document;
                 _templateDocument.SetFitToParent(true);
             }
@@ -272,7 +276,7 @@ namespace Dash
                 var binding = new FieldBinding<TextController>
                 {
                     Mode = BindingMode.OneWay,
-                    Document = dvm.DocumentController,
+                    Document = dvm.DocumentController.GetDataDocument(),
                     Key = KeyStore.TitleKey,
                 };
                 sender.AddFieldBinding(TextBlock.TextProperty, binding);
