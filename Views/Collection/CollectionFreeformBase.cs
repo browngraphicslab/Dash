@@ -102,14 +102,14 @@ namespace Dash
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
         {
-            if (_backgroundCanvas == null)
+            if (_backgroundCanvas == null && GetBackgroundContentPresenter().ActualHeight != 0)
             {
                 _backgroundCanvas = new CanvasControl();
                 GetBackgroundContentPresenter().Content = _backgroundCanvas;
+                _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
+                _backgroundCanvas.Draw += CanvasControl_OnDraw;
             }
 
-            _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
-            _backgroundCanvas.Draw += CanvasControl_OnDraw;
             GetInkHostCanvas().Children.Clear();
             MakePreviewTextbox();
 
