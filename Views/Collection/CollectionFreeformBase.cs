@@ -151,21 +151,19 @@ namespace Dash
         private void _backgroundCanvas_LayoutUpdated(object sender, object e)
         {
             var realParent = _backgroundCanvas.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
-            if (realParent == null)
-                return;
-            var realRect = realParent.TransformToVisual(_backgroundCanvas).TransformBounds(new Rect(new Point(), new Size(realParent.ActualWidth, realParent.ActualHeight)));
-            var mainBounds = _backgroundCanvas.TransformToVisual(MainPage.Instance.xOuterGrid).TransformBounds(realRect);
-            var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
-                                        new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
-            var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
-            var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
-            if (newHeight != _backgroundCanvas.Height)
+            if (realParent != null)
             {
-               // Debug.Write("Height was " + _backgroundCanvas.Height);
-                _backgroundCanvas.Height = newHeight;
-               // Debug.WriteLine(" now is = " + _backgroundCanvas.Height);
+                var realRect = realParent.TransformToVisual(_backgroundCanvas).TransformBounds(new Rect(new Point(), new Size(realParent.ActualWidth, realParent.ActualHeight)));
+                var mainBounds = _backgroundCanvas.TransformToVisual(MainPage.Instance.xOuterGrid).TransformBounds(realRect);
+                var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
+                                            new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
+                var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
+                var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
+                if (newHeight != _backgroundCanvas.Height)
+                {
+                    _backgroundCanvas.Height = newHeight;
+                }
             }
-
         }
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
