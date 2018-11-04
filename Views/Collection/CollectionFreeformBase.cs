@@ -102,13 +102,17 @@ namespace Dash
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
         {
-            if (_backgroundCanvas == null && GetBackgroundContentPresenter().ActualHeight != 0)
+            if (_backgroundCanvas == null)
             {
                 _backgroundCanvas = new CanvasControl();
+                _backgroundCanvas.Height = 2000;
+                GetBackgroundContentPresenter().VerticalContentAlignment = VerticalAlignment.Top;
+                GetBackgroundContentPresenter().VerticalAlignment = VerticalAlignment.Top;
                 GetBackgroundContentPresenter().Content = _backgroundCanvas;
                 _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
-                _backgroundCanvas.Draw += CanvasControl_OnDraw;
             }
+            _backgroundCanvas.Draw += CanvasControl_OnDraw;
+            _backgroundCanvas.VerticalAlignment = VerticalAlignment.Stretch;
 
             GetInkHostCanvas().Children.Clear();
             MakePreviewTextbox();
@@ -497,7 +501,11 @@ namespace Dash
                 _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
+                var realParent = sender.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
+                if (realParent != null && realParent.ActualHeight != sender.Height)
+                    sender.Height = Math.Min(8000, realParent.ActualHeight);
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
+                var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Height));
                 args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
@@ -771,7 +779,7 @@ namespace Dash
 					  // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
 						((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
 				{
-                    this.ParentDocument.ManipulationMode = ManipulationModes.None;
+                    ParentDocument.ManipulationMode = ManipulationModes.None;
 					if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
 						SelectionManager.DeselectAll();
 
@@ -780,7 +788,9 @@ namespace Dash
                     _isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
                     if (ParentDocument != null)
-					    ParentDocument.ManipulationMode = ManipulationModes.None;
+                    {
+                        ParentDocument.ManipulationMode = ManipulationModes.None;
+                    }
 					args.Handled = true;
 					GetOuterGrid().PointerMoved -= OnPointerMoved;
 					GetOuterGrid().PointerMoved += OnPointerMoved;

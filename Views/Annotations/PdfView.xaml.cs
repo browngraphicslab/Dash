@@ -27,6 +27,7 @@ using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -349,6 +350,46 @@ namespace Dash
 
         private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
 
+        private void xPdfColSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (xPdfCol.Width.GridUnitType == GridUnitType.Pixel)
+                xPdfNotesCol.Width = new GridLength(1, GridUnitType.Star);
+            _botPdf.xPdfCol.Width = new GridLength(xPdfCol.ActualWidth);
+            _topPdf.xPdfCol.Width = new GridLength(xPdfCol.ActualWidth);
+
+        }
+        private void xSiderbarSplitter_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xPdfNotesCol.Width = new GridLength(1, GridUnitType.Star);
+            xPdfCol.Width = xPdfCol.ActualWidth == ActualWidth - 10 ? new GridLength(ActualWidth / 2) : new GridLength(ActualWidth - 10);
+            _botPdf.xPdfCol.Width = new GridLength(xPdfCol.Width.Value);
+            _topPdf.xPdfCol.Width = new GridLength(xPdfCol.Width.Value);
+        }
+        private void xSiderbarSplitter_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+
+            e.Handled = true;
+        }
+
+        private void xSiderbarSplitter_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (this.IsRightBtnPressed())
+            {
+                e.Complete();
+            }
+
+            e.Handled = true;
+        }
+
+        private void xSiderbarSplitter_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void xSiderbarSplitter_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }
 
