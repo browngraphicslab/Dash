@@ -501,11 +501,15 @@ namespace Dash
                 _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
+                var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(sender).TransformBounds(new Rect(new Point(), new Size(MainPage.Instance.xOuterGrid.ActualWidth, MainPage.Instance.xOuterGrid.ActualHeight)));
                 var realParent = sender.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
                 if (realParent != null && realParent.ActualHeight != sender.Height)
-                    sender.Height = Math.Min(8000, realParent.ActualHeight);
+                {
+                    sender.Height = Math.Min(clipBounds.Bottom, Math.Min(8000, realParent.ActualHeight));
+                }
+
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Height));
+                var drawRect = new Rect(new Point(), new Size(Math.Min(clipBounds.Right, sender.Size.Width), Math.Min(clipBounds.Bottom,sender.Height)));
                 args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
