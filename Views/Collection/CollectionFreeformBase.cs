@@ -110,6 +110,7 @@ namespace Dash
                 GetBackgroundContentPresenter().VerticalAlignment = VerticalAlignment.Top;
                 GetBackgroundContentPresenter().Content = _backgroundCanvas;
                 _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
+                _backgroundCanvas.LayoutUpdated += _backgroundCanvas_LayoutUpdated;
             }
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
             _backgroundCanvas.VerticalAlignment = VerticalAlignment.Stretch;
@@ -147,12 +148,33 @@ namespace Dash
             BackgroundOpacity = settingsView.BackgroundImageOpacity;
         }
 
+        private void _backgroundCanvas_LayoutUpdated(object sender, object e)
+        {
+            var realParent = _backgroundCanvas.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
+            if (realParent == null)
+                return;
+            var realRect = realParent.TransformToVisual(_backgroundCanvas).TransformBounds(new Rect(new Point(), new Size(realParent.ActualWidth, realParent.ActualHeight)));
+            var mainBounds = _backgroundCanvas.TransformToVisual(MainPage.Instance.xOuterGrid).TransformBounds(realRect);
+            var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
+                                        new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
+            var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
+            var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
+            if (newHeight != _backgroundCanvas.Height)
+            {
+               // Debug.Write("Height was " + _backgroundCanvas.Height);
+                _backgroundCanvas.Height = newHeight;
+               // Debug.WriteLine(" now is = " + _backgroundCanvas.Height);
+            }
+
+        }
+
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
             if (_backgroundCanvas != null)
             {
                 _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
                 _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+                _backgroundCanvas.LayoutUpdated -= _backgroundCanvas_LayoutUpdated;
             }
             if (_lastViewModel != null)
             {
@@ -501,16 +523,9 @@ namespace Dash
                 _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
-                var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(sender).TransformBounds(new Rect(new Point(), new Size(MainPage.Instance.xOuterGrid.ActualWidth, MainPage.Instance.xOuterGrid.ActualHeight)));
-                var realParent = sender.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
-                if (realParent != null && realParent.ActualHeight != sender.Height)
-                {
-                    sender.Height = Math.Min(clipBounds.Bottom, Math.Min(8000, realParent.ActualHeight));
-                }
-
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var drawRect = new Rect(new Point(), new Size(Math.Min(clipBounds.Right, sender.Size.Width), Math.Min(clipBounds.Bottom,sender.Height)));
-                args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+                var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Size.Height));
+                args.DrawingSession.FillRectangle(drawRect, _bgBrush);
             }
         }
 
