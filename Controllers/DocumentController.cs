@@ -826,7 +826,7 @@ namespace Dash
         /// field exists in the document's Prototype, since documents cannot remove inherited fields
         /// (only the owner of a field can remove it.)
         /// </summary>
-        public bool RemoveField(KeyController key, bool withUndo = true)
+        public bool RemoveField(KeyController key)
         {
             var proto = GetPrototypeWithFieldKey(key);
             if (proto == null)
@@ -842,7 +842,7 @@ namespace Dash
             proto._fields.Remove(key);
             proto.DocumentModel.Fields.Remove(key.Id);
 
-            UpdateOnServer(withUndo ? new UndoCommand(() => proto.RemoveField(key, false), () => proto.SetField(key, value, true, withUndo:false)) : null);
+            UpdateOnServer(new UndoCommand(() => proto.RemoveField(key), () => proto.SetField(key, value, true)));
 
             generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false));
 
@@ -925,7 +925,8 @@ namespace Dash
 
                 if (!doc.Equals(this))
                 {
-                    doc.UpdateOnServer(null);
+                    //TODO DB
+                    //doc.UpdateOnServer(null);
                 }
 
                 // fire document field updated if the field has been replaced or if it did not exist before
@@ -955,7 +956,7 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true, bool updateBindings=true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool updateBindings=true)
         {
             if (updateBindings)
             {
@@ -969,7 +970,7 @@ namespace Dash
             var (fieldChanged, args) = SetFieldHelper(key, field, forceMask);
             if (fieldChanged)
             {
-                UpdateOnServer(withUndo ? newEvent : null);
+                UpdateOnServer(newEvent);
                 if (args != null)
                 {
                     generateDocumentFieldUpdatedEvents(args);
@@ -1033,7 +1034,7 @@ namespace Dash
         ///     otherwise each
         ///     field is written on the first prototype in the hierarchy which contains it
         /// </summary>
-        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask, bool withUndo = true)
+        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
         {
             //TODO this should delay field updates until all fields are set
             bool shouldSave = false;
@@ -1064,8 +1065,8 @@ namespace Dash
 
             if (shouldSave)
             {
-                UndoCommand newEvent = new UndoCommand(() => SetFields(keyValuePairs, forceMask, false), () => SetFields(oldFields, forceMask, false));
-                UpdateOnServer(withUndo ? newEvent : null);
+                UndoCommand newEvent = new UndoCommand(() => SetFields(keyValuePairs, forceMask), () => SetFields(oldFields, forceMask));
+                UpdateOnServer(newEvent);
             }
         }
 

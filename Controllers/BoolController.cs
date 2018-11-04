@@ -7,7 +7,7 @@ namespace Dash
         //OVERLOADED CONSTRUCTORS
         public BoolController() : this(false) { }
 
-        public BoolController(bool data = false) : base(new BoolModel(data)) {  }
+        public BoolController(bool data = false) : base(new BoolModel(data)) { }
 
         public BoolController(BoolModel boolFieldModel) : base(boolFieldModel) { }
 
@@ -39,18 +39,14 @@ namespace Dash
             {
                 if (BoolFieldModel.Data != value)
                 {
-                    SetData(value);
+                    bool data = BoolFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    BoolFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-        private void SetData(bool val, bool withUndo = true)
-        {
-            bool data = BoolFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            BoolFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Bool;

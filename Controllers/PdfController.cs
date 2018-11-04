@@ -41,22 +41,14 @@ namespace Dash
             {
                 if (PdfFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Uri data = PdfFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    PdfFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Uri val, bool withUndo = true)
-        {
-            Uri data = PdfFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            PdfFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public Uri Data
