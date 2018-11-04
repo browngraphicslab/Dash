@@ -128,7 +128,7 @@ namespace Dash
 
             if (double.IsNaN(_WebView.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.LayoutDocument.GetWidth() ?? double.NaN))
             {
-                await _WebView.InvokeScriptAsync("eval", new[] { "window.external.notify(document.body.scrollWidth.toString() + ' ' + document.firstElementChild.getBoundingClientRect().height.toString());" });
+                await _WebView.InvokeScriptAsync("eval", new[] { "window.external.notify(document.body.scrollWidth.toString() + ' ' + document.body.scrollHeight.toString());" });
             }
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
@@ -157,7 +157,7 @@ namespace Dash
 
             var splits = (e.Value as string).Split(' ');
             var x = double.Parse(splits[0]);
-            var y = double.Parse(splits[1]);
+            var y = Math.Min(500, double.Parse(splits[1]));
             parent.ViewModel.LayoutDocument.SetWidth(x);
             parent.ViewModel.LayoutDocument.SetHeight(y);
             web.UpdateLayout();
