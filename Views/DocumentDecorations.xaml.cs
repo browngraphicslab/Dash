@@ -115,7 +115,6 @@ namespace Dash
                 {
                     docView.PointerEntered -= SelectedDocView_PointerEntered;
                     docView.PointerExited -= SelectedDocView_PointerExited;
-                    docView.SizeChanged -= DocView_OnSizeChanged;
                     docView.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -130,7 +129,6 @@ namespace Dash
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
                     docView.PointerExited += SelectedDocView_PointerExited;
-                    docView.SizeChanged += DocView_OnSizeChanged;
                     docView.FadeOutBegin += DocView_OnDeleted;
                 }
 
@@ -142,15 +140,30 @@ namespace Dash
             VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
         }
-
-        private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        
+        private void ptrHdlr(object sender, PointerRoutedEventArgs e)
         {
-            SetPositionAndSize();
+            if ( SelectedDocs.Count > 0 && _visibilityState != Visibility.Collapsed)
+            {
+                SetPositionAndSize();
+            }
         }
+
+        private object ptrhdlr = null;
 
         private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
+            if (ptrhdlr == null)
+            {
+                ptrhdlr = new PointerEventHandler(ptrHdlr);
+            }
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerMovedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerMovedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerReleasedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerReleasedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerWheelChangedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerWheelChangedEvent, ptrhdlr, true);
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
@@ -1152,7 +1165,7 @@ namespace Dash
                 </Grid.RowDefinitions>
                     <Border Grid.Row="1" Background="CadetBlue">
                         <StackPanel Orientation="Horizontal">
-                            <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="500" VerticalAlignment="Top" />
+                            <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="1000" VerticalAlignment="Top" />
                             <dash:CollectionView x:Name="xCollectionFieldAnnotations" Width="5000" Background="Yellow" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
                         </StackPanel>
                     </Border>

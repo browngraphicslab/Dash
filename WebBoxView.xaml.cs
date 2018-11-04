@@ -83,7 +83,6 @@ namespace Dash
             {
                 xWebViewRectangleBrush.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 _xWebView.Visibility = Visibility.Visible;
-                _xWebView.Tag = BlockManipulation;
                 if (xTextBlock != null)
                     xTextBlock.Visibility = Visibility.Visible;
             }
@@ -95,7 +94,6 @@ namespace Dash
         {
             _xWebView = new WebView(WebViewExecutionMode.SeparateThread);
             _xWebView.Name = "_xWebView";
-            _xWebView.Tag = BlockManipulation;
             var html = LayoutDocument.GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?.Data;
             var htmlAddress = LayoutDocument.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey)?.Data;
             if (html.StartsWith("http"))
@@ -121,13 +119,17 @@ namespace Dash
             _xWebView.LoadCompleted += Web_LoadCompleted;
         }
 
-        private static void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+        private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             var _WebView = sender as WebView;
 
             _WebView.ScriptNotify -= _WebView_ScriptNotify;
             _WebView.ScriptNotify += _WebView_ScriptNotify;
 
+            if (double.IsNaN(_WebView.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.LayoutDocument.GetWidth() ?? double.NaN))
+            {
+                await _WebView.InvokeScriptAsync("eval", new[] { "window.external.notify(document.body.scrollWidth.toString() + ' ' + document.body.scrollHeight.toString());" });
+            }
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up');    } document.onmouseup=x;" });
@@ -138,7 +140,7 @@ namespace Dash
             ////"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
 
             ////});
-            
+
             _WebView.NavigationStarting -= Web_NavigationStarting;
             _WebView.NavigationStarting += Web_NavigationStarting;
             _WebView.NavigationCompleted -= _WebView_NavigationCompleted;
@@ -152,6 +154,16 @@ namespace Dash
             var parent = web?.GetFirstAncestorOfType<DocumentView>();
             if (parent == null)
                 return;
+
+            var splits = (e.Value as string).Split(' ');
+            var x = double.Parse(splits[0]);
+            var y = Math.Min(500, double.Parse(splits[1]));
+            parent.ViewModel.LayoutDocument.SetWidth(x);
+            parent.ViewModel.LayoutDocument.SetHeight(y);
+            web.UpdateLayout();
+            
+            //parent.ViewModel?.LayoutDocument.SetWidth(x);
+            //parent.ViewModel?.LayoutDocument.SetHeight(y);
 
             //var shiftState = web.IsShiftPressed();
             //switch (e.Value as string)

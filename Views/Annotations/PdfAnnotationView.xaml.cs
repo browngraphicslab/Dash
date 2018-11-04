@@ -607,37 +607,6 @@ namespace Dash
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
         }
 
-        private void Divider_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-
-            e.Handled = true;
-        }
-
-        private void Divider_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            if (this.IsRightBtnPressed())
-            {
-                e.Complete();
-            }
-
-            e.Handled = true;
-        }
-
-        private void Divider_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void Divider_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-        
-        private void xSidebarToggleButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            xPdfCol.Width = new GridLength(ActualWidth / 2);
-        }
-
         private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext();
@@ -753,11 +722,6 @@ namespace Dash
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
-        }
-        
-        private void GridSplitter_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            xPdfCol.Width = xPdfCol.ActualWidth == ActualWidth-10 ? new GridLength(ActualWidth/2) : new GridLength(ActualWidth-10);
         }
     }
 }

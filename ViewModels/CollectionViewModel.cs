@@ -816,7 +816,7 @@ namespace Dash
                         docsToAdd[i].SetHorizontalAlignment(HorizontalAlignment.Left);
                     if (docsToAdd[i].GetVerticalAlignment() == VerticalAlignment.Stretch)
                         docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
-                    if (double.IsNaN(docsToAdd[i].GetWidth()))
+                    if (double.IsNaN(docsToAdd[i].GetWidth()) && !docsToAdd[i].DocumentType.Equals(WebBox.DocumentType))
                         docsToAdd[i].SetWidth(300);
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);

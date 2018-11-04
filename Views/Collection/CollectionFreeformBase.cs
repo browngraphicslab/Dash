@@ -105,11 +105,16 @@ namespace Dash
             if (_backgroundCanvas == null)
             {
                 _backgroundCanvas = new CanvasControl();
+                _backgroundCanvas.Height = 2000;
+                GetBackgroundContentPresenter().VerticalContentAlignment = VerticalAlignment.Top;
+                GetBackgroundContentPresenter().VerticalAlignment = VerticalAlignment.Top;
                 GetBackgroundContentPresenter().Content = _backgroundCanvas;
+                _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
+                _backgroundCanvas.LayoutUpdated += _backgroundCanvas_LayoutUpdated;
             }
-
-            _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
+            _backgroundCanvas.VerticalAlignment = VerticalAlignment.Stretch;
+
             GetInkHostCanvas().Children.Clear();
             MakePreviewTextbox();
 
@@ -143,12 +148,31 @@ namespace Dash
             BackgroundOpacity = settingsView.BackgroundImageOpacity;
         }
 
+        private void _backgroundCanvas_LayoutUpdated(object sender, object e)
+        {
+            var realParent = _backgroundCanvas.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
+            if (realParent != null)
+            {
+                var realRect = realParent.TransformToVisual(_backgroundCanvas).TransformBounds(new Rect(new Point(), new Size(realParent.ActualWidth, realParent.ActualHeight)));
+                var mainBounds = _backgroundCanvas.TransformToVisual(MainPage.Instance.xOuterGrid).TransformBounds(realRect);
+                var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
+                                            new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
+                var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
+                var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
+                if (newHeight != _backgroundCanvas.Height)
+                {
+                    _backgroundCanvas.Height = newHeight;
+                }
+            }
+        }
+
         private void OnBaseUnload(object sender, RoutedEventArgs e)
         {
             if (_backgroundCanvas != null)
             {
                 _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
                 _backgroundCanvas.Draw -= CanvasControl_OnDraw;
+                _backgroundCanvas.LayoutUpdated -= _backgroundCanvas_LayoutUpdated;
             }
             if (_lastViewModel != null)
             {
@@ -498,7 +522,8 @@ namespace Dash
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                args.DrawingSession.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+                var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Size.Height));
+                args.DrawingSession.FillRectangle(drawRect, _bgBrush);
             }
         }
 
@@ -771,7 +796,7 @@ namespace Dash
 					  // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
 						((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
 				{
-                    this.ParentDocument.ManipulationMode = ManipulationModes.None;
+                    ParentDocument.ManipulationMode = ManipulationModes.None;
 					if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
 						SelectionManager.DeselectAll();
 
@@ -780,7 +805,9 @@ namespace Dash
                     _isMarqueeActive = true;
 					PreviewTextbox_LostFocus(null, null);
                     if (ParentDocument != null)
-					    ParentDocument.ManipulationMode = ManipulationModes.None;
+                    {
+                        ParentDocument.ManipulationMode = ManipulationModes.None;
+                    }
 					args.Handled = true;
 					GetOuterGrid().PointerMoved -= OnPointerMoved;
 					GetOuterGrid().PointerMoved += OnPointerMoved;

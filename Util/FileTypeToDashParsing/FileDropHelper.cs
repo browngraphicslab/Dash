@@ -189,7 +189,7 @@ namespace Dash
 	                }
 	                else
 					{
-						return new HtmlNote(link.AbsoluteUri, where: where).Document;
+						return new HtmlNote(link.AbsoluteUri, where: where, size: new Size(double.NaN, double.NaN)).Document;
 					}
 
 				case FileType.Pdf:
