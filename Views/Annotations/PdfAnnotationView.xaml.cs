@@ -18,7 +18,7 @@ using Windows.Storage;
 using Windows.System;
 using Windows.UI.Input;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
+using Windows.UI.Xaml;      
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
@@ -122,6 +122,7 @@ namespace Dash
             {
                 var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
                 ScrollToRegion(src);
+                return LinkHandledResult.HandledClose;
             }
 
             var target = linkDoc.GetLinkedDocument(direction);
@@ -283,6 +284,7 @@ namespace Dash
                 else
                     regionDoc = LayoutDocument;
             }
+            AnnotationOverlay.RegionDocsList.Add(regionDoc);
             return regionDoc;
         }
 
@@ -322,9 +324,15 @@ namespace Dash
             if (!MainPage.Instance.IsShiftPressed())
             {
                 if (args.Key == VirtualKey.PageDown)
+                {
                     PageNext();
+                    args.Handled = true;
+                }
                 if (args.Key == VirtualKey.PageUp)
+                {
                     PagePrev();
+                    args.Handled = true;
+                }
             }
             if (this.IsCtrlPressed())
             {

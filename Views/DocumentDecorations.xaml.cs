@@ -143,13 +143,20 @@ namespace Dash
         
         private void ptrHdlr(object sender, PointerRoutedEventArgs e)
         {
-            if ( SelectedDocs.Count > 0 && _visibilityState != Visibility.Collapsed)
+            if ( SelectedDocs.Count > 0)
             {
-                SetPositionAndSize();
+                SetPositionAndSize(false);
+            }
+        }
+        private void tapHdlr(object sender, TappedRoutedEventArgs e)
+        {
+            if (SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
             }
         }
 
-        private object ptrhdlr = null;
+        private object ptrhdlr = null, taphdlr = null;
 
         private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
@@ -157,6 +164,7 @@ namespace Dash
             if (ptrhdlr == null)
             {
                 ptrhdlr = new PointerEventHandler(ptrHdlr);
+                taphdlr = new TappedEventHandler(tapHdlr);
             }
             MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerMovedEvent, ptrhdlr);
             MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerMovedEvent, ptrhdlr, true);
@@ -164,6 +172,8 @@ namespace Dash
             MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerReleasedEvent, ptrhdlr, true);
             MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerWheelChangedEvent, ptrhdlr);
             MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerWheelChangedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.TappedEvent, taphdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.TappedEvent, taphdlr, true);
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
@@ -290,7 +300,7 @@ namespace Dash
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public void SetPositionAndSize()
+        public void SetPositionAndSize(bool rebuildMenu=true)
         {
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
@@ -320,10 +330,14 @@ namespace Dash
             this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             this.xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
+            xActivationButton.Fill = new SolidColorBrush(LinkActivationManager.IsActivated(SelectedDocs.FirstOrDefault()) ? Colors.Red : Colors.LightSkyBlue);
 
             ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null ? Visibility.Collapsed : Visibility.Visible;
 
-            rebuildMenuIfNeeded();
+            if (rebuildMenu)
+            {
+                rebuildMenuIfNeeded();
+            }
 
             if (!double.IsPositiveInfinity(topLeft.X) && !double.IsPositiveInfinity(topLeft.Y) &&
                 !double.IsNegativeInfinity(botRight.X) && !double.IsNegativeInfinity(botRight.Y))
@@ -582,14 +596,11 @@ namespace Dash
             if (SelectedDocs.FirstOrDefault() is DocumentView first)
             {
                 var onoff = !LinkActivationManager.ActivatedDocs.Contains(first);
-                if (onoff)
-                {
-                    xActivationButton.Fill = new SolidColorBrush(Colors.Red);
+                if (onoff) { 
                     LinkActivationManager.ActivateDoc(first);
                 }
                 else
                 {
-                    xActivationButton.Fill = new SolidColorBrush(Colors.LightSkyBlue);
                     LinkActivationManager.DeactivateDoc(first);
                 }
             }

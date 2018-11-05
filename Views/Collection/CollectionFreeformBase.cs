@@ -41,7 +41,7 @@ namespace Dash
 
         private MatrixTransform _transformBeingAnimated;// Transform being updated during animation
 
-        private Panel _itemsPanelCanvas => GetCanvas();
+        private Panel xTransformedCanvas => GetTransformedCanvas();
 
         private CollectionViewModel _lastViewModel = null;
         public UserControl UserControl => this;
@@ -65,7 +65,7 @@ namespace Dash
         public delegate void SetBackgroundOpacity(float opacity);
         private static event SetBackgroundOpacity setBackgroundOpacity;
 
-        public abstract Panel GetCanvas();
+        public abstract Panel GetTransformedCanvas();
 
         public abstract ItemsControl GetItemsControl();
 
@@ -230,7 +230,7 @@ namespace Dash
 
         public void MoveAnimated(TranslateTransform translate)
         {
-            var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
+            var old = (xTransformedCanvas?.RenderTransform as MatrixTransform)?.Matrix;
             if (old == null)
             {
                 return;
@@ -291,7 +291,7 @@ namespace Dash
         {
             UndoManager.StartBatch();
             //get rendering postion of _itemsPanelCanvas, 2x3 matrix
-            var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
+            var old = (xTransformedCanvas?.RenderTransform as MatrixTransform)?.Matrix;
             if (old == null)
             {
                 return;
@@ -398,7 +398,7 @@ namespace Dash
             //Create initial composite transform
             var composite = new TransformGroup();
             if (!abs)
-                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform            
+                composite.Children.Add(xTransformedCanvas.RenderTransform); // get the current transform            
             composite.Children.Add(translateDelta); // add the new translate
             composite.Children.Add(scaleDelta); // add the new scaling
             var matrix = composite.Value;
@@ -515,7 +515,7 @@ namespace Dash
             else
             {
                 var ff    = this as CollectionFreeformView;
-                var mat   = ff?._itemsPanelCanvas?.RenderTransform as MatrixTransform;
+                var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
                 var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
                 _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
@@ -852,7 +852,7 @@ namespace Dash
             }
             else
             {
-                foreach (UIElement selectionCanvasChild in SelectionCanvas.Children)
+                foreach (var selectionCanvasChild in SelectionCanvas.Children)
                 {
                     //This is a hack because modifying the visual tree during a manipulation seems to screw up UWP
                     selectionCanvasChild.Visibility = Visibility.Collapsed;
@@ -865,14 +865,12 @@ namespace Dash
             var selectedDocs = new List<DocumentView>();
             if (GetItemsControl().ItemsPanelRoot != null)
             {
-                var docs = GetItemsControl().ItemsPanelRoot.Children;
-                foreach (var documentView in docs.Select((d) => d.GetFirstDescendantOfType<DocumentView>()).Where(d => d != null && d.IsHitTestVisible))
+                var items = GetItemsControl().ItemsPanelRoot.Children;
+                foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
                 {
-                    var rect = documentView.TransformToVisual(GetCanvas()).TransformBounds(
-                        new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
-                    if (marquee.IntersectsWith(rect))
+                    if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
                     {
-                        selectedDocs.Add(documentView);
+                        selectedDocs.Add(dv);
                     }
                 }
             }
@@ -881,8 +879,8 @@ namespace Dash
 
         public Rect GetBoundingRectFromSelection()
         {
-            Point topLeftMostPoint = new Point(Double.PositiveInfinity, Double.PositiveInfinity);
-            Point bottomRightMostPoint = new Point(Double.NegativeInfinity, Double.NegativeInfinity);
+            var topLeftMostPoint = new Point(double.PositiveInfinity, double.PositiveInfinity);
+            var bottomRightMostPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
             bool isEmpty = true;
 
@@ -991,7 +989,7 @@ namespace Dash
                         DoAction((views, where, size) =>
                         {
                             var docDec = MainPage.Instance.XDocumentDecorations;
-                            var rect = docDec.TransformToVisual(GetCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
+                            var rect = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
                             var centered = MainPage.Instance.IsCtrlPressed();
                             foreach (var v in views)
                             {
@@ -1038,7 +1036,7 @@ namespace Dash
 
                             var docDec = MainPage.Instance.XDocumentDecorations;
                             var usedDim = views.Aggregate(0.0, (val, view) => val + (sortY ? view.ViewModel.Bounds.Height : view.ViewModel.Bounds.Width));
-                            var bounds     = docDec.TransformToVisual(GetCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
+                            var bounds     = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
                             var spacing    = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (views.Count -1);
                             double placement = sortY ? bounds.Top : bounds.Left;
                             if (modifier == VirtualKey.Down || modifier == VirtualKey.Left)
@@ -1131,7 +1129,7 @@ namespace Dash
                 if (!this.IsShiftPressed())
                 {
                     var dt = new DispatcherTimer();
-                    var pt = e.GetPosition(_itemsPanelCanvas);
+                    var pt = e.GetPosition(xTransformedCanvas);
                     dt.Tick += (s, ee) => { RenderPreviewTextbox(pt); dt.Stop(); };
                     dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
                     dt.Start();
@@ -1349,8 +1347,7 @@ namespace Dash
                                 {
                                     //make this rich text an annotation for activated  doc
                                     var region = func( activated,
-                                                       Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), _itemsPanelCanvas, activated));
-
+                                                       Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, activated));
                                     //link region to this text  
                                     region.Link(postitNote, LinkBehavior.Annotate);
                                 }
