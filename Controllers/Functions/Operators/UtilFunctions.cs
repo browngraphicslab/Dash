@@ -13,5 +13,11 @@ namespace Dash
         {
             return field.Copy();
         }
+
+        [OperatorReturnName("CurrentTime")]
+        public static DateTimeController Now()
+        {
+            return new DateTimeController(DateTime.Now);
+        }
     }
 }

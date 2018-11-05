@@ -54,7 +54,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return "";
+            return DSL.GetFuncName<AudioOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

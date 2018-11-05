@@ -48,4 +48,41 @@ public sealed class CopyOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.now)]
+public sealed class NowOperator : OperatorController
+{
+    //Output Keys
+    public static readonly KeyController CurrentTimeKey = KeyController.Get("CurrentTime");
+
+    public NowOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public NowOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("NowOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new NowOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [CurrentTimeKey] = DashShared.TypeInfo.DateTime,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var currentTime = Dash.UtilFunctions.Now();
+        outputs[CurrentTimeKey] = currentTime;
+        return Task.CompletedTask;
+    }
+
+}
+
 }

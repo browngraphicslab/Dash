@@ -181,10 +181,14 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>OperatorTemplate1.cs</LastGenOutput>
     </Content>
+    <Compile Include="Controllers\Functions\ConstructorFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\DocumentationFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
+    <Compile Include="Controllers\Functions\Operators\ConstructorFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
@@ -203,7 +207,6 @@
     <Compile Include="Controllers\Functions\UtilFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\Operators\DateOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentPathOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
     <Compile Include="Controllers\Operators\FollowLinksOperator.cs" />
@@ -217,7 +220,6 @@
     <Compile Include="Controllers\Operators\JoinOperator.cs" />
     <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
-    <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
     <Compile Include="Models\DragModels\JoinDragModel.cs" />
@@ -382,7 +384,6 @@
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperatorController.cs" />
-    <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToListOperatorController.cs" />

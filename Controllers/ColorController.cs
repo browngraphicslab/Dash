@@ -61,7 +61,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return "";
+            return DSL.GetFuncName<ColorOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase Copy() => new ColorController(Data);

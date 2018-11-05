@@ -76,7 +76,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return DSL.GetFuncName<TextToImageOperator>() + $"(\"{Data}\")";
+            return DSL.GetFuncName<ImageOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

@@ -15,7 +15,7 @@ namespace Dash
 
         }
 
-        public PointController(double x, double y) : base(new PointModel(x, y))
+        public PointController(double x, double y) : this(new Point(x, y))
         {
 
         }

@@ -2,7 +2,7 @@
 using System;
 using Dash.Controllers.Operators;
 
-namespace Dash.Controllers
+namespace Dash
 {
     /// <summary>
     /// An implementation of FieldModelController, DateTimeController models a controller that stores Data of type DateTime

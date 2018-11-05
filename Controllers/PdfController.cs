@@ -7,7 +7,7 @@ namespace Dash
     /// <summary>
     /// Controls data represeting an pdf in a Document.
     /// </summary>
-    class PdfController : FieldModelController<PdfModel>
+    public class PdfController : FieldModelController<PdfModel>
     {
         // == CONSTRUCTORS ==
         public PdfController() : base(new PdfModel())
@@ -75,7 +75,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return "PdfController";
+            return DSL.GetFuncName<PdfOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

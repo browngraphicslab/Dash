@@ -63,7 +63,8 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return Data.ToString();
+            //In C#, bool.ToString returns a capital bool
+            return Data.ToString().ToLower();
         }
     }
 }

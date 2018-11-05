@@ -200,7 +200,12 @@ namespace Dash
             print,
             get_selected_docs,
             text_input,
-            copy
+            copy,
+            video,
+            audio,
+            color,
+            now,
+            pdf
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

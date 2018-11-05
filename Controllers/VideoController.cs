@@ -55,7 +55,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return "VideoController";
+            return DSL.GetFuncName<VideoOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()
