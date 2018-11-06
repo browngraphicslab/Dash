@@ -956,7 +956,7 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool updateBindings=true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool updateBindings = true)
         {
             if (updateBindings)
             {
@@ -1163,18 +1163,14 @@ namespace Dash
         /// </summary>
         public void ShouldExecute(KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
-            var usedOperators = new HashSet<Type>();
             var ops           = new List<OperatorController>();
-            var remOps        = new List<OperatorController>();
+            var remOps        = new HashSet<OperatorController>();
             for (var proto = this; proto != null; proto = proto.GetPrototype())
             {
                 var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true) ?? new ListController<OperatorController>();
                 foreach (var operatorController in opFields)
                 {
-                    if (!usedOperators.Contains(operatorController.GetType()))
-                    {
-                        ops.Add(operatorController);
-                    }
+                    ops.Add(operatorController);
                 }
                 var remOpFields = proto.GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, true) ?? new ListController<OperatorController>();
                 foreach (var operatorController in remOpFields)
@@ -1183,7 +1179,7 @@ namespace Dash
                 }
             }
 
-            foreach (var opField in ops.Where((op) => !remOps.Contains(op)))
+            foreach (var opField in ops.Where(op => !remOps.Contains(op)))
             {
                 if (opField.Inputs.Any(i => i.Key.Equals(updatedKey)))
                 {
@@ -1232,7 +1228,7 @@ namespace Dash
             // pass the updates along 
             foreach (var fieldModel in outputs)
             {
-                SetField(fieldModel.Key, fieldModel.Value, true, updateBindings:false);
+                SetField(fieldModel.Key, fieldModel.Value, true, updateBindings: false);
             }
         }
         #endregion
@@ -1248,7 +1244,7 @@ namespace Dash
         {
             Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
                                        " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
-            
+
             if (GetDereferencedField<TextController>(KeyStore.XamlKey, null) is TextController xamlField)
             {
                 try
@@ -1256,7 +1252,8 @@ namespace Dash
                     var fe = (FrameworkElement)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
                     fe.Loaded += Grid_Loaded;
                     return fe;
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                 }
             }
