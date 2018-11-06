@@ -70,6 +70,7 @@ namespace Dash
             var prevList = _typedData;
 
             // can simply reassign list, as below, but only if first all the necessary event handlers are removed and added
+            //TODO tfs: I'm pretty sure release should always be called after UpdateOnServer, so that we can never reference deleted fields
             foreach (var d in _typedData)
             {
                 ReleaseContainedField(d);

@@ -77,7 +77,10 @@ namespace Dash
         }
         private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
+            if (args.NewValue != null)
+            {
+                InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
+            }
         }
 
         /// <summary>

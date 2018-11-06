@@ -826,25 +826,18 @@ namespace Dash
         /// field exists in the document's Prototype, since documents cannot remove inherited fields
         /// (only the owner of a field can remove it.)
         /// </summary>
-        public bool RemoveField(KeyController key)
+        public bool RemoveField(KeyController key, bool force = false)
         {
-            var proto = GetPrototypeWithFieldKey(key);
-            if (proto == null)
+            var (removed, doc, args) = RemoveFieldHelper(key, force);
+
+            if (!removed)
             {
                 return false;
             }
 
-            if (!proto._fields.TryGetValue(key, out var value))
-                return false;
+            doc.UpdateOnServer(new UndoCommand(() => doc.RemoveField(key), () => doc.SetField(key, args.OldValue, true)));
 
-
-            ReleaseContainedField(key, value);
-            proto._fields.Remove(key);
-            proto.DocumentModel.Fields.Remove(key.Id);
-
-            UpdateOnServer(new UndoCommand(() => proto.RemoveField(key), () => proto.SetField(key, value, true)));
-
-            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false));
+            doc.generateDocumentFieldUpdatedEvents(args);
 
             return true;
         }
@@ -892,11 +885,11 @@ namespace Dash
         /// <param name="field"></param>
         /// <param name="forceMask"></param>
         /// <returns></returns>
-        (bool updated, DocumentFieldUpdatedEventArgs args) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        private (bool updated, DocumentController, DocumentFieldUpdatedEventArgs args) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             if (field == null)
             {
-                return (RemoveField(key), null);
+                return RemoveFieldHelper(key, forceMask);
             }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
@@ -904,39 +897,59 @@ namespace Dash
 
             // get the old value of the field
             proto._fields.TryGetValue(key, out var oldField);
-            var overwrittenField = (forceMask && !this.Equals(proto)) ? null : oldField;
 
-            // if the old and new field reference the exact same controller then we're done unless we're force-masking a field
-            if (!ReferenceEquals(oldField, field) || (forceMask && !proto.Equals(doc)))
+            // if the old and new field reference the exact same controller and 
+            // the document with the field is the document we're setting it on, we're done
+            if (ReferenceEquals(oldField, field) && proto.Equals(doc))
             {
-                //if (proto.CheckCycle(key, field))
-                //{
-                //    return false;
-                //}
-
-                if (doc == proto && oldField != null)
-                {
-                    doc.ReleaseContainedField(key, oldField);
-                }
-                doc.ReferenceContainedField(key, field);
-
-                doc._fields[key] = field;
-                doc.DocumentModel.Fields[key.Id] = field.Id;
-
-                if (!doc.Equals(this))
-                {
-                    //TODO DB
-                    //doc.UpdateOnServer(null);
-                }
-
-                // fire document field updated if the field has been replaced or if it did not exist before
-                var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference  = new DocumentFieldReference(doc, key);
-                var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
-
-                return (true, updateArgs);
+                return (false, null, null);
             }
-            return (false, null);
+
+            //if (proto.CheckCycle(key, field))
+            //{
+            //    return false;
+            //}
+
+            // if doc == proto, then we are actually replacing the field,
+            // so we need to release it
+            if (doc == proto && oldField != null)
+            {
+                doc.ReleaseContainedField(key, oldField);
+            }
+            doc.ReferenceContainedField(key, field);
+
+            doc._fields[key] = field;
+            doc.DocumentModel.Fields[key.Id] = field.Id;
+
+            // fire document field updated if the field has been replaced or if it did not exist before
+            var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            var reference  = new DocumentFieldReference(doc, key);
+            var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
+
+            return (true, doc, updateArgs);
+        }
+
+        private (bool, DocumentController, DocumentFieldUpdatedEventArgs) RemoveFieldHelper(KeyController key, bool forceMask)
+        {
+            var doc = forceMask ? this : GetPrototypeWithFieldKey(key);
+            if (doc == null)
+            {
+                return (false, null, null);
+            }
+
+            if (!doc._fields.TryGetValue(key, out var oldField))
+            {
+                return (false, null, null);
+            }
+
+            doc.ReleaseContainedField(key, oldField);
+            var removedField = doc._fields.Remove(key);
+            var removedModel = doc.DocumentModel.Fields.Remove(key.Id);
+            Debug.Assert(removedField);
+            Debug.Assert(removedModel);
+
+            return (true, doc, new DocumentFieldUpdatedEventArgs(oldField, null, FieldUpdatedAction.Remove,
+                    new DocumentFieldReference(doc, key), null, false));
         }
 
         public void SendMessage(KeyController key, FieldControllerBase value)
@@ -958,26 +971,25 @@ namespace Dash
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
         public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool updateBindings = true)
         {
+            //TODO tfs: Shouldn't this be in SetFieldHelper?
             if (updateBindings)
             {
                 RemoveOperatorForKey(key);
             }
 
-            var oldVal = GetField(key);
-            UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false),
-                () => SetField(key, oldVal, forceMask, false));
+            var (set, doc, args) = SetFieldHelper(key, field, forceMask);
 
-            var (fieldChanged, args) = SetFieldHelper(key, field, forceMask);
-            if (fieldChanged)
+            if (!set)
             {
-                UpdateOnServer(newEvent);
-                if (args != null)
-                {
-                    generateDocumentFieldUpdatedEvents(args);
-                }
+                return false;
             }
 
-            return fieldChanged;
+            var oldField = args.OldValue;
+            doc.UpdateOnServer(new UndoCommand(() => doc.SetField(key, field, true), () => doc.SetField(key, oldField, true)));
+
+            doc.generateDocumentFieldUpdatedEvents(args);
+
+            return true;
         }
 
         private void RemoveOperatorForKey(KeyController key)
@@ -1036,37 +1048,47 @@ namespace Dash
         /// </summary>
         public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
         {
-            //TODO this should delay field updates until all fields are set
-            bool shouldSave = false;
-            var oldFields = new Dictionary<KeyController, FieldControllerBase>();
             var keyValuePairs = fields.ToList();
-            foreach (var kv in keyValuePairs)
-            {
-                oldFields[kv.Key] = GetField(kv.Key);
-            }
 
-            var argList = new List<DocumentFieldUpdatedEventArgs>(keyValuePairs.Count);
+            var changedFields = new Dictionary<DocumentController, List<DocumentFieldUpdatedEventArgs>>();
 
             // update with each of the new fields
-            foreach (var field in keyValuePairs.Where((f) => f.Key != null))
+            foreach (var field in keyValuePairs.Where(f => f.Key != null))
             {
-                var (updated, args) = SetFieldHelper(field.Key, field.Value, forceMask);
-                shouldSave |= updated;
-                if (args != null)
+                var (updated, doc, args) = SetFieldHelper(field.Key, field.Value, forceMask);
+                if (!updated)
                 {
-                    argList.Add(args);
+                    continue;
+                }
+                if (changedFields.TryGetValue(doc, out var l))
+                {
+                    l.Add(args);
+                }
+                else
+                {
+                    changedFields.Add(doc, new List<DocumentFieldUpdatedEventArgs>{args});
                 }
             }
 
-            foreach (var args in argList)
+            foreach (var kvp in changedFields)
             {
-                generateDocumentFieldUpdatedEvents(args);
+                var doc = kvp.Key;
+                var l = kvp.Value;
+                var oldFields = l.ToDictionary(k => k.Reference.FieldKey, f => f.OldValue);
+                var newFields = l.ToDictionary(k => k.Reference.FieldKey, f => f.NewValue);
+
+                UndoCommand newEvent = new UndoCommand(() => doc.SetFields(newFields, true), () => SetFields(oldFields, true));
+                UpdateOnServer(newEvent);
             }
 
-            if (shouldSave)
+            //TODO This can probably be merged into the previous for loop, this just makes so 
+            // updates aren't sent until everything is UpdateOnServer'ed
+            foreach (var changedField in changedFields)
             {
-                UndoCommand newEvent = new UndoCommand(() => SetFields(keyValuePairs, forceMask), () => SetFields(oldFields, forceMask));
-                UpdateOnServer(newEvent);
+                foreach (var args in changedField.Value)
+                {
+                    changedField.Key.generateDocumentFieldUpdatedEvents(args);
+                }
             }
         }
 
