@@ -43,6 +43,7 @@ namespace Dash
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private StorageFile       _file;
         private double            _pdfMaxWidth;
+        private DocumentViewModel _lastVm = null;
         public PdfAnnotationView                  DefaultView => _botPdf;
         public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
         public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
@@ -66,7 +67,12 @@ namespace Dash
         public PdfView()
         {
             InitializeComponent();
-
+            Loaded += (s, e) =>
+            {
+                LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
+                _lastVm = DataContext as DocumentViewModel;
+            };
+            Unloaded += (s,e) => _lastVm.LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
             SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
@@ -140,7 +146,22 @@ namespace Dash
         }
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            return _botPdf.HandleLink(linkDoc, direction);
+            if (_botPdf.AnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
+                .GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            {
+                var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+                ScrollToRegion(src);
+                //return LinkHandledResult.HandledClose;
+            }
+
+            var target = linkDoc.GetLinkedDocument(direction);
+            if (_botPdf.AnnotationOverlay.RegionDocsList.Contains(target))
+            {
+                ScrollToRegion(target, linkDoc.GetLinkedDocument(direction, true));
+                return LinkHandledResult.HandledClose;
+            }
+
+            return LinkHandledResult.Unhandled;
         }
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
         {
@@ -253,6 +274,18 @@ namespace Dash
             return pdfTotalHeight-10;
         }
 
+        private void GoToUpdatedFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            if (args.NewValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
+            {
+                ScrollToRegion(args.NewValue as DocumentController);
+                _botPdf.AnnotationOverlay.SelectRegion(args.NewValue as DocumentController);
+
+                sender.RemoveField(KeyStore.GoToRegionKey);
+                sender.RemoveField(KeyStore.GoToRegionLinkKey);
+            }
+        }
+
         private static async void PropertyChangedCallback(DependencyObject dependencyObject,
             DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
@@ -276,50 +309,22 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target, DocumentController source = null)
         {
-            _botPdf.ScrollToRegion(target, source);
-            
-            // TODO: functionality for more than one split maybe?
-            // if (splits.Any())
-            // {
-            //    var botOffset = 0.0;
-            //    var annoWidth = xBottomAnnotationBox.ActualWidth;
-            //    foreach (var size in sizes)
-            //    {
-            //        var scale = (BottomScrollViewer.ViewportWidth - annoWidth) / size.Width;
-
-            //        if (botOffset + (size.Height * scale) + 15 - splits[0] >= -1)
-
-            //        {
-            //            break;
-            //        }
-
-            //        botOffset += (size.Height * scale) + 15;
-            //    }
-
-            //    var topOffset = 0.0;
-            //    annoWidth = xTopAnnotationBox.ActualWidth;
-            //    foreach (var size in sizes)
-            //    {
-            //        var scale = (TopScrollViewer.ViewportWidth - annoWidth) / size.Width;
-
-            //        if (topOffset + (size.Height * scale) + 15 - firstOffset >= -1)
-            //        {
-            //            break;
-            //        }
-
-            //        topOffset += size.Height * scale + 15;
-            //    }
-
-               //xFirstPanelRow.Height = new GridLength(1, GridUnitType.Star);
-               //xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
-            //    TopScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null);
-            //    BottomScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.Skip(1).First()) - (BottomScrollViewer.ViewportHeight + TopScrollViewer.ViewportHeight) / 4, null, true);
-            //}
-            //else
+            var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+            if (absoluteOffsets != null)
             {
-                
-                xFirstPanelRow.Height = new GridLength(0, GridUnitType.Star);
+                var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (xPdfCol.ActualWidth / PdfMaxWidth)).ToList();
+                var maxOffset       = _botPdf.ScrollViewer.ViewportHeight;
+                var firstSplit      = relativeOffsets.Skip(1).Where((ro) => ro - relativeOffsets.First() > maxOffset).FirstOrDefault();
+
+                if (firstSplit != 0)
+                {
+                    _topPdf.ScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - ActualHeight / 4, null);
+                }
+                xFirstPanelRow.Height  = new GridLength(firstSplit != 0 ? 1 : 0, GridUnitType.Star);
                 xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                // bcz: Ugh need to update layout because the Scroll viewer may not end up in the right place if its viewport size has just changed
+                _botPdf.UpdateLayout();
+                _botPdf.ScrollViewer.ChangeView(null, (firstSplit == 0 ? relativeOffsets.First() : firstSplit) - ActualHeight / (firstSplit != 0 ? 4 : 2), null);
             }
         }
         

@@ -205,6 +205,7 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
+                LinkActivationManager.DeactivateDoc(this);
             };
 
             PointerPressed += (sender, e) =>

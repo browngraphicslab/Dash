@@ -178,6 +178,8 @@ namespace Dash
             annotation.SetHeight(10);
             annotation.GetDataDocument().SetAnnotationType(AnnotationType.Pin);
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
+            annotation.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(point.X, point.Y));
+            annotation.AddToListField(KeyStore.SelectionRegionSizeKey, new PointController(1,1));
             if (linkedDoc != null)
             {
                 annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
