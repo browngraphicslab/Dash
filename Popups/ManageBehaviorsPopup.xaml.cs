@@ -38,7 +38,7 @@ namespace Dash.Popups
 
         private void OnOpened(object sender, object e)
         {
-            xComboBox.SelectedItem = null;
+            //xComboBox.SelectedItem = null;
         }
 
         public Task<List<OperatorController>> OpenAsync()

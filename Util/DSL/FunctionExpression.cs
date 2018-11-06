@@ -61,7 +61,7 @@ namespace Dash
             {
                 scope = new ReturnScope();
 
-                var output = /*op != null ? await OperatorScript.Run(op, inputs, scope) : */await OperatorScript.Run(opName, inputs, scope);
+                var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
                 return output;
             }
             catch (ReturnException)
