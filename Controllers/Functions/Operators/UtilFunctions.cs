@@ -19,5 +19,11 @@ namespace Dash
         {
             return new DateTimeController(DateTime.Now);
         }
+
+        [OperatorReturnName("Result")]
+        public static TextController ToString(FieldControllerBase input = null)
+        {
+            return new TextController(input?.GetValue(null).ToString() ?? "<null>");
+        }
     }
 }

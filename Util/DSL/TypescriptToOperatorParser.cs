@@ -693,11 +693,7 @@ namespace Dash
 
                 List<ScriptExpression> outputs = new List<ScriptExpression>();
                 outputs.Add(doBlock);
-                outputs.Add(new WhileExpression(DSL.GetFuncName<WhileOperatorController>(), new Dictionary<KeyController, ScriptExpression>
-                    {
-                        {WhileOperatorController.BoolKey,  doBinary},
-                        {WhileOperatorController.BlockKey,  doBlock}
-                    }));
+                outputs.Add(new WhileExpression(doBinary, doBlock));
                 return new ExpressionChain(outputs);
             case SyntaxKind.WhileStatement:
                 var whilChild = (node as WhileStatement).Children;
@@ -707,11 +703,7 @@ namespace Dash
                 var whilBlock = ParseToExpression(whilChild[1]);
 
                 //  make a while operator and call it in this function
-                return new WhileExpression(Op.Name.while_lp, new Dictionary<KeyController, ScriptExpression>
-                    {
-                        {WhileOperatorController.BoolKey,  whilBinary},
-                        {WhileOperatorController.BlockKey,  whilBlock}
-                    });
+                return new WhileExpression(whilBinary, whilBlock);
             case SyntaxKind.ForStatement:
                 var forChild = (node as ForStatement)?.Children;
                 var countDeclaration = ParseToExpression(forChild?[0]);
@@ -719,7 +711,7 @@ namespace Dash
                 var forIncrement = ParseToExpression(forChild?[2]);
                 var forBody = ParseToExpression(forChild?[3]) as ExpressionChain;
 
-                return new ForExpression(Op.Name.for_lp, countDeclaration, forBinary, forIncrement, forBody);
+                return new ForExpression(countDeclaration, forBinary, forIncrement, forBody);
             case SyntaxKind.ForInStatement:
                 var forInChild = (node as ForInStatement)?.Children;
 
@@ -727,7 +719,7 @@ namespace Dash
                 var listNameExpr = ParseToExpression(forInChild?[1]);
                 var forInBody = ParseToExpression(forInChild?[2]) as ExpressionChain;
 
-                return new ForInExpression(Op.Name.for_in_lp, subVarName, listNameExpr, forInBody);
+                return new ForInExpression(subVarName, listNameExpr, forInBody);
             case SyntaxKind.ForOfStatement:
                 break;
             case SyntaxKind.ContinueStatement:
