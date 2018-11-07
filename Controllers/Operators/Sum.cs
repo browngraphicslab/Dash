@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -36,12 +37,12 @@ namespace Dash.Controllers.Operators
 
         public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var inputList = inputs[InputlistKey] as BaseListController;
+            var inputList = inputs[InputlistKey] as IListController;
             double sum = 0;
 
             if (inputList != null)
             {
-                foreach (var value in inputList.Data.ToArray())
+                foreach (var value in inputList.AsEnumerable().ToArray())
                 {
                     switch (value)
                     {

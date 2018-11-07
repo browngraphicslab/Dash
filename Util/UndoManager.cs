@@ -20,6 +20,7 @@ namespace Dash
 
         private static Stack<List<UndoCommand>> _redoStack = new Stack<List<UndoCommand>>();
         private static Stack<List<UndoCommand>> _undoStack = new Stack<List<UndoCommand>>();
+        private static bool _undoing = false;
 
         private static List<UndoCommand> _currentBatch = new List<UndoCommand>();
         private static int _batchCounter;
@@ -27,7 +28,7 @@ namespace Dash
         public static void EventOccured(UndoCommand e)
         {
             //only add events if you are in a batch
-            if(_batchCounter > 0)
+            if(_batchCounter > 0 && !_undoing)
             {
                 _currentBatch.Add(e);
             }
@@ -85,11 +86,15 @@ namespace Dash
                 //run undo action and remove from undo Stack
                 List<UndoCommand> commands = _undoStack.Pop();
 
+                //Set _undoing to block undoevents caused by applying the undo
+                _undoing = true;
                 for (int i = commands.Count - 1; i >= 0; i--)
                 {
-                    Action undo = commands[i].undo;
+                    Action undo = commands[i].Undo;
                     undo();
                 }
+
+                _undoing = false;
 
                 //Add command to redo stack
                 _redoStack.Push(commands);
@@ -105,11 +110,14 @@ namespace Dash
             {
                 //run redo action and remove from redo Stack
                 List<UndoCommand> commands = _redoStack.Pop();
+                //Set _undoing to block undoevents caused by applying the redo
+                _undoing = true;
                 foreach (UndoCommand command in commands)
                 {
-                    Action redo = command.redo;
+                    Action redo = command.Redo;
                     redo();
                 }
+                _undoing = false;
 
                 //Add command to undo stack
                 _undoStack.Push(commands);

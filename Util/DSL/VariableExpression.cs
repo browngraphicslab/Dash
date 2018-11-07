@@ -31,11 +31,11 @@ namespace Dash
             _variableName = variableName;
         }
 
-        public override Task<FieldControllerBase> Execute(Scope scope)
+        public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            if (scope[_variableName] != null)
+            if (scope.TryGetVariable(_variableName, out var value))
             {
-                return Task.FromResult(scope[_variableName]);
+                return Task.FromResult((value, ControlFlowFlag.None));
             }
 
             throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
@@ -43,9 +43,9 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            if (scope[_variableName] != null)
+            if (scope.TryGetVariable(_variableName, out var value))
             {
-                return scope[_variableName];
+                return value;
             }
 
             return null;

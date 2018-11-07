@@ -42,7 +42,7 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var listA = inputs[ListAKey] as BaseListController;
+            var listA = (IListController) inputs[ListAKey];
             var toAppendController = inputs[ToAppendKey];
 
             var typeList = listA.ListSubTypeInfo;
@@ -50,9 +50,9 @@ namespace Dash
 
             if (!typeList.HasFlag(typeElement)) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeElement, typeList, InvalidListOperationErrorModel.OpError.AppendType));
 
-            var l = (BaseListController) listA.Copy();
+            var l = (IListController) listA.AsField().Copy();
             l.AddBase(toAppendController);
-            outputs[ResultsKey] = l;
+            outputs[ResultsKey] = l.AsField();
             return Task.CompletedTask;
         }
 

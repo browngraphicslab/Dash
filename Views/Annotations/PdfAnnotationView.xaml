@@ -51,9 +51,9 @@
         <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="xPdfCol"/>
+                    <ColumnDefinition x:Name="xPdfCol" x:FieldModifier="public"/>
                     <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
+                    <ColumnDefinition x:Name="xPdfNotesCol"/>
                 </Grid.ColumnDefinitions>
                 <!--This Grid will have the width and height of the pdf that is being displayed-->
                 <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
@@ -63,22 +63,8 @@
                     </Grid>
                 </Viewbox>
 
-                <controls:GridSplitter Grid.Column="1" Tapped="GridSplitter_Tapped"  Width="0" MinWidth="0"
-                               ManipulationStarted="Divider_OnManipulationStarted" ManipulationDelta="Divider_OnManipulationDelta" ManipulationCompleted="Divider_OnManipulationCompleted" PointerPressed="Divider_OnPointerPressed" >
-                    <controls:GridSplitter.Element>
-                        <Canvas>
-                            <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top">
-                                <Grid.Clip>
-                                    <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
-                                </Grid.Clip>
-                            </Grid>
-                            <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="{x:Bind PdfTotalHeight, Mode=OneWay}"  />
-                        </Canvas>
-                    </controls:GridSplitter.Element>
-                </controls:GridSplitter>
-
                 <Canvas x:Name="xAnnotationBox" Background="white" Grid.Column="2">
-                    <local:CollectionView x:Name="xCollectionView" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="1000" />
+                    <local:CollectionView x:Name="xCollectionView" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="3000" />
                 </Canvas>
             </Grid>
         </ScrollViewer>

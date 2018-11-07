@@ -536,8 +536,10 @@ namespace Dash
             foreach (var d in getDocs)
             {
                 var fieldData = d.GetDataDocument().GetDereferencedField(fieldKey, null);
-                if (fieldData is ListController<DocumentController>)
-                    foreach (var dd in (fieldData as ListController<DocumentController>).TypedData)
+                switch (fieldData)
+                {
+                case ListController<DocumentController> docListField:
+                    foreach (var dd in docListField)
                     {
                         var dataDoc = dd.GetDataDocument();
 
@@ -546,22 +548,30 @@ namespace Dash
                         expandedDoc.SetField(showField, dataDoc, true);
                         subDocs.Add(expandedDoc);
                     }
-                else if (fieldData is ListController<TextController>)
-                    foreach (var dd in (fieldData as ListController<TextController>).Data)
+
+                    break;
+                //TODO tfs: why do these next to cases copy the Text/Number Controller?
+                case ListController<TextController> textListField:
+                    foreach (var dd in textListField)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
                         expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
-                        expandedDoc.SetField(showField, new TextController((dd as TextController).Data), true);
+                        expandedDoc.SetField(showField, new TextController(dd.Data), true);
                         subDocs.Add(expandedDoc);
                     }
-                else if (fieldData is ListController<NumberController>)
-                    foreach (var dd in (fieldData as ListController<NumberController>).Data)
+
+                    break;
+                case ListController<NumberController> numListField:
+                    foreach (var dd in numListField)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
                         expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
-                        expandedDoc.SetField(showField, new NumberController((dd as NumberController).Data), true);
+                        expandedDoc.SetField(showField, new NumberController(dd.Data), true);
                         subDocs.Add(expandedDoc);
                     }
+
+                    break;
+                }
             }
 
             return showField;
@@ -816,7 +826,7 @@ namespace Dash
                         docsToAdd[i].SetHorizontalAlignment(HorizontalAlignment.Left);
                     if (docsToAdd[i].GetVerticalAlignment() == VerticalAlignment.Stretch)
                         docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
-                    if (double.IsNaN(docsToAdd[i].GetWidth()))
+                    if (double.IsNaN(docsToAdd[i].GetWidth()) && !docsToAdd[i].DocumentType.Equals(WebBox.DocumentType))
                         docsToAdd[i].SetWidth(300);
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);

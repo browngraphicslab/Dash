@@ -15,7 +15,7 @@ namespace Dash
 
         }
 
-        public PointController(double x, double y) : base(new PointModel(x, y))
+        public PointController(double x, double y) : this(new Point(x, y))
         {
 
         }
@@ -56,22 +56,14 @@ namespace Dash
             {
                 if (PointFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Point data = PointFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    PointFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Point val, bool withUndo = true)
-        {
-            Point data = PointFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            PointFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Point;

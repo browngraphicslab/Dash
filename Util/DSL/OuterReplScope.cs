@@ -2,7 +2,7 @@
 
 namespace Dash
 {
-    public class OuterReplScope : ReturnScope
+    public class OuterReplScope : Scope
     {
          private readonly DocumentController _variableDoc;
 
@@ -11,7 +11,7 @@ namespace Dash
             return _variableDoc;
         }
 
-        public OuterReplScope(DocumentController doc) : base(null)
+        public OuterReplScope(DocumentController doc)
         {
             _variableDoc = doc;
 
@@ -22,7 +22,7 @@ namespace Dash
             }
         }
 
-        public OuterReplScope() : base(null)
+        public OuterReplScope()
         {
             _variableDoc = new DocumentController();
 
@@ -31,7 +31,7 @@ namespace Dash
 
         public override void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
-            if (GetVariable(variableName) != null) return;
+            if (TryGetVariable(variableName, out var _)) return;
             _dictionary[variableName] = valueToSet;
 
             //add varible to autosuggest option

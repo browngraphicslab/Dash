@@ -59,7 +59,7 @@ namespace Dash
                 var data = allResults.Select(node => node.ViewDocument).ToList();
                 foreach (var t in data)
                 {
-                    var docTimeS = t.GetDataDocument().GetField<Controllers.DateTimeController>(KeyStore.DateModifiedKey)?.Data;
+                    var docTimeS = t.GetDataDocument().GetField<DateTimeController>(KeyStore.DateModifiedKey)?.Data;
 
                     //return all docs before givenTime
                     if (docTimeS < givenTime)

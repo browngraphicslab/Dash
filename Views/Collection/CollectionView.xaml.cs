@@ -44,7 +44,7 @@ namespace Dash
                 {
                     ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
                     ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
-                    InitializeView(ViewModel?.ViewType ?? CurrentView.ViewType);
+                    InitializeView(ViewModel?.ViewType ?? CurrentView?.ViewType ?? CollectionViewType.Freeform);
                     _lastViewModel = ViewModel;
                 }
             };
@@ -84,7 +84,10 @@ namespace Dash
         }
         private void ViewTypeHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
+            if (args.NewValue != null)
+            {
+                InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
+            }
         }
 
         /// <summary>
