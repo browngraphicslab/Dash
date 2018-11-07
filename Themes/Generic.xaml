@@ -55,10 +55,10 @@
     </Style>
 
     <!-- Floating Control Style -->
-    <Style TargetType="local:Floating">
+    <Style TargetType="local:DashFloating">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:Floating">
+                <ControlTemplate TargetType="local:DashFloating">
                     <!-- This Canvas never covers other controls -->
                     <Canvas Background="Transparent"
                             Height="0"

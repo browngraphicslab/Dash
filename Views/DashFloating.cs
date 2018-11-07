@@ -12,18 +12,18 @@
 	/// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
 	/// </summary>
 	[TemplatePart(Name = BorderPartName, Type = typeof(Border))]
-    public class Floating : ContentControl
+    public class DashFloating : ContentControl
     {
         private const string BorderPartName = "DraggingBorder";
 
         public static readonly DependencyProperty IsBoundByParentProperty =
-            DependencyProperty.Register("IsBoundByParent", typeof(bool), typeof(Floating), new PropertyMetadata(false));
+            DependencyProperty.Register("IsBoundByParent", typeof(bool), typeof(DashFloating), new PropertyMetadata(false));
 
         public static readonly DependencyProperty IsBoundByScreenProperty =
-            DependencyProperty.Register("IsBoundByScreen", typeof(bool), typeof(Floating), new PropertyMetadata(false));
+            DependencyProperty.Register("IsBoundByScreen", typeof(bool), typeof(DashFloating), new PropertyMetadata(false));
 
         public static readonly DependencyProperty ShouldManiuplateChildProperty =
-            DependencyProperty.Register("ShouldManipulateChild", typeof(bool), typeof(Floating), new PropertyMetadata(false));
+            DependencyProperty.Register("ShouldManipulateChild", typeof(bool), typeof(DashFloating), new PropertyMetadata(false));
         private Border _border;
 		private bool _expanding;
 
@@ -44,11 +44,11 @@
             set { SetValue(ShouldManiuplateChildProperty, value); }
         }
         /// <summary>
-        /// Initializes a new instance of the <see cref="Floating"/> class.
+        /// Initializes a new instance of the <see cref="DashFloating"/> class.
         /// </summary>
-        public Floating()
+        public DashFloating()
         {
-            DefaultStyleKey = typeof(Floating);
+            DefaultStyleKey = typeof(DashFloating);
             ShouldManipulateChild = true;
 			_expanding = false;
         }

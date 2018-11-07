@@ -10,21 +10,25 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <StackPanel Orientation="Horizontal"  VerticalAlignment="Top" Margin="0,0,190,0" BorderThickness="2 2 2 0" BorderBrush="DimGray">
+    <Grid x:Name="xMarqueeGrid">
+
+    <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,0" BorderThickness="1.5 1.5 1.5 0" BorderBrush="Gray">
 
         <Grid x:Name="Collection" Background="White" PointerPressed="Collection_OnPointerPressed" PointerReleased="Collection_OnPointerReleased">
-            <StackPanel Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" BorderThickness="0 0 2 0" BorderBrush="DimGray">
-                <TextBlock Text="C" TextAlignment="Center" FontSize="16" Margin="0,-5,0,0" />
-                <TextBlock Text="= new collection" TextAlignment="Center" FontSize="11"  />
+            <StackPanel Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" BorderThickness="0 0 1.5 0" BorderBrush="Gray">
+                <TextBlock Text="C" TextAlignment="Center" FontSize="16" Margin="0,-5,0,0" Foreground="{StaticResource DashDarkBlue}"/>
+                    <TextBlock Text="= new collection" TextAlignment="Center" FontSize="11"  Margin="-5,0,0,0" Foreground="{StaticResource DashDarkBlue}" />
             </StackPanel>
         </Grid>
         <Grid x:Name="Group" Background="White" PointerPressed="Group_OnPointerPressed" PointerReleased="Collection_OnPointerReleased">
             <StackPanel  Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                <TextBlock Text="G" HorizontalAlignment="Center" FontSize="16"  Margin="0,-5,0,0" />
-                <TextBlock Text="= new group" HorizontalAlignment="Center" FontSize="11" />
+                    <TextBlock Text="G" HorizontalAlignment="Center" FontSize="16"  Margin="0,-5,0,0" Foreground="{StaticResource DashDarkBlue}"/>
+                    <TextBlock Text="= new group" HorizontalAlignment="Center" FontSize="11" Margin="-5,0,0,0" Foreground="{StaticResource DashDarkBlue}"/>
             </StackPanel>
         </Grid>
-        
+
     </StackPanel>
+
+    </Grid>
 
 </UserControl>

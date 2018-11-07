@@ -452,7 +452,7 @@
     </UserControl.Resources>
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
-    <dash:Floating x:Name="xFloating" IsBoundByParent="False" IsBoundByScreen="True">
+    <dash:DashFloating x:Name="xFloating" IsBoundByParent="False" IsBoundByScreen="True">
         <StackPanel Name="xStackPanel" Orientation="Vertical">
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
@@ -776,7 +776,7 @@
                 <dash:PdfSubToolbar x:Name="xPdfToolbar" x:FieldModifier="public"/>
             </StackPanel>
         </StackPanel>
-    </dash:Floating>
+    </dash:DashFloating>
 
 </UserControl>
 

@@ -616,7 +616,7 @@ namespace Dash
 
         #region Marquee Select
 
-        Rectangle _marquee;
+        MarqueeInfo _marquee;
         public Point _marqueeAnchor;
         bool _isMarqueeActive;
         private MarqueeInfo mInfo;
@@ -666,7 +666,8 @@ namespace Dash
 
         public bool StartMarquee(Point pos)
         {
-            if (_isMarqueeActive)
+           
+            if (_isMarqueeActive && TouchInteractions.CurrInteraction != TouchInteractions.TouchInteraction.DocumentManipulation)
             {
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
@@ -690,6 +691,7 @@ namespace Dash
                 if (newWidth > 5 && newHeight > 5 && _marquee == null)
                 {
                     this.Focus(FocusState.Programmatic);
+                    /*
                     _marquee = new Rectangle()
                     {
                         Stroke = new SolidColorBrush(Color.FromArgb(200, 66, 66, 66)),
@@ -697,24 +699,26 @@ namespace Dash
                         StrokeDashArray = new DoubleCollection { 4, 1 },
                         CompositeMode = ElementCompositeMode.SourceOver
                     };
+                    */
                     this.IsTabStop = true;
                     this.Focus(FocusState.Pointer);
-                    _marquee.AllowFocusOnInteraction = true;
-                    SelectionCanvas?.Children.Add(_marquee);
+                    //_marquee.AllowFocusOnInteraction = true;
+                  // SelectionCanvas?.Children.Add(_marquee);
 
-                    mInfo = new MarqueeInfo();
-                    SelectionCanvas?.Children.Add(mInfo);
+                    _marquee = new MarqueeInfo(this);
+                    SelectionCanvas?.Children.Add(_marquee);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
                 {
+                    _marquee?.AdjustMarquee(newWidth, newHeight);
                     Canvas.SetLeft(_marquee, newAnchor.X);
                     Canvas.SetTop(_marquee, newAnchor.Y);
-                    _marquee.Width = newWidth;
-                    _marquee.Height = newHeight;
+                   // _marquee.Width = newWidth;
+                   // _marquee.Height = newHeight;
 
-                    Canvas.SetLeft(mInfo, newAnchor.X);
-                    Canvas.SetTop(mInfo, newAnchor.Y - 32);
+                    Canvas.SetLeft(_marquee, newAnchor.X);
+                    Canvas.SetTop(_marquee, newAnchor.Y - 32);
 
                     return true;
                 }
@@ -879,7 +883,7 @@ namespace Dash
             void DoAction(Action<List<DocumentView>, Point, Size> action)
             {
                 Point where;
-                Rectangle marquee;
+                MarqueeInfo marquee;
                 IEnumerable<DocumentView> viewsToSelectFrom;
 
                 if (fromMarquee)
@@ -896,7 +900,7 @@ namespace Dash
                     if (bounds == Rect.Empty) return;
 
                     where = new Point(bounds.X, bounds.Y);
-                    marquee = new Rectangle
+                    marquee = new MarqueeInfo(this)
                     {
                         Height = bounds.Height,
                         Width = bounds.Width
