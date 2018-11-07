@@ -24,11 +24,28 @@ namespace Dash
 
             if (boolRes)
             {
-                return await _parameters[ifKey].Execute(scope);
+                var (field, flags) = await _parameters[ifKey].Execute(scope);
+                if (flags == ControlFlowFlag.None)
+                {
+                    return (null, ControlFlowFlag.None);
+                }
+                else
+                {
+                    return (field, flags);
+                }
             }
             else
             {
-                return _parameters[elseKey] != null ? await _parameters[elseKey].Execute(scope) : (null, ControlFlowFlag.None);
+                if (_parameters.TryGetValue(elseKey, out var exp))
+                {
+                    var (field, flags) = await exp.Execute(scope);
+                    if (flags != ControlFlowFlag.None)
+                    {
+                        return (field, flags);
+                    }
+                }
+
+                return (null, ControlFlowFlag.None);
             }
         }
 

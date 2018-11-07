@@ -571,7 +571,7 @@ namespace Dash
                 {
                     retVal = new TextController("There was an error: " + ex.Message);
                 }
-                if (retVal == null) retVal = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded a null return. Enter <help()> for a complete catalog of valid functions.");
+                if (retVal == null) retVal = new TextController("null");
 
                 string indentOffset = ReplLineNode.IsBaseCase(retVal) ? "   " : "";
                 var head = new ReplLineViewModel

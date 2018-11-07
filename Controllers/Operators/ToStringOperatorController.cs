@@ -43,7 +43,7 @@ namespace Dash
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var input = inputs[InputKey];
-            if (input != null) outputs[ResultStringKey] = new TextController(input.GetValue(null).ToString());
+            outputs[ResultStringKey] = new TextController(input?.GetValue(null).ToString() ?? "<null>");
             return Task.CompletedTask;
         }
     }
