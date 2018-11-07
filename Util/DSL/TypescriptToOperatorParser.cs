@@ -83,7 +83,7 @@ namespace Dash
 
             if (op == null)
                 return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
-            var opCont = op.TypedData.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey));
+            var opCont = op.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey));
             if (opCont == null)
             {
                 return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";

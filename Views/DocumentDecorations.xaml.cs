@@ -550,7 +550,7 @@ namespace Dash
 
             var regions = doc.GetDataDocument().GetRegions();
             if (regions != null)
-                foreach (var region in regions.TypedData)
+                foreach (var region in regions)
                 {
                     GetLinkTypes(region.GetDataDocument(), map);
                 }

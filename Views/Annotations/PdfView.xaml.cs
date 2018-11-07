@@ -312,9 +312,9 @@ namespace Dash
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets != null)
             {
-                var relativeOffsets = absoluteOffsets.TypedData.Select(p => p.Data.Y * (xPdfCol.ActualWidth / PdfMaxWidth)).ToList();
+                var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xPdfCol.ActualWidth / PdfMaxWidth)).ToList();
                 var maxOffset       = _botPdf.ScrollViewer.ViewportHeight;
-                var firstSplit      = relativeOffsets.Skip(1).Where((ro) => ro - relativeOffsets.First() > maxOffset).FirstOrDefault();
+                var firstSplit      = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
 
                 if (firstSplit != 0)
                 {

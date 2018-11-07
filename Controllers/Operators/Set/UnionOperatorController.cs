@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -48,8 +49,8 @@ namespace Dash
             ListController<DocumentController> setB = (ListController<DocumentController>)inputs[BKey];
 
             // Union by comparing all fields 
-            List<DocumentController> bigSet = setA.GetElements();
-            bigSet.AddRange(setB.GetElements());
+            var bigSet = setA.ToList();
+            bigSet.AddRange(setB);
             HashSet<DocumentController> result = new HashSet<DocumentController>(bigSet);
             HashSet<DocumentController> same = Util.GetIntersection(setA, setB);
             result.ExceptWith(same);

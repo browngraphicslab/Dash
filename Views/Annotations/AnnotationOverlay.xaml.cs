@@ -205,7 +205,7 @@ namespace Dash
             RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
             embeddedDocsListOnFieldModelUpdated(null, 
-                new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.TypedData, new List<DocumentController>(),0), null);
+                new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.ToList(), new List<DocumentController>(),0), null);
            _embeddedViewModels.Clear();
 
             RegionDocsList.ToList().ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));

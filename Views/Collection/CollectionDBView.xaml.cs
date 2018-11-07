@@ -32,7 +32,7 @@ namespace Dash
         }
         private void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
-            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null);
             var pattern = ParentDocument.GetDereferencedField<KeyController>(FilterFieldKey, null);
 
             if (dbDocs == null || pattern == null || string.IsNullOrEmpty(pattern.Name))
@@ -202,7 +202,7 @@ namespace Dash
         private void UpdateChart(Context context, bool updateViewOnly=false)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
-            var dbDocs  = ParentDocument?.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
+            var dbDocs  = ParentDocument?.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context);
             IList<NumberController> buckets = ParentDocument?.GetDereferencedField<ListController<NumberController>>(BucketsKey, context);
             var pattern = ParentDocument?.GetDereferencedField<KeyController>(FilterFieldKey, context);
             bool autofit = ParentDocument?.GetDereferencedField<NumberController>(AutoFitKey, context)?.Data != 0;
@@ -319,7 +319,7 @@ namespace Dash
 
                     if (pvalue is ListController<DocumentController>)
                     {
-                        foreach (var nestedDoc in (pvalue as ListController<DocumentController>).TypedData.Select(d => d.GetDataDocument()))
+                        foreach (var nestedDoc in (pvalue as ListController<DocumentController>).Select(d => d.GetDataDocument()))
                         {
                             if (TestPatternMatch(nestedDoc, null, term) != null)
                             {
@@ -340,7 +340,7 @@ namespace Dash
             return null;
         }
 
-        private IList<double> FilterDocuments(List<DocumentController> dbDocs, IList<NumberController> bars, KeyController pattern,
+        private IList<double> FilterDocuments(IList<DocumentController> dbDocs, IList<NumberController> bars, KeyController pattern,
                                      IList<NumberController> selectedBars, bool updateViewOnly, ref string rawText)
         {
             bool keepAll = selectedBars.Count == 0;
@@ -389,7 +389,7 @@ namespace Dash
             var field = refField?.GetDocumentController(new Context(dataDoc)).GetDereferencedField(refField.FieldKey, new Context(dataDoc));
             if (field is ListController<DocumentController>)
             {
-                var counted = FilterDocuments((field as ListController<DocumentController>).TypedData, bars, null, selectedBars, updateViewOnly, ref rawText);
+                var counted = FilterDocuments(field as ListController<DocumentController>, bars, null, selectedBars, updateViewOnly, ref rawText);
                 for (int i = 0; i < counted.Count; i++)
                 {
                     countBars[i] += counted[i] > 0 ? 1 : 0;

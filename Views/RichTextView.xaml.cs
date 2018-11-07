@@ -238,10 +238,10 @@ namespace Dash
         private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         private DocumentController   getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
         private DocumentController   getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
-        private List<TextController> getSelected()
+        private IList<TextController> getSelected()
         {
-            return getDataDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData
-                ?? getLayoutDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData;
+            return getDataDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)
+                ?? getLayoutDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null);
         }
         
         private void SetSelected(string query)
@@ -320,7 +320,7 @@ namespace Dash
                 var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target);
                 if (theDoc != null)
                 {
-                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.Contains(theDoc) == true)
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
@@ -1071,7 +1071,7 @@ namespace Dash
         /// Searches through richtextbox for textcontrollers in queries- does so by storing the formatting/state of the textbox before the search was conducted
         /// and modifying the rtf directly, since the previous method of using iTextSelection was way too slow to be useful
         /// </summary>
-        private void MatchQuery(List<TextController> queries)
+        private void MatchQuery(IList<TextController> queries)
         {
             if (getDocView() == null) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;

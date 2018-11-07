@@ -226,7 +226,7 @@ namespace Dash
                     {
                         updateViewModels(new ListController<DocumentController>.ListFieldUpdatedEventArgs(
                             ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,
-                            collectionFieldModelController.GetElements(), new List<DocumentController>(), 0));
+                            collectionFieldModelController.ToList(), new List<DocumentController>(), 0));
                     }
                 }
             }
@@ -317,8 +317,8 @@ namespace Dash
                 return true;
             if (newLayout.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                var newDocList = newLayout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
-                foreach (var subDoc in newDocList.TypedData)
+                var newDocList = newLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                foreach (var subDoc in newDocList)
                 {
                     var subLayout = subDoc;
                     if (subLayout.DocumentType.Equals(CollectionBox.DocumentType))
@@ -838,7 +838,7 @@ namespace Dash
 
         public static void ConvertToTemplate(DocumentController templateRoot, DocumentController collectionToConvert)
         {
-            var children = collectionToConvert.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey,null).TypedData;
+            var children = collectionToConvert.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             var nestedCollections = children.Where((c) => c.DocumentType.Equals(CollectionBox.DocumentType));
             foreach (var nc in nestedCollections)
             {
@@ -847,7 +847,7 @@ namespace Dash
             RouteDataBoxReferencesThroughCollection(templateRoot, children);
         }
 
-        public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
+        public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, IList<DocumentController> docsToAdd)
         {
             var databoxes = docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)).ToList();
             if (databoxes.Count > 0)

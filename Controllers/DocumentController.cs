@@ -198,187 +198,6 @@ namespace Dash
             return null;
         }
 
-        /// <summary>
-        /// Parses text input into a field controller
-        /// </summary>
-        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null, bool copy = false)
-        {
-            textInput = textInput.Trim(' ');
-            if (textInput.StartsWith("="))
-            {
-                var fieldStr = textInput.Substring(1, textInput.Length - 1);
-                var strings = fieldStr.Split('(');
-                if (strings.Count() == 1)  //  a document from input <DocName>[.<FieldName>]  if no document matches DocName, search for This.<FieldName>  if still no document, search for {AllDocs}.<FieldName> = this
-                {
-                    var parse = ParseDocumentReference(strings[0], true);
-                    if (parse != null)
-                        SetField(key, parse, true, false);
-                    else
-                    {
-                        double num;
-                        if (double.TryParse(fieldStr, out num))
-                            SetField(key, new NumberController(num), true, false);
-                        else SetField(key, new TextController(fieldStr), true, false);
-                    }
-                }
-                else if (lookupOperator(strings[0]) != null)
-                {
-                    var opModel = lookupOperator(strings[0]);
-                    var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);
-                    var args = strings[1].TrimEnd(')').Split(',');
-                    int count = 0;
-                    foreach (var a in args)
-                    {
-                        var docRef = ParseDocumentReference(a, false);
-                        if (docRef != null)
-                        {
-                            opModel.SetField(opFieldController.Inputs[count++].Key, docRef, true);
-                        }
-                        else
-                        {
-                            var target = opFieldController.Inputs[count++];
-                            if (target.Value.Type == TypeInfo.Number)
-                            {
-                                var res = 0.0;
-                                if (double.TryParse(a.Trim(' '), out res))
-                                    opModel.SetField(target.Key, new NumberController(res), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Text)
-                            {
-                                opModel.SetField(target.Key, new TextController(a), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Image)
-                            {
-                                opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Video)
-                            {
-                                opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Audio)
-                            {
-                                opModel.SetField(target.Key, new AudioController(new Uri(a)), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Html)
-                            {
-                                opModel.SetField(target.Key, new HtmlController(a), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Pdf)
-                            {
-                                opModel.SetField(target.Key, new PdfController(new Uri(a)), true);
-                            }
-                        }
-                    }
-                    SetField(key, new DocumentReferenceController(opModel, opFieldController.Outputs.First().Key), true, false);
-                }
-            }
-            else
-            {
-                if (curField != null && !(curField is ReferenceController))
-                    if (curField is NumberController nc)
-                    {
-                        double num;
-                        if (double.TryParse(textInput, out num))
-                            if (copy)
-                                SetField(key, new NumberController(num), true);
-                            else nc.Data = num;
-                        else return false;
-                    }
-                    else if (curField is TextController tc)
-                    {
-                        if (copy)
-                            SetField(key, new TextController(textInput), true);
-                        else tc.Data = textInput;
-                    }
-                    else if (curField is ImageController ic)
-                    {
-                        try
-                        {
-                            if (copy)
-                                SetField(key, new ImageController(new Uri(textInput)), true);
-                            else ic.Data = new Uri(textInput);
-                        }
-                        catch (Exception)
-                        {
-                            ic.Data = null;
-                        }
-                    }
-                    else if (curField is HtmlController hc)
-                    {
-                        if (copy)
-                            SetField(key, new HtmlController(textInput), true);
-                        else hc.Data = textInput;
-                    }
-                    else if (curField is PdfController pc)
-                    {
-                        try
-                        {
-                            if (copy)
-                                SetField(key, new PdfController(new Uri(textInput)), true);
-                            else pc.Data = new Uri(textInput);
-                        }
-                        catch (Exception)
-                        {
-                            pc.Data = null;
-                        }
-                    }
-                    else if (curField is DateTimeController)
-                    {
-                        return curField.TrySetValue(new DateTimeToStringConverter().ConvertXamlToData(textInput));
-                    }
-                    else if (curField is VideoController vc)
-                    {
-                        try
-                        {
-                            if (copy)
-                                SetField(key, new VideoController(new Uri(textInput)), true);
-                            else vc.Data = new Uri(textInput);
-                        }
-                        catch (Exception)
-                        {
-                            vc.Data = null;
-                        }
-                    }
-                    else if (curField is AudioController ac)
-                    {
-                        try
-                        {
-                            if (copy)
-                                SetField(key, new AudioController(new Uri(textInput)), true);
-                            else ac.Data = new Uri(textInput);
-                        }
-                        catch (Exception)
-                        {
-                            ac.Data = null;
-                        }
-                    }
-                    else if (curField is DocumentController)
-                    {
-                        Debug.WriteLine("Warning: changing document field into a text field");
-                        SetField(key, new TextController(textInput), true);
-                        //TODO tfs: fix this 
-                        //throw new NotImplementedException();
-                        //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
-                    }
-                    else if (curField is ListController<DocumentController> lc)
-                    {
-                        if (copy)
-                            SetField(key, new ListController<DocumentController>(new DocumentCollectionToStringConverter().ConvertXamlToData(textInput)), true);
-                        else lc.TypedData =
-                            new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
-                    }
-                    else if (curField is RichTextController rtc)
-                    {
-                        rtc.Data = new RichTextModel.RTD(textInput);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-            }
-            return true;
-        }
-
         //links this => target
         public DocumentController Link(DocumentController target, LinkBehavior behavior, string specTitle = null)
         {
@@ -425,7 +244,7 @@ namespace Dash
         {
             GetDereferencedField<ListController<T>>(key, null)?.Remove(value);
 
-            foreach (var delegDoc in GetDelegates().TypedData)
+            foreach (var delegDoc in GetDelegates())
             {
                 var items = delegDoc.GetField<ListController<T>>(key, true);
                 items?.Remove(value);
@@ -458,7 +277,7 @@ namespace Dash
                 GetFieldOrCreateDefault<ListController<T>>(key).Add(value);
             }
 
-            foreach (var d in GetDelegates().TypedData)
+            foreach (var d in GetDelegates())
             {
                 var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
                 mapping.Add(this, d);
@@ -624,7 +443,7 @@ namespace Dash
             if (delegates != null)
             {
                 bool cycle = false;
-                foreach (var documentController in delegates.TypedData)
+                foreach (var documentController in delegates)
                 {
                     cycle = cycle || documentController.CheckCycle(key, field);
                 }
@@ -736,7 +555,7 @@ namespace Dash
                 else if (f.Value is ListController<DocumentController> listDocs)
                 {
                     var newListDocs = new ListController<DocumentController>();
-                    foreach (var l in listDocs.TypedData)
+                    foreach (var l in listDocs)
                     {
                         var lnew = l.MakeDelegate();
                         lnew.MapDocuments(mapping);
@@ -792,7 +611,7 @@ namespace Dash
         /// </summary>
         public TypeInfo GetFieldType(KeyController key)
         {
-            var operatorController = GetField<ListController<OperatorController>>(key).TypedData.First();
+            var operatorController = GetField<ListController<OperatorController>>(key).First();
             if (operatorController != null && operatorController.Outputs.ContainsKey(key))
             {
                 return operatorController.Outputs[key];
@@ -810,7 +629,7 @@ namespace Dash
             var operatorControllerStart = GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
             if (operatorControllerStart != null)
             {
-                foreach (var controller in operatorControllerStart.TypedData)
+                foreach (var controller in operatorControllerStart)
                 {
                     if (controller != null && controller.Outputs.ContainsKey(key))
                     {
@@ -1486,7 +1305,7 @@ namespace Dash
             //    PrototypeFieldUpdated?.Invoke(sender, args, c);
 
             // now propagate this field model change to all delegates that don't override this field
-            foreach (var d in GetDelegates().TypedData)
+            foreach (var d in GetDelegates())
             {
                 if (d.GetField(args.Reference.FieldKey, true) == null)
                     d.generateDocumentFieldUpdatedEvents(args);
