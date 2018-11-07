@@ -860,4 +860,89 @@ namespace Dash
                 docView.DeleteDocument();
         }
     }
+    /*
+function grid(col, spacing) {
+  var w = 0;
+  var h = 0;
+  for (var doc in col.Data) {
+    w = max(w, doc.ActualSize.x());
+    h = max(h, doc.ActualSize.y());
+  }
+  var startX = -col._PanPosition.x() + spacing;
+  var startY = -col._PanPosition.y() + spacing;
+  var endX = startX + col.ActualSize.x() - 2 * spacing;
+  var x = startX;
+  var y = startY;
+  for (var doc in col.Data) {
+    if (x + doc.ActualSize.x() > endX) {
+      x = startX;
+      y = y + h + spacing;
+    }
+    doc.Position = point(x, y);
+    x = x + w + spacing;
+  }
+}
+ 
+function grid2(docs, numCols, spacing, startPos) {
+  var w = 0;
+  var h = 0;
+  for (var doc in docs) {
+    w = max(w, doc.ActualSize.x());
+    h = max(h, doc.ActualSize.y());
+  }
+  var startX = startPos.x();
+  var startY = startPos.y();
+  var x = startX;
+  var y = startY;
+  var currentCol = 0;
+  for (var doc in docs) {
+    if (currentCol == numCols) {
+      x = startX;
+      y = y + h + spacing;
+      currentCol = 0;
+    }
+    currentCol++;
+    doc.Position = point(x, y);
+    x = x + w + spacing;
+  }
+  return w * numCols + spacing * (numCols - 1);
+}
+
+function group(docs, groupingField, numCols, spacing, startPos) {
+  var map = {};
+  for (var doc in docs) {
+    var compField = doc.get_field(groupingField).to_string();
+    var l = map.get_field(compField);
+    if (l == null) {
+      l = [doc];
+    } else {
+      l = l + doc;
+    }
+    map.set_field(compField, l);
+  }
+
+  var x = startPos.x();
+  var y = startPos.y();
+  for (var key in map.keys()) {
+    var l = map.get_field(key);
+    var width = grid(l, numCols, spacing, point(x, y));
+    x = x + width + spacing * 2;
+  }
+}
+
+function spiral(col) {
+  count = col.Data.count();
+  var angle = 0;
+  for (i = 0; i < count; i++) {
+    var doc = col.Data[i];
+    var r = 100 + 40 * i;
+    var x = cos(angle) * r - doc.ActualSize.x() / 2;
+    var y = sin(angle) * r - doc.ActualSize.y() / 2;
+    angle = angle + 200 / r;
+    doc.Position = point(x, y);
+  }
+}
+
+
+     */
 }
