@@ -11,6 +11,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -21,7 +22,8 @@ namespace Dash
     //[DebuggerDisplay("DocumentController")]
     public sealed class DocumentController : FieldModelController<DocumentModel>
     {
-        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context);
+        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
+
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// </summary>
@@ -139,41 +141,6 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
         {
-            // Replace this method with a proper search function
-            //foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
-            //    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
-            //    {
-            //        var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
-            //        if (primaryKeys != null)
-            //        {
-            //            bool found = true;
-            //            foreach (var value in primaryKeyValues)
-            //            {
-            //                bool foundValue = false;
-            //                foreach (var key in primaryKeys.Data)
-            //                {
-            //                    var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
-            //                    if (derefValue != null)
-            //                    {
-            //                        if (value == derefValue)
-            //                        {
-            //                            foundValue = true;
-            //                            break;
-            //                        }
-            //                    }
-            //                }
-            //                if (!foundValue)
-            //                {
-            //                    found = false;
-            //                    break;
-            //                }
-            //            }
-            //            if (found)
-            //            {
-            //                return dmc;
-            //            }
-            //        }
-            //    }
             return null;
         }
         DocumentController lookupOperator(string opname)
@@ -465,7 +432,7 @@ namespace Dash
                 // if we're removing a document then we need to check if our delegates contain a delegate of the removed document and remove that.
                 if (value is DocumentController && items != null)
                 {
-                    foreach (var delegateValue in items.Data.OfType<DocumentController>().Where((d) => d.IsDelegateOf(value as DocumentController)).ToArray())
+                    foreach (var delegateValue in items.OfType<DocumentController>().Where((d) => d.IsDelegateOf(value as DocumentController)).ToArray())
                     {
                         delegDoc.RemoveFromListField<DocumentController>(key, delegateValue);
                     }
@@ -535,7 +502,7 @@ namespace Dash
             void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
                 var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                generateDocumentFieldUpdatedEvents(updateArgs, new Context());
+                generateDocumentFieldUpdatedEvents(updateArgs);
             }
             //TODO RefCount
             ReferenceField(field);
@@ -859,22 +826,18 @@ namespace Dash
         /// field exists in the document's Prototype, since documents cannot remove inherited fields
         /// (only the owner of a field can remove it.)
         /// </summary>
-        public bool RemoveField(KeyController key)
+        public bool RemoveField(KeyController key, bool force = false)
         {
-            var proto = GetPrototypeWithFieldKey(key);
-            if (proto == null)
+            var (removed, doc, args) = RemoveFieldHelper(key, force);
+
+            if (!removed)
             {
                 return false;
             }
 
-            if (!proto._fields.TryGetValue(key, out var value))
-                return false;
+            doc.UpdateOnServer(new UndoCommand(() => doc.RemoveField(key), () => doc.SetField(key, args.OldValue, true)));
 
-
-            ReleaseContainedField(key, value);
-            proto._fields.Remove(key);
-
-            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(this, key), null, false), new Context(this));
+            doc.generateDocumentFieldUpdatedEvents(args);
 
             return true;
         }
@@ -922,64 +885,77 @@ namespace Dash
         /// <param name="field"></param>
         /// <param name="forceMask"></param>
         /// <returns></returns>
-        (bool updated, DocumentFieldUpdatedEventArgs args, Context c) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        private (bool updated, DocumentController, DocumentFieldUpdatedEventArgs args) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             if (field == null)
             {
-                return (RemoveField(key), null, null);
+                return RemoveFieldHelper(key, forceMask);
             }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
             var doc = forceMask ? this : proto;
 
             // get the old value of the field
-            FieldControllerBase oldField;
-            proto._fields.TryGetValue(key, out oldField);
-            var overwrittenField = (forceMask && !this.Equals(proto)) ? null : oldField;
+            proto._fields.TryGetValue(key, out var oldField);
 
-            // if the old and new field reference the exact same controller then we're done unless we're force-masking a field
-            if (!ReferenceEquals(oldField, field) || (forceMask && !proto.Equals(doc)))
+            // if the old and new field reference the exact same controller and 
+            // the document with the field is the document we're setting it on, we're done
+            if (ReferenceEquals(oldField, field) && proto.Equals(doc))
             {
-                //if (proto.CheckCycle(key, field))
-                //{
-                //    return false;
-                //}
-
-                //field.SaveOnServer();
-
-
-                if (doc == proto && oldField != null)
-                {
-                    doc.ReleaseContainedField(key, oldField);
-                }
-                doc.ReferenceContainedField(key, field);
-
-                doc._fields[key] = field;
-                doc.DocumentModel.Fields[key.Id] = field.Id;
-
-                if (!doc.Equals(this))
-                {
-                    doc.UpdateOnServer(null);
-                }
-
-                // fire document field updated if the field has been replaced or if it did not exist before
-                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference = new DocumentFieldReference(doc, key);
-                var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
-
-                //TODO RefCount
-                //if (key.Equals(KeyStore.PrototypeKey))
-                //    ; // need to see if any prototype operators need to be run
-                //else if (key.Equals(KeyStore.DocumentContextKey))
-                //    ; // do we need to watch anything when the DocumentContext field is set?
-                //else
-                //    setupFieldChangedListeners(key, field, oldField, new Context(doc));
-
-                return (true, updateArgs, new Context(doc));
+                return (false, null, null);
             }
-            return (false, null, null);
+
+            //if (proto.CheckCycle(key, field))
+            //{
+            //    return false;
+            //}
+
+            // if doc == proto, then we are actually replacing the field,
+            // so we need to release it
+            if (doc == proto && oldField != null)
+            {
+                doc.ReleaseContainedField(key, oldField);
+            }
+            doc.ReferenceContainedField(key, field);
+
+            doc._fields[key] = field;
+            doc.DocumentModel.Fields[key.Id] = field.Id;
+
+            // fire document field updated if the field has been replaced or if it did not exist before
+            var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            var reference  = new DocumentFieldReference(doc, key);
+            var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
+
+            return (true, doc, updateArgs);
         }
 
+        private (bool, DocumentController, DocumentFieldUpdatedEventArgs) RemoveFieldHelper(KeyController key, bool forceMask)
+        {
+            var doc = forceMask ? this : GetPrototypeWithFieldKey(key);
+            if (doc == null)
+            {
+                return (false, null, null);
+            }
+
+            if (!doc._fields.TryGetValue(key, out var oldField))
+            {
+                return (false, null, null);
+            }
+
+            doc.ReleaseContainedField(key, oldField);
+            var removedField = doc._fields.Remove(key);
+            var removedModel = doc.DocumentModel.Fields.Remove(key.Id);
+            Debug.Assert(removedField);
+            Debug.Assert(removedModel);
+
+            return (true, doc, new DocumentFieldUpdatedEventArgs(oldField, null, FieldUpdatedAction.Remove,
+                    new DocumentFieldReference(doc, key), null, false));
+        }
+
+        public void SendMessage(KeyController key, FieldControllerBase value)
+        {
+            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(null, value, FieldUpdatedAction.Add, new DocumentFieldReference(this, key), null, false));
+        }
 
         /// <summary>
         ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
@@ -993,28 +969,27 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true, bool updateBindings=true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool updateBindings = true)
         {
+            //TODO tfs: Shouldn't this be in SetFieldHelper?
             if (updateBindings)
             {
                 RemoveOperatorForKey(key);
             }
 
-            var oldVal = GetField(key);
-            UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false),
-                () => SetField(key, oldVal, forceMask, false));
+            var (set, doc, args) = SetFieldHelper(key, field, forceMask);
 
-            var (fieldChanged, args, c) = SetFieldHelper(key, field, forceMask);
-            if (fieldChanged)
+            if (!set)
             {
-                UpdateOnServer(withUndo ? newEvent : null);
-                if (args != null)
-                {
-                    generateDocumentFieldUpdatedEvents(args, c);
-                }
+                return false;
             }
 
-            return fieldChanged;
+            var oldField = args.OldValue;
+            doc.UpdateOnServer(new UndoCommand(() => doc.SetField(key, field, true), () => doc.SetField(key, oldField, true)));
+
+            doc.generateDocumentFieldUpdatedEvents(args);
+
+            return true;
         }
 
         private void RemoveOperatorForKey(KeyController key)
@@ -1071,39 +1046,49 @@ namespace Dash
         ///     otherwise each
         ///     field is written on the first prototype in the hierarchy which contains it
         /// </summary>
-        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask, bool withUndo = true)
+        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
         {
-            //TODO this should delay field updates until all fields are set
-            bool shouldSave = false;
-            var oldFields = new Dictionary<KeyController, FieldControllerBase>();
             var keyValuePairs = fields.ToList();
-            foreach (var kv in keyValuePairs)
-            {
-                oldFields[kv.Key] = GetField(kv.Key);
-            }
 
-            var argList = new List<(DocumentFieldUpdatedEventArgs args, Context c)>(keyValuePairs.Count);
+            var changedFields = new Dictionary<DocumentController, List<DocumentFieldUpdatedEventArgs>>();
 
             // update with each of the new fields
-            foreach (var field in keyValuePairs.Where((f) => f.Key != null))
+            foreach (var field in keyValuePairs.Where(f => f.Key != null))
             {
-                var (updated, args, c) = SetFieldHelper(field.Key, field.Value, forceMask);
-                shouldSave |= updated;
-                if (args != null)
+                var (updated, doc, args) = SetFieldHelper(field.Key, field.Value, forceMask);
+                if (!updated)
                 {
-                    argList.Add((args, c));
+                    continue;
+                }
+                if (changedFields.TryGetValue(doc, out var l))
+                {
+                    l.Add(args);
+                }
+                else
+                {
+                    changedFields.Add(doc, new List<DocumentFieldUpdatedEventArgs>{args});
                 }
             }
 
-            foreach (var (args, c) in argList)
+            foreach (var kvp in changedFields)
             {
-                generateDocumentFieldUpdatedEvents(args, c);
+                var doc = kvp.Key;
+                var l = kvp.Value;
+                var oldFields = l.ToDictionary(k => k.Reference.FieldKey, f => f.OldValue);
+                var newFields = l.ToDictionary(k => k.Reference.FieldKey, f => f.NewValue);
+
+                UndoCommand newEvent = new UndoCommand(() => doc.SetFields(newFields, true), () => SetFields(oldFields, true));
+                UpdateOnServer(newEvent);
             }
 
-            if (shouldSave)
+            //TODO This can probably be merged into the previous for loop, this just makes so 
+            // updates aren't sent until everything is UpdateOnServer'ed
+            foreach (var changedField in changedFields)
             {
-                UndoCommand newEvent = new UndoCommand(() => SetFields(keyValuePairs, forceMask, false), () => SetFields(oldFields, forceMask, false));
-                UpdateOnServer(withUndo ? newEvent : null);
+                foreach (var args in changedField.Value)
+                {
+                    changedField.Key.generateDocumentFieldUpdatedEvents(args);
+                }
             }
         }
 
@@ -1111,7 +1096,7 @@ namespace Dash
         /// Returns the Field at the given KeyController's key. If the field is a Reference to another
         /// field, follows the regerences up until a non-reference field is found and returns that.
         /// </summary>
-        public FieldControllerBase GetDereferencedField(KeyController key, Context context)
+        public FieldControllerBase GetDereferencedField(KeyController key, Context context = null)
         {
             // TODO this should cause an operator to execute and return the proper value
             context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
@@ -1198,21 +1183,16 @@ namespace Dash
         ///     2. the input contains the updated key or the output contains the updated key
         /// </para>
         /// </summary>
-        public void ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
+        public void ShouldExecute(KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
-            context = context ?? new Context(this);
-            var usedOperators = new HashSet<Type>();
             var ops           = new List<OperatorController>();
-            var remOps        = new List<OperatorController>();
+            var remOps        = new HashSet<OperatorController>();
             for (var proto = this; proto != null; proto = proto.GetPrototype())
             {
                 var opFields = proto.GetField<ListController<OperatorController>>(KeyStore.OperatorKey, true) ?? new ListController<OperatorController>();
                 foreach (var operatorController in opFields)
                 {
-                    if (!usedOperators.Contains(operatorController.GetType()))
-                    {
-                        ops.Add(operatorController);
-                    }
+                    ops.Add(operatorController);
                 }
                 var remOpFields = proto.GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, true) ?? new ListController<OperatorController>();
                 foreach (var operatorController in remOpFields)
@@ -1221,21 +1201,17 @@ namespace Dash
                 }
             }
 
-            foreach (var opField in ops.Where((op) => !remOps.Contains(op)))
+            foreach (var opField in ops.Where(op => !remOps.Contains(op)))
             {
                 if (opField.Inputs.Any(i => i.Key.Equals(updatedKey)))
                 {
-                    Execute(opField, context, update, args);
+                    Execute(opField, update, args);
                 }
             }
         }
 
-        public async void Execute(OperatorController opField, Context oldContext, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
+        public async void Execute(OperatorController opField, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
         {
-            // add this document to the context
-            var context = new Context(oldContext);
-            context.AddDocumentContext(this);
-
             // create dictionaries to hold the inputs and outputs, these are being prepared
             // to be used in the actual operator's execute method
             var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
@@ -1248,7 +1224,7 @@ namespace Dash
                 // get the operator inputs based on the input keys (these are always references)
                 var field = GetField(opFieldInput.Key);
                 // dereference the inputs so that the field is now the actual field from the output document
-                field = field?.DereferenceToRoot(context);
+                field = field?.DereferenceToRoot(null);
 
                 if (field == null && opFieldInput.Value.IsRequired)
                 {
@@ -1274,7 +1250,7 @@ namespace Dash
             // pass the updates along 
             foreach (var fieldModel in outputs)
             {
-                SetField(fieldModel.Key, fieldModel.Value, true, updateBindings:false);
+                SetField(fieldModel.Key, fieldModel.Value, true, updateBindings: false);
             }
         }
         #endregion
@@ -1290,7 +1266,7 @@ namespace Dash
         {
             Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
                                        " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
-            
+
             if (GetDereferencedField<TextController>(KeyStore.XamlKey, null) is TextController xamlField)
             {
                 try
@@ -1298,7 +1274,8 @@ namespace Dash
                     var fe = (FrameworkElement)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
                     fe.Loaded += Grid_Loaded;
                     return fe;
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                 }
             }
@@ -1318,21 +1295,43 @@ namespace Dash
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+                TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
             var editTextFields = g.GetDescendantsOfType<EditableTextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
             foreach (var fieldReplacement in editTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                TextingBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+                TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
             var richTextFields = g.GetDescendantsOfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                RichTextBox.SetupTextBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+                RichTextBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var imageFields = g.GetDescendantsOfType<EditableImage>().Where((rtv) => rtv.Name.StartsWith("xImageField"));
+            foreach (var fieldReplacement in imageFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xImageField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                ImageBox.SetupBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey,  null);
+            }
+            var pdfFields = g.GetDescendantsOfType<PdfView>().Where((rtv) => rtv.Name.StartsWith("xPdfField"));
+            foreach (var fieldReplacement in pdfFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xPdfField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                PdfBox.SetupPdfBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
+            }
+            var listFields = g.GetDescendantsOfType<CollectionView>().Where((rtv) => rtv.Name.StartsWith("xCollectionField"));
+            foreach (var fieldReplacement in listFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xCollectionField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                var cvm = new CollectionViewModel(this, fieldKey);
+                fieldReplacement.DataContext = cvm;
             }
         }
 
@@ -1413,6 +1412,27 @@ namespace Dash
         }
 
         /// <summary>
+        /// This acts the same as <see cref="AddFieldUpdatedListener"/> except it adds a weak handler, and so should usually be used  instead if adding an event from a view
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="instance"></param>
+        /// <param name="key"></param>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        public WeakEventListener<T, DocumentController, DocumentFieldUpdatedEventArgs>
+            AddWeakFieldUpdatedListener<T>(T instance, KeyController key,
+            Action<T, DocumentController, DocumentFieldUpdatedEventArgs> handler) where T : class
+        {
+            var weakHandler = new WeakEventListener<T, DocumentController, DocumentFieldUpdatedEventArgs>(instance)
+            {
+                OnEventAction = handler,
+                OnDetachAction = listener => RemoveFieldUpdatedListener(key, listener.OnEvent)
+            };
+            AddFieldUpdatedListener(key, weakHandler.OnEvent);
+            return weakHandler;
+        }
+
+        /// <summary>
         /// Removes a field listener associated with the given key's update event.
         /// </summary>
         public void RemoveFieldUpdatedListener(KeyController key, DocumentUpdatedHandler handler)
@@ -1427,7 +1447,7 @@ namespace Dash
 
         static string spaces = "";
 
-        void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
+        void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args)
         {
             // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
             //TODO: If operators are added, the operator should be run, and if an operator is removed it's outputs should maybe be removed
@@ -1436,8 +1456,8 @@ namespace Dash
                 return;
             }
             spaces += "  ";
-            ShouldExecute(newContext, args.Reference.FieldKey, args);
-            OnDocumentFieldUpdated(this, args, newContext, true);
+            ShouldExecute(args.Reference.FieldKey, args);
+            OnDocumentFieldUpdated(this, args, true);
             try
             {
                 spaces = spaces.Substring(2);
@@ -1456,16 +1476,16 @@ namespace Dash
         /// listeners to <see cref="DocumentFieldUpdated"/>
         /// </summary>
         /// <param name="updateDelegates">whether to bubble event down to delegates</param>
-        private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
+        private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {
             // this invokes listeners which have been added on a per key level of granularity
             if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
-                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
 
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
             {
-                OnFieldModelUpdated(args, c);
+                OnFieldModelUpdated(args);
             }
 
             // bubbles event down to delegates
@@ -1476,7 +1496,7 @@ namespace Dash
             foreach (var d in GetDelegates().TypedData)
             {
                 if (d.GetField(args.Reference.FieldKey, true) == null)
-                    d.generateDocumentFieldUpdatedEvents(args, c);
+                    d.generateDocumentFieldUpdatedEvents(args);
             }
         }
 

@@ -36,7 +36,7 @@ namespace Dash
             ((DocumentController) DataContext)?.AddFieldUpdatedListener(KeyStore.PresentationTitleKey, OnPresTitleKeyUpdated);
         }
 
-        private void OnPresTitleKeyUpdated(DocumentController dc, DocumentController.DocumentFieldUpdatedEventArgs dArgs, Context context)
+        private void OnPresTitleKeyUpdated(DocumentController dc, DocumentController.DocumentFieldUpdatedEventArgs dArgs)
         {
             if (dArgs.OldValue == null && dArgs.NewValue != null) SetCustomTitleBinding(dc);
             else if (dArgs.NewValue == null) SetTitleBinding(dc);

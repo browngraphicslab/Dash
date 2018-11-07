@@ -73,9 +73,9 @@ namespace Dash
     {
         private DocumentController _parentDocument;
 
-
         private GraphNodeView _selectedNode;
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.Graph;
 
         public CollectionGraphView()
         {

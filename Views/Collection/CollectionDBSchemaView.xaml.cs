@@ -42,6 +42,8 @@ namespace Dash
 
         private ListController<KeyController> Keys { get; set; }
 
+        public CollectionViewType ViewType => CollectionViewType.Schema;
+
         public CollectionDBSchemaView()
         {
             InitializeComponent();
@@ -215,8 +217,7 @@ namespace Dash
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking,
-                200, 200).Document;
+            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Stacking, 200, 200).Document;
             var docs = newDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
             int placement = 0;
             foreach (var key in Keys)

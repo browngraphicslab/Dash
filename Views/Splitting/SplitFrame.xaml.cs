@@ -315,7 +315,7 @@ namespace Dash
                                           DataPackageOperation.None;
 
                     var docs = await CollectionViewModel.AddDroppedDocuments(this, docsToAdd, dragModel, isMoving, null);
-                    var doc = docs.Count == 1 ? docs[0] :  new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, collectedDocuments: docs).Document;
+                    var doc = docs.Count == 1 ? docs[0] :  new CollectionNote(new Point(), CollectionViewType.Freeform, collectedDocuments: docs).Document;
 
                     Split(dir, doc, true);
                     e.DataView.ReportOperationCompleted(e.AcceptedOperation);

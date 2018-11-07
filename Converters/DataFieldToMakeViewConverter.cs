@@ -36,15 +36,15 @@ namespace Dash.Converters
             }
             if (data is ImageController img)
             {
-                currView = ImageBox.MakeView(_docController, _context);
+                currView = ImageBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             if (data is PdfController)
             {
-                currView = PdfBox.MakeView(_docController, _context);
+                currView = PdfBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             if (data is VideoController)
             {
-                currView = VideoBox.MakeView(_docController, _context);
+                currView = VideoBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             else if (data is AudioController)
             {

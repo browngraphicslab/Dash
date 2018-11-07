@@ -16,7 +16,7 @@ namespace Dash
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
         
-        public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
+        public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
@@ -39,9 +39,9 @@ namespace Dash
                 //Debug.Assert(collectionController != null);
                 var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey);
 
-                var view = new CollectionView(collectionViewModel);
+                var view = new CollectionView() { DataContext = collectionViewModel };
 
-                void docContextChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
+                void docContextChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
                     collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
                 }

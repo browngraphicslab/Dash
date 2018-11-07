@@ -50,7 +50,7 @@ namespace Dash
                 });
 
                 Visibility = Visibility.Collapsed;
-                xViewModesDropdown.ItemsSource = Enum.GetValues(typeof(CollectionView.CollectionViewType));
+                xViewModesDropdown.ItemsSource = Enum.GetValues(typeof(CollectionViewType));
             };
 
 			xBackgroundColorPicker.SetOpacity(200);
@@ -151,7 +151,8 @@ namespace Dash
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    _collection.SetView((CollectionView.CollectionViewType) xViewModesDropdown.SelectedItem);
+                    _collection.ViewModel.ViewType = (CollectionViewType)xViewModesDropdown.SelectedItem;
+                    //_collection.SetView((CollectionView.CollectionViewType) xViewModesDropdown.SelectedItem);
                 }
             }
 
@@ -170,7 +171,7 @@ namespace Dash
         public void SetCollectionBinding(CollectionView thisCollection, DocumentController docController)
         {
             _collection = thisCollection;
-            xViewModesDropdown.SelectedIndex = Array.IndexOf(Enum.GetValues(typeof(CollectionView.CollectionViewType)), _collection.ViewModel.ViewType);
+            xViewModesDropdown.SelectedIndex = Array.IndexOf(Enum.GetValues(typeof(CollectionViewType)), _collection.CurrentView.ViewType);
 	        _docController = docController;
             var fitting = _collection.ViewModel.ContainerDocument.GetFitToParent();
             if (fitting)

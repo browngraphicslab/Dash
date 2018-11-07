@@ -100,7 +100,10 @@ namespace Dash
         public double Width
         {
             get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
-            set => LayoutDocument.SetWidth(value);
+            set {
+                LayoutDocument.SetWidth(value);
+                OnPropertyChanged("Width");
+            }
         }
         public double Height
         {
@@ -178,7 +181,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context)
+        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             // filter out callbacks on prototype from delegate
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
@@ -215,7 +218,7 @@ namespace Dash
         /// <param name="doc"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
+        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args)
         {
             Content = null;
             //if (args.Action == FieldUpdatedAction.Remove)

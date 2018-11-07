@@ -366,7 +366,7 @@ namespace Dash
                 [typeof(FieldControllerBase)] = TypeInfo.Any,
                 [typeof(RectController)] = TypeInfo.Rectangle,
                 [typeof(KeyController)] = TypeInfo.Key,
-                [typeof(BaseListController)] = TypeInfo.List,
+                [typeof(IListController)] = TypeInfo.List,
                 [typeof(NumberController)] = TypeInfo.Number,
                 [typeof(BoolController)] = TypeInfo.Bool,
             };

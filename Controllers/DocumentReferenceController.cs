@@ -13,20 +13,18 @@ namespace Dash
         public DocumentController DocumentController
         {
             get => _documentController;
-            set => SetDocumentController(value, true);
-        }
-
-        private void SetDocumentController(DocumentController doc, bool withUndo)
-        {
-            var oldDoc = _documentController;
-            var newDoc = doc;
-            _documentController = doc;
-            (Model as DocumentReferenceModel).DocumentId = doc.Id;
-            UndoCommand command = withUndo ? new UndoCommand(() => SetDocumentController(newDoc, false), () => SetDocumentController(oldDoc, false)) : null;
-            ReferenceField(doc);
-            UpdateOnServer(command);
-            ReleaseField(oldDoc);
-            DocumentChanged();
+            set
+            {
+                var oldDoc = _documentController;
+                _documentController = value;
+                ((DocumentReferenceModel) Model).DocumentId = value.Id;
+                UndoCommand command = new UndoCommand(() => DocumentController = value,
+                    () => DocumentController = oldDoc);
+                ReferenceField(value);
+                UpdateOnServer(command);
+                ReleaseField(oldDoc);
+                DocumentChanged();
+            }
         }
 
         public DocumentReferenceController(DocumentController doc, KeyController key, bool copyOnWrite = false) : base(new DocumentReferenceModel(doc.Id, key.Id, copyOnWrite))

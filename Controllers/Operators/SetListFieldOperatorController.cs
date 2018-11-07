@@ -47,18 +47,14 @@ namespace Dash
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //TODO ScriptLang - Why is varName needed here
-            var varName = (inputs[VariableNameKey] as TextController)?.Data;
-            var varList = (inputs[VariableKey] as BaseListController)?.Data;
-            var varIndex = (int)(inputs[IndexKey] as NumberController)?.Data;
+            var varList = (IListController)inputs[VariableKey];
+            var varIndex = (int)((NumberController) inputs[IndexKey]).Data;
             var newValue = inputs[ValueKey];
 
-            if (varName != null && varList != null && newValue != null)
+            if (varList != null && newValue != null)
             {
                 //set given element in list to desired value
-                varList[varIndex] = newValue;
-
-                //save new list into scope using varName
-                scope.SetVariable(varName, new ListController<FieldControllerBase>(varList));
+                varList.SetValue(varIndex, newValue);
             }
             
             outputs[ResultsKey] = newValue;

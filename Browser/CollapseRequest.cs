@@ -37,12 +37,12 @@ namespace Dash
                             note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
                             note.Document.SetHeight(45);
                             var pdfLayout = await new PdfToDashUtil().UriToDoc(uri);
-                            pdfLayout.SetHeight(MainPage.Instance.ActualHeight - 45);
+                            pdfLayout.SetHeight(MainPage.Instance.ActualHeight - 110);
                             pdfLayout.SetWidth(double.NaN);
                             pdfLayout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
                             pdfLayout.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Top);
                             var docs = new List<DocumentController>(new DocumentController[] { note.Document, pdfLayout });
-                            dockedPdfView = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking, double.NaN, double.NaN, docs).Document;
+                            dockedPdfView = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Stacking, double.NaN, double.NaN, docs).Document;
                             Recent.Add(uri, dockedPdfView);
                         }
 

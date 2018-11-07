@@ -133,7 +133,7 @@ namespace Dash
                         Debug.WriteLine(e);
                     }
                 }
-                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
+                var cnote = new CollectionNote(where, CollectionViewType.Schema, 200, 200, outputCollection);
                 return cnote.Document;
             }
             else
@@ -189,7 +189,7 @@ namespace Dash
 	                }
 	                else
 					{
-						return new HtmlNote(link.AbsoluteUri, where: where).Document;
+						return new HtmlNote(link.AbsoluteUri, where: where, size: new Size(double.NaN, double.NaN)).Document;
 					}
 
 				case FileType.Pdf:

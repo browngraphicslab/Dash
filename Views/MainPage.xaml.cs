@@ -164,7 +164,7 @@ namespace Dash
             }
             else
             {
-                MainDocument = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                MainDocument = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                 MainDocument.DocumentType = DashConstants.TypeStore.MainDocumentType;
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
@@ -188,7 +188,7 @@ namespace Dash
             DocumentController lastWorkspace;
             if (col.Count == 0)
             {
-                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 col.Add(documentController);
                 lastWorkspace = documentController;
             }
@@ -279,8 +279,7 @@ namespace Dash
 
             if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is Dash.Views.TreeView.TreeViewNode))
             {
-                var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-                if (ctrlDown)
+                if (this.IsCtrlPressed())
                 {
                     if (e.VirtualKey == VirtualKey.Z)
                     {
@@ -427,7 +426,7 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                 xMap.SetFitToParent(true);
                 xMap.SetWidth(double.NaN);
                 xMap.SetHeight(double.NaN);
@@ -820,6 +819,7 @@ namespace Dash
             else
             {
                 //Dock_Link(linkDoc, direction);
+                //target.SetHidden(false);
                 ToggleFloatingDoc(target);
             }
 
@@ -908,24 +908,6 @@ namespace Dash
         {
             xOverlay.Visibility = Visibility.Visible;
         }
-
-        public void TogglePopup()
-        {
-            //xLoadingPopup.HorizontalOffset = ((Frame)Window.Current.Content).ActualWidth / 2 - 200 - (xLeftGrid.ActualWidth / 2);
-            //xLoadingPopup.VerticalOffset = ((Frame)Window.Current.Content).ActualHeight / 2 - 150;
-            //xLoadingPopup.IsOpen = true;
-            //Load.Begin();
-        }
-
-        public void ClosePopup()
-        {
-            //Load.Stop();
-            //xLoadingPopup.HorizontalOffset = 0;
-            //xLoadingPopup.VerticalOffset = 0;
-            //xLoadingPopup.IsOpen = false;
-
-        }
-
 
         private void SetUpToolTips()
         {
