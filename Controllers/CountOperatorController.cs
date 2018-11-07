@@ -41,7 +41,7 @@ namespace Dash
         {
             switch (inputs[InputKey])
             {
-                case BaseListController list:
+                case IListController list:
                     outputs[LengthKey] = new NumberController(list.Count);
                     break;
                 case TextController text:

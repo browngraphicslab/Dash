@@ -108,7 +108,6 @@ namespace Dash
                 index++;
             }
             alphabet.Dispose();
-            functionNames.Indexed = false;
             return functionNames;
         }
 

@@ -42,8 +42,8 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var listA = (BaseListController) inputs[ListAKey];
-            var listB = (BaseListController) inputs[ListBKey];
+            var listA = (IListController) inputs[ListAKey];
+            var listB = (IListController) inputs[ListBKey];
 
             var typeA = listA.ListSubTypeInfo;
             var typeB = listB.ListSubTypeInfo;
@@ -53,10 +53,8 @@ namespace Dash
             var countB = listB.Count;
             if (countA != countB) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeA, typeB, InvalidListOperationErrorModel.OpError.ZipLength, countA, countB));
 
-            var actualA = listA?.Data;
-            var actualB = listB?.Data;
-            var type = listA?.ListSubTypeInfo;
-            var count = actualA?.Count;
+            var type = listA.ListSubTypeInfo;
+            var count = listA.Count;
 
             var zipped = new ListController<FieldControllerBase>();
             for (var i = 0; i < count; i++)
@@ -65,15 +63,15 @@ namespace Dash
                 {
                     case TypeInfo.Text:
                     {
-                        var elA = ((TextController)actualA[i]).Data;
-                        var elB = ((TextController)actualB[i]).Data;
+                        var elA = ((TextController)listA.GetValue(i)).Data;
+                        var elB = ((TextController)listB.GetValue(i)).Data;
                         zipped.Add(new TextController(elA + elB));
                             break;
                     }
                     case TypeInfo.Number:
                     {
-                        var elA = ((NumberController)actualA[i]).Data;
-                        var elB = ((NumberController)actualB[i]).Data;
+                        var elA = ((NumberController)listA.GetValue(i)).Data;
+                        var elB = ((NumberController)listB.GetValue(i)).Data;
                         zipped.Add(new NumberController(elA + elB));
                         break;
                     }

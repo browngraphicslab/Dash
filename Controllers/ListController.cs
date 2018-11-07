@@ -26,27 +26,26 @@ namespace Dash
         }
     }
 
-    public class ListController<T> : BaseListController, /*/*INotifyCollectionChanged, */IList<T> where T : FieldControllerBase
+    public class ListController<T> :FieldModelController<ListModel>, IListController, /*/*INotifyCollectionChanged, */IList<T> where T : FieldControllerBase
     {
         private const bool AvoidDuplicates = false;
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        #region // DATA //
+        public override TypeInfo TypeInfo => TypeInfo.List;
 
-        // @BaseListController //
-        /*
-         * Overriden data accessor casts the list type to FieldControllerBase
-         */
-        public override List<FieldControllerBase> Data
+
+        public FieldControllerBase AsField()
         {
-            get => TypedData.Cast<FieldControllerBase>().ToList();
-            set
-            {
-                TypedData = value.Cast<T>().ToList();
-                //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace));
-            }
+            return this;
         }
+
+        public IEnumerable<FieldControllerBase> AsEnumerable()
+        {
+            return this;
+        }
+
+        #region // DATA //
 
         //private void OnCollectionChanged(NotifyCollectionChangedEventArgs args) => CollectionChanged?.Invoke(this, args);
 
@@ -61,6 +60,8 @@ namespace Dash
         }
 
         public bool IsEmpty => Count == 0;
+
+        public int Count => _typedData.Count;
 
         public void Set(IEnumerable<T> elements)
         {
@@ -88,6 +89,11 @@ namespace Dash
 
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, targetList, prevList, 0));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, targetList, prevList));
+        }
+
+        public void Set(IEnumerable<FieldControllerBase> fmcs)
+        {
+            Set(fmcs.OfType<T>());
         }
 
         #endregion
@@ -155,7 +161,6 @@ namespace Dash
         private void ConstructorHelper(bool readOnly)
         {
             IsReadOnly = readOnly;
-            Indexed = true;
         }
 
         protected override IEnumerable<FieldControllerBase> GetReferencedFields()
@@ -264,7 +269,7 @@ namespace Dash
         /*
          * Gets the type of the elements in the actual list
          */
-        public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
+        public TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
 
         /*
          * Creates and returns a duplicate of this ListController and its underlying data
@@ -357,7 +362,7 @@ namespace Dash
 
         #region // ADDITION AND INSERTION //
 
-        public override void AddBase(FieldControllerBase element)
+        public void AddBase(FieldControllerBase element)
         {
             if (element is T checkedElement) Add(checkedElement);
         }
@@ -391,12 +396,12 @@ namespace Dash
             return true;
         }
 
-        public override void AddRange(IEnumerable<FieldControllerBase> elements)
+        public void AddRange(IEnumerable<FieldControllerBase> elements)
         {
             AddRange(elements.OfType<T>().ToList());
         }
 
-        public override void SetValue(int index, FieldControllerBase field)
+        public void SetValue(int index, FieldControllerBase field)
         {
             if (field is T tValue)
             {
@@ -404,7 +409,7 @@ namespace Dash
             }
         }
 
-        public override FieldControllerBase GetValue(int index)
+        public FieldControllerBase GetValue(int index)
         {
             return this[index];
         }
@@ -464,7 +469,7 @@ namespace Dash
 
         #region // REMOVAL //
 
-        public override void Remove(FieldControllerBase element)
+        public void Remove(FieldControllerBase element)
         {
             if (element is T checkedElement) Remove(checkedElement);
         }
@@ -614,5 +619,23 @@ namespace Dash
         }
 
         #endregion
+
+        public override bool CheckType(FieldControllerBase fmc)
+        {
+            bool isList = base.CheckType(fmc);
+            if (isList)
+            {
+                if (!(fmc is IListController list))
+                {
+                    return false;
+                }
+                Debug.Assert((list.ListSubTypeInfo & ListSubTypeInfo) != TypeInfo.None);
+                return (list.ListSubTypeInfo & ListSubTypeInfo) != TypeInfo.None;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

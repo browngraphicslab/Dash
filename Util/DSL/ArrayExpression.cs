@@ -42,14 +42,14 @@ namespace Dash
 
             typeInfo = typeInfo == TypeInfo.None ? TypeInfo.Any : typeInfo;
 
-            var lc = (BaseListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
+            var lc = (IListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
             foreach (var item in outputList)
             {
                 lc.AddBase(item);
             }
             //lc.AddRange(outputList);
 
-            return (lc, ControlFlowFlag.None);
+            return (lc.AsField(), ControlFlowFlag.None);
         }
     }
 }

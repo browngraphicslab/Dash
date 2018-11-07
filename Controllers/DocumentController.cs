@@ -432,7 +432,7 @@ namespace Dash
                 // if we're removing a document then we need to check if our delegates contain a delegate of the removed document and remove that.
                 if (value is DocumentController && items != null)
                 {
-                    foreach (var delegateValue in items.Data.OfType<DocumentController>().Where((d) => d.IsDelegateOf(value as DocumentController)).ToArray())
+                    foreach (var delegateValue in items.OfType<DocumentController>().Where((d) => d.IsDelegateOf(value as DocumentController)).ToArray())
                     {
                         delegDoc.RemoveFromListField<DocumentController>(key, delegateValue);
                     }

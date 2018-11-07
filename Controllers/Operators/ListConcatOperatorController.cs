@@ -43,17 +43,17 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var listA = (BaseListController) inputs[ListAKey];
-            var listB = (BaseListController) inputs[ListBKey];
+            var listA = (IListController) inputs[ListAKey];
+            var listB = (IListController) inputs[ListBKey];
 
             var typeA = listA.ListSubTypeInfo;
             var typeB = listB.ListSubTypeInfo;
 
             if (typeA != typeB) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeA, typeB, InvalidListOperationErrorModel.OpError.ConcatType));
 
-            var l = (BaseListController) listA.Copy();
-            l.AddRange(listB.Data);
-            outputs[ResultsKey] = l;
+            var l = (IListController) listA.AsField().Copy();
+            l.AddRange(listB.AsEnumerable());
+            outputs[ResultsKey] = l.AsField();
             return Task.CompletedTask;
         }
 

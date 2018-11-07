@@ -25,8 +25,7 @@ namespace Dash
             scope = new Scope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
             var (field, _) = await _listToExecute.Execute(scope);
-            var list = field as BaseListController;
-            if (list == null)
+            if (!(field is IListController list))
             {
                 return (null, ControlFlowFlag.None);
             }
