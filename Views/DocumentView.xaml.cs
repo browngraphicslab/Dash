@@ -293,7 +293,7 @@ namespace Dash
                 foreach (DocumentController l in docs)
                 {
                     l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
-                    l.SetField<BoolController>(KeyStore.HiddenKey, allVisible, true);
+                    l.SetHidden(allVisible);
                 }
             }
         }

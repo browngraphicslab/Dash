@@ -43,7 +43,6 @@ namespace Dash
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
         private StorageFile       _file;
         private double            _pdfMaxWidth;
-        private DocumentViewModel _lastVm = null;
         public PdfAnnotationView                  DefaultView => _botPdf;
         public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
         public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
@@ -67,12 +66,7 @@ namespace Dash
         public PdfView()
         {
             InitializeComponent();
-            Loaded += (s, e) =>
-            {
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
-                _lastVm = DataContext as DocumentViewModel;
-            };
-            Unloaded += (s,e) => _lastVm.LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdatedFieldChanged);
+            Loaded += (s, e) =>  LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
             SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
@@ -90,6 +84,8 @@ namespace Dash
                 }
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
+
+            _botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
         ~PdfView()
         {
@@ -146,21 +142,25 @@ namespace Dash
         }
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (_botPdf.AnnotationOverlay.RegionDocsList.Contains(linkDoc.GetDataDocument()
-                .GetField<DocumentController>(KeyStore.LinkSourceKey)))
+            var activePdf = _topPdf.ActiveView ? _topPdf : _botPdf;
+            var source = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+            if (activePdf.AnnotationOverlay.RegionDocsList.Contains(source))
             {
-                var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
-                ScrollToRegion(src);
-                //return LinkHandledResult.HandledClose;
+                ScrollToRegion(source, activeView: activePdf);
+                var src = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(source.GetDataDocument())).FirstOrDefault();
+                if (src != null)
+                {
+                    src.ViewModel.LayoutDocument.ToggleHidden();
+                    return LinkHandledResult.HandledClose;
+                }
             }
-
-            var target = linkDoc.GetLinkedDocument(direction);
-            if (_botPdf.AnnotationOverlay.RegionDocsList.Contains(target))
+            var target = linkDoc.GetLinkedDocument(direction); 
+            var tgt = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument())).FirstOrDefault();
+            if (tgt != null)
             {
-                ScrollToRegion(target, linkDoc.GetLinkedDocument(direction, true));
+                tgt.ViewModel.LayoutDocument.ToggleHidden();
                 return LinkHandledResult.HandledClose;
             }
-
             return LinkHandledResult.Unhandled;
         }
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
@@ -307,7 +307,7 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void ScrollToRegion(DocumentController target, DocumentController source = null)
+        public void ScrollToRegion(DocumentController target, DocumentController source = null, PdfAnnotationView activeView=null)
         {
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets != null)
@@ -319,12 +319,19 @@ namespace Dash
                 if (firstSplit != 0)
                 {
                     _topPdf.ScrollViewer.ChangeView(null, Math.Floor(relativeOffsets.First()) - ActualHeight / 4, null);
+                    if (xFirstPanelRow.ActualHeight < 20)
+                    {
+                        xFirstPanelRow.Height = new GridLength(xSecondPanelRow.Height.Value / 2, GridUnitType.Star);
+                        xSecondPanelRow.Height = new GridLength(xSecondPanelRow.Height.Value / 2, GridUnitType.Star);
+                    }
                 }
-                xFirstPanelRow.Height  = new GridLength(firstSplit != 0 ? 1 : 0, GridUnitType.Star);
-                xSecondPanelRow.Height = new GridLength(1, GridUnitType.Star);
+                else
+                {
+                    xFirstPanelRow.Height = activeView == null ? new GridLength(0, GridUnitType.Star) : xFirstPanelRow.Height;
+                }
                 // bcz: Ugh need to update layout because the Scroll viewer may not end up in the right place if its viewport size has just changed
-                _botPdf.UpdateLayout();
-                _botPdf.ScrollViewer.ChangeView(null, (firstSplit == 0 ? relativeOffsets.First() : firstSplit) - ActualHeight / (firstSplit != 0 ? 4 : 2), null);
+                (activeView ?? _botPdf).UpdateLayout();
+                (firstSplit == 0 ? activeView ?? _botPdf : _botPdf).ScrollViewer.ChangeView(null, (firstSplit == 0 ? relativeOffsets.First() : firstSplit) - ((ActualHeight - (xFirstPanelRow.Height.Value/(xFirstPanelRow.Height.Value + xSecondPanelRow.Height.Value))*ActualHeight) / 2), null);
             }
         }
         

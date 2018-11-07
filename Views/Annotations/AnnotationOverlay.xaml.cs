@@ -108,7 +108,7 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             documentView.Visibility = Visibility.Visible;
 
-            var deselect = SelectedRegion?.IsSelected == true;
+            var deselect = SelectedRegion?.IsSelected == true; 
             var selectable = SelectableRegions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
                 foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
@@ -838,13 +838,16 @@ namespace Dash
 
         public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
-            if (linkDoc.GetDataDocument().GetLinkBehavior() == LinkBehavior.Overlay  &&
+            if (linkDoc.GetDataDocument().GetLinkBehavior() == LinkBehavior.Overlay &&
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
-                dest.ToggleHidden();
-
-                return LinkHandledResult.HandledClose;
+                var val = this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(dest.GetDataDocument())).FirstOrDefault();
+                if (val != null)
+                {
+                    val.ViewModel.LayoutDocument.ToggleHidden();
+                    return LinkHandledResult.HandledClose;
+                }
             }
 
             return LinkHandledResult.Unhandled;

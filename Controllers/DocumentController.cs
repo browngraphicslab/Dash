@@ -1130,12 +1130,19 @@ namespace Dash
                 var fieldKey = KeyController.Get(fieldName);
                 RichTextBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
+            var imageFields = g.GetDescendantsOfType<EditableImage>().Where((rtv) => rtv.Name.StartsWith("xImageField"));
+            foreach (var fieldReplacement in imageFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xImageField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                ImageBox.SetupBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey,  null);
+            }
             var pdfFields = g.GetDescendantsOfType<PdfView>().Where((rtv) => rtv.Name.StartsWith("xPdfField"));
             foreach (var fieldReplacement in pdfFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xPdfField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                PdfBox.SetupPdfBinding(fieldReplacement, GetDataDocument().GetDataDocument(), null);
+                PdfBox.SetupPdfBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
             var listFields = g.GetDescendantsOfType<CollectionView>().Where((rtv) => rtv.Name.StartsWith("xCollectionField"));
             foreach (var fieldReplacement in listFields)

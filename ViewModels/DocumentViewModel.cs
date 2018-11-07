@@ -100,7 +100,10 @@ namespace Dash
         public double Width
         {
             get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
-            set => LayoutDocument.SetWidth(value);
+            set {
+                LayoutDocument.SetWidth(value);
+                OnPropertyChanged("Width");
+            }
         }
         public double Height
         {
