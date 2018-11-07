@@ -360,9 +360,7 @@
     <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\IndexOutOfBoundsErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\InvalidListCreationErrorModel.cs" />
-    <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
-    <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
     <Compile Include="Controllers\Operators\Op.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
@@ -391,7 +389,6 @@
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToListOperatorController.cs" />
-    <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\VariableAssignOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
@@ -462,7 +459,6 @@
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\DSL\ForExpression.cs" />
-    <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
     <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
@@ -495,7 +491,6 @@
     <Compile Include="Util\DSL\Error Models\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
     <Compile Include="Util\DSL\ExpressionChain.cs" />
-    <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
     <Compile Include="Util\DSL\MapOperatorController.cs" />
     <Compile Include="Util\DSL\Error Models\MissingParameterScriptErrorModel.cs" />

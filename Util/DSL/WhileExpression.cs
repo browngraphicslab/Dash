@@ -8,34 +8,30 @@ namespace Dash
 {
     public class WhileExpression : ScriptExpression
     {
-        private readonly Op.Name _opName;
-        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly ScriptExpression _whileCondition;
+        private readonly ScriptExpression _whileBody;
 
-        private readonly FieldControllerBase _recursiveError = new TextController("ERROR - an infinite loop was created.");
-        private FieldControllerBase _output;
-
-        public WhileExpression(Op.Name opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public WhileExpression(ScriptExpression whileCondition, ScriptExpression whileBody)
         {
-            _opName = opName;
-            _parameters = parameters;
+            _whileCondition = whileCondition;
+            _whileBody = whileBody;
         }
 
         public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            var blockKey = WhileOperatorController.BlockKey;
-            
             //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
-            var timer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
+            bool timeout = false;
+            var timer = new Timer(state => timeout = true, null, 5000, Timeout.Infinite);
 
             //if there hasn't been an infinite loop timeout, keep looping
-            while (_output != _recursiveError)
+            while (!timeout)
             {
                 //see if boolean is true or false
-                var boolRes = ((BoolController)(await _parameters[WhileOperatorController.BoolKey].Execute(scope)).Item1).Data;
+                var boolRes = ((BoolController)(await _whileCondition.Execute(scope)).Item1).Data;
                  if (boolRes)
                 {
                     //boolean is true, so execute block again
-                    var (field, flags) = await _parameters[blockKey].Execute(scope);
+                    var (field, flags) = await _whileBody.Execute(scope);
                     switch (flags)
                     {
                     case ControlFlowFlag.Return:
@@ -47,26 +43,20 @@ namespace Dash
                 else
                 {
                     //now that boolean is false, give it a null input and stop looping
-                    break;
+                    return (null, ControlFlowFlag.None);
                 }
             }
 
-            return (null, ControlFlowFlag.None);
+            throw new ScriptExecutionException(new TextErrorModel("Error: while loop timed out. Check for infinite loops or increase the timeout"));
         }
 
-        //set the output to an infinite recursion error
-        private void WhileTimeout(object status) => _output = _recursiveError;
-
-        public Op.Name GetOperatorName() => _opName;
-
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams() => _parameters;
-
+        public Op.Name GetOperatorName() => Op.Name.invalid;
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
             throw new NotImplementedException();
         }
 
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Name.invalid);
     }
 }

@@ -85,4 +85,46 @@ public sealed class NowOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.to_string)]
+public sealed class ToStringOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController InputKey = KeyController.Get("Input");
+
+    //Output Keys
+    public static readonly KeyController ResultKey = KeyController.Get("Result");
+
+    public ToStringOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public ToStringOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("ToStringOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new ToStringOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(InputKey, new IOInfo(DashShared.TypeInfo.Any, false)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [ResultKey] = DashShared.TypeInfo.Text,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var input = inputs[InputKey] as FieldControllerBase;
+        var result = Dash.UtilFunctions.ToString(input);
+        outputs[ResultKey] = result;
+        return Task.CompletedTask;
+    }
+
+}
+
 }

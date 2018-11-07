@@ -5,16 +5,12 @@ namespace Dash
 {
     public class ForInExpression : ScriptExpression
     {
-        private readonly Op.Name _opName;
-
         private readonly string _subVarName;
         private readonly ScriptExpression _listToExecute;
         private readonly ExpressionChain _bodyToExecute;
 
-        public ForInExpression(Op.Name opName, string subVarName, ScriptExpression listToExecute, ExpressionChain bodyToExecute)
+        public ForInExpression(string subVarName, ScriptExpression listToExecute, ExpressionChain bodyToExecute)
         {
-            _opName = opName;
-
             _subVarName = subVarName;
             _listToExecute = listToExecute;
             _bodyToExecute = bodyToExecute;
@@ -47,10 +43,10 @@ namespace Dash
             return (null, ControlFlowFlag.None);
         }
 
-        public Op.Name GetOperatorName() => _opName;
+        public Op.Name GetOperatorName() => Op.Name.invalid;
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();
 
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Name.invalid);
     }
 }
