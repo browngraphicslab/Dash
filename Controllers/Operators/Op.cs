@@ -205,7 +205,12 @@ namespace Dash
             audio,
             color,
             now,
-            pdf
+            pdf,
+            max,
+            min,
+            sin,
+            cos,
+            tan
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

@@ -187,9 +187,13 @@
     <Compile Include="Controllers\Functions\DocumentationFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\Functions\MathFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
     <Compile Include="Controllers\Functions\Operators\ConstructorFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\MathFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
@@ -234,6 +238,7 @@
     <Compile Include="Popups\TextInputPopup.xaml.cs">
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\DSL\TernaryExpression.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
     <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />

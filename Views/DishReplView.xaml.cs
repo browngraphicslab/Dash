@@ -232,7 +232,7 @@ namespace Dash
             var selectLength = 0;
             if (text.TrimStart().Length >= "for ".Length && text.Substring(text.Length - "for ".Length).Equals("for "))
             {
-                while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
+                while (_scope.TryGetVariable(Alphabet[_forIndex].ToString(), out var _) || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
 
                 stringLength = 4;
 
@@ -246,7 +246,7 @@ namespace Dash
             {
                 stringLength = 6;
 
-                var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
+                var varExp = _scope.TryGetVariable("item", out var _) ? "" : "var ";
                 newText = text.Substring(0, text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
                 selectOffset = 12;
 
@@ -254,7 +254,7 @@ namespace Dash
             else if (text.TrimStart().Length >= "forin? ".Length && text.Substring(text.Length - "forin? ".Length).Equals("forin? "))
             {
                 stringLength = 7;
-                var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
+                var varExp = _scope.TryGetVariable("res", out var _) ? "" : "var ";
                 newText = text.Substring(0, text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
                 selectOffset = 12;
                 selectLength = 0;
@@ -262,7 +262,7 @@ namespace Dash
             else if (text.TrimStart().Length >= "forin+ ".Length && text.Substring(text.Length - "forin+ ".Length).Equals("forin+ "))
             {
                 var ret = text.TrimStart().Length == 7 ? "" : "\r";
-                while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
+                while (_scope.TryGetVariable("var myList" + _forInIndex, out var _) || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
 
                 var newList = "myList" + _forInIndex;
                 _takenNumbers.Add(_forInIndex);

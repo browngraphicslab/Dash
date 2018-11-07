@@ -41,7 +41,7 @@ namespace Dash
                 case ControlFlowFlag.Break:
                     break;
                 }
-                list.SetValue(i, scope.GetVariable(_subVarName));
+                //list.SetValue(i, scope.GetVariable(_subVarName));
             }
 
             return (null, ControlFlowFlag.None);

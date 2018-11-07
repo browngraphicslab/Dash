@@ -628,7 +628,9 @@ namespace Dash
                 }
                 break;
             case SyntaxKind.ConditionalExpression:
-                break;
+                var cNode = (ConditionalExpression) node;
+
+                return new TernaryExpression(ParseToExpression(cNode.Condition), ParseToExpression(cNode.WhenTrue), ParseToExpression(cNode.WhenFalse));
             case SyntaxKind.TemplateExpression:
                 break;
             case SyntaxKind.YieldExpression:

@@ -31,7 +31,7 @@ namespace Dash
 
         public override void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
-            if (GetVariable(variableName) != null) return;
+            if (TryGetVariable(variableName, out var _)) return;
             _dictionary[variableName] = valueToSet;
 
             //add varible to autosuggest option
