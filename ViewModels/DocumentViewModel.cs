@@ -19,6 +19,8 @@ namespace Dash
         private bool               _showLocalContext;
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
+        private SolidColorBrush    _searchHighlightBrush;
+        private bool               _isDimensionless = false;
 
         public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
 
@@ -42,13 +44,11 @@ namespace Dash
             DocumentController.AddFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
-
         public void UnLoad()
         {
             DocumentController.RemoveFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
             _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
-
 
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
@@ -60,11 +60,9 @@ namespace Dash
             get => _showLocalContext;
             set => SetProperty(ref _showLocalContext, value);
         }
-
-        private SolidColorBrush _searchHighlightBrush;
-        private bool _isNotBackgroundPinned = true;
         
-        public bool IsDimensionless = false;
+        public bool Undecorated { get; set; }
+        public bool IsDimensionless { get => _isDimensionless; set => _isDimensionless = value; }
         public bool AreContentsHitTestVisible
         {
             get => DocumentController.GetAreContentsHitTestVisible();
@@ -80,11 +78,6 @@ namespace Dash
         {
             get => DocumentController.GetIsAdornment();
             set => DocumentController.SetIsAdornment(value);
-        }
-        public bool IsButton
-        {
-            get => DocumentController.GetIsButton();
-            set => DocumentController.SetIsButton(value);
         }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
@@ -107,7 +100,10 @@ namespace Dash
         public double Width
         {
             get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
-            set => LayoutDocument.SetWidth(value);
+            set {
+                LayoutDocument.SetWidth(value);
+                OnPropertyChanged("Width");
+            }
         }
         public double Height
         {
@@ -122,7 +118,6 @@ namespace Dash
         public bool DragWithinParentBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
         public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
-        public string Title { get => DataDocument.Title; }
 
         protected bool Equals(DocumentViewModel other)
         {
@@ -153,7 +148,6 @@ namespace Dash
             }
         }
 
-        public bool Undecorated { get; set; }
         public Thickness SearchHighlightState
         {
             get => _searchHighlightState;
@@ -187,7 +181,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context)
+        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             // filter out callbacks on prototype from delegate
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
@@ -224,7 +218,7 @@ namespace Dash
         /// <param name="doc"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
+        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args)
         {
             Content = null;
             //if (args.Action == FieldUpdatedAction.Remove)

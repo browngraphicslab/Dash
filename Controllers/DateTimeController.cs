@@ -2,7 +2,7 @@
 using System;
 using Dash.Controllers.Operators;
 
-namespace Dash.Controllers
+namespace Dash
 {
     /// <summary>
     /// An implementation of FieldModelController, DateTimeController models a controller that stores Data of type DateTime
@@ -83,25 +83,17 @@ namespace Dash.Controllers
             {
                 if (DateTimeFieldModel.Data != value)
                 {
-                    SetData(value);
+            DateTime data = DateTimeFieldModel.Data;
+            var newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+            DateTimeFieldModel.Data = value;
+            UpdateOnServer(newEvent);
+            OnFieldModelUpdated(null);
                 }
             }
         }
 
         public override string ToString() => DateTimeFieldModel.Data.ToString("G");
-
-        /*
-         * Sets the data property and gives UpdateOnServer an UndoCommand 
-         */
-        private void SetData(DateTime val, bool withUndo = true)
-        {
-            DateTime data = DateTimeFieldModel.Data;
-            var newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            DateTimeFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
 
         /*
          * Returns a StringSearchModel based on the text query submitted and the contents of this instance's Data (DateTime)

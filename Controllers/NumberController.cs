@@ -36,13 +36,6 @@ namespace Dash
         }
         public override bool TrySetValue(object value)
         {
-            var data = value as double?;
-            if (value is double?)
-            {
-                if (Data != (double)data.Value)
-                    Data = (double)data.Value;
-                return true;
-            }
             if (value is double dub)
             {
                 Data = dub;
@@ -64,24 +57,18 @@ namespace Dash
         public double Data
         {
             get => NumberFieldModel.Data;
-            set {
-                if (NumberFieldModel.Data != value) {
-                    SetData(value);
+            set
+            {
+                if (NumberFieldModel.Data != value)
+                {
+                    double data = NumberFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    NumberFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(double val, bool withUndo = true)
-        {
-            double data = NumberFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            NumberFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Number;
@@ -94,7 +81,7 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             var reg = new System.Text.RegularExpressions.Regex(searchString);
-            return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
+            return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
         }
 
         public override string ToScriptString(DocumentController thisDoc = null)

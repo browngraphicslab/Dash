@@ -53,14 +53,14 @@ namespace Dash
             }
         }
 
-        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
             XTextFieldBox.Text = RESTClient.Instance.Fields.GetController<KeyController>(tfmc.Data).Name;
 
         }
 
-        private void OnInputCollectionChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnInputCollectionChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             InputCollection = args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
             _allHeaders = Util.GetDisplayableTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!

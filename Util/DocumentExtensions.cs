@@ -66,7 +66,7 @@ namespace Dash
             var docs = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             if (docs != null)
             {
-                var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN,
+                var snap = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN,
                     copyData ? docs.Select(doc => doc.GetDataCopy()) : docs.Select(doc => doc.GetViewCopy())).Document;
 
                 var snapshots = collection.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.SnapshotsKey);

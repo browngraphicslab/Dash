@@ -35,7 +35,7 @@ namespace Dash
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var source = inputs[SourceKey];
-            BaseListController newList = null;
+            IListController newList = null;
 
             //TODO Use operator overloading instead of typeswitching
             switch (source.TypeInfo)
@@ -56,7 +56,7 @@ namespace Dash
                     break;
             }
 
-            outputs[ComputedResultKey] = newList ?? throw new ScriptExecutionException(new InvalidListCreationErrorModel(source.TypeInfo));
+            outputs[ComputedResultKey] = newList?.AsField() ?? throw new ScriptExecutionException(new InvalidListCreationErrorModel(source.TypeInfo));
             return Task.CompletedTask;
         }
 

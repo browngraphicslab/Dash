@@ -18,7 +18,7 @@ namespace Dash
 
         public InkController() : base(new InkModel())
         {
-            UpdateStrokesFromList(new List<InkStroke>(), false);
+            UpdateStrokesFromList(new List<InkStroke>());
         }
 
         public InkController(string inkData) : base(new InkModel(inkData))
@@ -69,7 +69,7 @@ namespace Dash
         /// <summary>
         /// Method to allow InkCanvasControls to change data of InkFieldModelController when ink input is registered.
         /// </summary>
-        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes, bool withUndo = true)
+        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes)
         {
             IEnumerable<InkStroke> oldStrokes = _strokeContainer.GetStrokes();
             _strokeContainer.Clear();
@@ -86,10 +86,10 @@ namespace Dash
             }
             string data = JsonConvert.SerializeObject(stream.ToArray());
             stream.Dispose();
-            var newEvent = new UndoCommand(() => UpdateStrokesFromList(inkStrokes, false), () => UpdateStrokesFromList(oldStrokes, false));
+            var newEvent = new UndoCommand(() => UpdateStrokesFromList(inkStrokes), () => UpdateStrokesFromList(oldStrokes));
 
             InkFieldModel.Data = data;
-            UpdateOnServer(withUndo ? newEvent : null);
+            UpdateOnServer(newEvent);
             OnFieldModelUpdated(null);
         }
 

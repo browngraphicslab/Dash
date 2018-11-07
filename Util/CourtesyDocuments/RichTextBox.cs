@@ -22,17 +22,22 @@ namespace Dash
         }
         public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<System.Collections.Generic.List<object>, Windows.UI.Xaml.TextWrapping>
         {
-            public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
+            private TextWrapping _defaultValue = TextWrapping.NoWrap;
+            public AutomatedTextWrappingBinding(Windows.UI.Xaml.TextWrapping defaultValue)
+            {
+                _defaultValue = defaultValue;
+            }
+            public override TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
             {
                 if (data[0] is double wrapping)
                 {
-                    return (Windows.UI.Xaml.TextWrapping)(int)wrapping;
+                    return (TextWrapping)(int)wrapping;
                 }
                 if (data[1] is double width && !double.IsNaN(width))
                 {
-                    return Windows.UI.Xaml.TextWrapping.Wrap;
+                    return TextWrapping.Wrap;
                 }
-                return Windows.UI.Xaml.TextWrapping.NoWrap;
+                return _defaultValue;
             }
 
             public override List<object> ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
@@ -40,27 +45,34 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public static void SetupTextBinding(RichTextView element, DocumentController docController, KeyController key, Context context)
+        public static void SetupBindings(RichTextView element, DocumentController docController, KeyController key, Context context)
         {
+            element.DataFieldKey = key;
             var binding = new FieldBinding<RichTextController>()
             {
                 Document = docController,
                 Key = key,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                Tag = "Rich Text Box Text Binding"
+                Tag = "Rich Text Box Text Binding",
+                FallbackValue = new RichTextModel.RTD() {RtfFormatString="" }
             };
             element.AddFieldBinding(RichTextView.TextProperty, binding);
+            SetupTextWrapBinding(element, docController, key, context);
+        }
 
+        public static void SetupTextWrapBinding(RichTextView element, DocumentController docController, KeyController key, Context context)
+        {
             var textWrapRef = new DocumentFieldReference(docController, KeyStore.TextWrappingKey);
             var widthRef = new DocumentFieldReference(docController, KeyStore.WidthFieldKey);
-            var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
+            var twrapBinding = new FieldMultiBinding<TextWrapping>(textWrapRef, widthRef)
             {
                 Mode = BindingMode.OneWay,
-                Converter = new AutomatedTextWrappingBinding(),
+                Converter = new AutomatedTextWrappingBinding(element.TextWrapping),
                 Context = context,
                 Tag = "Rich Text Box Text Wrapping Binding",
-                CanBeNull = true
+                CanBeNull = true,
+                FallbackValue = element.TextWrapping
             };
             element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
         }
@@ -88,7 +100,7 @@ namespace Dash
             //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
-            SetupTextBinding(rtv, docController, key, context);
+            SetupBindings(rtv, docController, key, context);
             return rtv;
         }
 
