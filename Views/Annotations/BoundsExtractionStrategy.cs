@@ -175,12 +175,32 @@ namespace Dash
 
             StringBuilder sb = new StringBuilder(elements.Count);
             var elemIndex = 0;
-            elements.ForEach(se =>
+            var prevIndex = 0;
+            var prevElement = elements.First();
+            prevElement.Index = 0;
+            var elemClone = new List<SelectableElement>(elements);
+            foreach (var element in elemClone.Skip(1))
             {
-                sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : "");
-                se.Index = elemIndex;
-                elemIndex++;
-            });
+                var nchar = ((string)element.Contents).First();
+                if (prevIndex > 0 && sb.Length > 0 &&
+                    (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height
+                     || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
+                     (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
+                      !char.IsLower(sb[sb.Length - 1]))) &&
+                    element.Bounds.Top >
+                    prevElement.Bounds.Bottom)
+                {
+                    elements.Insert(prevIndex,
+                        new SelectableElement(++prevIndex, "\n",
+                            new Rect(prevElement.Bounds.Right, prevElement.Bounds.Top, prevElement.Bounds.Width,
+                                prevElement.Bounds.Height), prevElement.TextData));
+                    sb.Append("\n");
+                }
+
+                sb.Append((string)element.Contents);
+                element.Index = ++prevIndex;
+                prevElement = element;
+            }
 
             return (elements, sb.ToString(), pages, vagueSectionSuperList);
         }

@@ -232,15 +232,6 @@ namespace Dash
 
                         var selectableElement = _bottomAnnotationOverlay.TextSelectableElements[index];
                         var nchar = ((string)selectableElement.Contents).First();
-                        if (prevIndex > 0 && sb.Length > 0 &&
-                            (nchar > 128 || char.IsUpper(nchar) ||
-                             (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
-                              !char.IsLower(sb[sb.Length - 1]))) &&
-                            _bottomAnnotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
-                            _bottomAnnotationOverlay.TextSelectableElements[index].Bounds.Top)
-                        {
-                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
-                        }
                         var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
                             .GetFontName();
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
@@ -285,13 +276,21 @@ namespace Dash
                             }
 
                             var contents = (string)selectableElement.Contents;
-                            if (char.IsWhiteSpace(contents, 0))
+                            if (contents.Equals("\\n"))
+                            {
+                                sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
+                            }
+                            else if (char.IsWhiteSpace(contents, 0))
                             {
                                 sb.Append("\\~");
                             }
                             else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
                             {
                                 sb.Append("\\_");
+                            }
+                            else if (char.IsNumber(contents.First()))
+                            {
+                                sb.Append("\\" + (string)selectableElement.Contents);
                             }
                             else
                             {
@@ -660,33 +659,33 @@ namespace Dash
             _bottomAnnotationOverlay.TextSelectableElements = selectableElements;
             _bottomAnnotationOverlay.PageEndIndices = pages;
 
-            var numSections = vagueSections.Aggregate(0, (i, list) => i + list.Count);
-            byte aIncrement = (byte) (128 / (10));
-            byte a = 0;
+            //var numSections = vagueSections.Aggregate(0, (i, list) => i + list.Count);
+            //byte aIncrement = (byte) (128 / (10));
+            //byte a = 0;
 
-            foreach (var sectionList in vagueSections)
-            {
-                foreach (var section in sectionList)
-                {
-                    var rect = new Rectangle
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Top,
-                        Width = section.Bounds.Width,
-                        Height = section.Bounds.Height,
-                        RenderTransform = new TranslateTransform
-                        {
-                            X = section.Bounds.X,
-                            Y = section.Bounds.Y
-                        },
-                        Fill = new SolidColorBrush(Color.FromArgb(a, 255, 0, 0)),
-                        Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
-                        StrokeThickness = 1
-                    };
-                    a += aIncrement;
-                    _bottomAnnotationOverlay.XAnnotationCanvas.Children.Add(rect);
-                }
-            }
+            //foreach (var sectionList in vagueSections)
+            //{
+            //    foreach (var section in sectionList)
+            //    {
+            //        var rect = new Rectangle
+            //        {
+            //            HorizontalAlignment = HorizontalAlignment.Left,
+            //            VerticalAlignment = VerticalAlignment.Top,
+            //            Width = section.Bounds.Width,
+            //            Height = section.Bounds.Height,
+            //            RenderTransform = new TranslateTransform
+            //            {
+            //                X = section.Bounds.X,
+            //                Y = section.Bounds.Y
+            //            },
+            //            Fill = new SolidColorBrush(Color.FromArgb(a, 255, 0, 0)),
+            //            Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
+            //            StrokeThickness = 1
+            //        };
+            //        a += aIncrement;
+            //        _bottomAnnotationOverlay.XAnnotationCanvas.Children.Add(rect);
+            //    }
+            //}
 
             DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
 
