@@ -251,12 +251,12 @@ namespace Dash
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
-                    pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
                     if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
                     {
                         strategy.SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
                         new PdfCanvasProcessor(strategy).ProcessPageContent(page);
                     }
+                    pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
                 }
             });
 
