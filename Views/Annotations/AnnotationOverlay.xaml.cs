@@ -179,6 +179,8 @@ namespace Dash
             annotation.SetHeight(10);
             annotation.GetDataDocument().SetAnnotationType(AnnotationType.Pin);
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
+            annotation.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(point.X, point.Y));
+            annotation.AddToListField(KeyStore.SelectionRegionSizeKey, new PointController(1,1));
             if (linkedDoc != null)
             {
                 annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
@@ -822,7 +824,7 @@ namespace Dash
         /// <returns></returns>
         public int GetPageOf(double yOffset)
         {
-            var pages = this.GetFirstAncestorOfType<PdfView>().BottomPages.PageSizes;
+            var pages = this.GetFirstAncestorOfType<PdfView>().DefaultView.Pages.PageSizes;
             var currOffset = 0.0;
             var i = 0;
             do

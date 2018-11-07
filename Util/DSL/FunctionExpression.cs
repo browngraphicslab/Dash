@@ -22,27 +22,30 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             OperatorController op = null;
             var opName = Op.Name.invalid;
-            try
+            if (_funcName is VariableExpression variable)
             {
-                op = await _funcName.Execute(scope) as FunctionOperatorController;
-            }
-            catch (ScriptExecutionException)
-            {
-                if (!(_funcName is VariableExpression variable))
+                var varName = variable.GetVariableName();
+                op = scope[varName] as OperatorController;
+                if (op == null)
                 {
-                    throw;
+                    opName = Op.Parse(varName);
+                    if (opName == Op.Name.invalid)
+                    {
+                        throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(varName));
+                    }
                 }
-
-                var variableName = variable.GetVariableName();
-                opName = Op.Parse(variableName);
-                if (opName == Op.Name.invalid)
+            }
+            else
+            {
+                var (field, _) = await _funcName.Execute(scope);
+                op = field as FunctionOperatorController;
+                if (op == null)
                 {
-                    throw;
+                    throw new ScriptExecutionException(new TextErrorModel("Tried to invoke a non-function"));
                 }
             }
 
@@ -55,20 +58,17 @@ namespace Dash
                 }
                 else
                 {
-                    inputs.Add(await scriptExpression.Execute(scope));
+                    var (field2, _) = await scriptExpression.Execute(scope);
+                    inputs.Add(field2);
                 }
             }
 
             try
             {
-                scope = new ReturnScope();
+                scope = new Scope();
 
                 var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
-                return output;
-            }
-            catch (ReturnException)
-            {
-                return scope.GetReturn;
+                return (output, ControlFlowFlag.None);
             }
             catch (ScriptExecutionException)
             {
@@ -95,7 +95,7 @@ namespace Dash
                 //TODO
                 return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
             }
-            else if(_funcName is VariableExpression variable)
+            else if (_funcName is VariableExpression variable)
             {
                 op = OperatorScript.GetOperatorWithName(Op.Parse(variable.GetVariableName()));
                 return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
@@ -113,12 +113,12 @@ namespace Dash
             {
                 switch (param)
                 {
-                    case VariableExpression varExp:
-                        concat += varExp.GetVariableName() + " ";
-                        break;
-                    case LiteralExpression litExp:
-                        concat += litExp.GetField() + " ";
-                        break;
+                case VariableExpression varExp:
+                    concat += varExp.GetVariableName() + " ";
+                    break;
+                case LiteralExpression litExp:
+                    concat += litExp.GetField() + " ";
+                    break;
                 }
             }
 

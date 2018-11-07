@@ -46,18 +46,19 @@ namespace Dash
         private void OnLoad(object sender, RoutedEventArgs e)
         {
         }
-
-        public override Panel GetCanvas()
+        public void OnDocumentSelected(bool selected)
         {
-            return xItemsControl.ItemsPanelRoot as Panel;
+        }
+
+        public override Panel GetTransformedCanvas()
+        {
+            return xTransformedCanvas;
         }
 
         public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
         public override ViewManipulationControls ViewManipulationControls { get; set; }
 
         public override CollectionViewModel ViewModel => DataContext as CollectionViewModel;
-
-        public override CollectionView.CollectionViewType Type => CollectionView.CollectionViewType.Freeform;
 
         public override ItemsControl GetItemsControl()
         {
@@ -183,7 +184,7 @@ namespace Dash
                 var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,
                     template.GetField<TextController>(KeyStore.CaptionKey).Data, actionParams  =>
                     {
-                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
+                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
                         Actions.DisplayDocument(ViewModel, template.GetCopy(), colPoint);
                         return Task.FromResult(true);
                     }, source);
@@ -196,15 +197,15 @@ namespace Dash
         private Task<bool> AddTextNote(ActionFuncParams actionParams)
         {
             var postitNote = new RichTextNote().Document;
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
             return Task.FromResult(true);
         }
 
         private Task<bool> AddCollection(ActionFuncParams actionParams)
         {
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Icon, 200, 75).Document;
+            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
+            var cnote = new CollectionNote(new Point(), CollectionViewType.Icon, 200, 75).Document;
             Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
@@ -231,7 +232,7 @@ namespace Dash
             {
                 double defaultLength = 200;
 
-                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
+                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
                 var adornFormPoint = colPoint;
                 var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
                 ViewModel.AddDocument(adorn);
@@ -283,14 +284,14 @@ namespace Dash
                 {
                     double imageWidth = docController.GetWidth();
                     double imageHeight = docController.GetHeight();
-                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
+                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
                     var caption = new RichTextNote(docController.Title).Document;
                     caption.SetHorizontalAlignment(HorizontalAlignment.Center);
                     docController.SetWidth(double.NaN);
                     docController.SetHeight(double.NaN);
                     docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                     docController.SetVerticalAlignment(VerticalAlignment.Top);
-                    var adorn = new CollectionNote(new Point(imagePt.X, imagePt.Y), CollectionView.CollectionViewType.Stacking, 300, imageHeight / imageWidth * 300 + 30, new DocumentController[] { docController, caption });
+                    var adorn = new CollectionNote(new Point(imagePt.X, imagePt.Y), CollectionViewType.Stacking, 300, imageHeight / imageWidth * 300 + 30, new DocumentController[] { docController, caption });
                     ViewModel.AddDocument(adorn.Document);
                 }
             }

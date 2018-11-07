@@ -1,47 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using DashShared;
 
 namespace Dash
 {
-    public abstract class BaseListController : FieldModelController<ListModel>
+    public interface IListController
     {
-        public abstract List<FieldControllerBase> Data { get; set; }
+        TypeInfo ListSubTypeInfo { get; }
 
-        protected BaseListController(ListModel fieldModel) : base(fieldModel) { }
+        void Remove(FieldControllerBase fmc);
+        void AddBase(FieldControllerBase fmc);
+        void AddRange(IEnumerable<FieldControllerBase> fmcs);
 
-        public bool Indexed { get; set; }
+        void Set(IEnumerable<FieldControllerBase> fmcs);
 
-        public override TypeInfo TypeInfo => TypeInfo.List;
+        void SetValue(int index, FieldControllerBase field);
+        FieldControllerBase GetValue(int index);
 
-        public abstract TypeInfo ListSubTypeInfo { get; }
+        int Count { get; }
 
-        public abstract void Remove(FieldControllerBase fmc);
-        public abstract void AddBase(FieldControllerBase fmc);
-        public abstract void AddRange(IEnumerable<FieldControllerBase> fmcs);
-
-        public abstract void SetValue(int index, FieldControllerBase field);
-        public abstract FieldControllerBase GetValue(int index);
-
-        public int Count => Data.Count;
-
-        public override bool CheckType(FieldControllerBase fmc)
-        {
-            bool isList = base.CheckType(fmc);
-            if (isList)
-            {
-                var list = fmc as BaseListController;
-                if (list == null)
-                {
-                    return false;
-                }
-                Debug.Assert((list.ListSubTypeInfo & ListSubTypeInfo) != TypeInfo.None);
-                return (list.ListSubTypeInfo & ListSubTypeInfo) != TypeInfo.None;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        FieldControllerBase AsField();
+        IEnumerable<FieldControllerBase> AsEnumerable();
     }
 }

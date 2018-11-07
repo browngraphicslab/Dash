@@ -23,20 +23,20 @@ namespace Dash
             if (_value == null) throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             if (_unassignVar)
             {
                 scope.DeleteVariable(_variableName);
 
-                return new TextController("");
+                return (null, ControlFlowFlag.None);
             }
 
-            FieldControllerBase val = await _value.Execute(scope);
+            var (val, _) = await _value.Execute(scope);
 
             scope?.SetVariable(_variableName, val);
 
-            return val;
+            return (val, ControlFlowFlag.None);
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

@@ -371,33 +371,30 @@ namespace Dash
             }
 
             //get right collection
-            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>()
-                .GetCanvas();
-            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>()
-                .GetCanvas();
-            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>()
-                .Reverse();
+            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>().GetTransformedCanvas();
+            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>().GetTransformedCanvas();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>().Reverse();
             foreach (var col in allCollections)
             {
                 foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
                 {
                     if (Equals(docs[i] as DocumentController, doc.ViewModel.DocumentController))
                     {
-                        docViewA = col.GetCanvas();
+                        docViewA = col.GetTransformedCanvas();
                     }
 
                     if (Equals(docs[i + 1] as DocumentController, doc.ViewModel.DocumentController))
                     {
-                        docViewB = col.GetCanvas();
+                        docViewB = col.GetTransformedCanvas();
                     }
                 }
             }
 
             //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-            startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
-            endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
+            startPoint     = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
+            endPoint       = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
             startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
-            endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
+            endControlPt   = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
 
             return new List<Point>()
             {
@@ -580,8 +577,7 @@ namespace Dash
 
         }
 
-        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-            Context c)
+        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             UpdatePaths();
         }

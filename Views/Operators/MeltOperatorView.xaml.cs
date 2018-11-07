@@ -72,7 +72,7 @@ namespace Dash
         ///     Called whenever the input collection to the melt operator is changed
         /// </summary>
         private void OnInputCollectionChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+            DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             // get all the headers from a collection
             var collection = args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
@@ -130,7 +130,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnNewValueNameChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+            DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue as TextController;
             Debug.Assert(tfmc != null);
@@ -146,7 +146,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnNewVariableNameChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+            DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue as TextController;
             Debug.Assert(tfmc != null);

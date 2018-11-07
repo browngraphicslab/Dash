@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -44,6 +45,12 @@ namespace Dash
         public void Delete(SplitFrame splitFrame, SplitDefinition.JoinOption option = SplitDefinition.JoinOption.JoinMiddle)
         {
             var splitDef = SplitPane.GetSplitLocation(splitFrame);
+            Delete(splitDef, option);
+        }
+
+        public void Delete(SplitDefinition splitDef,
+            SplitDefinition.JoinOption option = SplitDefinition.JoinOption.JoinMiddle)
+        {
             if (splitDef != null)
             {
                 XSplitPane.RemoveSplit(splitDef, option);
@@ -76,7 +83,7 @@ namespace Dash
             }
             var split = SplitPane.GetSplitLocation(frame);
             var par = split.Parent;
-            var newFrame = MakeFrame(doc ?? frame.DocumentController);
+            var newFrame = MakeFrame(doc ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document);
             if (par != null && par.Mode == targetMode)
             {
                 var offset = dir == SplitDirection.Up || dir == SplitDirection.Left ? 0 : 1;

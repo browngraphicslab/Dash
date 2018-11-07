@@ -27,13 +27,13 @@ namespace Dash
             _references = refs;
         }
 
-        public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
+        public void ConvertToXaml(DependencyObject element, DependencyProperty property, Context context)
         {
             if (Converter == null)//We can't evaluate a multibinding without a converter
             {
                 return;
             }
-            List<Object> fields = new List<Object>(_references.Length);
+            var fields = new List<object>(_references.Length);
             bool foundNullField = false;
             if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel)
             {

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
+using Microsoft.Toolkit.Uwp.Helpers;
+using static Dash.BindingMap;
 
 namespace Dash
 {
@@ -28,7 +30,7 @@ namespace Dash
         String Tag { get; set; }
         BindingMode Mode { get; set; }
         Context Context { get; set; }
-        void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context);
+        void ConvertToXaml(DependencyObject element, DependencyProperty property, Context context);
         bool ConvertFromXaml(object xamlData);
 
         void Add(DocumentController.DocumentUpdatedHandler handler);
@@ -61,7 +63,7 @@ namespace Dash
         //Tag that can be set on a binding that will be printed if the binding fails
         //so that you can know which exact binding is failing
 
-        public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
+        public void ConvertToXaml(DependencyObject element, DependencyProperty property, Context context)
         {
             var refField = Document.GetField(Key) as ReferenceController;
             if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
@@ -181,25 +183,26 @@ namespace Dash
     }
     public class BindingMap : DependencyObject
     {
+        public delegate void RemoveAction(DependencyObject obj);
         public static readonly DependencyProperty BindingMapProperty =
         DependencyProperty.RegisterAttached( "BindingMap",
-          typeof(Dictionary<DependencyProperty, Action>),
+          typeof(Dictionary<DependencyProperty, RemoveAction>),
           typeof(BindingMap),
           new PropertyMetadata(null)
         );
-        public static void SetBindingMap(UIElement element, Dictionary<DependencyProperty, Action> value)
+        public static void SetBindingMap(DependencyObject element, Dictionary<DependencyProperty, RemoveAction> value)
         {
             element.SetValue(BindingMapProperty, value);
         }
-        public static Dictionary<DependencyProperty, Action> GetBindingMap(UIElement element)
+        public static Dictionary<DependencyProperty, RemoveAction> GetBindingMap(DependencyObject element)
         {
-            return (Dictionary<DependencyProperty, Action>)element.GetValue(BindingMapProperty);
+            return (Dictionary<DependencyProperty, RemoveAction>)element.GetValue(BindingMapProperty);
         }
     }
 
     public static class BindingExtension
     {
-        public static void AddFieldBinding<T>(this T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
+        public static void AddFieldBinding<T>(this T element, DependencyProperty property, IFieldBinding binding) where T : DependencyObject
         {
             TryRemoveOldBinding(element, property);
             if (binding == null) return;
@@ -217,241 +220,92 @@ namespace Dash
             }
         }
 
-        private static bool TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
+        private static bool TryRemoveOldBinding(DependencyObject element, DependencyProperty property)
         {
-            if (BindingMap.GetBindingMap(element) == null)
+            if (GetBindingMap(element) == null)
             {
                 return false;
             }
-            var dict = BindingMap.GetBindingMap(element);
+            var dict = GetBindingMap(element);
             if (!dict.ContainsKey(property))
             {
                 return false;
             }
             var t = dict[property];
-            t();
+            t(element);
             dict.Remove(property);
             return true;
         }
 
-        private static void AddRemoveBindingAction(FrameworkElement element, DependencyProperty property, Action removeBinding)
+        private static void AddRemoveBindingAction(DependencyObject element, DependencyProperty property, RemoveAction removeBinding)
         {
-            if (BindingMap.GetBindingMap(element) == null)
+            if (GetBindingMap(element) == null)
             {
-                BindingMap.SetBindingMap(element, new Dictionary<DependencyProperty, Action>());
+                SetBindingMap(element, new Dictionary<DependencyProperty, RemoveAction>());
             }
 
-            BindingMap.GetBindingMap(element)[property] = removeBinding;
+            GetBindingMap(element)[property] = removeBinding;
         }
 
-        private static void AddOneTimeBinding<T>(T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
+        private static void AddOneTimeBinding(DependencyObject element, DependencyProperty property, IFieldBinding binding)
         {
             binding.ConvertToXaml(element, property, binding.Context);
         }
 
-        private static void AddOneWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
+        private static void AddOneWayBinding(DependencyObject element, DependencyProperty property, IFieldBinding binding)
         {
-            DocumentController.DocumentUpdatedHandler handler =
-                (sender, args, context) =>
+            var wHandler = new WeakEventListener<DependencyObject, DocumentController,
+                    DocumentController.DocumentFieldUpdatedEventArgs>(element)
                 {
-                    if (binding.Context == null)
-                    {
-                        binding.ConvertToXaml(element, property, context);
-
-                    }
-                    else
-                    //if (binding.Context.IsCompatibleWith(context))
-                    {
-                        var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
-                    }
+                    OnEventAction = (instance, controller, arg3) => binding.ConvertToXaml(instance, property, binding.Context),
+                    OnDetachAction = listener => binding.Remove(listener.OnEvent)
                 };
 
-            //int id = ID++;
-            int refCount = 0;
-            bool loading = false;
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Add(wHandler.OnEvent);
 
-            element.Unloaded += OnElementOnUnloaded;
-                element.Loaded += OnElementOnLoading;
-            //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
-            if (element.IsInVisualTree())
+
+            void RemoveBinding(DependencyObject depObj)
             {
-                loading = true;
-                element.Loaded -= OnElementOnLoading;
-                element.Loading += OnElementOnLoading;
-                AddBinding();
-                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
-            }
-            else
-            {
-                //Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
-            }
-
-            void AddBinding()
-            {
-                if (refCount++ == 0)
-                {
-                    binding.ConvertToXaml(element, property, binding.Context);
-                    binding.Add(handler);
-                }
-
-                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 1);
-            }
-
-            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
-            {
-                if (--refCount == 0)
-                {
-                    binding.Remove(handler);
-                }
-
-                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
-
-                //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
-                //tfs: the assert fails because Loaded and Unloaded can get called out of order
-                //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
-                //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
-                //     but it does kinda mess with how the reference counting should work...
-
-                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 0);
-            }
-
-            void OnElementOnLoading(object frameworkElement, object o)
-            {
-                if (loading && element.IsInVisualTree())
-                {
-                    return;
-                }
-                AddBinding();
-
-                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
-            }
-
-            void RemoveBinding()
-            {
-                element.Loading -= OnElementOnLoading;
-                element.Loaded -= OnElementOnLoading;
-                element.Unloaded -= OnElementOnUnloaded;
-                binding.Remove(handler);
-                refCount = 0;
+                binding.Remove(wHandler.OnEvent);
             }
 
             AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
-        //private static int ID = 0;
-        private static void AddTwoWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding)
-            where T : FrameworkElement
+        private static void AddTwoWayBinding(DependencyObject element, DependencyProperty property, IFieldBinding binding)
         {
-            //int id = ID++;
             bool updateUI = true;
-            DocumentController.DocumentUpdatedHandler handler =
-                (sender, args, context) =>
-                {
-                    updateUI = false;
-                    if (binding.Context == null)
-                    {
-                        binding.ConvertToXaml(element, property, context);
 
-                    }
-                    else
-                    //if (binding.Context.IsCompatibleWith(context))
-                    {
-                        var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
-                    }
-                    updateUI = true;
-                };
-            DependencyPropertyChangedCallback callback =
-                (sender, dp) =>
-                {
-                    if (updateUI)
-                    {
-                        if (!binding.ConvertFromXaml(sender.GetValue(dp)))
-                            binding.ConvertToXaml(element, property, binding.Context);
-                    }
-                };
-
-            long token = -1;
-            int refCount = 0;
-            bool loading = false;
-            element.Unloaded += OnElementOnUnloaded;
-                element.Loaded += OnElementOnLoaded;
-
-            //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
-            if (element.IsInVisualTree())
+            var wHandler = new WeakEventListener<DependencyObject, DocumentController,
+                    DocumentController.DocumentFieldUpdatedEventArgs>(element);
+            wHandler.OnEventAction = (instance, controller, arg3) =>
             {
-                loading = true;
-                element.Loaded -= OnElementOnLoaded;
-                element.Loading += OnElementOnLoaded;
-                AddBinding();
-                //Debug.WriteLine($"Binding {id,-5} in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
-            }
-            else
-            {
-                //Debug.WriteLine($"Binding {id,-5} not in visual tree : RefCount = {refCount,5}, {element.GetType().Name}");
-            }
+                updateUI = false;
+                binding.ConvertToXaml(instance, property, binding.Context);
+                updateUI = true;
+            };
+            wHandler.OnDetachAction = listener => binding.Remove(listener.OnEvent);
 
-            void AddBinding()
+            void Callback(DependencyObject sender, DependencyProperty dp)
             {
-                if (refCount++ == 0)
+                if (updateUI && !binding.ConvertFromXaml(sender.GetValue(dp)))
                 {
-                    binding.ConvertToXaml(element, property, binding.Context);
-                    binding.Add(handler);
-                    token = element.RegisterPropertyChangedCallback(property, callback);
-                    //Debug.WriteLine($"Binding {id,-5} Add :            RefCount = {refCount,5}, {element.GetType().Name}");
+                    binding.ConvertToXaml(sender, property, binding.Context);
                 }
-
-                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 1);
             }
 
-            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Add(wHandler.OnEvent);
+            var token = element.RegisterPropertyChangedCallback(property, Callback);
+
+            void RemoveBinding(DependencyObject depObj)
             {
-
-                if (--refCount == 0)
-                {
-                    binding.Remove(handler);
-                    element.UnregisterPropertyChangedCallback(property, token);
-                    token = -1;
-                    //Debug.WriteLine($"Binding {id,-5} Remove :         RefCount = {refCount,5}, {element.GetType().Name}");
-                }
-
-                //Debug.WriteLine($"Binding {id,-5} Unloaded :       RefCount = {refCount,5}, {element.GetType().Name}");
-
-                //TODO tfs: This assert fails when splitting, but it doesn't keep going negative, so it might not be an issue, but it shouldn't fail and I have no idea why/how it's failing
-                //tfs: the assert fails because Loaded and Unloaded can get called out of order
-                //     so it is possible for element to not be in the visual tree, but still be unloaded before being loaded.
-                //     I'm pretty sure that in this case we end up with a net zero anyway, so I don't think it is actually causing issues,
-                //     but it does kinda mess with how the reference counting should work...
-
-                //tfs: This should not get hit now, with the new splitting. We should be able to remove all refcount stuff
-                //Debug.Assert(refCount == 0);
-            }
-
-            void OnElementOnLoaded(object frameworkElement, object o)
-            {
-                if (loading && element.IsInVisualTree())
-                {
-                    return;
-                }
-                AddBinding();
-                //Debug.WriteLine($"Binding {id,-5} {(loading ? "Loading" : "Loaded")} :         RefCount = {refCount,5}, {element.GetType().Name}");
-            }
-
-            void RemoveBinding()
-            {
-                element.Loading -= OnElementOnLoaded;
-                element.Loaded -= OnElementOnLoaded;
-                element.Unloaded -= OnElementOnUnloaded;
-                binding.Remove(handler);
+                binding.Remove(wHandler.OnEvent);
                 if (token != -1)
                 {
-                    element.UnregisterPropertyChangedCallback(property, token);
+                    depObj.UnregisterPropertyChangedCallback(property, token);
                 }
-                refCount = 0;
             }
 
             AddRemoveBindingAction(element, property, RemoveBinding);

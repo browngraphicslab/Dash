@@ -85,6 +85,7 @@ namespace Dash
     public sealed partial class CollectionTimelineView : ICollectionView
     {
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.Timeline;
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
         private readonly double _maxGap = 300; // the maximum width between timeline elements
         private readonly double _minGap = 30; // the minimum width between timeline elements
@@ -170,6 +171,9 @@ namespace Dash
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             SetTimelineFormatting();
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         #region Selection
@@ -473,7 +477,7 @@ namespace Dash
         }
 
         // Sort the modified key
-        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             UpdateTimeline();
         }

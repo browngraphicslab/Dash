@@ -28,12 +28,11 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        private readonly Flyout _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
+        private readonly Flyout   _flyout = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
-        private Point _pointerPoint = new Point(0, 0);
-
-        static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        private Point             _pointerPoint = new Point(0, 0);
+        private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
+        private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
 
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
@@ -130,21 +129,42 @@ namespace Dash
                 FallbackValue = true
             };
             LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
-
-            if (ViewModel?.IsDimensionless == true)
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch;
-                VerticalAlignment = VerticalAlignment.Stretch;
-            }
-            else
-            {
-                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
-                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
-            }
+        }
+        public void UpdateAlignmentBindings()
+        {
+            var doc = ViewModel?.LayoutDocument;
+            //var isFreeform = !this.IsInVisualTree() || this.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView;
+            //if (isFreeform)
+            //{
+            //    HorizontalAlignment = HorizontalAlignment.Left;
+            //    VerticalAlignment = VerticalAlignment.Top;
+            //    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+            //    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+            //    ViewModel.LayoutDocument.SetWidth( ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
+            //        (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) ? ViewModel.LayoutDocument.GetWidth() :
+            //           ViewModel.LayoutDocument.GetActualSize().Value.X));
+            //    ViewModel.LayoutDocument.SetHeight(ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
+            //        (!double.IsNaN(ViewModel.LayoutDocument.GetHeight()) ? ViewModel.LayoutDocument.GetHeight() :
+            //           ViewModel.LayoutDocument.GetActualSize().Value.Y));
+            //}
+            //else
+            //{
+                if (ViewModel?.IsDimensionless == true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch;
+                    VerticalAlignment = VerticalAlignment.Stretch;
+                    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+                    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+                }
+                else
+                {
+                    CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                    CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+                }
+            //}
         }
 
         // == CONSTRUCTORs ==
-        private static int DOCID = 0;
         public DocumentView()
         {
             InitializeComponent();
@@ -170,6 +190,7 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 PointerWheelChanged += wheelChangedHandler;
 
+                this.UpdateAlignmentBindings();
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
@@ -184,6 +205,7 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
+                LinkActivationManager.DeactivateDoc(this);
             };
 
             PointerPressed += (sender, e) =>
@@ -200,10 +222,14 @@ namespace Dash
                 {
                     TouchInteractions.handledTouch.Add(e);
                     TouchInteractions.NumFingers++;
+
+                    if (!SelectionManager.IsSelected(this))
+                        SelectionManager.Select(this, false);
+                    SelectionManager.TryInitiateDragDrop(this, e, null);
                 }
 
                 e.Handled = true;
-                
+
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {
                     e.Handled = false;
@@ -250,6 +276,7 @@ namespace Dash
                         return;
                     }
                     TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
+                    //TODO: get rid on link icon
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                     {
                         e.Handled = true;
@@ -261,13 +288,22 @@ namespace Dash
                 if ((e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2 &&
                      (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
-                    //var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
-                    //var pointerPosition2 = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
-                    //var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
+                    TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
+                    var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
+                    var pointerPosition2 = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
+                    var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
-                    //new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
+                    new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
 
-                    //this.Resize(this, e, true, false, true);
+                    this.Resize(this, e, true, false, true);
+                }
+            };
+            ManipulationCompleted += (s, e) =>
+            {
+                if (e.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    TouchInteractions.NumFingers = TouchInteractions.NumFingers - 2;
+                    TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 }
             };
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
@@ -288,6 +324,7 @@ namespace Dash
         {
             UpdateRenderTransformBinding();
             UpdateVisibilityBinding();
+            UpdateAlignmentBindings();
 
             this.BindBackgroundColor();
             ViewModel?.Load();
@@ -698,7 +735,7 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (!wasRightTapped)
+            if (!wasHandled && !wasRightTapped)
             {
                 var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
                 if (scripts != null)
@@ -835,7 +872,7 @@ namespace Dash
             }
         }
 
-        
+
         private void MenuFlyoutItemToggleAsButton_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -869,7 +906,7 @@ namespace Dash
                     collectionView.ViewModel.ContainerDocument.SetFitToParent(!collectionView.ViewModel
                         .ContainerDocument.GetFitToParent());
                     if (collectionView.ViewModel.ContainerDocument.GetFitToParent())
-                        collectionView.ViewModel.FitContents();
+                        collectionView.FitContents();
                 }
             }
         }
@@ -948,7 +985,7 @@ namespace Dash
         {
             if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
                 return;
-            
+
             var dragModel = e.DataView.GetDragModel();
             if (dragModel != null)
             {
@@ -1066,7 +1103,7 @@ namespace Dash
             }
         }
 
-        private void xMenuFlyout_Opening(object sender, object e)
+        private async void xMenuFlyout_Opening(object sender, object e)
         {
             xMenuFlyout.Items.Clear();
 
@@ -1145,9 +1182,28 @@ namespace Dash
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false ? "Remove Button Behavior" : "Add Button Behavior",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Lock }
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.AddressBook }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add Tapped Behavior",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Plus }
+            });
+            var script = "function(doc) {" +
+                         "  var funcText = text_input();" +
+                         "  var op = exec(funcText);" +
+                         "  if(doc.TappedEvent == null) {" +
+                         "     doc.TappedEvent = [op];" +
+                         "  } else {" +
+                         "      doc.TappedEvent = doc.TappedEvent + op;" +
+                         "  }" +
+                         "}";
+            var addOp = await new DSL().Run(script, true) as OperatorController;
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
+                {
+                    await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
+                };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1178,7 +1234,11 @@ namespace Dash
 
             if (ViewModel.Content is CollectionView collectionView)
             {
-                collectionView.SetupContextMenu(this.xMenuFlyout);
+                collectionView.SetupContextMenu(xMenuFlyout);
+            }
+            else if (ViewModel.Content.GetFirstDescendantOfType<CollectionView>() is CollectionView cView)
+            {
+                cView.SetupContextMenu(this.xMenuFlyout);
             }
             if ((ViewModel.Content is ContentPresenter cpresent) &&
                 (cpresent.Content is CollectionView collectionView2))
@@ -1212,7 +1272,7 @@ namespace Dash
                     doc.ShowXaml();
                 }
             }
-         }
+        }
         private async void MenuFlyoutItemMakeDefaultTextBox_Click(object sender, RoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<CollectionView>()?.ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(
@@ -1251,8 +1311,8 @@ namespace Dash
         {
             get => ViewModel.AreContentsHitTestVisible;
             set => ViewModel.AreContentsHitTestVisible = !ViewModel.DocumentController.GetAreContentsHitTestVisible();
-                //xBackgroundPin.Text = "" + (char)(!ViewModel.DocumentController.GetAreContentsHitTestVisible() ? 0xE840 : 0xE77A);
-            
+            //xBackgroundPin.Text = "" + (char)(!ViewModel.DocumentController.GetAreContentsHitTestVisible() ? 0xE840 : 0xE77A);
+
         }
 
         /// <summary>
@@ -1312,7 +1372,7 @@ namespace Dash
                 //ensures zoom level can't be less than 1
                 if (xContentTransform.Matrix.M11 * deltaScale <= 1) deltaScale = 1 / xContentTransform.Matrix.M11;
 
-                ScaleTransform scale = new ScaleTransform();
+                var scale = new ScaleTransform();
                 scale.ScaleX = deltaScale;
                 scale.ScaleY = deltaScale;
 

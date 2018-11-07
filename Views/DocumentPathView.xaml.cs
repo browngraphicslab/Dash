@@ -93,7 +93,10 @@ namespace Dash
 
                 TextBlock tb = new TextBlock
                 {
-                    DataContext = documentController
+                    DataContext = documentController,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    MaxWidth = 200,
+                    MaxLines = 1
                 };
                 tb.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>
                 {

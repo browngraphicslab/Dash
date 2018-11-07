@@ -90,8 +90,9 @@ namespace Dash
             if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
                 (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
             {
-                htmlNote = new HtmlNote(html, titlesUrl, where).Document;
-            } else
+                htmlNote = new HtmlNote(html, titlesUrl, where, new Size(double.NaN, double.NaN)).Document;
+            }
+            else
             {
                 htmlNote = await CreateRtfNote(where, titlesUrl, html);
             }

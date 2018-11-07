@@ -161,6 +161,10 @@
     <Content Include="ChromeExt2\popup.js" />
     <Content Include="DashCommands.xml" />
     <Content Include="HtmlAgilityPack.UWP.csproj" />
+    <Content Include="Views\Templates\TemplateGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TemplateGenerator.cs</LastGenOutput>
+    </Content>
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -178,13 +182,36 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>OperatorTemplate1.cs</LastGenOutput>
     </Content>
+    <Compile Include="Controllers\Functions\ConstructorFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\DocumentationFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\MathFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
+    <Compile Include="Controllers\Functions\Operators\ConstructorFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\MathFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\Operators\DateOperator.cs" />
+    <Compile Include="Controllers\Functions\SelectionFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\UtilFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Operators\DocumentPathOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentReferenceOperator.cs" />
     <Compile Include="Controllers\Operators\FollowLinksOperator.cs" />
@@ -198,7 +225,6 @@
     <Compile Include="Controllers\Operators\JoinOperator.cs" />
     <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
-    <Compile Include="Controllers\Operators\Point\PointOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
     <Compile Include="DashVoiceCommand.cs" />
@@ -211,6 +237,10 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TextInputPopup.xaml.cs">
+      <DependentUpon>TextInputPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\DSL\TernaryExpression.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarVisitor.cs" />
     <Compile Include="Util\Parser2\SearchGrammarBaseListener.cs" />
@@ -243,6 +273,9 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
+      <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
@@ -267,7 +300,6 @@
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetTemplatesOperatorController.cs" />
-    <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
     <Compile Include="Controllers\Operators\LinkDescriptionTextOperator.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
@@ -331,9 +363,7 @@
     <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\IndexOutOfBoundsErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\InvalidListCreationErrorModel.cs" />
-    <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
-    <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
     <Compile Include="Controllers\Operators\Op.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
@@ -346,7 +376,6 @@
     <Compile Include="Controllers\Operators\Demo\QuizletOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ExecDishOperatorController.cs" />
-    <Compile Include="Controllers\Operators\GetKeysOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetScriptValueAsStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
@@ -360,11 +389,9 @@
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperatorController.cs" />
-    <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToListOperatorController.cs" />
-    <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\VariableAssignOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
@@ -435,14 +462,11 @@
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\DSL\ForExpression.cs" />
-    <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
     <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
     <Compile Include="Util\DSL\ReplPopupSuggestion.cs" />
-    <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
-    <Compile Include="Util\DSL\ReturnScope.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
@@ -470,7 +494,6 @@
     <Compile Include="Util\DSL\Error Models\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
     <Compile Include="Util\DSL\ExpressionChain.cs" />
-    <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
     <Compile Include="Util\DSL\MapOperatorController.cs" />
     <Compile Include="Util\DSL\Error Models\MissingParameterScriptErrorModel.cs" />
@@ -739,9 +762,6 @@
     <Compile Include="Views\Annotations\PDFRegionMarker.xaml.cs">
       <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Annotations\PdfSideAnnotation.xaml.cs">
-      <DependentUpon>PdfSideAnnotation.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
     </Compile>
@@ -913,15 +933,6 @@
     <Compile Include="Sources\Api\XAML Elements\ApiProperty.xaml.cs">
       <DependentUpon>ApiProperty.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Sources\FilePicker\FilePickerDisplay.xaml.cs">
-      <DependentUpon>FilePickerDisplay.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\PDFFilePicker.xaml.cs">
-      <DependentUpon>PDFFilePicker.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Sources\FilePicker\PDF\PDFViewer.xaml.cs">
-      <DependentUpon>PDFViewer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
@@ -973,6 +984,11 @@
     </Compile>
     <Compile Include="Views\Tag.xaml.cs">
       <DependentUpon>Tag.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Templates\TemplateGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TemplateGenerator.tt</DependentUpon>
     </Compile>
     <Compile Include="Views\TreeView\TreeView.xaml.cs">
       <DependentUpon>TreeView.xaml</DependentUpon>
@@ -1087,6 +1103,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TextInputPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Util\InkSubToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1120,6 +1140,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\PdfAnnotationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1359,10 +1383,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Annotations\PdfSideAnnotation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Collection\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1451,18 +1471,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\FilePicker\PDFFilePicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\FilePicker\PDF\PDFViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Collection\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1515,6 +1523,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Templates\NoteTemplate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\TreeView\TreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1533,7 +1545,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controllers\Functions\Operators\" />
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
     <Folder Include="Util\Parser\" />

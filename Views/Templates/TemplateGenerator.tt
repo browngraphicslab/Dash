@@ -1,0 +1,49 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ output extension=".cs" #>
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using DashShared;
+
+namespace Dash
+{
+    public static class TemplateList {
+        private static ListController<DocumentController> _templates;
+        public static ListController<DocumentController> Templates
+        {
+            get
+            {
+                if(_templates != null) {
+                    return _templates;
+                }
+                
+                _templates = new ListController<DocumentController> {
+<#
+var files = Directory.EnumerateFiles(Path.GetDirectoryName(Host.TemplateFile)).Where(f => Path.GetExtension(f) == ".xaml");
+foreach(var file in files) {
+    var name = Path.GetFileName(file);
+    var text = File.ReadAllText(file);
+#>
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("<#= name #>"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<#= text.Replace("\"", "\"\"") #>"),
+                    }, DocumentType.DefaultType),
+<#
+}
+#>
+                };
+
+                return _templates;
+            }
+        }
+    }
+}

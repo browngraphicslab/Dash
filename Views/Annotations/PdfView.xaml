@@ -10,301 +10,51 @@
     IsTabStop="True"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400"
-    SizeChanged="CustomPdfView_OnSizeChanged">
-    <Grid x:Name="xPdfContainer" MinWidth="50"
-          Background="Gray" PointerEntered="Scrollviewer_OnPointerEntered"
-          PointerExited="Scrollviewer_OnPointerExited" VerticalAlignment="Top">
+    d:DesignWidth="400">
+    <Grid x:Name="xPdfContainer" MinWidth="50" Background="White" VerticalAlignment="Top">
         <Grid.RowDefinitions>
-
-
             <RowDefinition x:Name="xFirstPanelRow" Height="0*"/>
             <RowDefinition x:Name="xDivider" Height ="0"/>
             <RowDefinition x:Name="xSecondPanelRow" Height="*"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="xPdfCol"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
+        </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="0" >
-            <StackPanel x:Name="xTopButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0" Visibility="Collapsed">
-
-
-                <Grid x:Name="xTopControlsToggleButton" PointerPressed="XTopControlsToggleButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                    <Ellipse/>
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
-                    <!--<ToolTipService.ToolTip>
-                        <ToolTip Content="Toggle Controls" Placement="Bottom" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>-->
-                </Grid>
-
-                <StackPanel x:Name="xTopToggleButtonStack" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
-                    <Grid x:Name="xTopAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Open Annotations" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xToggleActivationButton" PointerPressed="xToggleActivationButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" x:Name="xToggleActivationText"  Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                    </Grid>
-
-                    <Grid x:Name="xTopNextPageButton" PointerPressed="XTopNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xTopPreviousPageButton" PointerPressed="XTopPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xTopScrollToTop" PointerPressed="XTopScrollToTop_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Scroll To Top" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xTopScrollBack" PointerPressed="XTopScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xTopScrollForward" PointerPressed="XTopScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-                </StackPanel>
-
-                <StackPanel.Resources>
-                    <Storyboard x:Name="xFadeAnimation">
-                        <DoubleAnimation
-                            Storyboard.TargetName="xTopToggleButtonStack"
-                            Storyboard.TargetProperty="Opacity"
-                            From="0.0" To="1.0" Duration="0:0:.5"
-                        />
-                    </Storyboard>
-                </StackPanel.Resources>
-
-            </StackPanel>
-            <ScrollViewer  x:Name="TopScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
-
-                <Viewbox  Stretch="UniformToFill">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="1*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!--This Grid will have the width and height of the pdf that is being displayed-->
-                        <Grid Grid.Column="0" x:Name="xTopPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
-                      PointerPressed="XPdfGrid_PointerPressed"  PointerReleased="XPdfGrid_PointerReleased" 
-                      DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                            <!-- ItemsControl that stores the page images -->
-                            <ItemsControl x:Name="TopPageItemsControl" x:FieldModifier="public">
-                            </ItemsControl>
-                        </Grid>
-
-                        <Grid x:Name="xTopAnnotationBox" Grid.Column="1" Width="0" Background="#a66a9383"  HorizontalAlignment="Right" VerticalAlignment="Stretch">
-
-
-                            <ItemsControl x:Name="xTopAnnotationsItemsControl" ItemsSource="{x:Bind TopAnnotations, Mode=TwoWay}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <!--<ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:DocumentView">
-                                  
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>-->
-                            </ItemsControl>
-
-                        </Grid>
-                    </Grid>
-
-                </Viewbox>
-
-
-            </ScrollViewer>
-        </Grid>
-
-        <Grid Grid.Row="2">
-            <StackPanel x:Name="xBottomButtonPanel" Orientation="Horizontal" Width="Auto" Height="50" VerticalAlignment="Top" Margin="0 5 0 0" Visibility="Collapsed">
-
-                <Grid x:Name="xBottomControlsToggleButton" PointerPressed="XBottomControlsToggleButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                    <Ellipse />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
-                    <!--<ToolTipService.ToolTip>
-                        <ToolTip Content="Toggle Controls" Placement="Bottom" VerticalOffset="20"
-                        />
-                    </ToolTipService.ToolTip>-->
-                </Grid>
-                <StackPanel x:Name="xToggleButtonStack2" Orientation="Horizontal" Width="Auto" Visibility="Collapsed">
-                    <Grid x:Name="xBottomAnnotationsToggleButton" PointerPressed="XTopAnnotationsToggleButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse  />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE141;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Open Annotations" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xBottomToggleActivationButton" PointerPressed="xToggleActivationButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" x:Name="xBottomToggleActivationText"  Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                    </Grid>
-
-                    <Grid x:Name="xBottomNextPageButton" PointerPressed="XBottomNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xBottomPreviousPageButton" PointerPressed="XBottomPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xBottomScrollToTop" PointerPressed="XBottomScrollToTop_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE110;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Scroll To Top" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xBottomScrollBack" PointerPressed="XBottomScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-
-                    <Grid x:Name="xBottomScrollForward" PointerPressed="XBottomScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                        <Ellipse />
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        <!--<ToolTipService.ToolTip>
-                            <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="20"
-                            />
-                        </ToolTipService.ToolTip>-->
-                    </Grid>
-                </StackPanel>
-
-                <StackPanel.Resources>
-                    <Storyboard x:Name="xFadeAnimation2">
-                        <DoubleAnimation
-                            Storyboard.TargetName="xToggleButtonStack2"
-                            Storyboard.TargetProperty="Opacity"
-                            From="0.0" To="1.0" Duration="0:0:.5"
-                        />
-                    </Storyboard>
-                </StackPanel.Resources>
-
-            </StackPanel>
-
-            <ScrollViewer x:Name="BottomScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" PointerEntered="BottomScrollViewer_OnPointerEntered" PointerCaptureLost="BottomScrollViewer_OnPointerCaptureLost">
-
-                <Viewbox  Stretch="UniformToFill">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="1*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!--This Grid will have the width and height of the pdf that is being displayed-->
-                        <Grid Grid.Column="0" x:Name="xBottomPdfGrid" Width="{x:Bind PdfMaxWidth, Mode=OneWay}" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" Background="Transparent"
-                          PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased"
-                          DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                            <!-- ItemsControl that stores the page images -->
-                            <ItemsControl x:Name="BottomPageItemsControl" x:FieldModifier="public">
-                            </ItemsControl>
-                        </Grid>
-
-                        <Grid x:Name="xBottomAnnotationBox" Grid.Column="1" Width="0" Background="#bf6a9383" HorizontalAlignment="Right" VerticalAlignment="Stretch" KeyDown="Test">
-
-
-                            <ItemsControl x:Name="xBottomAnnotationsItemsControl" ItemsSource="{x:Bind BottomAnnotations, Mode=TwoWay}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <!--<ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:DocumentView">
-                                  
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>-->
-                            </ItemsControl>
-
-                        </Grid>
-                    </Grid>
-
-                </Viewbox>
-
-
-            </ScrollViewer>
+        <Grid x:Name="xTBotPdfGrid" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" >
+            <local:PdfAnnotationView x:Name="_botPdf"/>
         </Grid>
 
 
-        <Grid x:Name="xAnnotationMarkers" Width="10" Grid.Column="0" Margin="-20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Stretch" />
-        <StackPanel x:Name="xAnnotationNavigation" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.0" Grid.Column="1">
-            <Grid PointerPressed="xPrevAnnotation_OnPointerPressed">
-                <Ellipse Fill="#221111" Width="18" Height="18" PointerPressed="xNextAnnotation_OnPointerPressed"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 1" Foreground="Gold"/>
-            </Grid>
-            <Grid PointerPressed="xNextAnnotation_OnPointerPressed">
-                <Ellipse Fill="#221111" Width="18" Height="18"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="Gold"/>
-            </Grid>
+        <Grid x:Name="xTopPdfGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" >
+            <local:PdfAnnotationView x:Name="_topPdf"/>
+        </Grid>
 
-        </StackPanel>
+        <Grid Column="0" SizeChanged="xPdfColSizeChanged"></Grid>
 
-        <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
+        <controls:GridSplitter x:Name="xSidebarSplitter" Grid.Column="1" Tapped="xSiderbarSplitter_Tapped"  Width="0" MinWidth="0" Grid.Row="0" Grid.RowSpan="3"
+                               ManipulationStarted="xSiderbarSplitter_OnManipulationStarted" ManipulationDelta="xSiderbarSplitter_OnManipulationDelta" ManipulationCompleted="xSiderbarSplitter_OnManipulationCompleted" PointerPressed="xSiderbarSplitter_OnPointerPressed" >
+            <controls:GridSplitter.Element>
+                <Canvas>
+                    <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top">
+                        <Grid.Clip>
+                            <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
+                        </Grid.Clip>
+                    </Grid>
+                    <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="2000" />
+                </Canvas>
+            </controls:GridSplitter.Element>
+        </controls:GridSplitter>
+
+        <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
                                ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
             <controls:GridSplitter.Element>
-                <Canvas> 
+                <Canvas>
                     <StackPanel Orientation="Vertical">
                         <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
                         <Rectangle x:Name="xBar" Fill="{StaticResource DashDarkBlueBrush}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
-                        <Grid x:Name="xActivationMode" Visibility="Collapsed" Margin="0 -20 0 0"  PointerPressed="xToggleActivationButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                            <Ellipse Fill="Red" />
-                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                        </Grid>
                     </StackPanel>
                 </Canvas>
             </controls:GridSplitter.Element>

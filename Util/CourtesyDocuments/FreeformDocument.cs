@@ -34,7 +34,7 @@ namespace Dash
 
             var c = new Context(context);
 
-            void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c2)
+            void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 var collFieldArgs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)

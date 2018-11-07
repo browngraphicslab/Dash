@@ -73,9 +73,9 @@ namespace Dash
     {
         private DocumentController _parentDocument;
 
-
         private GraphNodeView _selectedNode;
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.Graph;
 
         public CollectionGraphView()
         {
@@ -103,6 +103,9 @@ namespace Dash
             {
                 _parentDocument = value;
             }
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         public ObservableCollection<GraphConnection> Links { get; set; }

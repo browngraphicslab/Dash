@@ -125,14 +125,8 @@ namespace Dash
             {
                 //turn script string into function expression
                 var se = ParseToExpression(script);
-                try
-                {
-                    return await se?.Execute(scope ?? new Scope());
-                }
-                catch (ReturnException)
-                {
-                    return scope?.GetReturn;
-                }
+                var (field, _) = await se.Execute(scope ?? new Scope());
+                return field;
             }
             catch (ScriptException scriptException)
             {
@@ -257,7 +251,7 @@ namespace Dash
             case SyntaxKind.NewKeyword:
                 break;
             case SyntaxKind.NullKeyword:
-                break;
+                return new LiteralExpression(null);
             case SyntaxKind.ReturnKeyword:
                 break;
             case SyntaxKind.SuperKeyword:
@@ -270,7 +264,6 @@ namespace Dash
                 break;
             case SyntaxKind.TrueKeyword:
                 return new LiteralExpression(new BoolController(true));
-                break;
             case SyntaxKind.TryKeyword:
                 break;
             case SyntaxKind.TypeOfKeyword:
@@ -634,7 +627,9 @@ namespace Dash
                 }
                 break;
             case SyntaxKind.ConditionalExpression:
-                break;
+                var cNode = (ConditionalExpression) node;
+
+                return new TernaryExpression(ParseToExpression(cNode.Condition), ParseToExpression(cNode.WhenTrue), ParseToExpression(cNode.WhenFalse));
             case SyntaxKind.TemplateExpression:
                 break;
             case SyntaxKind.YieldExpression:
@@ -698,11 +693,7 @@ namespace Dash
 
                 List<ScriptExpression> outputs = new List<ScriptExpression>();
                 outputs.Add(doBlock);
-                outputs.Add(new WhileExpression(DSL.GetFuncName<WhileOperatorController>(), new Dictionary<KeyController, ScriptExpression>
-                    {
-                        {WhileOperatorController.BoolKey,  doBinary},
-                        {WhileOperatorController.BlockKey,  doBlock}
-                    }));
+                outputs.Add(new WhileExpression(doBinary, doBlock));
                 return new ExpressionChain(outputs);
             case SyntaxKind.WhileStatement:
                 var whilChild = (node as WhileStatement).Children;
@@ -712,11 +703,7 @@ namespace Dash
                 var whilBlock = ParseToExpression(whilChild[1]);
 
                 //  make a while operator and call it in this function
-                return new WhileExpression(Op.Name.while_lp, new Dictionary<KeyController, ScriptExpression>
-                    {
-                        {WhileOperatorController.BoolKey,  whilBinary},
-                        {WhileOperatorController.BlockKey,  whilBlock}
-                    });
+                return new WhileExpression(whilBinary, whilBlock);
             case SyntaxKind.ForStatement:
                 var forChild = (node as ForStatement)?.Children;
                 var countDeclaration = ParseToExpression(forChild?[0]);
@@ -724,7 +711,7 @@ namespace Dash
                 var forIncrement = ParseToExpression(forChild?[2]);
                 var forBody = ParseToExpression(forChild?[3]) as ExpressionChain;
 
-                return new ForExpression(Op.Name.for_lp, countDeclaration, forBinary, forIncrement, forBody);
+                return new ForExpression(countDeclaration, forBinary, forIncrement, forBody);
             case SyntaxKind.ForInStatement:
                 var forInChild = (node as ForInStatement)?.Children;
 
@@ -732,7 +719,7 @@ namespace Dash
                 var listNameExpr = ParseToExpression(forInChild?[1]);
                 var forInBody = ParseToExpression(forInChild?[2]) as ExpressionChain;
 
-                return new ForInExpression(Op.Name.for_in_lp, subVarName, listNameExpr, forInBody);
+                return new ForInExpression(subVarName, listNameExpr, forInBody);
             case SyntaxKind.ForOfStatement:
                 break;
             case SyntaxKind.ContinueStatement:
@@ -777,7 +764,16 @@ namespace Dash
             case SyntaxKind.FunctionDeclaration:
                 var funDec = (node as FunctionDeclaration);
 
-                return new VariableDeclarationExpression(funDec.IdentifierStr, new FunctionDeclarationExpression(funDec.Body.GetText(), funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None), _undoVar);
+                var declarationExpression = new FunctionDeclarationExpression(funDec.Body.GetText(), funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None);
+
+                if (funDec.IdentifierStr == null)
+                {
+                    return declarationExpression;
+                }
+                else
+                {
+                    return new VariableDeclarationExpression(funDec.IdentifierStr, declarationExpression, _undoVar);
+                }
             case SyntaxKind.ClassDeclaration:
                 break;
             case SyntaxKind.InterfaceDeclaration:
