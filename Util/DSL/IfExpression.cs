@@ -6,25 +6,21 @@ namespace Dash
 {
     public class IfExpression : ScriptExpression
     {
-        private readonly Op.Name _opName;
-        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
-
-        public IfExpression(Op.Name opName, Dictionary<KeyController, ScriptExpression> parameters)
+        private readonly ScriptExpression _condition, _trueExpression, _falseExpression;
+        public IfExpression(ScriptExpression conditionExpression, ScriptExpression trueExpression, ScriptExpression falseExpression)
         {
-            _opName = opName;
-            _parameters = parameters;
+            _condition = conditionExpression;
+            _trueExpression = trueExpression;
+            _falseExpression = falseExpression;
         }
 
         public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            var boolRes = ((BoolController)(await _parameters[IfOperatorController.BoolKey].Execute(scope)).Item1).Data;
-
-            var ifKey = IfOperatorController.IfBlockKey;
-            var elseKey = IfOperatorController.ElseBlockKey;
+            var boolRes = ((BoolController)(await _condition.Execute(scope)).Item1).Data;
 
             if (boolRes)
             {
-                var (field, flags) = await _parameters[ifKey].Execute(scope);
+                var (field, flags) = await _trueExpression.Execute(scope);
                 if (flags == ControlFlowFlag.None)
                 {
                     return (null, ControlFlowFlag.None);
@@ -36,9 +32,9 @@ namespace Dash
             }
             else
             {
-                if (_parameters.TryGetValue(elseKey, out var exp))
+                if (_falseExpression != null)
                 {
-                    var (field, flags) = await exp.Execute(scope);
+                    var (field, flags) = await _falseExpression.Execute(scope);
                     if (flags != ControlFlowFlag.None)
                     {
                         return (field, flags);
@@ -51,21 +47,14 @@ namespace Dash
 
         public Op.Name GetOperatorName()
         {
-            return _opName;
+            return Op.Name.invalid;
         }
-
-
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
-        {
-            return _parameters;
-        }
-
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
            throw new NotImplementedException();
         }
 
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Name.invalid);
     }
 }
