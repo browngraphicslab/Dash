@@ -819,6 +819,7 @@ namespace Dash
             else
             {
                 //Dock_Link(linkDoc, direction);
+                //target.SetHidden(false);
                 ToggleFloatingDoc(target);
             }
 

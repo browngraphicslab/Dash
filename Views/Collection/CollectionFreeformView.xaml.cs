@@ -281,17 +281,31 @@ namespace Dash
                 var docController = await parser.ParseFileAsync(imageToAdd);
                 if (docController != null)
                 {
-                    double imageWidth = docController.GetWidth();
-                    double imageHeight = docController.GetHeight();
+                    docController.SetField<TextController>(KeyStore.XamlKey,
+                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                 xmlns:dash=""using:Dash""
+                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                            </Grid.RowDefinitions>
+                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
+                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
+                                </Border>
+                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
+                                    <dash:RichTextView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
+                                </Border>
+                        </Grid>",
+                        true);
                     var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
                     var caption = new RichTextNote(docController.Title).Document;
-                    caption.SetHorizontalAlignment(HorizontalAlignment.Center);
-                    docController.SetWidth(double.NaN);
+                    docController.SetWidth(docController.GetWidth());
                     docController.SetHeight(double.NaN);
                     docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                     docController.SetVerticalAlignment(VerticalAlignment.Top);
-                    var adorn = new CollectionNote(new Point(imagePt.X, imagePt.Y), CollectionViewType.Stacking, 300, imageHeight / imageWidth * 300 + 30, new DocumentController[] { docController, caption });
-                    ViewModel.AddDocument(adorn.Document);
+                    docController.SetPosition(new Point(imagePt.X, imagePt.Y));
+                    ViewModel.AddDocument(docController);
                 }
             }
 

@@ -27,7 +27,7 @@ namespace Dash
 		/// <summary>
 		///   Creates a MediaPlayerElement that will be binded to video reference.
 		/// </summary>
-		public static FrameworkElement MakeView(DocumentController docController, Context context)
+		public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
 		{
 			//create the media player element 
 			
@@ -55,15 +55,15 @@ namespace Dash
             video.Unloaded += (s, e) => video.MediaPlayer.Pause();
 
 			// setup bindings on the video
-			SetupVideoBinding(video, docController, context);
+			SetupVideoBinding(video, docController, key, context);
 			
 			return video;
 		}
 
-		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller,
+		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key, 
 			Context context)
 		{
-			var data = controller.GetField(KeyStore.DataKey);
+			var data = controller.GetField(key);
 			if (data is ReferenceController reference)
 			{
 				//add fieldUpdatedListener to the doc controller of the reference
@@ -79,21 +79,20 @@ namespace Dash
 						BindVideoSource(video, doc, reference.FieldKey);
 					});
 			}
-			BindVideoSource(video, controller, KeyStore.DataKey);
+			BindVideoSource(video, controller, key);
 		}
 
 		/// <summary>
 		///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the video.
 		/// </summary>
-		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController,
-			KeyController key)
+		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, KeyController key)
 		{
 			var data = docController.GetDereferencedField(key, null) as VideoController;
 			Debug.Assert(data != null);
 			var binding = new FieldBinding<VideoController>
 			{
 				Document = docController,
-				Key = KeyStore.DataKey,
+				Key = key,
 				Mode = BindingMode.OneWay,
 				//converts uri to source data of the MediaPlayerElement
 				Converter = UriToIMediaPlayBackSourceConverter.Instance

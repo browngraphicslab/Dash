@@ -407,8 +407,7 @@ namespace Dash
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);
 
-            switch (annoType) { 
-            
+            switch (annoType) {
                 case AnnotationType.Pin:       return new PinAnnotation(overlay, new Selection(regionDocumentController,
                                                              new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red)));
                 case AnnotationType.Region:    return new RegionAnnotation(overlay, new Selection(regionDocumentController));

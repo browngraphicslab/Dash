@@ -83,7 +83,9 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        
+        public bool                               CanSetAnnotationVisibilityOnScroll { get; set; }
+        public bool                               ActiveView { get; set; }
+
         public PdfAnnotationView()
         {
             InitializeComponent();
@@ -106,7 +108,8 @@ namespace Dash
                 _scrollTimer.Stop();
                 AddToStack(_BackStack, ScrollViewer);
             };
-
+            PointerEntered += (s, e) => ActiveView = true;
+            PointerExited += (s, e) => ActiveView = false;
             _scrollTimer.Start();
         }
         ~PdfAnnotationView()
@@ -199,11 +202,13 @@ namespace Dash
 
                     regionDoc = AnnotationOverlay.CreatePinRegion(newPoint);
                 }
-                else
-                    regionDoc = LayoutDocument;
             }
-            AnnotationOverlay.RegionDocsList.Add(regionDoc);
-            return regionDoc;
+            if (regionDoc != null)
+            {
+                AnnotationOverlay.RegionDocsList.Add(regionDoc);
+                return regionDoc;
+            }
+            return LayoutDocument;
         }
 
         private Point calculateClosestPointOnPDF(Point p)
@@ -514,7 +519,10 @@ namespace Dash
                 _scrollTimer.Start();
             }
 
-            SetAnnotationsVisibleOnScroll(null);
+            if (CanSetAnnotationVisibilityOnScroll)
+            {
+                SetAnnotationsVisibleOnScroll(null);
+            }
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
