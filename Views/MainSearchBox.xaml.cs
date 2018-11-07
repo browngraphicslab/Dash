@@ -7,11 +7,13 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Windows.System;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Dash.Annotations;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using MyToolkit.UI;
 using Telerik.UI.Xaml.Controls.Chart;
@@ -21,13 +23,14 @@ using static Dash.DataTransferTypeInfo;
 
 namespace Dash
 {
-    public sealed partial class MainSearchBox
+    public sealed partial class MainSearchBox 
     {
         private int _selectedIndex = -1;
         private bool _arrowBlock = false;
         private Dictionary<string, string> _selectDictionary;
         private HashSet<string> _filters;
         private HashSet<string> _authorSet;
+        private HashSet<string> _options;
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -63,6 +66,7 @@ namespace Dash
 
             _filters = new HashSet<string>();
             _authorSet = new HashSet<string>();
+            _options = new HashSet<string>();
 
         }
 
@@ -252,8 +256,9 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
-                xMoreSearch.Visibility = Visibility.Collapsed;
+                //xMoreSearch.Visibility = Visibility.Collapsed;
                 xFilterButton.Visibility = Visibility.Collapsed;
+                xMoreOptions.Visibility = Visibility.Collapsed;
                 //xComboBox.PlaceholderText = "Filter by:";
 
             }
@@ -266,8 +271,9 @@ namespace Dash
                     easingType: EasingType.Default).Start();
                 xSearchCodeBox.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
-                xMoreSearch.Visibility = Visibility.Visible;
+                //xMoreSearch.Visibility = Visibility.Visible;
                 xFilterButton.Visibility = Visibility.Visible;
+                xMoreOptions.Visibility = Visibility.Visible;
             }
         }
 
@@ -649,6 +655,25 @@ namespace Dash
 
         }
 
+
+        private void xOptions_SelectionChanged(object sender, TappedRoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem mf)
+            {
+                var option = mf?.Text;
+                if (_options.Contains(option))
+                {
+                    _options.Remove(option);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                }
+                else
+                {
+                    _options.Add(option);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                }
+            }
+        }
+
         private string _currentSelection = "None";
         
 
@@ -657,7 +682,7 @@ namespace Dash
             if (sender is MenuFlyoutItem mf)
             {
                 _currentSelection = mf?.Text;
-                xAdvSearch.Text = _currentSelection;
+                //xAdvSearch.Text = _currentSelection;
                 if (_filters.Contains(_currentSelection))
                 {
                     _filters.Remove(_currentSelection);
@@ -679,6 +704,11 @@ namespace Dash
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }
 
+        private void Options_Tapped(object sender, RoutedEventArgs e)
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+        }
+
         private void PickAuthorOnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             //var mf = sender as MenuFlyoutItem;
@@ -689,7 +719,7 @@ namespace Dash
             {
                 _currentSelection = "Author";
                 string author = mf.Text;
-                xAdvSearch.Text = author;
+                //xAdvSearch.Text = author;
                 if (_authorSet.Contains(author))
                 {
                     _authorSet.Remove(author);
@@ -752,6 +782,7 @@ namespace Dash
             flyout.Items.Add(_authorItem);
 
         }
+
     }
 }
 
