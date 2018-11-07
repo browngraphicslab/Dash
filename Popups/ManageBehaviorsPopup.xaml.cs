@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -18,20 +19,25 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Popups
 {
-    public sealed partial class ManageBehaviorsPopup : DashPopup
+    public sealed partial class ManageBehaviorsPopup
     {
         private TaskCompletionSource<List<OperatorController>> _tcs;
+        private readonly Dictionary<int, ComboBox> _modifierMapping = new Dictionary<int, ComboBox>();
+        private readonly ObservableCollection<string> Behaviors = new ObservableCollection<string>();
+        private readonly int BehaviorCount = 3;
 
-        public ManageBehaviorsPopup() => InitializeComponent();
-
-        public void SetHorizontalOffset(double offset)
+        public ManageBehaviorsPopup()
         {
-            xBehaviorsPopup.HorizontalOffset = offset;
+            InitializeComponent();
+            Behaviors.Add("Add new behavior");
+            SetupComboBoxes();
         }
 
-        public void SetVerticalOffset(double offset)
+        private void SetupComboBoxes()
         {
-            xBehaviorsPopup.VerticalOffset = offset;
+            _modifierMapping[0] = xTappedModifiers;
+            _modifierMapping[1] = xDeletedModifiers;
+            _modifierMapping[2] = xFieldModifiers;
         }
 
         public FrameworkElement Self() => this;
@@ -45,8 +51,34 @@ namespace Dash.Popups
         {
             _tcs = new TaskCompletionSource<List<OperatorController>>();
             xBehaviorsPopup.IsOpen = true;
-            MainPage.Instance.SetUpPopup(this);
+            MainPage.Instance.XGrid.Children.Add(this);
+            MainPage.Instance.xOverlay.Visibility = Visibility.Visible;
+            HorizontalAlignment = HorizontalAlignment.Center;
+            VerticalAlignment = VerticalAlignment.Center;
             return _tcs.Task;
+        }
+
+        private void AddOnClick(object sender, RoutedEventArgs e)
+        {
+            bool shouldExpand = xAddNewBehaviorPanel.Visibility == Visibility.Collapsed;
+            xAddNewBehaviorPanel.Visibility = shouldExpand ? Visibility.Visible : Visibility.Collapsed;
+            xAddTextbox.Text = shouldExpand ? "Apply" : "Add New";
+        }
+
+        private void TriggeringEventChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedIndex = xTriggeringEvent.SelectedIndex;
+            _modifierMapping[selectedIndex].Visibility = Visibility.Visible;
+            HideRemaining(selectedIndex);
+        }
+
+        private void HideRemaining(int selectedIndex)
+        {
+            for (int i = 0; i < BehaviorCount; i++)
+            {
+                if (i == selectedIndex) continue;
+                _modifierMapping[i].Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

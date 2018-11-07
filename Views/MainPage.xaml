@@ -45,7 +45,7 @@
 
             <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
                 <local:DocumentDecorations x:Name="XDocumentDecorations" x:FieldModifier="public"/>
-                <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" Visibility="Collapsed">
+                <Grid x:Name="xOverlay" Background="#03182b" Height="5000" Width="5000" Opacity="0.4" x:FieldModifier="public"  Visibility="Collapsed">
 
                     <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
                     <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>

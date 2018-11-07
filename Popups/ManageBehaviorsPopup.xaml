@@ -15,24 +15,185 @@
                 <Border x:Name="xBorder"
                         BorderBrush="{StaticResource AccentGreenLight}"
                         Background="White"
-                        BorderThickness="2 40 2 2" Width="400" Height="300">
+                        BorderThickness="2 40 2 2" Width="700" Height="500">
                     <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"/>
+                            <!--0-->
+                            <RowDefinition Height="30"/>
+                            <!--1-->
+                            <RowDefinition Height="*"/>
+                            <!--2-->
+                            <RowDefinition Height="85"/>
+                            <!--3-->
+                        </Grid.RowDefinitions>
+                        <TextBlock 
+                            Grid.Row="1" 
+                            FontSize="18" 
+                            HorizontalAlignment="Center"
+                            Margin="0 0 0 0">Manage behaviors for this document.</TextBlock>
+                        <ListView 
+                            Grid.Row="2"
+                            Width="600"
+                            Height="250"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource AccentGreenLight}"
+                            ItemsSource="{Binding Behaviors}"
+                            x:Name="xExistingBehaviors"/>
+                        <StackPanel
+                            x:Name="xAddNewBehaviorPanel"
+                            Grid.Row="2"
+                            Orientation="Horizontal"
+                            Width="600"
+                            Height="250"
+                            Background="White"
+                            BorderBrush="Black"
+                            BorderThickness="2"
+                            Visibility="Collapsed">
+                            <StackPanel 
+                                Orientation="Vertical"
+                                HorizontalAlignment="Center"
+                                Width="283">
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="Black" 
+                                    Text="Triggering Event"
+                                    HorizontalAlignment="Center"
+                                    Margin="0 25 0 15"/>
+                                <ComboBox
+                                    x:Name="xTriggeringEvent"
+                                    HorizontalAlignment="Center"
+                                    Width="150"
+                                    SelectionChanged="TriggeringEventChanged">
+                                    <ComboBoxItem>Tapped</ComboBoxItem>
+                                    <ComboBoxItem>Deleted</ComboBoxItem>
+                                    <ComboBoxItem>Field Updated</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="Black" 
+                                    Text="Modifiers"
+                                    HorizontalAlignment="Center"
+                                    Margin="0 15 0 15"/>
+                                <ComboBox
+                                    x:Name="xTappedModifiers"
+                                    HorizontalAlignment="Center"
+                                    Width="150">
+                                    <ComboBoxItem>Single</ComboBoxItem>
+                                    <ComboBoxItem>Double</ComboBoxItem>
+                                    <ComboBoxItem>Right</ComboBoxItem>
+                                </ComboBox>
+                                <ComboBox
+                                    x:Name="xDeletedModifiers"
+                                    HorizontalAlignment="Center"
+                                    Width="150"
+                                    Visibility="Collapsed">
+                                    <ComboBoxItem>UI</ComboBoxItem>
+                                    <ComboBoxItem>Scripting</ComboBoxItem>
+                                </ComboBox>
+                                <ComboBox
+                                    x:Name="xFieldModifiers"
+                                    HorizontalAlignment="Center"
+                                    Width="150"
+                                    Visibility="Collapsed">
+                                    <ComboBoxItem>TODO: dynamically filled</ComboBoxItem>
+                                    <ComboBoxItem>Title</ComboBoxItem>
+                                    <ComboBoxItem>Author</ComboBoxItem>
+                                    <ComboBoxItem>Date Modified</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
 
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock FontSize="18" Margin="-10 -100 0 0">Manage behaviors for this document.</TextBlock>
-                            <ListView x:Name="xExistingBehaviors" ItemsSource="ExistingBehaviors"/>
+                            <TextBlock 
+                                x:Name="xMessageIcon" 
+                                FontSize="30" 
+                                VerticalAlignment="Center"
+                                Foreground="Green"
+                                FontFamily="{StaticResource FontAwesome}" 
+                                Text="{StaticResource RightCaretIcon}"/>
+
+                            <StackPanel 
+                                Orientation="Vertical"
+                                HorizontalAlignment="Center"
+                                Width="282">
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="Black" 
+                                    Text="Associated Behavior"
+                                    HorizontalAlignment="Center"
+                                    Margin="0 25 0 15"/>
+                                <ComboBox
+                                    x:Name="xBehavior"
+                                    Width="150"
+                                    HorizontalAlignment="Center">
+                                    <ComboBoxItem>Set Field</ComboBoxItem>
+                                    <ComboBoxItem>Apply Templates</ComboBoxItem>
+                                    <ComboBoxItem>API Call</ComboBoxItem>
+                                    <ComboBoxItem>Query</ComboBoxItem>
+                                    <ComboBoxItem>Custom</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="Black" 
+                                    Text="Modifiers"
+                                    HorizontalAlignment="Center"
+                                    Margin="0 15 0 15"/>
+                                <ComboBox
+                                    x:Name="xFirstModifiers"
+                                    HorizontalAlignment="Center"
+                                    Width="150">
+                                    <ComboBoxItem>Single</ComboBoxItem>
+                                    <ComboBoxItem>Double</ComboBoxItem>
+                                    <ComboBoxItem>Right</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Row ="3"  
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                            <Button x:Name="xAddButton" 
+                                    Margin="0 0 40 40" 
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Bottom"
+                                    Height="40"
+                                    Width="130" 
+                                    Background="{StaticResource AccentGreenLight}"
+                                    Click="AddOnClick">
+                                <TextBlock
+                                    x:Name="xAddTextbox"
+                                    FontSize="14"
+                                    Foreground="White" >Add</TextBlock>
+                            </Button>
+                            <Button x:Name="xConfirmButton" 
+                                    Margin="0 0 0 40" 
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Bottom"
+                                    Height="40"
+                                    Width="130" 
+                                    Background="{StaticResource AccentGreenLight}">
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="White" >Confirm</TextBlock>
+                            </Button>
                         </StackPanel>
 
-
-                        <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
-                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
-                        </Button>
-
-                        <StackPanel  Margin="0 220 0 0" Orientation="Horizontal" HorizontalAlignment="Center" >
-                            <TextBlock x:Name="xErrorMessageIcon" Visibility="Collapsed" FontSize="14" Foreground="DarkRed"
-                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ErrorIcon}"/>
-                            <TextBlock x:Name="xErrorMessageText" Visibility="Collapsed" FontSize="12" Foreground="DarkRed" Margin="-10 0 0 0">ERROR: Please select a format</TextBlock>
-
+                        <StackPanel  
+                            Margin="0 220 0 0"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center" >
+                            <TextBlock 
+                                x:Name="xErrorMessageIcon" 
+                                Visibility="Collapsed" 
+                                FontSize="14" 
+                                Foreground="DarkRed"
+                                FontFamily="{StaticResource FontAwesome}" 
+                                Text="{StaticResource ErrorIcon}"/>
+                            <TextBlock 
+                                x:Name="xErrorMessageText" 
+                                Visibility="Collapsed" 
+                                FontSize="12" 
+                                Foreground="DarkRed" 
+                                Margin="-10 0 0 0">ERROR: Please select a format</TextBlock>
                         </StackPanel>
                     </Grid>
                 </Border>
