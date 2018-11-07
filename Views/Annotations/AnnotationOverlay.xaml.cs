@@ -60,8 +60,6 @@ namespace Dash
 
         public List<int> PageEndIndices { get; set; }
 
-        private InkCanvas XInkCanvas { get; }
-
         public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
         {
             InitializeComponent();
@@ -74,13 +72,11 @@ namespace Dash
            
             //if (MainPage.Instance.xSettingsView.UseInkCanvas)
             //{
-                XInkCanvas = new InkCanvas();
-                XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen; //| CoreInputDeviceTypes.Touch;
                 XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
                 XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
                 XInkCanvas.InkPresenter.IsInputEnabled = false;
                 XInkCanvas.IsHitTestVisible = false;
-                //XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
            // }
           
             Loaded   += onLoaded;
@@ -202,6 +198,7 @@ namespace Dash
             RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
             EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
             _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
+            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
             RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
             EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
