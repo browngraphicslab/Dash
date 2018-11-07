@@ -252,6 +252,11 @@
                           DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
                             <!-- ItemsControl that stores the page images -->
                             <ItemsControl x:Name="BottomPageItemsControl" x:FieldModifier="public">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <ItemsStackPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
                             </ItemsControl>
                         </Grid>
 

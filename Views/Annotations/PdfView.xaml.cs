@@ -638,6 +638,7 @@ namespace Dash
                     {
                         var page = pdfDocument.GetPage(i);
                         var size = page.GetPageSize();
+                        
                         strategy.SetPage(i - 1, offset, size, page.GetRotation());
                         offset += page.GetPageSize().GetHeight() + 10;
                         processor.ProcessPageContent(page);
@@ -660,7 +661,7 @@ namespace Dash
             _bottomAnnotationOverlay.PageEndIndices = pages;
 
             var numSections = vagueSections.Aggregate(0, (i, list) => i + list.Count);
-            byte aIncrement = (byte) (128 / (numSections + 1));
+            byte aIncrement = (byte) (128 / (10));
             byte a = 0;
 
             foreach (var sectionList in vagueSections)
