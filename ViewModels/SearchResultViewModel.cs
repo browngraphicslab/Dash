@@ -97,7 +97,7 @@ namespace Dash
             }
 
             var type = viewDoc.GetDocType();
-            Debug.WriteLine(type);
+            //Debug.WriteLine(type);
             switch (type)
             {
             case "Image Box":

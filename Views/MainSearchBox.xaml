@@ -169,15 +169,12 @@
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout Opening="FlyoutBase_OnOpening">
                     <MenuFlyoutSubItem Text="Document">
-                        <MenuFlyoutItem Text="None" Tapped="xDocumentFilter_SelectionChanged"/>
-                            <MenuFlyoutItem Text="Image" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem Text="Image" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Text" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Audio" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Video" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="PDF" Tapped="xDocumentFilter_SelectionChanged"/>
                         <MenuFlyoutItem Text="Collection" Tapped="xDocumentFilter_SelectionChanged"/>
-                    </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem x:Name="xAuthorSubItem" Text="Author">
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>

@@ -232,7 +232,7 @@ namespace Dash
 
                 var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetCanvas()).TransformPoint(actionParams.Where);
                 var adornFormPoint = colPoint;
-                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
+                var adorn = Util.AdornmentWithPosandColor(Colors.White, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
                 ViewModel.AddDocument(adorn);
 
                 int counter = 0;

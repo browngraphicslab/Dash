@@ -25,7 +25,9 @@ namespace Dash
     {
         private int _selectedIndex = -1;
         private bool _arrowBlock = false;
-        private Dictionary<string, string> selectDictionary;
+        private Dictionary<string, string> _selectDictionary;
+        private HashSet<string> _filters;
+        private HashSet<string> _authorSet;
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -49,15 +51,19 @@ namespace Dash
 
         private void InitializeSelectionDictionary()
         {
-            selectDictionary = new Dictionary<string, string>();
-            selectDictionary["None"] = "None";
-            selectDictionary["Image"] = "Image Box";
-            selectDictionary["Text"] = "Rich Text Box";
-            selectDictionary["Audio"] = "Audio Box";
-            selectDictionary["Video"] = "Video Box";
-            selectDictionary["PDF"] = "Pdf Box";
-            selectDictionary["Collection"] = "Collection Box";
-            selectDictionary["Author"] = "Author";
+            _selectDictionary = new Dictionary<string, string>();
+            _selectDictionary["None"] = "None";
+            _selectDictionary["Image"] = "Image Box";
+            _selectDictionary["Text"] = "Rich Text Box";
+            _selectDictionary["Audio"] = "Audio Box";
+            _selectDictionary["Video"] = "Video Box";
+            _selectDictionary["PDF"] = "Pdf Box";
+            _selectDictionary["Collection"] = "Collection Box";
+            _selectDictionary["Author"] = "Author";
+
+            _filters = new HashSet<string>();
+            _authorSet = new HashSet<string>();
+
         }
 
         #endregion
@@ -404,6 +410,15 @@ namespace Dash
             //highlight doc results
 
             var vmGroups = new List<SearchResultViewModel>();
+            var trueFilters = new HashSet<string>();
+            foreach (var filter in _filters)
+            {
+                trueFilters.Add(_selectDictionary[filter]);
+                Debug.WriteLine("true filter:"+_selectDictionary[filter]);
+            }
+
+            Debug.WriteLine("# of authors selected:" + _authorSet.Count);
+
             foreach (var resList in map)
             {
                 var res = resList.Value.First();
@@ -412,24 +427,53 @@ namespace Dash
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
 
-                selectDictionary.TryGetValue(_currentSelection, out var dictSelection);
+                //_selectDictionary.TryGetValue(_currentSelection, out var dictSelection);
+
+                //// filtering
+
+                //if (dictSelection != "None")
+                //{
+                //    if (dictSelection == "Author")
+                //    {
+                //        if (xAdvSearch.Text != res.DataDocument.GetAuthor())
+                //        {
+                //            continue;
+                //        }
+                //    }
+                //    else if (res.ViewDocument.GetDocType() != dictSelection)
+                //    {
+                //        continue;
+                //    }
+                //}
 
                 // filtering
 
-                if (dictSelection != "None")
+                var docAuthor = res.DataDocument.GetAuthor();
+                var docType = res.ViewDocument.GetDocType();
+                bool authorFlag = false;
+
+                if (trueFilters.Count > 0)
                 {
-                    if (dictSelection == "Author")
+                    if (trueFilters.Contains("Author"))
                     {
-                        if (xAdvSearch.Text != res.DataDocument.GetAuthor())
+                        authorFlag = true;
+                        if (!_authorSet.Contains(docAuthor))
                         {
                             continue;
                         }
+                        trueFilters.Remove("Author");
                     }
-                    else if (res.ViewDocument.GetDocType() != dictSelection)
+                    if (trueFilters.Count>0 && !trueFilters.Contains(docType))
                     {
                         continue;
                     }
                 }
+
+                if (authorFlag && !trueFilters.Contains("Author"))
+                {
+                    trueFilters.Add("Author");
+                }
+
 
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
 
@@ -606,13 +650,28 @@ namespace Dash
         }
 
         private string _currentSelection = "None";
+        
 
         private void xDocumentFilter_SelectionChanged(object sender, TappedRoutedEventArgs e)
         {
-            var mf = sender as MenuFlyoutItem;
-            _currentSelection = mf?.Text;
-            xAdvSearch.Text = _currentSelection;
-            mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+            if (sender is MenuFlyoutItem mf)
+            {
+                _currentSelection = mf?.Text;
+                xAdvSearch.Text = _currentSelection;
+                if (_filters.Contains(_currentSelection))
+                {
+                    _filters.Remove(_currentSelection);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                }
+                else
+                {
+                    _filters.Add(_currentSelection);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                }
+            }
+
+            Debug.WriteLine("# of filters selected:"+_filters.Count);
+
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
@@ -620,54 +679,49 @@ namespace Dash
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }
 
-        private void Author_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            var mF = new MenuFlyout();
-            var subitem = sender as MenuFlyoutSubItem;
-            subitem?.Items?.Clear();
-            Debug.WriteLine(subitem?.Items?.Count);
-            var nodes = DocumentTree.MainPageTree;
-            var authorList = new HashSet<string>();
-            foreach (var node in nodes)
-            {
-                if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
-                {
-                    var author = node.DataDocument.GetAuthor();
-                    if (!authorList.Contains(author) && author != null)
-                    {
-                        authorList.Add(author);
-                        Debug.WriteLine(author);
-                    }
-                }
-            }
-            Debug.WriteLine(authorList.Count);
-            foreach (var auth in authorList)
-            {
-                var pickAuthor = new MenuFlyoutItem
-                {
-                    Text = auth,
-                };
-                subitem?.Items?.Add(pickAuthor);
-                pickAuthor.Click += PickAuthorOnClick;
-                mF.Items.Add(pickAuthor);
-            }
-            _authorList = authorList;
-           // mF.ShowAt((FrameworkElement)sender);
-        }
-
-        private HashSet<string> _authorList;
-
         private void PickAuthorOnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            var mf = sender as MenuFlyoutItem;
-            _currentSelection = "Author";
-            xAdvSearch.Text = mf?.Text;
+            //var mf = sender as MenuFlyoutItem;
+            //_currentSelection = "Author";
+            //xAdvSearch.Text = mf?.Text;
+
+            if (sender is MenuFlyoutItem mf)
+            {
+                _currentSelection = "Author";
+                string author = mf.Text;
+                xAdvSearch.Text = author;
+                if (_authorSet.Contains(author))
+                {
+                    _authorSet.Remove(author);
+                }
+                else
+                {
+                    _authorSet.Add(author);
+                }
+                if (_filters.Contains(_currentSelection) && _authorSet.Count==0)
+                {
+                    _filters.Remove(_currentSelection);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                }
+                else
+                {
+                    _filters.Add(_currentSelection);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                }
+            }
+
+            Debug.WriteLine("# of filters selected:" + _filters.Count);
         }
 
+        private MenuFlyoutSubItem _authorItem;
         private void FlyoutBase_OnOpening(object sender, object e)
         {
-            xAuthorSubItem?.Items?.Clear();
-            Debug.WriteLine(xAuthorSubItem?.Items?.Count);
+            var flyout = (MenuFlyout) sender;
+            if (_authorItem != null)
+            {
+                flyout.Items.Remove(_authorItem);
+            }
+            _authorItem = new MenuFlyoutSubItem(){Text = "Author"};
             var nodes = DocumentTree.MainPageTree;
             var authorList = new HashSet<string>();
             foreach (var node in nodes)
@@ -678,21 +732,24 @@ namespace Dash
                     if (!authorList.Contains(author) && author != null)
                     {
                         authorList.Add(author);
-                        Debug.WriteLine(author);
+                        Debug.WriteLine("AUTHOR:"+author);
                     }
                 }
             }
-            Debug.WriteLine(authorList.Count);
             foreach (var auth in authorList)
             {
                 var pickAuthor = new MenuFlyoutItem
                 {
                     Text = auth,
                 };
-                xAuthorSubItem?.Items?.Add(pickAuthor);
+                _authorItem?.Items?.Add(pickAuthor);
+                if (_authorSet.Contains(auth))
+                {
+                    pickAuthor.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                }
                 pickAuthor.Click += PickAuthorOnClick;
             }
-            _authorList = authorList;
+            flyout.Items.Add(_authorItem);
 
         }
     }

@@ -29,7 +29,7 @@ namespace Dash
         /// <param name="docs">Optional list of documents to search over instead of all documents</param>
         /// <returns></returns>
         public static List<SearchResult> Parse(string inputString, bool useAll = false,
-            IEnumerable<DocumentController> docs = null)
+            IEnumerable<DocumentController> docs = null,HashSet<string> filters = null)
         {
             if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
 
