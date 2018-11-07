@@ -11,9 +11,8 @@
 
     <Grid>
         <InkToolbar x:Name="xInkToolbar"
-                    VerticalAlignment="Bottom"
                     HorizontalAlignment="Center"
-                    TargetInkCanvas="{Binding Canvas}"
+                    TargetInkCanvas="{Binding AnnotationOverlay.XInkCanvas}"
                     InitialControls="None"
                     InkDrawingAttributesChanged="XInkToolbar_OnInkDrawingAttributesChanged"
                     ActiveToolChanged="InkToolbar_OnActiveToolChanged">

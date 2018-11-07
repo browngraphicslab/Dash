@@ -22,6 +22,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;      
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using iText.Kernel.Crypto;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
@@ -411,9 +412,11 @@ namespace Dash
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
                 xPdfGrid.Children.Add(AnnotationOverlay);
+                
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
             xCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            xInkToolbar.TargetInkCanvas = AnnotationOverlay.XInkCanvas;
             if (Pages.PageSizes.Count != 0)
                 Pages.Initialize();
         }

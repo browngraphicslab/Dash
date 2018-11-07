@@ -295,7 +295,7 @@ namespace Dash
 
                     new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
 
-                    this.Resize(this, e, true, false, true);
+                    //this.Resize(this, e, true, false, true);
                 }
             };
             ManipulationCompleted += (s, e) =>

@@ -29,6 +29,7 @@
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />
-        <InkCanvas x:Name="XInkCanvas"/>
+        <InkCanvas x:Name="XInkCanvas" x:FieldModifier="public"/>
+       
     </Grid>
 </UserControl>

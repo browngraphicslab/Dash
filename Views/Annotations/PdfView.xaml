@@ -23,8 +23,9 @@
             <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
         </Grid.ColumnDefinitions>
 
+
         <Grid x:Name="xTBotPdfGrid" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" >
-            <local:PdfAnnotationView x:Name="_botPdf"/>
+            <local:PdfAnnotationView x:Name="_botPdf" x:FieldModifier="public"/>
         </Grid>
 
 
