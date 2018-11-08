@@ -115,6 +115,8 @@ namespace Dash
         public void SelectRegion(DocumentController region)
         {
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
+            if (documentView == null)
+                return;
             documentView.Visibility = Visibility.Visible;
 
             var deselect = SelectedRegion?.IsSelected == true; 

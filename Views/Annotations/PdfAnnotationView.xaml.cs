@@ -407,7 +407,6 @@ namespace Dash
 
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            (xCollectionView.CurrentView as CollectionFreeformView)?.ViewManipulationControls.SetDisableScrollWheel(true);
             Pages.ScrollViewerContentWidth = ActualWidth;
             KeyDown += PdfAnnotationView_KeyDown;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
@@ -418,6 +417,7 @@ namespace Dash
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
             xCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
             if (Pages.PageSizes.Count != 0)
                 Pages.Initialize();
         }
