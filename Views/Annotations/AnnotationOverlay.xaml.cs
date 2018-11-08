@@ -26,11 +26,9 @@ namespace Dash
     {
         private InkController                           _inkController;
         private AnnotationType                          _currAnnotationType = AnnotationType.None;
-        private readonly ObservableCollection<DocumentViewModel> _embeddedViewModels = new ObservableCollection<DocumentViewModel>();
         private bool                                    _maskInkUpdates = false;
         [CanBeNull] private AnchorableAnnotation        _currentAnnotation;
 
-        public ObservableCollection<DocumentViewModel> EmbeddedViewModels => _embeddedViewModels;
 
         public delegate DocumentController       RegionGetter(AnnotationType type);
         public readonly DocumentController        MainDocument;
@@ -41,6 +39,7 @@ namespace Dash
         public List<AnchorableAnnotation>         CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
         public ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
         public ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
+        public ObservableCollection<DocumentViewModel> EmbeddedViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
         public AnnotationType                 CurrentAnnotationType
         {
@@ -67,7 +66,7 @@ namespace Dash
             InitializeComponent();
 
             MainDocument = viewDocument;
-            GetRegion    = getRegion;
+            GetRegion = getRegion;
 
             AnnotationManager = new AnnotationManager(this);
 
@@ -82,10 +81,20 @@ namespace Dash
                 XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
 
-            Loaded   += onLoaded;
-            Unloaded += onUnloaded;
+            RegionDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
+            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
+            _inkController = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
+            MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.InkDataKey, (view, controller, arge) => view.inkController_FieldModelUpdated(controller, arge));
+            MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.RegionsKey, (view, controller, arge) => view.regionDocsListOnFieldModelUpdated(controller, arge));
+            MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.EmbeddedDocumentsKey, (view, controller, arge) => view.embeddedDocsListOnFieldModelUpdated(controller, arge));
+            embeddedDocsListOnFieldModelUpdated(null,
+                new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Update, null, 
+               new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.ToList(), new List<DocumentController>(), 0), false));
+            regionDocsListOnFieldModelUpdated(null,
+                new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Update, null,
+              new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, RegionDocsList.ToList(), new List<DocumentController>(), 0), false));
+         }
 
-        }
         public class CursorConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, string language)
@@ -189,43 +198,14 @@ namespace Dash
             return annotation;
         }
 
-        void onUnloaded(object o, RoutedEventArgs routedEventArgs)
-        { 
-            if (RegionDocsList != null)
-                RegionDocsList.FieldModelUpdated -= regionDocsListOnFieldModelUpdated;
-            if (_inkController != null)
-                _inkController.FieldModelUpdated -= inkController_FieldModelUpdated;
-        }
-        void onLoaded(object o, RoutedEventArgs routedEventArgs)
+        private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {
-            RegionDocsList   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
-            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
-            _inkController   = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
-            _inkController  .FieldModelUpdated += inkController_FieldModelUpdated;
-            RegionDocsList  .FieldModelUpdated += regionDocsListOnFieldModelUpdated;
-            EmbeddedDocsList.FieldModelUpdated += embeddedDocsListOnFieldModelUpdated;
-            embeddedDocsListOnFieldModelUpdated(null, 
-                new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.ToList(), new List<DocumentController>(),0), null);
-           _embeddedViewModels.Clear();
-
-            RegionDocsList.ToList().ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
-            EmbeddedDocsList.ToList().ForEach((doc) =>
-                _embeddedViewModels.Add(new DocumentViewModel(doc)
-                {
-                    Undecorated = true,
-                    ResizersVisible = true,
-                    DragWithinParentBounds = true
-                }));
-        }
-
-        private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
-        {
-            if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
+            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
                 switch (listArgs.ListAction)
                 {
                     case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                        listArgs.NewItems.ForEach((reg) => _embeddedViewModels.Add(
+                        listArgs.NewItems.ForEach((reg) => EmbeddedViewModels.Add(
                             new DocumentViewModel(reg)
                             {
                                 Undecorated = true,
@@ -234,22 +214,24 @@ namespace Dash
                             }));
                     break;
                     case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                        listArgs.OldItems.ForEach((removedDoc) =>
+                        listArgs.OldItems.ForEach((Action<DocumentController>)((removedDoc) =>
                         {
-                            foreach (var em in _embeddedViewModels.ToArray())
+                            foreach (var em in Enumerable.ToArray<DocumentViewModel>(EmbeddedViewModels))
                             {
                                 if (em.LayoutDocument.Equals(removedDoc))
-                                    _embeddedViewModels.Remove(em);
+                                {
+                                    EmbeddedViewModels.Remove(em);
+                                }
                             }
-                        });
+                        }));
                     break;
                 }
             }
         }
 
-        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args, Context c)
+        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {
-            if (args is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
+            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
                 switch (listArgs.ListAction)
                 {
@@ -267,7 +249,7 @@ namespace Dash
             }
         }
 
-        private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args)
         {
             if (!_maskInkUpdates && XInkCanvas != null)
             {
