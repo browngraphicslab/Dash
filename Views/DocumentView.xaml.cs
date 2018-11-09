@@ -38,7 +38,7 @@ namespace Dash
 
         public DocumentViewModel ViewModel
         {
-            get => DataContext as DocumentViewModel;
+            get  { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
 

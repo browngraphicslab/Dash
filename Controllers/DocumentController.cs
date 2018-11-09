@@ -1159,6 +1159,40 @@ namespace Dash
                 var fieldKey = KeyController.Get(fieldName);
                 DataBox.BindContent(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey);
             }
+            var doclistFields = g.GetDescendantsOfType<ListView>().Where((rtv) => rtv.Name.StartsWith("xDocumentList"));
+            foreach (var fieldReplacement in doclistFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xDocumentList", "");
+                var fieldKey = KeyController.Get(fieldName);
+                var binding = new FieldBinding<ListController<DocumentController>>()
+                {
+                    Converter=new DocsToViewModelsConverter(),
+                    Mode = BindingMode.OneWay,
+                    Document = GetDataDocument(),
+                    Key = fieldKey,
+                    Tag="bind ItemSource in DocumentController"
+                };
+                fieldReplacement.AddFieldBinding(ListView.ItemsSourceProperty, binding);
+            }
+            var docFields = g.GetDescendantsOfType<DocumentView>().Where((rtv) => rtv.Name.StartsWith("xDocumentField"));
+            foreach (var fieldReplacement in docFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xDocumentField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                fieldReplacement.DataContext = new DocumentViewModel(GetDereferencedField<DocumentController>(fieldKey,null));
+            }
+        }
+        public class DocsToViewModelsConverter : SafeDataToXamlConverter<List<DocumentController>, List<DocumentViewModel>>
+        {
+            public override List<DocumentViewModel> ConvertDataToXaml(List<DocumentController> wrapping, object parameter = null)
+            {
+                return wrapping.Select((d) => new DocumentViewModel(d) { ResizersVisible = false, IsDimensionless = true }).ToList();
+            }
+
+            public override List<DocumentController> ConvertXamlToData(List<DocumentViewModel> xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         #endregion
@@ -1305,7 +1339,7 @@ namespace Dash
         private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {
             // this invokes listeners which have been added on a per key level of granularity
-            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
+            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey) )
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
 
             // this invokes listeners which have been added on a per doc level of granularity

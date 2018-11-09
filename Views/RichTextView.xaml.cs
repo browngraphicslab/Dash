@@ -614,9 +614,39 @@ namespace Dash
 
             if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
+                var xamlReplies =
+                    @"<Grid
+            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+            xmlns:dash=""using:Dash""
+            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+        <Grid.RowDefinitions>
+            <RowDefinition Height=""Auto""></RowDefinition>
+            <RowDefinition Height= ""Auto""></RowDefinition>
+        </Grid.RowDefinitions>
+        <Border Grid.Row=""0"" Background =""CadetBlue"" >
+            <dash:RichTextView x:Name=""xRichTextFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
+        </Border>
+        <ListView Margin=""5 0 0 0"" x:Name=""xDocumentListReplies"" Grid.Row=""1"">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <dash:DocumentView />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>";
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                getDocView().HandleShiftEnter();
+                var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
+                var rtn = new RichTextNote("").Document;
+                var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
+                if (xaml == null) {
+                    xaml = xamlReplies;
+                    LayoutDocument.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                }
+                rtn.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                replies.Add(rtn);
+                //getDocView().HandleShiftEnter();
                 e.Handled = true;
             }
             if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
