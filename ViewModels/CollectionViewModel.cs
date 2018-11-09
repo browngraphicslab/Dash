@@ -40,14 +40,20 @@ namespace Dash
             get => _cellFontSize;
             set
             {
-                this.SetProperty<double>(ref _cellFontSize, value);
+                SetProperty<double>(ref _cellFontSize, value);
             }
         }
+
+        public bool DisableTransformations = false;
         public TransformGroupData TransformGroup
 
         {
             get
             {
+                if (DisableTransformations)
+                {
+                    return new TransformGroupData(new Point(), new Point(1, 1));
+                }
                 var trans = ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
                 var scale = ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
                 if (trans.Y > 0 && !SettingsView.Instance.NoUpperLimit)   // clamp the y offset so that we can only scroll down
@@ -275,7 +281,7 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    if (startIndex >= DocumentViewModels.Count)
+                    if (startIndex >= DocumentViewModels.Count || startIndex < 0)
                         DocumentViewModels.Add(new DocumentViewModel(documentController));
                     else DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
                     startIndex++;
