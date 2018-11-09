@@ -147,10 +147,10 @@ namespace Dash
             if (activePdf.AnnotationOverlay.RegionDocsList.Contains(source))
             {
                 ScrollToRegion(source, activeView: activePdf);
-                var src = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(source.GetDataDocument())).FirstOrDefault();
-                if (src != null)
+                var src = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(source.GetDataDocument()));
+                if (src.Count() > 0)
                 {
-                    src.ViewModel.LayoutDocument.ToggleHidden();
+                    src.ToList().ForEach((s) => s.ViewModel.LayoutDocument.ToggleHidden());
                     return LinkHandledResult.HandledClose;
                 }
             }

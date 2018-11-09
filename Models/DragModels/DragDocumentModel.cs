@@ -98,10 +98,8 @@ namespace Dash
             // ...if ALT pressed, create a data instance
             else if (MainPage.Instance.IsAltPressed())
             {
-                for (int i = 0; i < DraggedDocuments.Count; i++)
-                {
-                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
-                }
+                Debug.Assert(where.HasValue);
+                docs = GetLinkDocuments((Point)where);
             }
             else if (MainPage.Instance.IsShiftPressed())
             {
@@ -113,8 +111,10 @@ namespace Dash
             }
             else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
-                Debug.Assert(where.HasValue);
-                docs = GetLinkDocuments((Point)where);
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
+                }
             }
             else
             {

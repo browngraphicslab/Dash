@@ -183,6 +183,8 @@ namespace Dash
             MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerWheelChangedEvent, ptrhdlr, true);
             MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.TappedEvent, taphdlr);
             MainPage.Instance.xOuterGrid.AddHandler(UIElement.TappedEvent, taphdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyDownEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyDownEvent, keyhdlr, true);
             MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyUpEvent, keyhdlr);
             MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyUpEvent, keyhdlr, true);
             this.InitializeComponent();
