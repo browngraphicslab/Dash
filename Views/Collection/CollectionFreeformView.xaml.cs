@@ -307,7 +307,7 @@ namespace Dash
                                  xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height=""Auto"" ></RowDefinition>
-                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""*"" ></RowDefinition>
                             </Grid.RowDefinitions>
                                 <Border Grid.Row=""0"" Background =""CadetBlue"" >
                                     <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />

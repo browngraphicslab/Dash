@@ -847,44 +847,42 @@ namespace Dash
             var where = e.GetPosition(XAnnotationCanvas);
             if (e.DataView.HasDataOfType(Internal) && !this.IsAltPressed())
             {
+                var dragModel = e.DataView.GetDragModel();
                 if (!this.IsShiftPressed())
                 {
+                    if (!(dragModel is DragDocumentModel dm) || dm.DraggingLinkButton)
+                        return;
                     // if docs are being moved within the overlay, then they will be placed appropriately and returned from this call.
                     // if docs are being dragged onto this overlay, we disallow that and no droppedDocs are returned from this call.
                     var droppedDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     e.AcceptedOperation = droppedDocs.Count > 0 ? DataPackageOperation.Move : DataPackageOperation.None;
-                    e.Handled = true;//  e.AcceptedOperation != DataPackageOperation.None;
-                    if (droppedDocs.Count > 0)
+                    e.Handled = true;
+                    if (e.AcceptedOperation == DataPackageOperation.Move && !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
                     {
-                        if (!MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
+                        for (var i = 0; i < dm.DraggedDocCollectionViews?.Count; i++)
                         {
-                            var dragModel = e.DataView.GetDragModel();
-                            if (dragModel is DragDocumentModel d)
+                            if (! this.GetDescendants().Contains(dm.DraggedDocumentViews[i]))
                             {
-                                for (var i = 0; i < d.DraggedDocCollectionViews?.Count; i++)
-                                {
-                                    if (! this.GetDescendants().Contains(d.DraggedDocumentViews[i]))
-                                    {
-                                        EmbeddedDocsList.Add(droppedDocs.FirstOrDefault());
-                                    }
-                                    if (d.DraggedDocumentViews != null)
-                                    {
-                                        MainPage.Instance.ClearFloaty(d.DraggedDocumentViews[i]);
-                                    }
+                                EmbeddedDocsList.Add(droppedDocs.FirstOrDefault());
+                            }
+                            if (dm.DraggedDocumentViews != null)
+                            {
+                                MainPage.Instance.ClearFloaty(dm.DraggedDocumentViews[i]);
+                            }
 
-                                    if (d.DraggedDocCollectionViews[i] == null)
-                                    {
-                                        var overlay = d.DraggedDocumentViews[i]?.GetFirstAncestorOfType<AnnotationOverlay>();
-                                        if (overlay != this)
-                                        {
-                                            overlay?.EmbeddedDocsList.Remove(d.DraggedDocuments[i]);
-                                        }
-                                    } else
-                                        d.DraggedDocCollectionViews[i].RemoveDocument(d.DraggedDocuments[i]);
+                            if (dm.DraggedDocCollectionViews[i] == null)
+                            {
+                                var overlay = dm.DraggedDocumentViews[i]?.GetFirstAncestorOfType<AnnotationOverlay>();
+                                if (overlay != this)
+                                {
+                                    overlay?.EmbeddedDocsList.Remove(dm.DraggedDocuments[i]);
                                 }
+                            } else
+                            {
+                                dm.DraggedDocCollectionViews[i].RemoveDocument(dm.DraggedDocuments[i]);
                             }
                         }
-                    }
+                }
                 }
                 else 
                 {
