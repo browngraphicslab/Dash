@@ -179,6 +179,7 @@ namespace Dash
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Discussion",      "Add a discussion", AddDiscussion, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Image(s)",        "Add one or more images",  AddMultipleImages, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Collection",      "Collection",AddCollection,source));
 
@@ -262,7 +263,19 @@ namespace Dash
 
             return true;
         }
+        private async Task<bool> AddDiscussion(ActionFuncParams actionParams)
+        {
+            var pt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
+            var docController = new DiscussionNote("testing...", pt).Document;
+            docController.GetDataDocument().SetField(KeyStore.DataKey, new RichTextNote("Testing...").Document, true);
+            docController.SetWidth(double.NaN);
+            docController.SetHeight(double.NaN);
+            docController.SetHorizontalAlignment(HorizontalAlignment.Left);
+            docController.SetVerticalAlignment(VerticalAlignment.Stretch);
+            ViewModel.AddDocument(docController);
 
+            return true;
+        }
         private async Task<bool> AddImageWithCaption(ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker

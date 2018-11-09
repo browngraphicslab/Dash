@@ -324,7 +324,7 @@ namespace Dash
                 {
                     if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
                         parentIsFreeform = false;
-                    if (doc.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType))
+                    if (doc.ViewModel?.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType) == true)
                         parentIsPDF = true;
                     var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
@@ -349,7 +349,7 @@ namespace Dash
             this.xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
             xActivationButton.Fill = new SolidColorBrush(LinkActivationManager.IsActivated(SelectedDocs.FirstOrDefault()) ? Colors.Red : Colors.LightSkyBlue);
 
-            ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null ? Visibility.Collapsed : Visibility.Visible;
+            ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.FirstOrDefault()?.ViewModel.ResizersVisible == false ? Visibility.Collapsed : Visibility.Visible;
 
             if (rebuildMenu)
             {
