@@ -48,33 +48,12 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
-                var field = doc.GetDereferencedField(KeyController.Get(keyName), null);
+                var field = doc.GetDereferencedField(KeyController.Get(keyName), null) ?? doc.GetDataDocument().GetDereferencedField(KeyController.Get(keyName));
                 if (field != null)
                 {
                     outputs[ResultFieldKey] = field;
                     return Task.CompletedTask;
                 }
-                var sb = new StringBuilder();
-                var pattern = @"([a-z])([A-Z])";
-                var matches = Regex.Matches(keyName, pattern);
-                var prevIndex = 0;
-                if (matches.Any())
-                {
-                    foreach (Match match in matches)
-                    {
-                        var caml = match.Groups.First();
-                        var startIndex = caml.Captures.First().Index;
-                        sb.Append(keyName.Substring(prevIndex, startIndex - prevIndex));
-                        if (startIndex == prevIndex) continue;
-                        sb.Append(keyName[startIndex] + " " + keyName[startIndex + 1]);
-                        prevIndex = startIndex + 2;
-
-                    }
-                }
-                sb.Append(keyName.Substring(prevIndex));
-
-                var newKeyName = sb.ToString();
-                outputs[ResultFieldKey] = doc.GetDereferencedField(KeyController.Get(newKeyName), null) ?? doc.GetDataDocument().GetDereferencedField(KeyController.Get(newKeyName), null);
             }
 
             

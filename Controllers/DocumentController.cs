@@ -1152,6 +1152,13 @@ namespace Dash
                 var cvm = new CollectionViewModel(this, fieldKey);
                 fieldReplacement.DataContext = cvm;
             }
+            var contentFields = g.GetDescendantsOfType<ContentPresenter>().Where((rtv) => rtv.Name.StartsWith("xDataField"));
+            foreach (var fieldReplacement in contentFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xDataField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                DataBox.BindContent(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey);
+            }
         }
 
         #endregion

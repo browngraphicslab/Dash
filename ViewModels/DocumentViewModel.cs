@@ -14,7 +14,6 @@ namespace Dash
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
         // == MEMBERS, GETTERS, SETTERS ==
-        private DocumentController _lastLayout = null;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private bool               _showLocalContext;
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
@@ -28,8 +27,13 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;
-            _lastLayout = LayoutDocument;
+            DocumentController.AddWeakFieldUpdatedListener(this, KeyStore.XamlKey,
+                (dvm, controller, arg3) => dvm.DocumentController_ActiveLayoutChanged(controller, arg3));
 
+            DocumentController.AddWeakFieldUpdatedListener(this, KeyStore.DocumentTypeKey,
+                (dvm, controller, arg3) => dvm.DocumentController_ActiveLayoutChanged(controller, arg3));
+            DocumentController.AddWeakFieldUpdatedListener(this, KeyStore.DataKey,
+                (dvm, controller, arg3) => dvm.LayoutDocument_DataChanged(controller, arg3));
             SearchHighlightBrush = ColorConverter.HexToBrush("#fffc84");
 
             if (IconTypeController == null)
@@ -41,16 +45,12 @@ namespace Dash
         public void Load()
         {
             //UnLoad();
-            DocumentController.AddFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
-            _lastLayout.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
         public void UnLoad()
         {
-            DocumentController.RemoveFieldUpdatedListener(KeyStore.DocumentTypeKey, DocumentController_ActiveLayoutChanged);
-            _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
         }
 
-        public DocumentController DocumentController { get; set; }
+        public DocumentController DocumentController { get; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
         public DocumentController LayoutDocument => DocumentController;
         public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
