@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Dash.Controllers;
 using DashShared;
 
@@ -61,15 +62,20 @@ namespace Dash.Converters
             }
             else if (data is DocumentController dc)
             {
-                // hack to check if the dc is a view document
-                if (KeyStore.TypeRenderer.ContainsKey(dc.DocumentType))
+                var dvm = new DocumentViewModel(dc);
+                currView = new ContentPresenter() {DataContext = dvm};
+                currView.DataContextChanged += (sender, args) =>
                 {
-                    currView = dc.MakeViewUI(_context);
-                }
-                else
+                    if (args.NewValue != dvm)
+                    {
+                        currView.DataContext = dvm;
+                    }
+                };
+                currView.SetBinding(ContentPresenter.ContentProperty, new Binding()
                 {
-                    currView = dc.GetKeyValueAlias().MakeViewUI(_context);
-                }
+                    Path = new PropertyPath(nameof(dvm.Content)),
+                    Mode = BindingMode.OneWay
+                });
                 _lastDocType = dc.DocumentType;
                 _lastDocument = dc;
             }
