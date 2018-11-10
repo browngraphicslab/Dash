@@ -27,10 +27,13 @@ namespace Dash
     {
         private int _selectedIndex = -1;
         private bool _arrowBlock = false;
-        private Dictionary<string, string> _selectDictionary;
-        private HashSet<string> _filters;
-        private HashSet<string> _authorSet;
+
+        private Dictionary<string, string> _filterDictionary;
+        private Dictionary<string, MenuFlyoutItem> _filtertoMenuFlyout;
         private HashSet<string> _options;
+        private HashSet<string> _documentFilters;
+        private HashSet<string> _authorFilters;
+
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -40,7 +43,7 @@ namespace Dash
         {
             InitializeComponent();
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
-            this.InitializeSelectionDictionary();
+            InitializeFilters();
 
             _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
             _searchTimer.Tick += SearchTimerOnTick;
@@ -52,21 +55,31 @@ namespace Dash
             _searchTimer.Stop();
         }
 
-        private void InitializeSelectionDictionary()
+        private void InitializeFilters()
         {
-            _selectDictionary = new Dictionary<string, string>();
-            _selectDictionary["None"] = "None";
-            _selectDictionary["Image"] = "Image Box";
-            _selectDictionary["Text"] = "Rich Text Box";
-            _selectDictionary["Audio"] = "Audio Box";
-            _selectDictionary["Video"] = "Video Box";
-            _selectDictionary["PDF"] = "Pdf Box";
-            _selectDictionary["Collection"] = "Collection Box";
-            _selectDictionary["Author"] = "Author";
+            _filterDictionary = new Dictionary<string, string>
+            {
+                ["Image"] = "Image Box",
+                ["Text"] = "Rich Text Box",
+                ["Audio"] = "Audio Box",
+                ["Video"] = "Video Box",
+                ["PDF"] = "Pdf Box",
+                ["Collection"] = "Collection Box"
+            };
 
-            _filters = new HashSet<string>();
-            _authorSet = new HashSet<string>();
+            _filtertoMenuFlyout = new Dictionary<string, MenuFlyoutItem>
+            {
+                ["Image"] = xImageFilter,
+                ["Text"] = xTextFilter,
+                ["Audio"] = xAudioFilter,
+                ["Video"] = xVideoFilter,
+                ["PDF"] = xPDFFilter,
+                ["Collection"] = xCollectionFilter
+            };
+
             _options = new HashSet<string>();
+            _documentFilters = new HashSet<string>();
+            _authorFilters = new HashSet<string>();
 
         }
 
@@ -377,7 +390,7 @@ namespace Dash
             try
             {
 
-                searchRes = Search.Parse(text).ToList();
+                searchRes = Search.Parse(text,options:_options).ToList();
             }
             catch (Exception)
             {
@@ -413,17 +426,11 @@ namespace Dash
             }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return;
-            //highlight doc results
 
             var vmGroups = new List<SearchResultViewModel>();
-            var trueFilters = new HashSet<string>();
-            foreach (var filter in _filters)
-            {
-                trueFilters.Add(_selectDictionary[filter]);
-                Debug.WriteLine("true filter:"+_selectDictionary[filter]);
-            }
 
-            Debug.WriteLine("# of authors selected:" + _authorSet.Count);
+            Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
+            Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
 
             foreach (var resList in map)
             {
@@ -433,53 +440,29 @@ namespace Dash
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
 
-                //_selectDictionary.TryGetValue(_currentSelection, out var dictSelection);
-
-                //// filtering
-
-                //if (dictSelection != "None")
-                //{
-                //    if (dictSelection == "Author")
-                //    {
-                //        if (xAdvSearch.Text != res.DataDocument.GetAuthor())
-                //        {
-                //            continue;
-                //        }
-                //    }
-                //    else if (res.ViewDocument.GetDocType() != dictSelection)
-                //    {
-                //        continue;
-                //    }
-                //}
-
-                // filtering
-
                 var docAuthor = res.DataDocument.GetAuthor();
                 var docType = res.ViewDocument.GetDocType();
-                bool authorFlag = false;
 
-                if (trueFilters.Count > 0)
+                if (_authorFilters.Count > 0)
                 {
-                    if (trueFilters.Contains("Author"))
-                    {
-                        authorFlag = true;
-                        if (!_authorSet.Contains(docAuthor))
-                        {
-                            continue;
-                        }
-                        trueFilters.Remove("Author");
-                    }
-                    if (trueFilters.Count>0 && !trueFilters.Contains(docType))
+                    if (!_authorFilters.Contains(docAuthor))
                     {
                         continue;
                     }
                 }
 
-                if (authorFlag && !trueFilters.Contains("Author"))
+                if (_documentFilters.Count > 0)
                 {
-                    trueFilters.Add("Author");
+                    var trueDocumentFilters = new HashSet<string>();
+                    foreach (var docFilter in _documentFilters)
+                    {
+                        trueDocumentFilters.Add(_filterDictionary[docFilter]);
+                    }
+                    if (!trueDocumentFilters.Contains(docType))
+                    {
+                        continue;
+                    }
                 }
-
 
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
 
@@ -538,10 +521,7 @@ namespace Dash
             foreach (var node in DocumentTree.MainPageTree)
             {
                 var a = node.DataDocument;
-                if (a.GetField(CollectionDBView.SelectedKey) != null)
-                {
-                    a.SetField(CollectionDBView.SelectedKey, new ListController<TextController>(new TextController("")), true);
-                }
+                a.RemoveField(CollectionDBView.SelectedKey);
             }
         }
 
@@ -669,34 +649,9 @@ namespace Dash
                 else
                 {
                     _options.Add(option);
-                    mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
             }
-        }
-
-        private string _currentSelection = "None";
-        
-
-        private void xDocumentFilter_SelectionChanged(object sender, TappedRoutedEventArgs e)
-        {
-            if (sender is MenuFlyoutItem mf)
-            {
-                _currentSelection = mf?.Text;
-                //xAdvSearch.Text = _currentSelection;
-                if (_filters.Contains(_currentSelection))
-                {
-                    _filters.Remove(_currentSelection);
-                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
-                }
-                else
-                {
-                    _filters.Add(_currentSelection);
-                    mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
-                }
-            }
-
-            Debug.WriteLine("# of filters selected:"+_filters.Count);
-
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
@@ -709,80 +664,104 @@ namespace Dash
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }
 
-        private void PickAuthorOnClick(object sender, RoutedEventArgs routedEventArgs)
-        {
-            //var mf = sender as MenuFlyoutItem;
-            //_currentSelection = "Author";
-            //xAdvSearch.Text = mf?.Text;
+        #region Clean Filters
 
+        private void Document_OnClick(object sender, TappedRoutedEventArgs e)
+        {
             if (sender is MenuFlyoutItem mf)
             {
-                _currentSelection = "Author";
-                string author = mf.Text;
-                //xAdvSearch.Text = author;
-                if (_authorSet.Contains(author))
+                var document = mf.Text;
+                if (_documentFilters.Contains(document))
                 {
-                    _authorSet.Remove(author);
-                }
-                else
-                {
-                    _authorSet.Add(author);
-                }
-                if (_filters.Contains(_currentSelection) && _authorSet.Count==0)
-                {
-                    _filters.Remove(_currentSelection);
+                    _documentFilters.Remove(document);
                     mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
                 }
                 else
                 {
-                    _filters.Add(_currentSelection);
-                    mf.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                    _documentFilters.Add(document);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
             }
+        }
 
-            Debug.WriteLine("# of filters selected:" + _filters.Count);
+
+        private void Author_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (sender is MenuFlyoutItem mf)
+            {
+                string author = mf.Text;
+                if (_authorFilters.Contains(author))
+                {
+                    _authorFilters.Remove(author);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                }
+                else
+                {
+                    _authorFilters.Add(author);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
+                }
+            }
         }
 
         private MenuFlyoutSubItem _authorItem;
-        private void FlyoutBase_OnOpening(object sender, object e)
+
+        private void FlyoutBase_OnOpen(object sender, object e)
         {
-            var flyout = (MenuFlyout) sender;
-            if (_authorItem != null)
+            if (sender is MenuFlyout flyout)
             {
-                flyout.Items.Remove(_authorItem);
-            }
-            _authorItem = new MenuFlyoutSubItem(){Text = "Author"};
-            var nodes = DocumentTree.MainPageTree;
-            var authorList = new HashSet<string>();
-            foreach (var node in nodes)
-            {
-                if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+                if (_authorItem != null)
                 {
-                    var author = node.DataDocument.GetAuthor();
-                    if (!authorList.Contains(author) && author != null)
+                    flyout.Items.Remove(_authorItem);
+                }
+                _authorItem = new MenuFlyoutSubItem() { Text = "Author" };
+                var nodes = DocumentTree.MainPageTree;
+                var currentAuthors = new HashSet<string>();
+                // add authors to current authors
+                foreach (var node in nodes)
+                {
+                    if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                     {
-                        authorList.Add(author);
-                        Debug.WriteLine("AUTHOR:"+author);
+                        var author = node.DataDocument.GetAuthor();
+                        if (!currentAuthors.Contains(author) && author != null)
+                        {
+                            currentAuthors.Add(author);
+                        }
                     }
                 }
-            }
-            foreach (var auth in authorList)
-            {
-                var pickAuthor = new MenuFlyoutItem
+                foreach (var auth in currentAuthors)
                 {
-                    Text = auth,
-                };
-                _authorItem?.Items?.Add(pickAuthor);
-                if (_authorSet.Contains(auth))
-                {
-                    pickAuthor.FontWeight = Windows.UI.Text.FontWeights.ExtraBold;
+                    var authorItem = new MenuFlyoutItem
+                    {
+                        Text = auth,
+                    };
+                    _authorItem?.Items?.Add(authorItem);
+                    if (_authorFilters.Contains(auth))
+                    {
+                        authorItem.FontWeight = Windows.UI.Text.FontWeights.Bold;
+                    }
+                    authorItem.Click += Author_OnClick;
                 }
-                pickAuthor.Click += PickAuthorOnClick;
+                flyout.Items.Add(_authorItem);
             }
-            flyout.Items.Add(_authorItem);
-
         }
 
+        private void Clear_Filters()
+        {
+            _authorFilters.Clear();
+            foreach (var filter in _documentFilters)
+            {
+                var mfi = _filtertoMenuFlyout[filter];
+                mfi.FontWeight = Windows.UI.Text.FontWeights.Normal;
+            }
+            _documentFilters.Clear();
+        }
+
+        #endregion
+
+        private void ClearFilters_OnClick(object sender, TappedRoutedEventArgs e)
+        {
+            Clear_Filters();
+        }
     }
 }
 

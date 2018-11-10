@@ -810,6 +810,7 @@ namespace Dash
         // Someone please find out why this is being called twice
         private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e, Context c)
         {
+            return;
             _searchHighlight = true;
             MatchQuery(getSelected());
             // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
@@ -820,7 +821,7 @@ namespace Dash
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;
             SetSelected("");
-            DataDocument?.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            //DataDocument?.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 
@@ -844,7 +845,7 @@ namespace Dash
             }
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
-            DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            //DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
             Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
@@ -1075,6 +1076,7 @@ namespace Dash
         /// </summary>
         private void MatchQuery(List<TextController> queries)
         {
+            return;
             if (getDocView() == null) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;
             ClearSearchHighlights();
@@ -1359,7 +1361,7 @@ namespace Dash
         /// </summary>
         private void ClearSearchHighlights(bool silent = false)
         {
-
+            return;
             if (_originalRtfFormat == null)
                 return;
             var s1 = xRichEditBox.Document.Selection.StartPosition;

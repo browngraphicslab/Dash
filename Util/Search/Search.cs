@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Antlr4.Runtime;
 using DashShared;
 
@@ -43,13 +44,38 @@ namespace Dash
             var keyRefs = new List<string>();
             var fieldRefs = new List<string>();
 
+            Regex rx = null;
+
+            if (options != null && options.Count>0)
+            {
+                if (options.Contains("Match whole word"))
+                {
+                    rx = new Regex(@"(?:^|\W)" + inputString + @"(?:$|\W)",
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                }
+            }
+
             void DocSearch(DocumentController doc)
             {
                 var res = parseTree(doc);
                 foreach (var result in res)
                 {
-                    keyRefs.Add(result.Key.Name);
-                    fieldRefs.Add(result.Value.RelatedString);
+                    string keyref = result.Key.Name;
+                    string fieldRef = result.Value.RelatedString;
+                    if (rx != null)
+                    {
+                        if (rx.IsMatch(fieldRef))
+                        {
+                            Debug.WriteLine("MATCH!!! Field is:" + fieldRef);
+                            keyRefs.Add(keyref);
+                            fieldRefs.Add(fieldRef);
+                        }
+                    }
+                    else
+                    {
+                        keyRefs.Add(keyref);
+                        fieldRefs.Add(fieldRef);
+                    }
                 }
             }
 
@@ -61,8 +87,18 @@ namespace Dash
                     DocSearch(node.ViewDocument);
                     DocSearch(node.DataDocument);
 
+
                     if (keyRefs.Any())
                     {
+                        foreach (var key in keyRefs)
+                        {
+                            Debug.WriteLine("KEY REF:" + key);
+                        }
+
+                        foreach (var field in fieldRefs)
+                        {
+                            Debug.WriteLine("FIELD REF:" + field);
+                        }
                         results.Add(new SearchResult(node, keyRefs, fieldRefs,
                             keyRefs.Count));
                     }

@@ -168,14 +168,14 @@
         <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="2" 
                 Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Left" >
             <FlyoutBase.AttachedFlyout>
-                <MenuFlyout Opening="FlyoutBase_OnOpening">
+                <MenuFlyout Opening="FlyoutBase_OnOpen">
                     <MenuFlyoutSubItem Text="Document">
-                        <MenuFlyoutItem Text="Image" Tapped="xDocumentFilter_SelectionChanged"/>
-                        <MenuFlyoutItem Text="Text" Tapped="xDocumentFilter_SelectionChanged"/>
-                        <MenuFlyoutItem Text="Audio" Tapped="xDocumentFilter_SelectionChanged"/>
-                        <MenuFlyoutItem Text="Video" Tapped="xDocumentFilter_SelectionChanged"/>
-                        <MenuFlyoutItem Text="PDF" Tapped="xDocumentFilter_SelectionChanged"/>
-                        <MenuFlyoutItem Text="Collection" Tapped="xDocumentFilter_SelectionChanged"/>
+                        <MenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
@@ -186,6 +186,7 @@
                 Foreground ="White" HorizontalAlignment="Left" Click="Options_Tapped">
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout>
+                    <MenuFlyoutItem Text="Clear Filters" Tapped="ClearFilters_OnClick"/>
                     <MenuFlyoutItem Text="Match whole word" Tapped="xOptions_SelectionChanged"/>
                     <MenuFlyoutItem Text="Case sensitive" Tapped="xOptions_SelectionChanged"/>
                 </MenuFlyout>
