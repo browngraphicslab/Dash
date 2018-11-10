@@ -1,4 +1,4 @@
-﻿<dash:MenuBase
+﻿<my:MenuBase
     x:Class="RadialMenuControl.UserControl.MeterSubMenu"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,15 +7,14 @@
     xmlns:theme="using:RadialMenuControl.Themes"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:userControl="using:RadialMenuControl.UserControl"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:dash="using:Dash"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="200"
     d:DesignWidth="200">
 
-    <dash:MenuBase.Resources>
+    <my:MenuBase.Resources>
         <ResourceDictionary Source="../Themes/Styles.xaml"/>
-    </dash:MenuBase.Resources>
+    </my:MenuBase.Resources>
     <Canvas x:Name="LayoutRoot">
         <Path x:Name="OuterCircle" Stroke="{Binding OuterEdgeBrush}" StrokeThickness="{Binding OuterEdgeThickness}" Canvas.ZIndex="100">
             <Path.Data>
@@ -95,5 +94,4 @@
                 Visibility="Collapsed"/>
         <TextBlock x:Name="SelectedValueBlock" TextAlignment="Center" Foreground="{Binding SelectedValueTextColor}" Canvas.ZIndex="1" Text="{Binding SelectedValue}" VerticalAlignment="Bottom" HorizontalAlignment="Center" Canvas.Left="{Binding MeterTextX}" Canvas.Top="{Binding MeterTextY}"/>
     </Canvas>
-</dash:MenuBase>
-
+</my:MenuBase>

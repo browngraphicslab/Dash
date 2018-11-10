@@ -1,6 +1,6 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Shapes;
-namespace Dash
+namespace RadialMenuControl.UserControl
 {
     /// <summary>
     /// Baseclass for Custom Paths drawn within a Menu. Conatains basic tings like angles and radius

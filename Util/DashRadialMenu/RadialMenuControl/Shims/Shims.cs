@@ -2,7 +2,7 @@
 using RadialMenuControl.Components;
 using RadialMenuControl.UserControl;
 
-namespace Dash
+namespace RadialMenuControl.Shims
 {
     /// <summary>
     /// A shim for the Center Button. Retains most things we care about

@@ -1,11 +1,9 @@
-﻿using Dash;
-using RadialMenuControl.Components;
-using RadialMenuControl.UserControl;
-using RadialMenuButton = RadialMenuControl.Components.RadialMenuButton;
+﻿using RadialMenuControl.Components;
 
 namespace RadialMenuControl.UserControl
 {
     using System.Collections.Generic;
+    using Themes;
     using Windows.UI;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
@@ -16,7 +14,7 @@ namespace RadialMenuControl.UserControl
 
         #region properties
         private object _selectedValue;
-
+        
         /// <summary>
         /// The currently selected element on this list
         /// </summary>
@@ -92,7 +90,7 @@ namespace RadialMenuControl.UserControl
                 return _hoverValueBrush;
             }
         }
-
+        
         /// <summary>
         /// The CenterButton of this control for back navigation
         /// </summary>
@@ -115,7 +113,7 @@ namespace RadialMenuControl.UserControl
             List<string> items = new List<string>();
             int selectedIndex = 0;
             int count = 0;
-            foreach (RadialMenuButton item in ListMenuItems)
+            foreach(RadialMenuButton item in ListMenuItems)
             {
                 items.Add(item.Label);
                 if (item.MenuSelected)
@@ -147,7 +145,7 @@ namespace RadialMenuControl.UserControl
                     break;
                 }
             }
-
+           
         }
 
         public delegate void ValueSelectedHandler(object sender, TappedRoutedEventArgs args);
@@ -184,7 +182,7 @@ namespace RadialMenuControl.UserControl
             {
                 if (args.PropertyName == "Diameter")
                 {
-
+                   
                     CenterButton.Top = Diameter / 2 - CenterButton.Width / 2;
                     CenterButton.Left = Diameter / 2 - CenterButton.Width / 2;
                 }
@@ -193,11 +191,11 @@ namespace RadialMenuControl.UserControl
             };
             Loaded += (sender, e) =>
             {
-
+                
                 Draw();
-
+               
             };
-
+            
         }
     }
 }

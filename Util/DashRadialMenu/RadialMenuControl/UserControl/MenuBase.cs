@@ -1,10 +1,7 @@
-﻿using Dash;
-
-namespace RadialMenuControl.UserControl
+﻿namespace RadialMenuControl.UserControl
 {
-
-    using RadialMenuControl.Components;
-    //using RadialMenuControl.Shims;
+    using Components;
+    using Shims;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Runtime.CompilerServices;

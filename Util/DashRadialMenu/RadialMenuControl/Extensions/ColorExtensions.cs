@@ -1,4 +1,4 @@
-﻿namespace Dash
+﻿namespace RadialMenuControl.Extensions
 {
     using Windows.UI;
 

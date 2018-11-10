@@ -18,16 +18,10 @@ namespace Dash.Views.Collection
     {
         private Rectangle _marquee;
 
-
-        public double Height
+        public Rectangle Marquee
         {
-            get => _marquee.Height;
-            set => _marquee.Height = value;
-        }
-        public double Width
-        {
-            get => _marquee.Width;
-            set => _marquee.Width = value;
+            get => _marquee;
+            set => _marquee = value;
         }
 
 
@@ -43,7 +37,25 @@ namespace Dash.Views.Collection
             };
 
             _marquee.AllowFocusOnInteraction = true;
-       
+            //only show collection/group buttons when size > 220
+            _marquee.SizeChanged += (sender, args) =>
+            {
+                if (args.NewSize.Height > 30 && args.NewSize.Width > 220)
+                {
+                    Collection.Visibility = Visibility.Visible;
+                    Group.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    Collection.Visibility = Visibility.Collapsed;
+                    Group.Visibility = Visibility.Collapsed;
+                }
+            };
+
+            _marquee.Height = 0;
+            _marquee.Width = 0;
+            Collection.Visibility = Visibility.Collapsed;
+            Group.Visibility = Visibility.Collapsed;
             xMarqueeGrid?.Children.Add(_marquee);
         }
 

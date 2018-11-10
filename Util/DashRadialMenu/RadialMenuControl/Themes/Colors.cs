@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Windows.UI;
 
-namespace Dash
+namespace RadialMenuControl.Themes
 {
     /// <summary>
     /// Common colors to use by default across control components

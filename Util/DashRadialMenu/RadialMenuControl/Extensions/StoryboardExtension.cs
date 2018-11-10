@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Animation;
 
-namespace Dash
+namespace RadialMenuControl.Extensions
 {
     public static class StoryboardExtension
     {

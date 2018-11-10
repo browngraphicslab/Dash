@@ -1,7 +1,4 @@
-﻿using Dash;
-using RadialMenuControl.UserControl;
-
-namespace RadialMenuControl.UserControl
+﻿namespace RadialMenuControl.UserControl
 {
     using System;
     using System.Diagnostics;

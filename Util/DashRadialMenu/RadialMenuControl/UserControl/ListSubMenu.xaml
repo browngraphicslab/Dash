@@ -6,8 +6,7 @@
     xmlns:components="using:RadialMenuControl.Components"
     xmlns:theme="using:RadialMenuControl.Themes"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:dash="using:Dash"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="200"
     d:DesignWidth="200">
@@ -35,6 +34,7 @@
                   SelectionMode="Single"
                   Background="{Binding BackgroundFillBrush}"
                   />
+
+
     </Canvas>
 </my:MenuBase>
-

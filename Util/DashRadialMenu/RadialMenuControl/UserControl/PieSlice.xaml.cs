@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using RadialMenuControl.Components;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media.Animation;
-using RadialMenuControl.UserControl;
-using RadialMenuControl.UserControl;
-using RadialMenuButton = RadialMenuControl.Components.RadialMenuButton;
 
-namespace Dash
+namespace RadialMenuControl.UserControl
 {
     public sealed partial class PieSlice : Windows.UI.Xaml.Controls.UserControl
     {

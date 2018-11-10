@@ -6,10 +6,10 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using RadialMenuControl.UserControl;
 using RadialMenuControl.Components;
+using RadialMenuControl.Extensions;
+using RadialMenuControl.Shims;
 using RadialMenuControl.Themes;
-using RadialMenuControl.UserControl;
 
 namespace RadialMenuControl.UserControl
 {

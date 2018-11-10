@@ -1,4 +1,4 @@
-﻿namespace Dash
+﻿namespace RadialMenuControl.UserControl
 {
     using System;
     using Windows.Foundation;

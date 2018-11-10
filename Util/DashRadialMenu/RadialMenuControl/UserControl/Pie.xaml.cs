@@ -1,8 +1,8 @@
-﻿using Windows.UI.Xaml.Media;
-using RadialMenuControl.UserControl;
+using Windows.UI.Xaml.Media;
 
-namespace Dash
+namespace RadialMenuControl.UserControl
 {
+    using Components;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Collections.Specialized;

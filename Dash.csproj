@@ -244,13 +244,13 @@
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\Components\CenterButton.xaml.cs" />
+    <Compile Include="Util\DashRadialMenu\RadialMenuControl\Components\RadialMenuButton.xaml.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\Extensions\ColorExtensions.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\Extensions\StoryboardExtension.cs" />
-    <Compile Include="Util\DashRadialMenu\RadialMenuControl\Components\RadialMenuButton.xaml.cs" />
+    <Compile Include="Util\DashRadialMenu\RadialMenuControl\InnerPieSlicePath.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\Shims\Shims.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\Themes\Colors.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\Floating.cs" />
-    <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\InnerPieSlicePath.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\ListSubMenu.xaml.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\MenuBase.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\MeterSubmenu.xaml.cs" />
@@ -1128,40 +1128,40 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\Components\CenterButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\Components\RadialMenuButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\Themes\Styles.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\ListSubMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\MeterSubMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\Pie.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\PieSlice.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\RadialMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\InkSubToolbar.xaml">
       <SubType>Designer</SubType>
@@ -1603,7 +1603,6 @@
   <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
-    <Folder Include="Util\DashRadialMenu\NewFolder1\" />
     <Folder Include="Util\Parser\" />
   </ItemGroup>
   <ItemGroup>

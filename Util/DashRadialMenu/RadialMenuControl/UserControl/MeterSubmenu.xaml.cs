@@ -6,12 +6,11 @@ using Windows.ApplicationModel.Store;
 using Windows.Devices.PointOfService;
 using Windows.Foundation;
 using Windows.UI.Notifications;
-using Dash;
 using RadialMenuControl.Components;
-using RadialMenuControl.UserControl;
 
-namespace RadialMenuControl
+namespace RadialMenuControl.UserControl
 {
+    using Themes;
     using Windows.UI;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;

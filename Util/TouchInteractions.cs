@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,5 +46,15 @@ namespace Dash
 
         public static bool DraggingDoc;
         public static bool isPanning;
+        public static DocumentView docHeld;
+
+        public static DocumentView HeldDocument {
+            get => docHeld;
+            set
+            {
+                docHeld = value;
+                Debug.WriteLine("docHeld value: " + value);
+            }
+        }
     }
 }

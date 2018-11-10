@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media;
-using Dash;
 
 namespace RadialMenuControl.UserControl
 {
