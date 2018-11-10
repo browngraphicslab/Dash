@@ -30,7 +30,10 @@ namespace Dash
 
         public static async Task<List<OperatorController>> ManageBehaviors()
         {
-            var manageBehaviors = new ManageBehaviorsPopup();
+            var manageBehaviors = new ManageBehaviorsPopup
+            {
+                DataContext = new ManageBehaviorsViewModel()
+            };
 
             var newBehaviors = new List<OperatorController>(); 
             if ((newBehaviors = await manageBehaviors.OpenAsync()) != null)

@@ -220,9 +220,14 @@
     <Compile Include="Popups\JoinGroupMenuPopup.xaml.cs">
       <DependentUpon>JoinGroupMenuPopup.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Popups\ManageBehaviorsPopup.xaml.cs">
+    <Compile Include="Popups\ManageBehaviors\BehaviorTextbox.xaml.cs">
+      <DependentUpon>BehaviorTextbox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ManageBehaviors\DocumentBehavior.cs" />
+    <Compile Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml.cs">
       <DependentUpon>ManageBehaviorsPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\ManageBehaviors\ManageBehaviorsViewModel.cs" />
     <Compile Include="Popups\NewTemplatePopup.xaml.cs">
       <DependentUpon>NewTemplatePopup.xaml</DependentUpon>
     </Compile>
@@ -1094,7 +1099,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Popups\ManageBehaviorsPopup.xaml">
+    <Page Include="Popups\ManageBehaviors\BehaviorTextbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

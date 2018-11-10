@@ -5,6 +5,8 @@
     xmlns:local="using:Dash.Popups"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
+    xmlns:manageBehaviors="using:Dash.Popups.ManageBehaviors"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -33,13 +35,61 @@
                             HorizontalAlignment="Center"
                             Margin="0 0 0 0">Manage behaviors for this document.</TextBlock>
                         <ListView 
+                            x:Name="xExistingBehaviors"
+                            ItemsSource="{Binding Behaviors}"
                             Grid.Row="2"
-                            Width="600"
+                            Width="550"
                             Height="250"
                             BorderThickness="2"
-                            BorderBrush="{StaticResource AccentGreenLight}"
-                            ItemsSource="{Binding Behaviors}"
-                            x:Name="xExistingBehaviors"/>
+                            ReorderMode="Enabled"
+                            CanReorderItems="True"
+                            AllowDrop="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="ExistingBehaviorClicked"
+                            CanDragItems="True"
+                            BorderBrush="{StaticResource AccentGreenLight}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="local:DocumentBehavior">
+                                    <Grid 
+                                        HorizontalAlignment="Stretch"
+                                        Width="550"
+                                        Height="55">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel 
+                                            Orientation="Horizontal"
+                                            Margin="10 0 20 0">
+                                            <TextBlock
+                                                x:Name="TriggerText"
+                                                Text="{Binding Trigger}"
+                                                VerticalAlignment="Center"/>
+                                            <TextBlock 
+                                                HorizontalAlignment="Center"
+                                                x:Name="xMessageIcon" 
+                                                FontSize="20" 
+                                                VerticalAlignment="Center"
+                                                Foreground="Green"
+                                                Margin="15 0 15 0"
+                                                FontFamily="{StaticResource FontAwesome}" 
+                                                Text="{StaticResource RightCaretIcon}"/>
+                                            <TextBlock
+                                                x:Name="BehaviorText"
+                                                Text="{Binding Reaction}"
+                                                VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <Button 
+                                            Background="Transparent" 
+                                            Opacity="0.3" 
+                                            Grid.Column="1"
+                                            Click="DeleteBehavior">
+                                            <SymbolIcon Symbol="Delete"/>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                         <StackPanel
                             x:Name="xAddNewBehaviorPanel"
                             Grid.Row="2"
@@ -124,7 +174,8 @@
                                 <ComboBox
                                     x:Name="xBehavior"
                                     Width="150"
-                                    HorizontalAlignment="Center">
+                                    HorizontalAlignment="Center"
+                                    SelectionChanged="BehaviorChanged">
                                     <ComboBoxItem>Set Field</ComboBoxItem>
                                     <ComboBoxItem>Apply Templates</ComboBoxItem>
                                     <ComboBoxItem>API Call</ComboBoxItem>
@@ -164,16 +215,34 @@
                                     FontSize="14"
                                     Foreground="White" >Add</TextBlock>
                             </Button>
-                            <Button x:Name="xConfirmButton" 
-                                    Margin="0 0 0 40" 
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Bottom"
-                                    Height="40"
-                                    Width="130" 
-                                    Background="{StaticResource AccentGreenLight}">
+                            <Button 
+                                x:Name="xConfirmButton" 
+                                Margin="0 0 0 40" 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
+                                Height="40"
+                                Width="130" 
+                                Background="{StaticResource AccentGreenLight}"
+                                Tapped="ConfirmTapped">
                                 <TextBlock
                                     FontSize="14"
-                                    Foreground="White" >Confirm</TextBlock>
+                                    Foreground="White"
+                                    Text="Confirm"/>
+                            </Button>
+                            <Button 
+                                x:Name="xCancelButton" 
+                                Margin="0 0 0 40" 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
+                                Height="40"
+                                Width="130" 
+                                Background="DarkRed"
+                                Visibility="Collapsed"
+                                Click="Cancel">
+                                <TextBlock
+                                    FontSize="14"
+                                    Foreground="White"
+                                    Text="Cancel"/>
                             </Button>
                         </StackPanel>
 
