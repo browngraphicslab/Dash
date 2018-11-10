@@ -249,14 +249,6 @@ namespace Dash
             });
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += FitToParent_OnClick;
 
-            //Add the Layout Template Popup
-            contextMenu.Items.Add(new MenuFlyoutItem()
-            {
-                Text = "Document Layouts",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
-            });
-            (contextMenu.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;
-
             // add a horizontal separator in context menu
             contextMenu.Items.Add(new MenuFlyoutSeparator());
             contextMenu.Items.Add(new MenuFlyoutItem()
@@ -333,13 +325,6 @@ namespace Dash
             thisView.DeleteDocument();
         }
 
-        private void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                var template = MainPage.Instance.GetLayoutTemplate();
-            }
-        }
 
 
         #endregion

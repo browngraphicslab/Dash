@@ -1126,10 +1126,6 @@ namespace Dash
                 {
                     var xml = txt.Replace("\"", "'");
                     d.ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, xml, true);
-                    var pc = d.ParentCollection;
-                    var dc = d.ViewModel.DocumentController;
-                    pc.ViewModel.RemoveDocument(dc);
-                    pc.ViewModel.AddDocument(dc);
                 }
             }
         }

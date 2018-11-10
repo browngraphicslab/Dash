@@ -1140,6 +1140,13 @@ namespace Dash
                 {
                     await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
                 };
+            //Add the Layout Template Popup
+           xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Document Layouts",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1158,6 +1165,7 @@ namespace Dash
                 });
                 (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemMakeDefaultTextBox_Click;
             }
+
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1196,6 +1204,17 @@ namespace Dash
                 {
                     SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
                 }
+            }
+        }
+
+        private void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                //var template = MainPage.Instance.GetLayoutTemplate();
+                
+                    ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, TemplateList.Templates.ElementAt(0).GetField(KeyStore.XamlKey), true);
+                    //this.ShowXaml();
             }
         }
 
