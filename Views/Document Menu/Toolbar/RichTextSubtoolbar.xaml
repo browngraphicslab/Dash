@@ -245,6 +245,12 @@
 
             </AppBarButton>
 
+            <!--Add speech button-->
+            <AppBarButton x:Name="xAddSpeechButton" Style="{StaticResource AppBarButtonStyler}" Grid.Column="1" AllowFocusOnInteraction="True"
+                          Click="XAddSpeechButton_OnClick"  Width="55"  Margin="0 0 0 0" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
+                <TextBlock Text="&#xE720;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" HorizontalAlignment="Center" Height="50" Margin="0, -1.5, 0, 0"/>
+            </AppBarButton>
+
         </StackPanel>
         <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Grid.Column="1"></local:FormattingMenuView>
     </Grid>
