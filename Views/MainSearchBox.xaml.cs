@@ -30,6 +30,7 @@ namespace Dash
 
         private Dictionary<string, string> _filterDictionary;
         private Dictionary<string, MenuFlyoutItem> _filtertoMenuFlyout;
+        private Dictionary<string, MenuFlyoutItem> _filtertoOption;
         private HashSet<string> _options;
         private HashSet<string> _documentFilters;
         private HashSet<string> _authorFilters;
@@ -75,6 +76,13 @@ namespace Dash
                 ["Video"] = xVideoFilter,
                 ["PDF"] = xPDFFilter,
                 ["Collection"] = xCollectionFilter
+            };
+
+            _filtertoOption = new Dictionary<string, MenuFlyoutItem>()
+            {
+                ["Match whole word"] = xMatchWord,
+                ["Case sensitive"] = xCaseSens,
+                ["Regex"] = xRegex
             };
 
             _options = new HashSet<string>();
@@ -431,6 +439,7 @@ namespace Dash
 
             Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
             Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
+            Debug.WriteLine("OPTIONS:"+_options.Count);
 
             foreach (var resList in map)
             {
@@ -756,11 +765,28 @@ namespace Dash
             _documentFilters.Clear();
         }
 
+        private void Clear_Options()
+        {
+            foreach (var option in _options)
+            {
+                var mfi = _filtertoOption[option];
+                mfi.FontWeight = Windows.UI.Text.FontWeights.Normal;
+            }
+            _options.Clear();
+        }
+
         #endregion
 
         private void ClearFilters_OnClick(object sender, TappedRoutedEventArgs e)
         {
             Clear_Filters();
+            Clear_Options();
+        }
+
+        private void XRegex_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            Clear_Options();
+            xOptions_SelectionChanged(sender,e);
         }
     }
 }

@@ -11,6 +11,93 @@ namespace Dash
 {
     public class Search
     {
+
+        public class SearchOptions
+        {
+            public string SearchString { get; }
+            public Regex Regex { get; }
+            public SearchOptions(string searchString, bool matchCase, bool useRegex, bool matchWholeWord)
+            {
+                if (useRegex)
+                {
+                    Regex = new Regex(searchString);
+                }
+                else
+                {
+                    if (matchCase && matchWholeWord)
+                    {
+                        Regex = new Regex(@"(?:^|\W)" + searchString + @"(?:$|\W)",
+                            RegexOptions.Compiled);
+                    }
+                    else
+                    {
+                        if (matchWholeWord)
+                        {
+                            Regex = new Regex(@"(?:^|\W)" + searchString + @"(?:$|\W)",
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                        }
+                        else
+                        {
+                            Regex = new Regex(searchString,
+                                RegexOptions.Compiled);
+                        }
+                    }
+                }
+            }
+
+            public StringSearchModel Matches(string data)
+            {
+                int maxStringSize = 125;
+                int textDecrementForContext = 8;
+                if (Regex!=null)
+                {
+                    if (Regex.IsMatch(data))
+                    {
+                        return new StringSearchModel(data);
+                    }
+                }
+                else
+                // standard text search
+                {
+                    int index = data.IndexOf(SearchString);
+                    if (index < 0)
+                    {
+                        return StringSearchModel.False;
+                    }
+                    else
+                    {
+                        index = Math.Max(0, index - textDecrementForContext);
+                        var substring = data.Substring(index, Math.Min(maxStringSize, data.Length - index));
+                        return new StringSearchModel(substring);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        private SearchOptions ConvertStringOptionstoSeachOptions(string inputString,HashSet<string> stringoptions)
+        {
+            bool matchword = false;
+            bool matchcase = false;
+            bool useregex = false;
+            if (stringoptions.Contains("Match whole word"))
+            {
+                matchword = true;
+            }
+
+            if (stringoptions.Contains("Case sensitive"))
+            {
+                matchcase = true;
+            }
+
+            if (stringoptions.Contains("Regex"))
+            {
+                useregex = true;
+            }
+            return new SearchOptions(inputString,matchcase,useregex,matchword);
+        }
+
         //TODO: Type-Based Search
         //TODO: Search in collections - check out "collected docs note in viewdocument.getdatadocument.documenttype.type
         //TODO: ModifiedTime not existing until document is modified
@@ -30,13 +117,13 @@ namespace Dash
         /// <param name="docs">Optional list of documents to search over instead of all documents</param>
         /// <returns></returns>
         public static List<SearchResult> Parse(string inputString, bool useAll = false,
-            IEnumerable<DocumentController> docs = null,HashSet<string> options = null)
+            IEnumerable<DocumentController> docs = null, HashSet<string> options = null)
         {
             if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
 
 
             var searchBoxLexer = new SearchGrammarLexer(new AntlrInputStream(inputString));
-            var parser = new SearchGrammarParser(new CommonTokenStream(searchBoxLexer)) {BuildParseTree = true};
+            var parser = new SearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
             var visitor = new DashSearchGrammarVisitor();
             var parseTree = visitor.Visit(parser.query());
 
@@ -46,12 +133,29 @@ namespace Dash
 
             Regex rx = null;
 
-            if (options != null && options.Count>0)
+            if (options != null && options.Count > 0)
             {
-                if (options.Contains("Match whole word"))
+                if (options.Count == 1)
+                {
+                    if (options.Contains("Match whole word"))
+                    {
+                        rx = new Regex(@"(?:^|\W)" + inputString + @"(?:$|\W)",
+                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    }
+                    else if (options.Contains("Case sensitive"))
+                    {
+                        rx = new Regex(inputString,
+                            RegexOptions.Compiled);
+                    }
+                    else
+                    {
+                        rx = new Regex(@inputString);
+                    }
+                }
+                else
                 {
                     rx = new Regex(@"(?:^|\W)" + inputString + @"(?:$|\W)",
-                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                        RegexOptions.Compiled);
                 }
             }
 
@@ -66,7 +170,6 @@ namespace Dash
                     {
                         if (rx.IsMatch(fieldRef))
                         {
-                            Debug.WriteLine("MATCH!!! Field is:" + fieldRef);
                             keyRefs.Add(keyref);
                             fieldRefs.Add(fieldRef);
                         }
@@ -90,15 +193,6 @@ namespace Dash
 
                     if (keyRefs.Any())
                     {
-                        foreach (var key in keyRefs)
-                        {
-                            Debug.WriteLine("KEY REF:" + key);
-                        }
-
-                        foreach (var field in fieldRefs)
-                        {
-                            Debug.WriteLine("FIELD REF:" + field);
-                        }
                         results.Add(new SearchResult(node, keyRefs, fieldRefs,
                             keyRefs.Count));
                     }

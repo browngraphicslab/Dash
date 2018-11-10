@@ -46,8 +46,9 @@ namespace Dash
             OnFieldModelUpdated(null);
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString,Search.SearchOptions options)
         {
+            return options.Matches(Data.AbsoluteUri);
             var data = (Model as AudioModel)?.Data;
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))

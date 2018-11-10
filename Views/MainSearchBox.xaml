@@ -182,13 +182,14 @@
         </Button>
 
 
-        <Button x:Name="xMoreOptions" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Options" Visibility="Collapsed" Background="{StaticResource DashDarkBlueBrush}"
+        <Button x:Name="xMoreOptions" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Options:" Visibility="Collapsed" Background="{StaticResource DashDarkBlueBrush}"
                 Foreground ="White" HorizontalAlignment="Left" Click="Options_Tapped">
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout>
-                    <MenuFlyoutItem Text="Clear Filters" Tapped="ClearFilters_OnClick"/>
-                    <MenuFlyoutItem Text="Match whole word" Tapped="xOptions_SelectionChanged"/>
-                    <MenuFlyoutItem Text="Case sensitive" Tapped="xOptions_SelectionChanged"/>
+                    <MenuFlyoutItem x:Name="xClearFilters" Text="Clear Filters" Tapped="ClearFilters_OnClick"/>
+                    <MenuFlyoutItem x:Name="xMatchWord" Text="Match whole word" Tapped="xOptions_SelectionChanged"/>
+                    <MenuFlyoutItem x:Name="xCaseSens" Text="Case sensitive" Tapped="xOptions_SelectionChanged"/>
+                    <MenuFlyoutItem x:Name="xRegex" Text="Regex" Tapped="XRegex_OnTapped"/>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
 

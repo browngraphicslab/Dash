@@ -127,7 +127,7 @@ namespace Dash
         /// </summary>
         public sealed override DashShared.TypeInfo TypeInfo => DashShared.TypeInfo.Operator;
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString,Search.SearchOptions options)
         {
             return StringSearchModel.False;
         }
