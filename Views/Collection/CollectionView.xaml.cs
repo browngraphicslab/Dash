@@ -255,7 +255,7 @@ namespace Dash
                 Text = "Document Layouts",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
             });
-            (contextMenu.Items.Last() as MenuFlyoutItem).Click += ParentDocumentView.MenuFlyoutItemLayoutTemplates_Click;
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;
 
             // add a horizontal separator in context menu
             contextMenu.Items.Add(new MenuFlyoutSeparator());
@@ -332,6 +332,15 @@ namespace Dash
             thisView.ParentCollection?.ViewModel.AddDocument(newdoc);
             thisView.DeleteDocument();
         }
+
+        private void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var template = MainPage.Instance.GetLayoutTemplate();
+            }
+        }
+
 
         #endregion
     }

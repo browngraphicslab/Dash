@@ -42,9 +42,8 @@ namespace Dash.Popups
 
         
 
-            private void Popup_OnOpened(object sender, object e)
+        private void Popup_OnOpened(object sender, object e)
         {
-            xComboBox.SelectedItem = null;
         }
 
         public void SetHorizontalOffset(double offset)
