@@ -275,6 +275,9 @@
       <DependentUpon>InkSubToolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CourtesyDocuments\TableBox.cs" />
+    <Compile Include="Util\TouchContextMenu\TouchContextMenu.xaml.cs">
+      <DependentUpon>TouchContextMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\TouchInteractions.cs" />
     <Compile Include="Views\ActionMenu\ActionMenu.xaml.cs">
       <DependentUpon>ActionMenu.xaml</DependentUpon>
@@ -1164,6 +1167,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\InkSubToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\TouchContextMenu\TouchContextMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

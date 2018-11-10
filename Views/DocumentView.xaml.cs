@@ -207,7 +207,6 @@ namespace Dash
                 _oldViewModel?.UnLoad();
                 LinkActivationManager.DeactivateDoc(this);
             };
-
             PointerPressed += (sender, e) =>
             {
                 Debug.WriteLine("Pointer Pressed: " + TouchInteractions.NumFingers);
@@ -222,6 +221,7 @@ namespace Dash
                 {
                     TouchInteractions.handledTouch.Add(e);
                     TouchInteractions.NumFingers++;
+                    TouchInteractions.HeldDocument = this;
 
                     if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
@@ -243,6 +243,7 @@ namespace Dash
                 {
                     TouchInteractions.handledTouch.Add(e);
                     TouchInteractions.NumFingers--;
+                    if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 }
             };
             PointerCanceled += (sender, e) =>
@@ -252,6 +253,7 @@ namespace Dash
                 {
                     TouchInteractions.handledTouch.Add(e);
                     TouchInteractions.NumFingers--;
+                    if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 }
             };
             MenuFlyout.Opened += (s, e) =>
@@ -310,6 +312,7 @@ namespace Dash
             DropCompleted += (s, e) =>
             {
                 TouchInteractions.NumFingers = 0;
+                if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 SelectionManager.DropCompleted(this, s, e);
             };

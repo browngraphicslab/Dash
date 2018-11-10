@@ -786,6 +786,11 @@ namespace Dash
 		         TouchInteractions.NumFingers++;
 		        TouchInteractions.isPanning = false;
 		        args.Handled = true;
+                //CASE WHERE DOC IS HELD & background is tapped -> launch radial menu!
+		        if (TouchInteractions.NumFingers == 2 && TouchInteractions.HeldDocument != null)
+		        {
+		            new TouchContextMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
+		        }
 
 		    }
 			// marquee on left click by default
