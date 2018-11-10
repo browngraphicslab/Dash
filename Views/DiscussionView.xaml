@@ -9,20 +9,12 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <Grid>
-    <TreeView x:Name="xTreeView"
-                      SelectionMode="Multiple">
+    <TreeView x:Name="xTreeView" SelectionMode="None">
         </TreeView>
         <GridView x:Name="xTemplate" Visibility="Collapsed">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition Width="25"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Button Click="checkedChanged" Content="+" Grid.Column="1"/>
-                        <local:DocumentView DataContext="{Binding DVM}" Grid.Column="0"/>
-                    </Grid>
+                    <local:DocumentView DataContext="{Binding DVM}" Grid.Column="0"/>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

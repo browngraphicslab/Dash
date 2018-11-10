@@ -351,7 +351,7 @@ namespace Dash
             this.xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
             xActivationButton.Fill = new SolidColorBrush(LinkActivationManager.IsActivated(SelectedDocs.FirstOrDefault()) ? Colors.Red : Colors.LightSkyBlue);
 
-            ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.FirstOrDefault()?.ViewModel.ResizersVisible == false ? Visibility.Collapsed : Visibility.Visible;
+            ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.FirstOrDefault()?.ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
 
             if (rebuildMenu)
             {

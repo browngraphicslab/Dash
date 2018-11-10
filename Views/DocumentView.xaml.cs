@@ -173,7 +173,7 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
-            MinHeight = 25;
+            MinHeight = 10;
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
@@ -587,7 +587,6 @@ namespace Dash
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
-
 
         /// <summary>
         /// Copes the DocumentView for the document

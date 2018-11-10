@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using System;
+using System.Collections.Generic;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -267,7 +268,10 @@ namespace Dash
         {
             var pt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
             var docController = new DiscussionNote("testing...", pt).Document;
-            docController.GetDataDocument().SetField(KeyStore.DataKey, new RichTextNote("Testing...").Document, true);
+            var note1 = new RichTextNote("Testing...").Document;
+            note1.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), 0, true);
+            docController.GetDataDocument().SetField(KeyController.Get("DiscussionItems"), new ListController<DocumentController>(note1), true);
+            docController.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), 1, true);
             docController.SetWidth(double.NaN);
             docController.SetHeight(double.NaN);
             docController.SetHorizontalAlignment(HorizontalAlignment.Left);
