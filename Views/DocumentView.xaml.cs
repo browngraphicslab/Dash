@@ -1213,7 +1213,7 @@ namespace Dash
             {
                 //var template = MainPage.Instance.GetLayoutTemplate();
                 
-                    ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, TemplateList.Templates.ElementAt(0).GetField(KeyStore.XamlKey), true);
+                    ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, TemplateList.Templates[0].GetField(KeyStore.XamlKey), true);
                     //this.ShowXaml();
             }
         }
