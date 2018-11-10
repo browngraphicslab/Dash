@@ -76,7 +76,7 @@ namespace Dash
             var data = new List<(string term, string definition, string image)>();
 
             // iterate over all the docs
-            foreach (var doc in collection.TypedData)
+            foreach (var doc in collection)
             { 
                 var dataDoc = doc?.GetDataDocument();
 

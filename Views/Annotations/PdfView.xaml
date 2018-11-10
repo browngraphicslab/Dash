@@ -17,22 +17,43 @@
             <RowDefinition x:Name="xDivider" Height ="0"/>
             <RowDefinition x:Name="xSecondPanelRow" Height="*"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="xPdfCol"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
+        </Grid.ColumnDefinitions>
 
-        <Grid x:Name="xTBotPdfGrid" Grid.Row="2">
-            <local:PdfAnnotationView x:Name="_botPdf"></local:PdfAnnotationView>
-        </Grid>
-        
-        <Grid x:Name="xTopPdfGrid" Grid.Row="0" >
-            <local:PdfAnnotationView x:Name="_topPdf"></local:PdfAnnotationView>
+        <Grid x:Name="xTBotPdfGrid" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" >
+            <local:PdfAnnotationView x:Name="_botPdf"/>
         </Grid>
 
-        <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
+        <Grid x:Name="xTopPdfGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" >
+            <local:PdfAnnotationView x:Name="_topPdf"/>
+        </Grid>
+
+        <Grid Column="0" SizeChanged="xPdfColSizeChanged"></Grid>
+
+        <controls:GridSplitter x:Name="xSidebarSplitter" Grid.Column="1" Tapped="xSiderbarSplitter_Tapped"  Width="0" MinWidth="0" Grid.Row="0" Grid.RowSpan="3"
+                               ManipulationStarted="xSiderbarSplitter_OnManipulationStarted" ManipulationDelta="xSiderbarSplitter_OnManipulationDelta" ManipulationCompleted="xSiderbarSplitter_OnManipulationCompleted" PointerPressed="xSiderbarSplitter_OnPointerPressed" >
+            <controls:GridSplitter.Element>
+                <Canvas>
+                    <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top">
+                        <Grid.Clip>
+                            <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
+                        </Grid.Clip>
+                    </Grid>
+                    <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="2000" />
+                </Canvas>
+            </controls:GridSplitter.Element>
+        </controls:GridSplitter>
+
+        <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
                                ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
             <controls:GridSplitter.Element>
                 <Canvas>
                     <StackPanel Orientation="Vertical">
                         <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Width="60" Height="10" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
-                        <Rectangle x:Name="xBar" Fill="{StaticResource DashDarkBlueBrush}" Height="4" Width="{x:Bind PdfMaxWidth, Mode=OneWay}"  Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
+                        <Rectangle x:Name="xBar" Fill="{StaticResource DashDarkBlueBrush}" Height="4" Width="3000" Opacity="0.8" Margin="0 -15 0 0"></Rectangle>
                     </StackPanel>
                 </Canvas>
             </controls:GridSplitter.Element>

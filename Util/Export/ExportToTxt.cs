@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Display;
@@ -113,9 +114,9 @@ namespace Dash
             if (collection.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) != null)
             {
                 var dataDocs = collection.GetDataDocument()
-                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
-                OrderElements(dataDocs);
+                OrderElements(dataDocs.ToList());
 
                 var minMax = BorderVal(dataDocs);
 
@@ -205,13 +206,13 @@ namespace Dash
             });
         }
 
-        private List<double> BorderVal(List<DocumentController> docs)
+        private List<double> BorderVal(IList<DocumentController> docs)
         {
-            double minX = Double.PositiveInfinity;
-            double maxX = Double.NegativeInfinity;
+            double minX = double.PositiveInfinity;
+            double maxX = double.NegativeInfinity;
 
-            double minY = Double.PositiveInfinity;
-            double maxY = Double.NegativeInfinity;
+            double minY = double.PositiveInfinity;
+            double maxY = double.NegativeInfinity;
             // This finds the minimum and max values saved in this collection in Dash
             //and saves Dash width
             foreach (var doc in docs)

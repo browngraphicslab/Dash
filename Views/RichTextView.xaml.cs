@@ -33,7 +33,7 @@ namespace Dash
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallbackStatic));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
-            "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping)));
+            "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping), xRichTextView_TextWrappingChangedCallbackStatic));
         
         private int           _prevQueryLength;// The length of the previous search query
         private int           _nextMatch;// Index of the next highlighted search result
@@ -49,7 +49,7 @@ namespace Dash
         
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
-        public static bool _searchHighlight = false;
+        public static bool                _searchHighlight = false;
 
         /// <summary>
         /// Constructor
@@ -163,7 +163,7 @@ namespace Dash
                 }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
-                if (string.IsNullOrEmpty(getReadableText()))
+                if (string.IsNullOrEmpty(getReadableText()) &&  DataFieldKey.Equals(KeyStore.DataKey))
                 {
                     var docView = getDocView();
                     if (!SelectionManager.IsSelected(docView))
@@ -211,16 +211,18 @@ namespace Dash
 
         ~RichTextView()
         {
-            //Debug.WriteLine("Finalized RichTextView");
+            Debug.WriteLine("Finalized RichTextView");
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
+            if (DataFieldKey.Equals(KeyStore.DataKey) && string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
             {
                 var docView = getDocView();
                 if (args.DeselectedViews.Contains(docView))
+                {
                     docView.DeleteDocument();
+                }
             }
         }
 
@@ -233,21 +235,24 @@ namespace Dash
         //    }
         //}
 
-        public DocumentController    DataDocument => getDataDoc();
-        public DocumentController    LayoutDocument => getLayoutDoc();
+        public TextWrapping TextWrapping { get => (TextWrapping)GetValue(TextWrappingProperty);
+            set => this.SetValue(TextWrappingProperty, value);
+        }
+        public KeyController         DataFieldKey { get; set; }
+        public DocumentController    DataDocument => ViewModel?.DataDocument;
+        public DocumentController    LayoutDocument => ViewModel?.LayoutDocument;
+        public DocumentViewModel     ViewModel => getDocView()?.ViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
         private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
-        private DocumentController   getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
-        private DocumentController   getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
-        private List<TextController> getSelected()
+        private IList<TextController> getSelected()
         {
-            return getDataDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData
-                ?? getLayoutDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData;
+            return DataDocument?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)
+                ?? LayoutDocument?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null);
         }
         
         private void SetSelected(string query)
         {
             var value = query.Equals("") ? new ListController<TextController>(new TextController()) : new ListController<TextController>(new TextController(query));
-            getDataDoc()?.SetField(CollectionDBView.SelectedKey, value, true);
+            DataDocument?.SetField(CollectionDBView.SelectedKey, value, true);
         }
 
         private string getReadableText()
@@ -266,6 +271,17 @@ namespace Dash
         #endregion
 
         #region eventhandlers
+        /// <summary>
+        /// This gets called every time the Dash binding changes.  So we need to update the RichEditBox here *unless* the change
+        /// to the Dash binding was caused by editing this richEditBox (ie, the edit value == lastXamlRTFText), in which case we should do nothing.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="dp"></param>
+        private static void xRichTextView_TextWrappingChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
+        {
+            var rtv = sender as RichTextView;
+            rtv.xRichEditBox.TextWrapping = (TextWrapping) dp.NewValue;
+        }
 
         /// <summary>
         /// This gets called every time the Dash binding changes.  So we need to update the RichEditBox here *unless* the change
@@ -275,9 +291,9 @@ namespace Dash
         /// <param name="dp"></param>
         private static void xRichTextView_TextChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
+            var rtv = sender as RichTextView;
             if (!_searchHighlight)
             {
-                var rtv = sender as RichTextView;
                 var newRtFormatString = ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString;
                 if (newRtFormatString != null && newRtFormatString != rtv._lastXamlRTFText)
                 {
@@ -320,7 +336,7 @@ namespace Dash
                 var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target);
                 if (theDoc != null)
                 {
-                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.Contains(theDoc) == true)
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
@@ -552,7 +568,7 @@ namespace Dash
             //TypeTimer.typeEvent();
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
-                getDataDoc().CaptureNeighboringContext();
+                DataDocument.CaptureNeighboringContext();
             }
 
             if (e.Key == (VirtualKey)191) // 191 = '/' 
@@ -650,11 +666,6 @@ namespace Dash
             else if (this.IsTabPressed())
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
-                e.Handled = true;
-            }
-            else if (e.Key == VirtualKey.Space)
-            {
-                xRichEditBox.Document.Selection.TypeText(Convert.ToChar(160).ToString());
                 e.Handled = true;
             }
             else if (this.IsCtrlPressed())   // ctrl-B, ctrl-I, ctrl-U handled natively by the text editor
@@ -809,9 +820,12 @@ namespace Dash
         // Someone please find out why this is being called twice
         private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e)
         {
-            _searchHighlight = true;
-            MatchQuery(getSelected());
-            // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
+            if (DataContext != null)
+            {
+                _searchHighlight = true;
+                MatchQuery(getSelected());
+                // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
+            }
         }
 
         private void UnLoaded(object s, RoutedEventArgs e)
@@ -831,7 +845,7 @@ namespace Dash
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
+        { 
             if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && xRichEditBox == FocusManager.GetFocusedElement())
             {
                 CreateActionMenu(xRichEditBox);
@@ -1071,7 +1085,7 @@ namespace Dash
         /// Searches through richtextbox for textcontrollers in queries- does so by storing the formatting/state of the textbox before the search was conducted
         /// and modifying the rtf directly, since the previous method of using iTextSelection was way too slow to be useful
         /// </summary>
-        private void MatchQuery(List<TextController> queries)
+        private void MatchQuery(IList<TextController> queries)
         {
             if (getDocView() == null) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;

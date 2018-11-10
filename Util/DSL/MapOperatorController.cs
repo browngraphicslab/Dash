@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -42,14 +43,14 @@ namespace Dash
 
         public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var inputList = inputs[ListKey] as BaseListController;
+            var inputList = inputs[ListKey] as IListController;
             var lambda = inputs[LambdaKey] as OperatorController;
 
             var outputList = new ListController<FieldControllerBase>();
 
             if (inputList != null && lambda != null && inputList.Count > 0 && lambda.Inputs.Count == 1)
             {
-                foreach (var field in inputList.Data.ToArray())
+                foreach (var field in inputList.AsEnumerable().ToArray())
                 {
                     var res = await OperatorScript.Run(lambda, new List<FieldControllerBase> {field}, new Scope());
                     if (res != null) outputList.Add(res);

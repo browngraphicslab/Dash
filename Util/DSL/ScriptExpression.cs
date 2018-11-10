@@ -4,7 +4,15 @@ namespace Dash
 {
     public abstract class ScriptExpression
     {
-        public abstract Task<FieldControllerBase> Execute(Scope scope);
+        public enum ControlFlowFlag
+        {
+            None,
+            Return,
+            Break,
+            Continue
+        } 
+
+        public abstract Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope);
 
         public abstract FieldControllerBase CreateReference(Scope scope);
 

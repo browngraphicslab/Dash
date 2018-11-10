@@ -57,7 +57,7 @@ namespace Dash
             }
             else if (controller is ListController<DocumentController> ldc)
             {
-                ldc.Data = new List<FieldControllerBase>(new DocumentCollectionToStringConverter(context).ConvertXamlToData(data));
+                ldc.Set(new List<FieldControllerBase>(new DocumentCollectionToStringConverter(context).ConvertXamlToData(data)));
                 converted = true;
 
             }

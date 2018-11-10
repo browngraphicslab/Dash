@@ -158,7 +158,7 @@ namespace Dash
                 var dcfm = documentController.EnumFields()
                     .FirstOrDefault(keyFieldPair => keyFieldPair.Value is ListController<DocumentController>).Value as
                 ListController<DocumentController>;
-                if (dcfm != null) return new List<DocumentController>(dcfm.GetElements());
+                if (dcfm != null) return dcfm.ToList();
             }
             catch (Exception)
             {

@@ -19,6 +19,7 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media.Animation;
 using DashShared;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -115,7 +116,6 @@ namespace Dash
                 {
                     docView.PointerEntered -= SelectedDocView_PointerEntered;
                     docView.PointerExited -= SelectedDocView_PointerExited;
-                    docView.SizeChanged -= DocView_OnSizeChanged;
                     docView.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -130,7 +130,6 @@ namespace Dash
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
                     docView.PointerExited += SelectedDocView_PointerExited;
-                    docView.SizeChanged += DocView_OnSizeChanged;
                     docView.FadeOutBegin += DocView_OnDeleted;
                 }
 
@@ -142,15 +141,52 @@ namespace Dash
             VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
         }
-
-        private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void keyHdlr(object sender, KeyRoutedEventArgs e)
         {
-            SetPositionAndSize();
+            if (SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
+            }
         }
+
+        private void ptrHdlr(object sender, PointerRoutedEventArgs e)
+        {
+            if ( SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
+            }
+        }
+        private void tapHdlr(object sender, TappedRoutedEventArgs e)
+        {
+            if (SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
+            }
+        }
+
+        private object ptrhdlr = null, taphdlr = null, keyhdlr = null;
 
         private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
+            if (ptrhdlr == null)
+            {
+                ptrhdlr = new PointerEventHandler(ptrHdlr);
+                taphdlr = new TappedEventHandler(tapHdlr);
+                keyhdlr = new KeyEventHandler(keyHdlr);
+            }
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerMovedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerMovedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerReleasedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerReleasedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerWheelChangedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerWheelChangedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.TappedEvent, taphdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.TappedEvent, taphdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyDownEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyDownEvent, keyhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyUpEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyUpEvent, keyhdlr, true);
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
@@ -277,40 +313,50 @@ namespace Dash
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public void SetPositionAndSize()
+        public void SetPositionAndSize(bool rebuildMenu=true)
         {
             var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
             var parentIsFreeform = true;
             var parentIsPDF = false;
-            foreach (var doc in SelectedDocs)
+            try
             {
-                if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
-                    parentIsFreeform = false;
-                if (doc.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType))
-                    parentIsPDF = true;
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
-
-                topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
-                topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
-
-                botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
-                botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
-
-                if (doc.ViewModel != null)
+                foreach (var doc in SelectedDocs)
                 {
-                    TagMap.Clear();
-                    GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
+                    if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
+                        parentIsFreeform = false;
+                    if (doc.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType))
+                        parentIsPDF = true;
+                    var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
+
+                    topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
+                    topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
+
+                    botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
+                    botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
+
+                    if (doc.ViewModel != null)
+                    {
+                        TagMap.Clear();
+                        GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
+                    }
                 }
+            } catch (Exception e)
+            {
+                Debug.WriteLine("Got Exception:" + e);
             }
             this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             this.xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
+            xActivationButton.Fill = new SolidColorBrush(LinkActivationManager.IsActivated(SelectedDocs.FirstOrDefault()) ? Colors.Red : Colors.LightSkyBlue);
 
             ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null ? Visibility.Collapsed : Visibility.Visible;
 
-            rebuildMenuIfNeeded();
+            if (rebuildMenu)
+            {
+                rebuildMenuIfNeeded();
+            }
 
             if (!double.IsPositiveInfinity(topLeft.X) && !double.IsPositiveInfinity(topLeft.Y) &&
                 !double.IsNegativeInfinity(botRight.X) && !double.IsNegativeInfinity(botRight.Y))
@@ -523,7 +569,7 @@ namespace Dash
 
             var regions = doc.GetDataDocument().GetRegions();
             if (regions != null)
-                foreach (var region in regions.TypedData)
+                foreach (var region in regions)
                 {
                     GetLinkTypes(region.GetDataDocument(), map);
                 }
@@ -569,14 +615,11 @@ namespace Dash
             if (SelectedDocs.FirstOrDefault() is DocumentView first)
             {
                 var onoff = !LinkActivationManager.ActivatedDocs.Contains(first);
-                if (onoff)
-                {
-                    xActivationButton.Fill = new SolidColorBrush(Colors.Red);
+                if (onoff) { 
                     LinkActivationManager.ActivateDoc(first);
                 }
                 else
                 {
-                    xActivationButton.Fill = new SolidColorBrush(Colors.LightSkyBlue);
                     LinkActivationManager.DeactivateDoc(first);
                 }
             }
@@ -1092,7 +1135,7 @@ namespace Dash
         }
 
         // try dropping the Xaml style below onto the blue frame of one or more selected text documents:
-        /*
+        /* -- restyles a text note 
         <Grid
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -1115,7 +1158,24 @@ namespace Dash
                 <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
                 <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
             </StackPanel>
-        </Grid>
+        </Grid>  
+        -- restyles an image to have a caption
+<Grid
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dash="using:Dash"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="Auto"></RowDefinition>
+    </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="CadetBlue" >
+            <dash:EditableImage x:Name="xImageFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+        </Border>
+        <Border Grid.Row="1" Background="CadetBlue" MinHeight="30">
+            <dash:RichTextView x:Name="xRichTextFieldCaption" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+        </Border>
+</Grid>
         <Grid
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -1152,7 +1212,7 @@ namespace Dash
                 </Grid.RowDefinitions>
                     <Border Grid.Row="1" Background="CadetBlue">
                         <StackPanel Orientation="Horizontal">
-                            <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="500" VerticalAlignment="Top" />
+                            <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="1000" VerticalAlignment="Top" />
                             <dash:CollectionView x:Name="xCollectionFieldAnnotations" Width="5000" Background="Yellow" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
                         </StackPanel>
                     </Border>

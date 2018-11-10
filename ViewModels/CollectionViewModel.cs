@@ -40,14 +40,20 @@ namespace Dash
             get => _cellFontSize;
             set
             {
-                this.SetProperty<double>(ref _cellFontSize, value);
+                SetProperty<double>(ref _cellFontSize, value);
             }
         }
+
+        public bool DisableTransformations = false;
         public TransformGroupData TransformGroup
 
         {
             get
             {
+                if (DisableTransformations)
+                {
+                    return new TransformGroupData(new Point(), new Point(1, 1));
+                }
                 var trans = ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
                 var scale = ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
                 if (trans.Y > 0 && !SettingsView.Instance.NoUpperLimit)   // clamp the y offset so that we can only scroll down
@@ -226,7 +232,7 @@ namespace Dash
                     {
                         updateViewModels(new ListController<DocumentController>.ListFieldUpdatedEventArgs(
                             ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,
-                            collectionFieldModelController.GetElements(), new List<DocumentController>(), 0));
+                            collectionFieldModelController.ToList(), new List<DocumentController>(), 0));
                     }
                 }
             }
@@ -275,7 +281,7 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    if (startIndex >= DocumentViewModels.Count)
+                    if (startIndex >= DocumentViewModels.Count || startIndex < 0)
                         DocumentViewModels.Add(new DocumentViewModel(documentController));
                     else DocumentViewModels.Insert(startIndex, new DocumentViewModel(documentController));
                     startIndex++;
@@ -317,8 +323,8 @@ namespace Dash
                 return true;
             if (newLayout.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                var newDocList = newLayout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
-                foreach (var subDoc in newDocList.TypedData)
+                var newDocList = newLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                foreach (var subDoc in newDocList)
                 {
                     var subLayout = subDoc;
                     if (subLayout.DocumentType.Equals(CollectionBox.DocumentType))
@@ -536,8 +542,10 @@ namespace Dash
             foreach (var d in getDocs)
             {
                 var fieldData = d.GetDataDocument().GetDereferencedField(fieldKey, null);
-                if (fieldData is ListController<DocumentController>)
-                    foreach (var dd in (fieldData as ListController<DocumentController>).TypedData)
+                switch (fieldData)
+                {
+                case ListController<DocumentController> docListField:
+                    foreach (var dd in docListField)
                     {
                         var dataDoc = dd.GetDataDocument();
 
@@ -546,22 +554,30 @@ namespace Dash
                         expandedDoc.SetField(showField, dataDoc, true);
                         subDocs.Add(expandedDoc);
                     }
-                else if (fieldData is ListController<TextController>)
-                    foreach (var dd in (fieldData as ListController<TextController>).Data)
+
+                    break;
+                //TODO tfs: why do these next to cases copy the Text/Number Controller?
+                case ListController<TextController> textListField:
+                    foreach (var dd in textListField)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
                         expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
-                        expandedDoc.SetField(showField, new TextController((dd as TextController).Data), true);
+                        expandedDoc.SetField(showField, new TextController(dd.Data), true);
                         subDocs.Add(expandedDoc);
                     }
-                else if (fieldData is ListController<NumberController>)
-                    foreach (var dd in (fieldData as ListController<NumberController>).Data)
+
+                    break;
+                case ListController<NumberController> numListField:
+                    foreach (var dd in numListField)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
                         expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
-                        expandedDoc.SetField(showField, new NumberController((dd as NumberController).Data), true);
+                        expandedDoc.SetField(showField, new NumberController(dd.Data), true);
                         subDocs.Add(expandedDoc);
                     }
+
+                    break;
+                }
             }
 
             return showField;
@@ -816,7 +832,7 @@ namespace Dash
                         docsToAdd[i].SetHorizontalAlignment(HorizontalAlignment.Left);
                     if (docsToAdd[i].GetVerticalAlignment() == VerticalAlignment.Stretch)
                         docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
-                    if (double.IsNaN(docsToAdd[i].GetWidth()))
+                    if (double.IsNaN(docsToAdd[i].GetWidth()) && !docsToAdd[i].DocumentType.Equals(WebBox.DocumentType))
                         docsToAdd[i].SetWidth(300);
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);
@@ -828,7 +844,7 @@ namespace Dash
 
         public static void ConvertToTemplate(DocumentController templateRoot, DocumentController collectionToConvert)
         {
-            var children = collectionToConvert.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey,null).TypedData;
+            var children = collectionToConvert.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             var nestedCollections = children.Where((c) => c.DocumentType.Equals(CollectionBox.DocumentType));
             foreach (var nc in nestedCollections)
             {
@@ -837,7 +853,7 @@ namespace Dash
             RouteDataBoxReferencesThroughCollection(templateRoot, children);
         }
 
-        public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, List<DocumentController> docsToAdd)
+        public static void RouteDataBoxReferencesThroughCollection(DocumentController cpar, IList<DocumentController> docsToAdd)
         {
             var databoxes = docsToAdd.Where((ad) => ad.DocumentType.Equals(DataBox.DocumentType)).ToList();
             if (databoxes.Count > 0)

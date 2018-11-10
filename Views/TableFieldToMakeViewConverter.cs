@@ -193,8 +193,9 @@ namespace Dash
             _lastType = data?.TypeInfo ?? TypeInfo.None;
 
             // if field is the output of an operator, mark it as not being editable by cutting its opacity and not making it hit test visible
-            var ops = _docController.GetDataDocument().GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, null)?.TypedData ?? new List<OperatorController>();
-            if (ops.Any((op) => op.Outputs.ContainsKey(_key)))
+            var ops = _docController.GetDataDocument()
+                .GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, null);
+            if (ops != null && ops.Any((op) => op.Outputs.ContainsKey(_key)))
             {
                 currView.Opacity = 0.5;
                 currView.IsHitTestVisible = false;

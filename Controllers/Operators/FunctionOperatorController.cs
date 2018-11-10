@@ -86,7 +86,7 @@ namespace Dash
                 scope = scope.Merge(_funcScope);
             }
 
-            FieldControllerBase result = await _block.Execute(scope);
+            var (result, _) = await _block.Execute(scope);
 
             outputs[ResultKey] = result;
         }

@@ -37,7 +37,7 @@ namespace Dash
                             note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
                             note.Document.SetHeight(45);
                             var pdfLayout = await new PdfToDashUtil().UriToDoc(uri);
-                            pdfLayout.SetHeight(MainPage.Instance.ActualHeight - 45);
+                            pdfLayout.SetHeight(MainPage.Instance.ActualHeight - 110);
                             pdfLayout.SetWidth(double.NaN);
                             pdfLayout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
                             pdfLayout.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Top);

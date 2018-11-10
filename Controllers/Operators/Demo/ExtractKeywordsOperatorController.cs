@@ -60,7 +60,7 @@ namespace Dash
             // get all the text from the input documents
             var allText = "";
             // for each doc in the input collection
-            foreach (var inputDoc in collection.TypedData)
+            foreach (var inputDoc in collection)
             {
                 // get the data from it if it exists
                 var dataDoc = inputDoc.GetDataDocument();
@@ -81,7 +81,7 @@ namespace Dash
             var keyWords = words.GroupByStem(stemmer).SortByOccurences().Cast<IWord>().ToList();
 
             var outputDocs = new List<DocumentController>();
-            foreach (var inputDoc in collection.TypedData)
+            foreach (var inputDoc in collection)
             {
                 var dataDoc = inputDoc.GetDataDocument();
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;

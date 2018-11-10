@@ -33,7 +33,7 @@ namespace Dash
                 _currPres = value;
                 //update Pinned nodes
                 _pinnedNodes.Clear();
-                foreach(var node in _currPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
+                foreach(var node in _currPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null))
                 {
                     _pinnedNodes.Add(node);
                 }
@@ -85,13 +85,13 @@ namespace Dash
                 _listController = lc;
 
                 //check if there's a pres & make default pres if not
-                if (_listController.TypedData[0] == null)
+                if (_listController[0] == null)
                 {
                     SetCurrentPresentation(this.MakeNewPres());
                 }
                 else  //default presentation is first one
                 {
-                    SetCurrentPresentation(_listController.TypedData[0]);
+                    SetCurrentPresentation(_listController[0]);
                 }
             }
             
@@ -175,7 +175,7 @@ namespace Dash
         //change the current working presentation
         public void SetCurrentPresentation(DocumentController pres)
         {
-            if (_listController.TypedData.Contains(pres))
+            if (_listController.Contains(pres))
             {
                 CurrPres = pres;
             }

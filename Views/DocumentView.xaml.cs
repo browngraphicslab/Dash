@@ -205,6 +205,7 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
+                LinkActivationManager.DeactivateDoc(this);
             };
 
             PointerPressed += (sender, e) =>
@@ -292,7 +293,7 @@ namespace Dash
                 foreach (DocumentController l in docs)
                 {
                     l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
-                    l.SetField<BoolController>(KeyStore.HiddenKey, allVisible, true);
+                    l.SetHidden(allVisible);
                 }
             }
         }
@@ -669,7 +670,7 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (!wasRightTapped)
+            if (!wasHandled && !wasRightTapped)
             {
                 var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
                 if (scripts != null)

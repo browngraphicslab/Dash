@@ -42,25 +42,16 @@ namespace Dash
             {
                 if (KeyModel.Name != value)
                 {
-                    SetName(value);
+                    string data = KeyModel.Name;
+                    UndoCommand newEvent = new UndoCommand(() => Name = value, () => Name = data);
+
+                    KeyModel.Name = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
         }
 
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetName(string val, bool withUndo = true)
-        {
-            string data = KeyModel.Name;
-            UndoCommand newEvent = new UndoCommand(() => SetName(val, false), () => SetName(data, false));
-
-            KeyModel.Name = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
-
-        private static string _hackId;
         public KeyModel KeyModel => Model as KeyModel;
 
         /// <summary>

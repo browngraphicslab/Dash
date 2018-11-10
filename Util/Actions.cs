@@ -26,7 +26,7 @@ namespace Dash
 
         public static bool UnHideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
-            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null).TypedData)
+            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null))
                 if (vm.GetDataDocument().Equals(docController.GetDataDocument()) && vm.GetHidden())
                 {
                     vm.SetHidden(false);

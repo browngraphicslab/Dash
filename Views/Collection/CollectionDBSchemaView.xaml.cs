@@ -151,9 +151,9 @@ namespace Dash
                 //xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
 
-                var keys = InitializeDocs().ToList();
+                var keys = (IList<KeyController>)InitializeDocs().ToList();
                 var savedKeys = ViewModel.ContainerDocument
-                    .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).TypedData;
+                    .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
                 foreach (var key in savedKeys ?? keys)
                 {
                     AddKey(key);

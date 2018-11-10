@@ -279,8 +279,7 @@ namespace Dash
 
             if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is Dash.Views.TreeView.TreeViewNode))
             {
-                var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-                if (ctrlDown)
+                if (this.IsCtrlPressed())
                 {
                     if (e.VirtualKey == VirtualKey.Z)
                     {
@@ -830,6 +829,7 @@ namespace Dash
             else
             {
                 //Dock_Link(linkDoc, direction);
+                //target.SetHidden(false);
                 ToggleFloatingDoc(target);
             }
 
