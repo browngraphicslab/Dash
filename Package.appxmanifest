@@ -29,6 +29,10 @@
         <uap:Extension Category="windows.appService">
           <uap:AppService Name="OfficeInteropService" />
         </uap:Extension>
+        <uap:Extension Category="windows.appService" EntryPoint="CortanaBack1.VoiceCommands.DashVoiceCommandService">
+            <uap:AppService Name="DashVoiceCommandService"/>
+        </uap:Extension>
+        <uap:Extension Category="windows.personalAssistantLaunch"/>
       </Extensions>
       <uap:ApplicationContentUriRules>
         <uap:Rule Match="http://*" Type="include" WindowsRuntimeAccess="all" />
