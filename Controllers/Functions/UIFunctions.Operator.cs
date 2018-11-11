@@ -35,9 +35,10 @@ public sealed class TextInputOperator : OperatorController
     };
 
     public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
-                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
-        var output0 = await Dash.UIFunctions.ManageBehaviors();
-        outputs[Output0Key] = new ListController<OperatorController>(output0);
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+    {
+        var output0 = await Dash.UIFunctions.TextInput();
+        outputs[Output0Key] = new ListController<TextController>(output0);
     }
 
 }

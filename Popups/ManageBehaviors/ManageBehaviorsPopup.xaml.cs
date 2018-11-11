@@ -2,8 +2,10 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -13,15 +15,18 @@ namespace Dash.Popups
     {
         private TaskCompletionSource<List<OperatorController>> _tcs;
         private readonly Dictionary<int, ComboBox> _modifierMapping = new Dictionary<int, ComboBox>();
-        private readonly ObservableCollection<string> Behaviors = new ObservableCollection<string>();
-        private readonly int BehaviorCount = 3;
+        private readonly ObservableCollection<string> _behaviors = new ObservableCollection<string>();
+        private const int BehaviorCount = 3;
+        private bool _editMode;
+        private DocumentBehavior _editing;
+        private string _scriptState;
 
         public ManageBehaviorsViewModel ViewModel => DataContext as ManageBehaviorsViewModel;
 
         public ManageBehaviorsPopup()
         {
             InitializeComponent();
-            Behaviors.Add("Add new behavior");
+            _behaviors.Add("Add new behavior");
             SetupComboBoxes();
         }
 
@@ -66,19 +71,43 @@ namespace Dash.Popups
                     xCancelButton.Visibility = Visibility.Collapsed;
                     xConfirmButton.Visibility = Visibility.Visible;
                     xAddTextbox.Text = "Add New";
-                    var trigger = ((ComboBoxItem)xTriggeringEvent.SelectedItem).Content.ToString();
-                    var behavior = ((ComboBoxItem)xBehavior.SelectedItem).Content.ToString();
-                    ViewModel.Behaviors.Add(new DocumentBehavior(trigger, behavior));
-                    xAddButton.Opacity = 1;
+                    var trigger = ((ComboBoxItem)xTriggeringEvent.SelectedItem).Content?.ToString();
+                    var behavior = ((ComboBoxItem)xBehavior.SelectedItem).Content?.ToString();
+                    var triggerModifier = _modifierMapping[xTriggeringEvent.SelectedIndex];
+
+                    if (_editMode) ViewModel.Behaviors.Remove(_editing);
+
+                    ViewModel.Behaviors.Add(new DocumentBehavior(trigger, behavior, triggerModifier, xScript.Text, new[]
+                    {
+                        xTriggeringEvent.SelectedIndex,
+                        triggerModifier.SelectedIndex,
+                        xBehavior.SelectedIndex,
+                        xBehaviorModifiers.SelectedIndex
+                    }));
+
+                    xScript.Text = "";
                 }
-            } else
-            {
-                xAddNewBehaviorPanel.Visibility = Visibility.Visible;
-                xCancelButton.Visibility = Visibility.Visible;
-                xConfirmButton.Visibility = Visibility.Collapsed;
-                xAddTextbox.Text = "Apply";
-                xAddButton.Opacity = 0.5;
             }
+            else
+            {
+                xTriggeringEvent.SelectedItem = null;
+                xBehavior.SelectedItem = null;
+                xTappedModifiers.SelectedIndex = 0;
+                xDeletedModifiers.SelectedIndex = 0;
+                xFieldModifiers.SelectedIndex = 0;
+
+                DisplayAddNewPane();
+            }
+        }
+
+        private void DisplayAddNewPane()
+        {
+            xAddNewBehaviorPanel.BorderBrush = new SolidColorBrush(Colors.DarkRed);
+            xAddNewBehaviorPanel.Visibility = Visibility.Visible;
+            xCancelButton.Visibility = Visibility.Visible;
+            xConfirmButton.Visibility = Visibility.Collapsed;
+            xAddTextbox.Text = "Apply";
+            xAddButton.Visibility = Visibility.Collapsed;
         }
 
         private void HideRemaining(int selectedIndex)
@@ -110,7 +139,20 @@ namespace Dash.Popups
 
         private void ExistingBehaviorClicked(object sender, ItemClickEventArgs e)
         {
+            var b = (DocumentBehavior)e.ClickedItem;
 
+            _editMode = true;
+            _editing = b;
+
+            xTriggeringEvent.SelectedIndex = b.Indices[0];
+            b.TriggerModifier.Visibility = Visibility.Visible;
+            b.TriggerModifier.SelectedIndex = b.Indices[1];
+            xBehavior.SelectedIndex = b.Indices[2];
+            xBehaviorModifiers.SelectedIndex = b.Indices[3];
+            xScript.Text = b.Script;
+
+            DisplayAddNewPane();
+            xAddButton.Visibility = Visibility.Visible;
         }
 
         private void DeleteBehavior(object sender, RoutedEventArgs e)
@@ -120,22 +162,92 @@ namespace Dash.Popups
 
         private void Cancel(object sender, RoutedEventArgs e)
         {
-            xAddNewBehaviorPanel.Visibility = Visibility.Collapsed;
-            xCancelButton.Visibility = Visibility.Collapsed;
-            xConfirmButton.Visibility = Visibility.Visible;
+            if (xScriptAddButton.Visibility == Visibility.Collapsed)
+            {
+                xAddNewBehaviorPanel.Visibility = Visibility.Collapsed;
+                xCancelButton.Visibility = Visibility.Collapsed;
+                xConfirmButton.Visibility = Visibility.Visible;
+                xAddButton.Visibility = Visibility.Visible;
+                xAddTextbox.Text = "Add New";
+                xScript.Text = "";
+            } else
+            {
+                xScriptEntry.Visibility = Visibility.Collapsed;
+                xAddButton.Visibility = Visibility.Visible;
+                xScriptAddButton.Visibility = Visibility.Collapsed;
+                xScript.Text = _scriptState;
+            }
+        }
+
+        private void ProcessScript(object sender, RoutedEventArgs e)
+        {
+            xAddNewBehaviorPanel.Visibility = Visibility.Visible;
+            xCancelButton.Visibility = Visibility.Visible;
+            xConfirmButton.Visibility = Visibility.Collapsed;
+            xAddButton.Visibility = Visibility.Visible;
+            xScriptAddButton.Visibility = Visibility.Collapsed;
+            xScriptEntry.Visibility = Visibility.Collapsed;
+            xAddTextbox.Text = "Apply";
         }
 
         private void TriggeringEventChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedIndex = xTriggeringEvent.SelectedIndex;
-            xAddTextbox.Opacity = xBehavior.SelectedItem != null ? 1 : 0.5;
+            if (selectedIndex < 0) return;
+
             _modifierMapping[selectedIndex].Visibility = Visibility.Visible;
             HideRemaining(selectedIndex);
+
+            if (xBehavior.SelectedItem != null)
+            {
+                xAddButton.Visibility = Visibility.Visible;
+                xAddNewBehaviorPanel.BorderBrush = ColorConverter.HexToBrush("#407BB1");
+            }
         }
 
         private void BehaviorChanged(object sender, SelectionChangedEventArgs e)
         {
-            xAddTextbox.Opacity = xTriggeringEvent.SelectedItem != null ? 1 : 0.5;
+            if (xScriptEntry.Visibility == Visibility.Visible) return;
+
+            var selectedIndex = xBehavior.SelectedIndex;
+            if (selectedIndex < 0) return;
+
+            if (xTriggeringEvent.SelectedItem != null)
+            {
+                xAddButton.Visibility = Visibility.Visible;
+                xAddNewBehaviorPanel.BorderBrush = ColorConverter.HexToBrush("#407BB1");
+            }
+
+            if (selectedIndex == 4)
+            {
+                ShowScript();
+            } 
+            else
+            {
+                xBehaviorModifiers.Visibility = Visibility.Visible;
+                xEditScriptPanel.Visibility = Visibility.Collapsed;
+                xModifiersText.Visibility = Visibility.Visible;
+            }
         }
+
+        private void ShowScript()
+        {
+            xScript.Focus(FocusState.Programmatic);
+            xScript.Focus(FocusState.Keyboard);
+            xScript.Focus(FocusState.Pointer);
+            xScriptEntry.Visibility = Visibility.Visible;
+            xAddButton.Visibility = Visibility.Collapsed;
+            xScriptAddButton.Visibility = Visibility.Visible;
+            xBehaviorModifiers.Visibility = Visibility.Collapsed;
+            xEditScriptPanel.Visibility = Visibility.Visible;
+            xModifiersText.Visibility = Visibility.Collapsed;
+            _scriptState = xScript.Text;
+        }
+
+        private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+        }
+
+        private void EditScript(object sender, TappedRoutedEventArgs e) => ShowScript();
     }
 }

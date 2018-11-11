@@ -15,7 +15,7 @@
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
             <Popup x:Name="xBehaviorsPopup" LightDismissOverlayMode="On" Opened="OnOpened">
                 <Border x:Name="xBorder"
-                        BorderBrush="{StaticResource AccentGreenLight}"
+                        BorderBrush="{StaticResource DashDarkBlueBrush}"
                         Background="White"
                         BorderThickness="2 40 2 2" Width="700" Height="500">
                     <Grid>
@@ -47,7 +47,7 @@
                             IsItemClickEnabled="True"
                             ItemClick="ExistingBehaviorClicked"
                             CanDragItems="True"
-                            BorderBrush="{StaticResource AccentGreenLight}">
+                            BorderBrush="{StaticResource DashDarkBlueBrush}">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="local:DocumentBehavior">
                                     <Grid 
@@ -62,21 +62,23 @@
                                             Orientation="Horizontal"
                                             Margin="10 0 20 0">
                                             <TextBlock
+                                                Margin="0 -3 0 0"
                                                 x:Name="TriggerText"
-                                                Text="{Binding Trigger}"
+                                                Text="{x:Bind Trigger, Mode=TwoWay}"
                                                 VerticalAlignment="Center"/>
                                             <TextBlock 
                                                 HorizontalAlignment="Center"
                                                 x:Name="xMessageIcon" 
                                                 FontSize="20" 
                                                 VerticalAlignment="Center"
-                                                Foreground="Green"
+                                                Foreground="{StaticResource DashDarkBlueBrush}"
                                                 Margin="15 0 15 0"
                                                 FontFamily="{StaticResource FontAwesome}" 
                                                 Text="{StaticResource RightCaretIcon}"/>
                                             <TextBlock
+                                                Margin="0 -3 0 0"
                                                 x:Name="BehaviorText"
-                                                Text="{Binding Reaction}"
+                                                Text="{x:Bind Behavior, Mode=TwoWay}"
                                                 VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Button 
@@ -94,16 +96,16 @@
                             x:Name="xAddNewBehaviorPanel"
                             Grid.Row="2"
                             Orientation="Horizontal"
-                            Width="600"
+                            Width="550"
                             Height="250"
                             Background="White"
-                            BorderBrush="Black"
+                            BorderBrush="DarkRed"
                             BorderThickness="2"
                             Visibility="Collapsed">
                             <StackPanel 
                                 Orientation="Vertical"
                                 HorizontalAlignment="Center"
-                                Width="283">
+                                Width="258">
                                 <TextBlock
                                     FontSize="14"
                                     Foreground="Black" 
@@ -157,24 +159,27 @@
                                 x:Name="xMessageIcon" 
                                 FontSize="30" 
                                 VerticalAlignment="Center"
-                                Foreground="Green"
+                                Foreground="{StaticResource DashDarkBlueBrush}"
                                 FontFamily="{StaticResource FontAwesome}" 
                                 Text="{StaticResource RightCaretIcon}"/>
 
                             <StackPanel 
                                 Orientation="Vertical"
                                 HorizontalAlignment="Center"
-                                Width="282">
+                                Width="257"
+                                Height="250">
                                 <TextBlock
                                     FontSize="14"
                                     Foreground="Black" 
                                     Text="Associated Behavior"
                                     HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
                                     Margin="0 25 0 15"/>
                                 <ComboBox
                                     x:Name="xBehavior"
                                     Width="150"
                                     HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
                                     SelectionChanged="BehaviorChanged">
                                     <ComboBoxItem>Set Field</ComboBoxItem>
                                     <ComboBoxItem>Apply Templates</ComboBoxItem>
@@ -183,20 +188,99 @@
                                     <ComboBoxItem>Custom</ComboBoxItem>
                                 </ComboBox>
                                 <TextBlock
+                                    x:Name="xModifiersText"
                                     FontSize="14"
                                     Foreground="Black" 
                                     Text="Modifiers"
                                     HorizontalAlignment="Center"
                                     Margin="0 15 0 15"/>
                                 <ComboBox
-                                    x:Name="xFirstModifiers"
+                                    x:Name="xBehaviorModifiers"
+                                    Width="150"
                                     HorizontalAlignment="Center"
-                                    Width="150">
-                                    <ComboBoxItem>Single</ComboBoxItem>
-                                    <ComboBoxItem>Double</ComboBoxItem>
-                                    <ComboBoxItem>Right</ComboBoxItem>
+                                    VerticalAlignment="Center"
+                                    Margin="0 0 0 25">
+                                    <ComboBoxItem>Set Field</ComboBoxItem>
+                                    <ComboBoxItem>Apply Templates</ComboBoxItem>
+                                    <ComboBoxItem>API Call</ComboBoxItem>
+                                    <ComboBoxItem>Query</ComboBoxItem>
                                 </ComboBox>
+                                <StackPanel 
+                                    x:Name="xEditScriptPanel"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Visibility="Collapsed"
+                                    BorderBrush="{StaticResource DashDarkBlue}"
+                                    BorderThickness="2"
+                                    Width="150"
+                                    Height="50"
+                                    Margin="0 45 0 0"
+                                    Tapped="EditScript">
+                                    <TextBlock 
+                                        x:Name="xEditScriptIcon" 
+                                        FontSize="24" 
+                                        Foreground="{StaticResource DashDarkDarkBlueBrush}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{StaticResource FontAwesome}" 
+                                        Text="{StaticResource TextIcon}"/>
+                                    <TextBlock
+                                        FontSize="14"
+                                        Foreground="Black" 
+                                        Text="Edit Script"
+                                        Margin="-5 0 0 0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"/>
+                                </StackPanel>
+                                
                             </StackPanel>
+                        </StackPanel>
+                        <StackPanel 
+                            x:Name="xScriptEntry"
+                            Grid.Row="2"
+                            Orientation="Vertical"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                            <ScrollViewer 
+                                HorizontalAlignment="Center"
+                                VerticalScrollMode="Enabled" 
+                                HorizontalScrollMode="Disabled" 
+                                IsVerticalRailEnabled="True"
+                                Width="550"
+                                Height="250"
+                                BorderBrush="DarkRed"
+                                BorderThickness="1"
+                                Background="White">
+                                <Grid 
+                                    Margin="0" 
+                                    BorderBrush="DarkGray" 
+                                    BorderThickness="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="20"></ColumnDefinition>
+                                        <ColumnDefinition Width="*"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock 
+                                        Name="xTextLines" 
+                                        FontSize="10" 
+                                        LineHeight="17" 
+                                        FontFamily="Lucida Sans Typewriter" 
+                                        Text="1" 
+                                        Grid.Column="0"
+                                        Margin="-4,4,0,0" 
+                                        TextAlignment="Right"
+                                        Foreground="{StaticResource DashMediumBlueBrush}"/>
+                                    <TextBox 
+                                        x:Name="xScript" 
+                                        FontSize="15"
+                                        FontFamily="Lucida Sans Typewriter" 
+                                        Grid.Column="1" BorderBrush="Transparent"
+                                        PlaceholderText="Type code here..." 
+                                        AcceptsReturn="true" 
+                                        IsSpellCheckEnabled="False"
+                                        TextChanged="XTextBox_OnTextChanged">
+                                    </TextBox>
+                                </Grid>
+                            </ScrollViewer>
                         </StackPanel>
                         <StackPanel
                             Grid.Row ="3"  
@@ -208,7 +292,7 @@
                                     VerticalAlignment="Bottom"
                                     Height="40"
                                     Width="130" 
-                                    Background="{StaticResource AccentGreenLight}"
+                                    Background="{StaticResource DashMediumBlueBrush}"
                                     Click="AddOnClick">
                                 <TextBlock
                                     x:Name="xAddTextbox"
@@ -222,12 +306,26 @@
                                 VerticalAlignment="Bottom"
                                 Height="40"
                                 Width="130" 
-                                Background="{StaticResource AccentGreenLight}"
+                                Background="{StaticResource DashMediumBlueBrush}"
                                 Tapped="ConfirmTapped">
                                 <TextBlock
                                     FontSize="14"
                                     Foreground="White"
                                     Text="Confirm"/>
+                            </Button>
+                            <Button x:Name="xScriptAddButton" 
+                                    Margin="0 0 40 40" 
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Bottom"
+                                    Height="40"
+                                    Width="130" 
+                                    Background="{StaticResource DashMediumBlueBrush}"
+                                    Click="ProcessScript"
+                                    Visibility="Collapsed">
+                                <TextBlock
+                                    x:Name="xAddScriptTextbox"
+                                    FontSize="14"
+                                    Foreground="White" >Done</TextBlock>
                             </Button>
                             <Button 
                                 x:Name="xCancelButton" 
