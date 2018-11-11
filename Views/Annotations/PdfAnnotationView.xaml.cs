@@ -268,8 +268,7 @@ namespace Dash
                         for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
                         {
                             var ele = _annotationOverlay.TextSelectableElements[i];
-                            var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
-                            ;
+                            var fontFamily = ele.FontFamily;
                             var correctedFont = fontFamily;
                             if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
                             {
@@ -325,8 +324,7 @@ namespace Dash
                         }
 
                         var selectableElement = _annotationOverlay.TextSelectableElements[index];
-                        var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                            .GetFontName();
+                        var font = selectableElement.FontFamily;
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             var dpi = DisplayInformation.GetForCurrentView().LogicalDpi;
@@ -337,13 +335,13 @@ namespace Dash
                                 currentFontSize = fontSize;
                             }
 
-                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.AvgWidth)
                             {
                                 sb.Append("{\\b");
                                 isBold = true;
                             }
                             else if (isBold && selectableElement.Bounds.Width <
-                                     1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                                     1.05 * selectableElement.AvgWidth)
                             {
                                 sb.Append("}");
                                 isBold = false;

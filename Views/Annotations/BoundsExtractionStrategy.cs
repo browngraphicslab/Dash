@@ -193,7 +193,7 @@ namespace Dash
                     elements.Insert(prevIndex,
                         new SelectableElement(++prevIndex, "\n",
                             new Rect(prevElement.Bounds.Right, prevElement.Bounds.Top, prevElement.Bounds.Width,
-                                prevElement.Bounds.Height), prevElement.TextData));
+                                prevElement.Bounds.Height), prevElement.FontFamily, prevElement.AvgWidth));
                     sb.Append("\n");
                 }
 

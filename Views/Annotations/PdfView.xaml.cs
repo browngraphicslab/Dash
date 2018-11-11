@@ -65,7 +65,8 @@ namespace Dash
         }
         //This makes the assumption that both pdf views are always in the same annotation mode
         public AnnotationType                     CurrentAnnotationType => _botPdf.AnnotationOverlay.CurrentAnnotationType;
-
+        
+        private static LocalPDFEndpoint _pdfEndpoint = RESTClient.Instance.GetPDFEndpoint();
         public PdfView()
         {
             InitializeComponent();
@@ -249,6 +250,9 @@ namespace Dash
         {
             var strategy       = new BoundsExtractionStrategy();
             var pdfTotalHeight = 0.0;
+
+
+            // PdfUri
             await Task.Run(() =>
             {
                 for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
@@ -264,16 +268,56 @@ namespace Dash
             });
 
             _topPdf.PDFdoc = _botPdf.PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
-            var (selectableElements, text, pages, vagueSections) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+            bool hasPdf;
             try
             {
-                _botPdf.AnnotationOverlay.TextSelectableElements = selectableElements;
-                _botPdf.AnnotationOverlay.PageEndIndices = pages;
+                hasPdf = await _pdfEndpoint.ContainsPDF(PdfUri);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 Console.WriteLine(ex.ToString());
+                hasPdf = false;
             }
+
+            if (hasPdf)
+            {
+                try
+                {
+                    var (elems, pages) = await _pdfEndpoint.GetSelectableElements(PdfUri);
+                    _botPdf.AnnotationOverlay.TextSelectableElements =
+                        new List<SelectableElement>(elems);
+                    _botPdf.AnnotationOverlay.PageEndIndices = pages;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            else
+            {
+                try
+                {
+                    var (selectableElements, text, pages, vagueSections) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                    _botPdf.AnnotationOverlay.TextSelectableElements =
+                        new List<SelectableElement>(selectableElements);
+                    _botPdf.AnnotationOverlay.PageEndIndices = pages;
+                    await _pdfEndpoint.AddPdf(PdfUri, pages, selectableElements);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+
+            //try
+            //{
+            //    _botPdf.AnnotationOverlay.TextSelectableElements = selectableElements;
+            //    _botPdf.AnnotationOverlay.PageEndIndices = pages;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.ToString());
+            //}
 
             //var numSections = vagueSections.Aggregate(0, (i, list) => i + list.Count);
             //byte aIncrement = (byte) (128 / (10));

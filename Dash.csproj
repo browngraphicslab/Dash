@@ -235,6 +235,7 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Rest\Endpoints\LocalPDFEndpoint.cs" />
     <Compile Include="Util\KMeansCluster.cs" />
     <Compile Include="Popups\TextInputPopup.xaml.cs">
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
