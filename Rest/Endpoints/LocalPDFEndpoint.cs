@@ -65,7 +65,7 @@ namespace Dash
                         //Creates a new database with the title "Fields" containing two TEXT attributes (columns) "id" and "field" with the respective default values of NOT NULL and ""
                         //The primary key, or the attribute for which each tuplet (entry, or row) must be different is set to "id". In English, it's the document id's that differentiate the entries. 
                         CommandText = @"
-                            CREATE TABLE IF NOT EXISTS [" + pdf + @"] (
+                            CREATE TABLE IF NOT EXISTS [" + pdf.Segments.Last() + @"] (
 	                            `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
                                 `page`  INTEGER,
                                 `index` INTEGER,
@@ -84,7 +84,7 @@ namespace Dash
                     var createIndexCommand = new SqliteCommand
                     {
                         CommandText = @"
-                            CREATE INDEX IF NOT EXISTS `page` ON [" + pdf + @"] (`page`);",
+                            CREATE INDEX IF NOT EXISTS `page` ON [" + pdf.Segments.Last() + @"] (`page`);",
                         Connection = _db,
                         Transaction = transaction
                     };
@@ -94,7 +94,7 @@ namespace Dash
                     {
                         for (; j < pages[i]; j++)
                         {
-                            if (!AddItem(selectableElements[j], pdf.ToString(), i, transaction).IsCompletedSuccessfully)
+                            if (!AddItem(selectableElements[j], pdf.Segments.Last(), i, transaction).IsCompletedSuccessfully)
                             {
                                 throw new InvalidOperationException("Error adding selectable element");
                             }
@@ -136,7 +136,7 @@ namespace Dash
             {
                 var containsPdfCommand = new SqliteCommand
                 {
-                    CommandText = @"SELECT * FROM sqlite_master WHERE type = 'table' AND name = '" + pdf + "';",
+                    CommandText = @"SELECT * FROM sqlite_master WHERE type = 'table' AND name = '" + pdf.Segments.Last() + "';",
                     Connection = _db,
                 };
 
@@ -162,7 +162,7 @@ namespace Dash
             {
                 var getDocCommand = new SqliteCommand
                 {
-                    CommandText = @"SELECT * FROM '" + pdfUri + "';",
+                    CommandText = @"SELECT * FROM '" + pdfUri.Segments.Last() + "';",
                     Connection = _db,
                 };
                 getDocCommand.CommandText += page == -1 ? ";" : " WHERE `page`=@page;";
