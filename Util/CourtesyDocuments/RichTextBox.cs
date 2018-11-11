@@ -57,7 +57,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
                 Converter = new TextWrappingConverter(),
                 Tag = "Rich Text Box Text Wrapping Binding",
-                FallbackValue = TextWrapping.Wrap
+                FallbackValue = TextWrapping.NoWrap
             };
             element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
         }

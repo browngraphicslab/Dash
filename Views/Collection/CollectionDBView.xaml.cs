@@ -171,14 +171,14 @@ namespace Dash
             var buckets =
                 ParentDocument.GetDereferencedField<ListController<NumberController>>(BucketsKey, new Context(ParentDocument));
             buckets[changedBucket].Data = maxDomain;
-            ParentDocument.SetField(BucketsKey, new ListController<NumberController>(buckets), true);
         }
+
         public void UpdateSelection(int changedBar, bool selected)
         {
             var selectedBars =
                 ParentDocument.GetDereferencedField<ListController<NumberController>>(SelectedKey, new Context(ParentDocument));
             bool found = false;
-            foreach (var sel in selectedBars)
+            foreach (var sel in selectedBars.ToList())
             {
                 if (sel.Data == changedBar)
                 {
@@ -195,8 +195,6 @@ namespace Dash
             {
                 selectedBars.Add(new NumberController(changedBar));
             }
-
-            ParentDocument.SetField(SelectedKey, new ListController<NumberController>(selectedBars), true);
         }
 
         private void UpdateChart(Context context, bool updateViewOnly=false)
@@ -417,7 +415,7 @@ namespace Dash
                         if (numberField.Data <= b.Data)
                         {
                             countBars[bars.IndexOf(b)]++;
-                            if (keepAll || selectedBars.Select(fm => fm.Data).Contains(bars.IndexOf(b)))
+                            if (keepAll || selectedBars.Select(fm => (int)fm.Data).Contains(bars.IndexOf(b)))
                             {
                                 collection.Add(dmc);
                             }

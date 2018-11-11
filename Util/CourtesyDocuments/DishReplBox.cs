@@ -24,6 +24,9 @@ namespace Dash
                 [KeyStore.ReplScopeKey] = scope ?? new DocumentController(),
             }, DocumentType.DefaultType);
             Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
+            Document.SetField(KeyStore.TitleKey,
+                new PointerReferenceController(new DocumentReferenceController(Document, KeyStore.DocumentContextKey),
+                    KeyStore.TitleKey), true);
         }
 
         protected static void SetupBindings(DishReplView element, DocumentController docController, Context context)
