@@ -964,7 +964,7 @@ namespace Dash
 
             switch (selected)
             {
-                case "Zoom":
+                case "Follow":
                     currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
                     //set in context toggle based on saved info before making area visible 
                     if (xInContext != null && xInContextGrid != null)

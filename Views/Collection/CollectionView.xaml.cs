@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -170,8 +171,10 @@ namespace Dash
 
             if (initialViewType == CollectionViewType.Icon && CurrentView.ViewType != CollectionViewType.Icon)
             {
-                ViewModel.ContainerDocument.SetWidth (ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey)?.Data ?? 300) ;
-                ViewModel.ContainerDocument.SetHeight(ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey)?.Data ?? 300);
+                var width = ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenWidthKey);
+                var height = ViewModel.ContainerDocument.GetField<NumberController>(KeyStore.CollectionOpenHeightKey);
+                ViewModel.ContainerDocument.SetWidth (width != null && !double.IsNaN(width.Data) ? width.Data : 300);
+                ViewModel.ContainerDocument.SetHeight(height != null && !double.IsNaN(height.Data) ? height.Data : 300);
             }
 
             xContentControl.Content = CurrentView;
