@@ -1,0 +1,101 @@
+diff --git a/Util/FileTypeToDashParsing/PdfToDashUtil.cs b/Util/FileTypeToDashParsing/PdfToDashUtil.cs
+index 8b64a8ebd..af44f726d 100644
+--- a/Util/FileTypeToDashParsing/PdfToDashUtil.cs
++++ b/Util/FileTypeToDashParsing/PdfToDashUtil.cs
+@@ -55,8 +55,10 @@ namespace Dash
+ //            });
+ 
+             // return a new pdf box
+-            DocumentController layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
++            var layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
+             layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
++            var docContextReference = new DocumentReferenceController(layout, KeyStore.DocumentContextKey);
++            layout.SetField(KeyStore.TitleKey, new PointerReferenceController(docContextReference, KeyStore.TitleKey), true);
+             return layout;
+         }
+ 
+diff --git a/Util/NoteDocuments/CollectionNote.cs b/Util/NoteDocuments/CollectionNote.cs
+index 1649f78d8..137464e5f 100644
+--- a/Util/NoteDocuments/CollectionNote.cs
++++ b/Util/NoteDocuments/CollectionNote.cs
+@@ -2,6 +2,7 @@
+ using DashShared;
+ using System.Linq;
+ using Windows.Foundation;
++using System;
+ 
+ namespace Dash
+ {
+@@ -17,22 +18,18 @@ namespace Dash
+             {
+                 // [KeyStore.DataKey] = new ListController<DocumentController>(),
+                 [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
+-                [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() })
++                [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() }),
++                [KeyStore.FolderIconKey] = new ImageController(new Uri("https://image.freepik.com/free-vector/illustration-of-data-folder-icon_53876-6329.jpg"))
+             };
+-            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
+-
+-            protoDoc.SetField(KeyStore.TitleKey,
+-                new DocumentReferenceController(protoDoc, CollectionTitleOperatorController.ComputedTitle), true);
+-
+-            return protoDoc;
++            return new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
+         }
+ 
+-        DocumentController CreateLayout(DocumentController dataDoc, CollectionView.CollectionViewType viewType, Point where, Size size)
++        DocumentController CreateLayout(DocumentController dataDoc, CollectionViewType viewType, Point where, Size size)
+         {
+             return new CollectionBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height, viewType).Document;
+         }
+         static int count = 1;
+diff --git a/Util/NoteDocuments/HtmlNote.cs b/Util/NoteDocuments/HtmlNote.cs
+index dacf1bd7b..4f8c8d5ba 100644
+--- a/Util/NoteDocuments/HtmlNote.cs
++++ b/Util/NoteDocuments/HtmlNote.cs
+@@ -20,12 +20,7 @@ namespace Dash
+                 [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
+                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new RichTextTitleOperatorController() })
+             };
+-            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Html Note Prototype" };
+-
+-            protoDoc.SetField(KeyStore.TitleKey,
+-                new DocumentReferenceController(protoDoc, RichTextTitleOperatorController.ComputedTitle), true);
+-
+-            return protoDoc;
++            return new DocumentController(fields, DocumentType, prototypeID) { Tag = "Html Note Prototype" };
+         }
+ 
+         DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
+diff --git a/Util/NoteDocuments/RichTextNote.cs b/Util/NoteDocuments/RichTextNote.cs
+index e9d72f732..babb9d4d7 100644
+--- a/Util/NoteDocuments/RichTextNote.cs
++++ b/Util/NoteDocuments/RichTextNote.cs
+@@ -19,11 +19,7 @@ namespace Dash
+                 [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
+                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new RichTextDocumentOperatorController(), new RichTextTitleOperatorController() })
+             };
+-            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
+-
+-            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc, RichTextDocumentOperatorController.ReadableTextKey), true);
+-            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc, RichTextTitleOperatorController.ComputedTitle), true);
+-            return protoDoc;
++            return new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
+         }
+ 
+         static int rcount = 1;
+diff --git a/ViewModels/CollectionViewModel.cs b/ViewModels/CollectionViewModel.cs
+index 8ac7bd1ab..8f287e6da 100644
+--- a/ViewModels/CollectionViewModel.cs
++++ b/ViewModels/CollectionViewModel.cs
+@@ -106,6 +128,10 @@ namespace Dash
+             {
+                 Loaded(true);
+             }
++            if (!IsLoaded && !wasLoaded)
++            {
++                Loaded(true);
++            }
+             _lastContainerDocument = ContainerDocument;
+         }
+         /// <summary>

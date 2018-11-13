@@ -272,7 +272,8 @@ namespace Dash
                 xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { HeaderStyle = xHeaderStyle });
             }
 
-            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            //TODO tfs Events
+            if (/*ViewModel.IsLoaded &&*/ xDataGrid.ItemsSource == null)
             {
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
             }

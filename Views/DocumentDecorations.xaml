@@ -156,7 +156,7 @@
 
                 </Grid>
                 <ComboBox x:Name="xLinkTypeBox" SelectionChanged="XLinkTypeBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10" DropDownOpened="XLinkTypeBox_OnDropDownOpened">
-                    <ComboBoxItem x:Name="xTypeZoom">Zoom</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeZoom">Follow</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeAnnotation">Annotation</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>
