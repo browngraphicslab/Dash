@@ -93,7 +93,7 @@ namespace Dash
         }
         ~PdfView()
         {
-            //Debug.WriteLine("FINALIZING PdfView");
+            Debug.WriteLine("FINALIZING PdfView");
         }
         
         public async Task<List<DocumentController>> ExplodePages()

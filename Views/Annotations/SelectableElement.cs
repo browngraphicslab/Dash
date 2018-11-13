@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using System.Diagnostics;
+using Windows.Foundation;
 using DashShared;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
@@ -32,6 +33,11 @@ namespace Dash
             Bounds = bounds;
             FontFamily = fontFamily;
             AvgWidth = avgWidth;
+        }
+
+        ~SelectableElement()
+        {
+            //Debug.WriteLine(Contents + " disposed");
         }
 
         public string FontFamily { get; set; }

@@ -114,7 +114,7 @@ namespace Dash
         }
         ~PdfAnnotationView()
         {
-            //Debug.WriteLine("FINALIZING PdfAnnotationView");
+            Debug.WriteLine("FINALIZING PdfAnnotationView");
         }
 
         public void GoToPage(double pageNum)

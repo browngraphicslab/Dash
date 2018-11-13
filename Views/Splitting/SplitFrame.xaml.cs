@@ -60,7 +60,8 @@ namespace Dash
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true };
-
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             return doc;
         }
 
