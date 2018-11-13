@@ -33,50 +33,62 @@ namespace Dash.Views
             Loaded += DiscussionView_Loaded;
         }
 
-
-        private Item buildItem(DocumentController doc)
-        {
-            var initialNode = new Item() { IsExpanded = true, DVM = new DocumentViewModel(doc) { IsDimensionless = true, ResizersVisible = false, Undecorated = true } };
-            var fields = doc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
-            if (fields != null)
-            {
-                foreach (var f in fields)
-                {
-                    initialNode.Children.Add(buildItem(f));
-                }
-            }
-            return initialNode;
-        }
+        
         private void DiscussionView_Loaded(object sender, RoutedEventArgs e)
         {
-            var initdoc = DataDocument.GetDereferencedField<DocumentController>(KeyStore.DataKey, null);
             var tl = xTreeView.GetFirstDescendantOfType<TreeViewList>();
             tl.ItemTemplate = xTemplate.ItemTemplate;
-            xTreeView.RootNodes.Add(buildItem(initdoc));
             xTreeView.SelectionMode = TreeViewSelectionMode.None;
             xTreeView.LayoutUpdated += XTreeView_LayoutUpdated;
+
+            var binding = new FieldBinding<ListController<DocumentController>>()
+            {
+                Converter = new DocsToItemsConverter(),
+                Mode = BindingMode.OneWay,
+                Document = DataDocument,
+                Key = KeyController.Get("DiscussionItems"),
+                Tag = "bind ItemSource in DiscussionView"
+            };
+            tl.AddFieldBinding(TreeViewList.ItemsSourceProperty, binding);
+        }
+        public class DocsToItemsConverter : SafeDataToXamlConverter<List<DocumentController>, List<Item>>
+        {
+            public override List<Item> ConvertDataToXaml(List<DocumentController> wrapping, object parameter = null)
+            {
+                    return wrapping.Select((d) => new Item(d)).ToList();
+            }
+
+            public override List<DocumentController> ConvertXamlToData(List<Item> xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private void XTreeView_LayoutUpdated(object sender, object e)
         {
-            foreach (var cb in xTreeView.GetDescendantsOfType<Grid>().Where((g)=>g.Name.Contains("Expand")))
-                cb.Padding = new Thickness(0);
+            foreach (var cb in xTreeView.GetDescendantsOfType<Grid>().Where((g) => g.Name.Contains("Expand")))
+                cb.Visibility = Visibility.Collapsed;
             foreach (var cb in xTreeView.GetDescendantsOfType<CheckBox>().Select((c) => c.Parent))
                 if (cb is FrameworkElement fe)
                     fe.Visibility = Visibility.Collapsed;
         }
 
-        private void checkedChanged(object sender, RoutedEventArgs e)
+        public class Item : TreeViewNode
         {
-            var item = (sender as Button).DataContext as Item;
-            var rtn = new RichTextNote("Next...").Document;
-            var stuff = item.DVM.DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
-            stuff.Add(rtn);
-            item.Children.Add(new Item() { IsExpanded = true, DVM = new DocumentViewModel(rtn) { IsDimensionless = true, ResizersVisible = false, Undecorated = true } });
-        }
-
-        private class Item : TreeViewNode
-        {
+            public Item(DocumentController d)
+            {
+                DVM = new DocumentViewModel(d) { ResizersVisible = false, IsDimensionless = true };
+                IsExpanded = true;
+                var binding = new FieldBinding<NumberController>()
+                {
+                    Converter = new DoubleToIntConverter(),
+                    Mode = BindingMode.TwoWay,
+                    Document = d.GetDataDocument(),
+                    Key = KeyController.Get("DiscussionDepth"),
+                    Tag = "bind ItemSource in Item TreeViewNode"
+                };
+                this.AddFieldBinding(TreeViewNode.DepthProperty, binding);
+            }
             public DocumentViewModel  DVM { get; set; }
         }
     }

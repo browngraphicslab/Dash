@@ -64,6 +64,7 @@
             Grid.Row="1"
             x:Name="xRichEditBox"
             CanDrag="true"
+            MinHeight="12"
             Foreground="{ThemeResource TextBrush}"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
