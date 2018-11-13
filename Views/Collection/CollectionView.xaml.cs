@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Dash.FontIcons;
 using Dash.Views.Collection;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,12 +32,13 @@ namespace Dash
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
             DragOver  += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
             Drop      += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
+            var currentEventListener = ViewModel?.ContainerDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (view, controller, arg3) => view.ViewTypeHandler(controller, arg3));
             DataContextChanged += (ss, ee) =>
             {
                 if (ee.NewValue != _lastViewModel)
                 {
-                    ViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
-                    ViewModel?.ContainerDocument.AddFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
+                    currentEventListener?.Detach();
+                    currentEventListener = ViewModel?.ContainerDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (view, controller, arg3) => view.ViewTypeHandler(controller, arg3));
                     InitializeView(ViewModel?.ViewType ?? CurrentView?.ViewType ?? CollectionViewType.Freeform);
                     _lastViewModel = ViewModel;
                 }
@@ -113,8 +115,6 @@ namespace Dash
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
-            _lastViewModel?.Loaded(false);
-            _lastViewModel?.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.CollectionViewTypeKey, ViewTypeHandler);
         }
     
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
@@ -127,7 +127,6 @@ namespace Dash
             //ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
 
             //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
-            ViewModel?.Loaded(true);
         }
 
         private void ParentDocumentView_DocumentDeselected(DocumentView obj)

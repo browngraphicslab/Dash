@@ -211,7 +211,7 @@ namespace Dash
 
         ~RichTextView()
         {
-            Debug.WriteLine("Finalized RichTextView");
+            //Debug.WriteLine("Finalized RichTextView");
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
