@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.Foundation;
+using Windows.UI.Core;
 using static Dash.DocumentController;
 using Point = Windows.Foundation.Point;
 using Windows.UI.Xaml.Controls;
@@ -141,11 +142,31 @@ namespace Dash
 
         public FrameworkElement Content
         {
-            get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
+            get
+            {
+                if (_content != null)
+                {
+                    return _content;
+                }
+
+                if (_makeViewTask == null)
+                {
+                    _makeViewTask = Window.Current.Dispatcher.RunIdleAsync(arg => MakeView());
+                }
+
+                return null;
+            }
             private set  {
                 _content = value; // content will be recomputed when someone accesses Content
                 OnPropertyChanged(); // let everyone know that _content has changed
             }
+        }
+
+        private IAsyncAction _makeViewTask;
+        private void MakeView()
+        {
+            Content = LayoutDocument.MakeViewUI();
+            _makeViewTask = null;
         }
 
         public Thickness SearchHighlightState

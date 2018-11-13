@@ -485,7 +485,7 @@ namespace Dash
             var colWidth = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString()), minMax);
 
             // create a collectionview off the screen
-            var collView = col.MakeViewUI(null) as CollectionView;
+            var collView = col.MakeViewUI() as CollectionView;
             Debug.Assert(collView != null);    
             MainPage.Instance.xTabCanvas.Children.Add(collView);
             Canvas.SetLeft(collView, -10000);

@@ -1079,9 +1079,8 @@ namespace Dash
         /// <summary>
         /// Builds the underlying XAML Framework Element representation of this document.
         /// </summary>
-        /// <param name="context"></param>
         /// <returns></returns>
-        public FrameworkElement MakeViewUI(Context context)
+        public FrameworkElement MakeViewUI()
         {
             Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
                                        " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");

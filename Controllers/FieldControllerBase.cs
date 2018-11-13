@@ -104,7 +104,7 @@ namespace Dash
                 ? new ImageBox(refField).Document
                 : new TextingBox(refField).Document;
             hstack.Children.Add(label);
-            var ele = dBox.MakeViewUI(context);
+            var ele = dBox.MakeViewUI();
             hstack.Children.Add(ele);
             sp.Children.Add(hstack);
         }
