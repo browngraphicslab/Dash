@@ -634,7 +634,8 @@ namespace Dash
 
                 e.Handled = true;
                 return;
-            } else if (e.Key.Equals(VirtualKey.Tab))
+            }
+            else if (e.Key.Equals(VirtualKey.Tab))
             {
 
                 var depth = DataDocument.GetDereferencedField<NumberController>(KeyController.Get("DiscussionDepth"), null)?.Data;
@@ -654,6 +655,7 @@ namespace Dash
                 if (depth is double dep)
                 {
                     var rt = new RichTextNote("").Document;
+                    MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10));
                     rt.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep, true);
                     var parent = getDocView().GetFirstAncestorOfType<DocumentView>();
                     var items = parent.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("DiscussionItems"), null);
@@ -748,6 +750,7 @@ namespace Dash
         </Grid>";
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight+5));
                 var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
                 var rtn = new RichTextNote("").Document;
                 var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
@@ -757,6 +760,7 @@ namespace Dash
                 }
                 rtn.SetField<TextController>(KeyStore.XamlKey, xaml, true);
                 replies.Add(rtn);
+                var found = VisualTreeHelper.FindElementsInHostCoordinates((Point)MainPage.Instance.ForceFocusPoint, this).ToList().OfType<RichEditBox>();
                 e.Handled = true;
             }
             if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
@@ -970,6 +974,7 @@ namespace Dash
 
         private void UnLoaded(object s, RoutedEventArgs e)
         {
+            GotFocus -= RichTextView_GotFocus;
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;
             SetSelected("");
@@ -1021,8 +1026,24 @@ namespace Dash
                     xRichEditBox.Document.Selection.EndPosition = xRichEditBox.Document.Selection.StartPosition;
                 }
             }
-            if (SplitFrame.ActiveFrame == this.GetFirstAncestorOfType<SplitFrame>())
+
+            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            {
+                GotFocus += RichTextView_GotFocus;
                 xRichEditBox.Focus(FocusState.Programmatic);
+            }
+        }
+
+        private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
+        {
+            GotFocus -= RichTextView_GotFocus;
+            var text = MainPage.Instance.TextPreviewer.Visibility == Visibility.Visible ?
+                    MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
+            xRichEditBox.Document.Selection.SetRange(0, 0);
+            xRichEditBox.Document.SetText(TextSetOptions.None, text);
+            xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+            xRichEditBox.Document.Selection.SetRange(text.Length, text.Length);
+            MainPage.Instance.ClearForceFocus();
         }
 
         #endregion

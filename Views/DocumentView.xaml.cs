@@ -535,7 +535,7 @@ namespace Dash
         /// Deletes the document from the view.
         /// </summary>
         /// <param name="addTextBox"></param>
-        public void DeleteDocument(bool addTextBox = false)
+        public void DeleteDocument()
         {
             if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
             {
@@ -552,12 +552,6 @@ namespace Dash
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
                 FadeOutBegin?.Invoke();
-
-                if (addTextBox)
-                {
-                    (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
-                }
-
             }
         }
 
@@ -755,7 +749,10 @@ namespace Dash
                 }
             }
 
-            collection.LoadNewActiveTextBox("", where, true);
+            using (UndoManager.GetBatchHandle())
+            {
+                collection.LoadNewActiveTextBox("", where);
+            }
         }
 
         #endregion

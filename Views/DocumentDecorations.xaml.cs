@@ -346,12 +346,12 @@ namespace Dash
             {
                 Debug.WriteLine("Got Exception:" + e);
             }
-            this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            this.xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
+            xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
             xActivationButton.Fill = new SolidColorBrush(LinkActivationManager.IsActivated(SelectedDocs.FirstOrDefault()) ? Colors.Red : Colors.LightSkyBlue);
 
-            ResizerVisibilityState =  _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.FirstOrDefault()?.ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
+            ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && (  _selectedDocs.First().GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.First().ViewModel?.ResizersVisible == true) ? Visibility.Visible : Visibility.Collapsed;
 
             if (rebuildMenu)
             {
