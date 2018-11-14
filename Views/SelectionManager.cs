@@ -242,10 +242,14 @@ namespace Dash
         }
         public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
         {
-            if (TouchInteractions.NumFingers != 1 && e != null && e.PointerDeviceType == PointerDeviceType.Touch)
+            bool isPDF = draggedView.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
+            if ((TouchInteractions.NumFingers != 1  && e != null && e.PointerDeviceType == PointerDeviceType.Touch))
             {
-                e.Handled = true;
-                return;
+                if (!isPDF)
+                {
+                    e.Handled = true;
+                    return;
+                }
             }
             if (e != null)
             {
