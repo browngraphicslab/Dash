@@ -114,13 +114,6 @@ namespace Dash
                 var docView = getDocView();
                 if (docView != null)
                 {
-                    if (!this.IsShiftPressed() && !this.IsRightBtnPressed())
-                    {
-                        if (SelectionManager.GetSelectedDocs().Count != 1 || !SelectionManager.IsSelected(docView))
-                        {
-                            SelectionManager.Select(docView, false);
-                        }
-                    }
                     docView.CacheMode = null;
                     
                     Clipboard.ContentChanged += Clipboard_ContentChanged;
@@ -813,6 +806,7 @@ namespace Dash
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
             MainPage.Instance.ClearForceFocus();
+            SelectionManager.Select(getDocView(), false);
         }
 
         #endregion
