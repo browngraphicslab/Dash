@@ -139,8 +139,11 @@ namespace Dash
                 StorageFile vcdStorageFile =
                     await Package.Current.InstalledLocation.GetFileAsync(@"DashCommands.xml");
 
+                var file = new Uri("ms-appx:///DashCommands.xml");
+                var storageFile = await StorageFile.GetFileFromApplicationUriAsync(file);
+
                 await Windows.ApplicationModel.VoiceCommands.VoiceCommandDefinitionManager.
-                    InstallCommandDefinitionsFromStorageFileAsync(vcdStorageFile);
+                    InstallCommandDefinitionsFromStorageFileAsync(storageFile);
 
                 // Update phrase list.
                 //ViewModel.ViewModelLocator locator = App.Current.Resources["ViewModelLocator"] as ViewModel.ViewModelLocator;
