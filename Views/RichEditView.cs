@@ -24,21 +24,13 @@ namespace Dash
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichEditView), new PropertyMetadata(default(RichTextModel.RTD), xRichEditView_TextChangedCallbackStatic));
         
-        private int           _prevQueryLength;// The length of the previous search query
-        private int           _nextMatch;// Index of the next highlighted search result
-        private string        _originalRtfFormat;
-        private List<string>  _queries;
-        private int           _textLength;
-        private int           _queryIndex = -1;
-        private string        _lastXamlRTFText = "";
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
         /// </summary>
         private Dictionary<int, Color>    _originalCharFormat = new Dictionary<int, Color>();
-        
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
-        public static bool                _searchHighlight = false;
+        private string                    _lastXamlRTFText = "";
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -252,37 +244,30 @@ namespace Dash
         private static void xRichEditView_TextChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
             var rtv = sender as RichEditView;
-            if (!_searchHighlight)
+            var newRtFormatString = ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString;
+            if (newRtFormatString != null && newRtFormatString != rtv._lastXamlRTFText)
             {
-                var newRtFormatString = ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString;
-                if (newRtFormatString != null && newRtFormatString != rtv._lastXamlRTFText)
+                rtv.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+                rtv._lastXamlRTFText = rtv.getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+            }
+            var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
+            if (documentView != null)
+            {
+                if (rtv.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
                 {
-                    rtv.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
-                    rtv._lastXamlRTFText = rtv.getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
-                }
-                if (rtv.getSelected()?.FirstOrDefault() != null && rtv.getSelected().First().Data is string selected)
-                {
-                    rtv._prevQueryLength = selected.Length;
-                }
-                var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
-                if (documentView != null)
-                {
-                    if (rtv.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
-                    {
-                        var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
-                        var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
+                    var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
+                    var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
 
-                        //this does better formatting/ parsing than the regex stuff can
-                        var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
+                    //this does better formatting/ parsing than the regex stuff can
+                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
 
-                        rtv.Document.Selection.CharacterFormat.Size = 9;
-                        rtv.Document.Selection.FindText(HyperlinkMarker, rtv.getRtfText().Length, FindOptions.Case);
-                        rtv.Document.Selection.CharacterFormat.Size = 8;
-                        rtv.Document.Selection.Text = link;
-                        rtv.Document.Selection.Link = "\"" + url + "\"";
-                        rtv.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
-                        rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
-                    }
+                    rtv.Document.Selection.CharacterFormat.Size = 9;
+                    rtv.Document.Selection.FindText(HyperlinkMarker, rtv.getRtfText().Length, FindOptions.Case);
+                    rtv.Document.Selection.CharacterFormat.Size = 8;
+                    rtv.Document.Selection.Text = link;
+                    rtv.Document.Selection.Link = "\"" + url + "\"";
+                    rtv.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
+                    rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
                 }
             }
         }

@@ -207,7 +207,8 @@ namespace Dash
                 switch (listArgs.ListAction)
                 {
                     case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                        listArgs.NewItems.ForEach((reg) => EmbeddedViewModels.Add(
+                        listArgs.NewItems.ForEach((reg) => 
+                        EmbeddedViewModels.Add(
                             new DocumentViewModel(reg)
                             {
                                 Undecorated = true,
@@ -884,10 +885,15 @@ namespace Dash
                         }
                     }
                 }
-                else 
+                else if (dm.DraggingLinkButton && !this.IsShiftPressed())
                 {
-                    var forcecopy = (dm.DraggingLinkButton && !this.IsShiftPressed());
-                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, forcecopy);
+                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, true);
+                    StartAnnotation(AnnotationType.Pin, where, new AnchorableAnnotation.Selection(CreatePinRegion(where, targets.FirstOrDefault())));
+                    e.Handled = true;
+                }
+                else
+                {
+                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
 
                     foreach (var doc in targets)
                     {
