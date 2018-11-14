@@ -1123,7 +1123,7 @@ namespace Dash
                 var fieldKey = KeyController.Get(fieldName);
                 TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
-            var richTextFields = g.GetDescendantsOfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            var richTextFields = g.GetDescendantsOfType<RichEditView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
@@ -1158,6 +1158,28 @@ namespace Dash
                 var fieldName = fieldReplacement.Name.Replace("xDataField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 DataBox.BindContent(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey);
+            }
+            var doclistFields = g.GetDescendantsOfType<ListView>().Where((rtv) => rtv.Name.StartsWith("xDocumentList"));
+            foreach (var fieldReplacement in doclistFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xDocumentList", "");
+                var fieldKey = KeyController.Get(fieldName);
+                var binding = new FieldBinding<ListController<DocumentController>>()
+                {
+                    Converter=new DocsToViewModelsConverter(),
+                    Mode = BindingMode.OneWay,
+                    Document = GetDataDocument(),
+                    Key = fieldKey,
+                    Tag="bind ItemSource in DocumentController"
+                };
+                fieldReplacement.AddFieldBinding(ListView.ItemsSourceProperty, binding);
+            }
+            var docFields = g.GetDescendantsOfType<DocumentView>().Where((rtv) => rtv.Name.StartsWith("xDocumentField"));
+            foreach (var fieldReplacement in docFields)
+            {
+                var fieldName = fieldReplacement.Name.Replace("xDocumentField", "");
+                var fieldKey = KeyController.Get(fieldName);
+                fieldReplacement.DataContext = new DocumentViewModel(GetDereferencedField<DocumentController>(fieldKey,null));
             }
         }
 
@@ -1305,7 +1327,7 @@ namespace Dash
         private void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {
             // this invokes listeners which have been added on a per key level of granularity
-            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
+            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey) )
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
 
             // this invokes listeners which have been added on a per doc level of granularity

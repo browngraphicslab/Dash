@@ -85,7 +85,7 @@ namespace Dash
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
 
-            _botPdf.CanSetAnnotationVisibilityOnScroll = true;
+            //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
         ~PdfView()
         {
@@ -179,7 +179,7 @@ namespace Dash
         /// <returns></returns>
         public DocumentController GetRegionDocument(Point? docViewPoint = null)
         {
-            return _botPdf.GetRegionDocument(docViewPoint);
+            return _botPdf.GetRegionDocument(!docViewPoint.HasValue ? docViewPoint : Util.PointTransformFromVisual(docViewPoint.Value, this, _botPdf.AnnotationOverlay));
         }
 
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)

@@ -64,6 +64,7 @@
             Grid.Row="1"
             x:Name="xRichEditBox"
             CanDrag="true"
+            MinHeight="12"
             Foreground="{ThemeResource TextBrush}"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
@@ -73,21 +74,6 @@
             SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
             IsTextPredictionEnabled="True"
             Background="Transparent">
-
-            <!--FORMAT OPTIONS FLYOUT-->
-            <!--<FlyoutBase.AttachedFlyout>
-                <Flyout>
-                    <Grid x:Name="xAttachedFlyout">
-
-                    </Grid>
-                </Flyout>
-            </FlyoutBase.AttachedFlyout>-->
-
-            <!--Flyout for attached links-->
-            <FlyoutBase.AttachedFlyout>
-                <MenuFlyout x:Name="xLinkFlyout" />
-            </FlyoutBase.AttachedFlyout>
-
         </RichEditBox>
         <!--</Canvas>-->
     </Grid>

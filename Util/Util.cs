@@ -26,6 +26,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
+using Windows.System;
 
 namespace Dash
 {
@@ -665,6 +666,91 @@ namespace Dash
 
 
             return point;
+        }
+
+
+
+        public static string KeyCodeToUnicode(VirtualKey key, bool shiftState, bool capState)
+        {
+            var virtualKeyCode = (uint)key;
+
+            string character = null;
+
+            // take care of symbols
+            if (key == VirtualKey.Space)
+            {
+                character = " ";
+            }
+            if (key == VirtualKey.Multiply)
+            {
+                character = "*";
+            }
+            // TODO take care of more symbols
+
+            //Take care of letters
+            if (virtualKeyCode >= 65 && virtualKeyCode <= 90)
+            {
+                if ((!shiftState && !capState) || (shiftState && capState))
+                {
+                    character = key.ToString().ToLower();
+                }
+                else
+                {
+                    character = key.ToString();
+                }
+            }
+
+            //Take care of numbers
+            if (virtualKeyCode >= 48 && virtualKeyCode <= 57)
+            {
+                character = (virtualKeyCode - 48).ToString();
+                if ((shiftState != false || capState != false) &&
+                    (!shiftState || !capState))
+                {
+                    switch ((virtualKeyCode - 48))
+                    {
+                    case 1: character = "!"; break;
+                    case 2: character = "@"; break;
+                    case 3: character = "#"; break;
+                    case 4: character = "$"; break;
+                    case 5: character = "%"; break;
+                    case 6: character = "^"; break;
+                    case 7: character = "&"; break;
+                    case 8: character = "*"; break;
+                    case 9: character = "("; break;
+                    case 0: character = ")"; break;
+                    default: break;
+                    }
+                }
+            }
+
+            if (virtualKeyCode >= 186 && virtualKeyCode <= 222)
+            {
+                var shifted = ((shiftState != false || capState != false) &&
+                    (!shiftState || !capState));
+                switch (virtualKeyCode)
+                {
+                case 186: character = shifted ? ":" : ";"; break;
+                case 187: character = shifted ? "=" : "+"; break;
+                case 188: character = shifted ? "<" : ","; break;
+                case 189: character = shifted ? "_" : "-"; break;
+                case 190: character = shifted ? ">" : "."; break;
+                case 191: character = shifted ? "?" : "/"; break;
+                case 192: character = shifted ? "~" : "`"; break;
+                case 219: character = shifted ? "{" : "["; break;
+                case 220: character = shifted ? "|" : "\\"; break;
+                case 221: character = shifted ? "}" : "]"; break;
+                case 222: character = shifted ? "\"" : "'"; break;
+                }
+
+            }
+            //Take care of numpad numbers
+            if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
+            {
+                character = (virtualKeyCode - 96).ToString();
+            }
+
+            return character;
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Dash
 
         public DocumentViewModel ViewModel
         {
-            get => DataContext as DocumentViewModel;
+            get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
 
@@ -173,7 +173,7 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
-            MinHeight = 25;
+            MinHeight = 10;
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
@@ -205,7 +205,6 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
-                LinkActivationManager.DeactivateDoc(this);
             };
 
             PointerPressed += (sender, e) =>
@@ -535,7 +534,7 @@ namespace Dash
         /// Deletes the document from the view.
         /// </summary>
         /// <param name="addTextBox"></param>
-        public void DeleteDocument(bool addTextBox = false)
+        public void DeleteDocument()
         {
             if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
             {
@@ -547,17 +546,10 @@ namespace Dash
             }
             else if (ParentCollection != null)
             {
-                LinkActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
                 FadeOutBegin?.Invoke();
-
-                if (addTextBox)
-                {
-                    (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
-                }
-
             }
         }
 
@@ -587,7 +579,6 @@ namespace Dash
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
-
 
         /// <summary>
         /// Copes the DocumentView for the document
@@ -675,17 +666,22 @@ namespace Dash
                 var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
                 if (scripts != null)
                 {
-                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
-                    var tasks = new List<Task>(scripts.Count);
-                    foreach (var operatorController in scripts)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                        var tasks = new List<Task>(scripts.Count);
+                        foreach (var operatorController in scripts)
+                        {
+                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        }
+
+                        if (tasks.Any())
+                        {
+                            await Task.WhenAll(tasks);
+                        }
                     }
 
-                    if (tasks.Any())
-                    {
-                        await Task.WhenAll(tasks);
-                    }
+                    return true;
                 }
             }
             if (!wasHandled)
@@ -756,7 +752,10 @@ namespace Dash
                 }
             }
 
-            collection.LoadNewActiveTextBox("", where, true);
+            using (UndoManager.GetBatchHandle())
+            {
+                collection.LoadNewActiveTextBox("", where);
+            }
         }
 
         #endregion
@@ -1150,9 +1149,9 @@ namespace Dash
                          "}";
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
-                {
-                    await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
-                };
+            {
+                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+            };
             //Add the Layout Template Popup
            xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {

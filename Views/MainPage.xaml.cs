@@ -68,6 +68,20 @@ namespace Dash
             }
         }
 
+        public Point? ForceFocusPoint = null;
+        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
+        {
+            ForceFocusPoint = where;
+            TextPreviewer = collection;
+        }
+        public void ClearForceFocus()
+        {
+            MainPage.Instance.TextPreviewer.ClearPreview();
+            MainPage.Instance.ForceFocusPoint = null;
+        }
+
+        public CollectionFreeformBase TextPreviewer = null;
+
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
@@ -321,19 +335,6 @@ namespace Dash
                         }
                 }
             }
-
-            //deactivate all docs if esc was pressed
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    LinkActivationManager.DeactivateAll();
-                }
-
-            }
-
-            
-       
 
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())

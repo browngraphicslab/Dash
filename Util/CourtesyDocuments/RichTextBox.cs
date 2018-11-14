@@ -32,7 +32,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public static void SetupBindings(RichTextView element, DocumentController docController, KeyController key, Context context)
+        public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key, Context context)
         {
             element.DataFieldKey = key;
             var binding = new FieldBinding<RichTextController>()
@@ -44,11 +44,11 @@ namespace Dash
                 Tag = "Rich Text Box Text Binding",
                 FallbackValue = new RichTextModel.RTD() {RtfFormatString="" }
             };
-            element.AddFieldBinding(RichTextView.TextProperty, binding);
+            element.AddFieldBinding(RichEditView.TextProperty, binding);
             SetupTextWrapBinding(element, docController);
         }
 
-        public static void SetupTextWrapBinding(RichTextView element, DocumentController docController)
+        public static void SetupTextWrapBinding(RichEditView element, DocumentController docController)
         {
             var twrapBinding = new FieldBinding<NumberController>
             {
@@ -57,23 +57,23 @@ namespace Dash
                 Mode = BindingMode.OneWay,
                 Converter = new TextWrappingConverter(),
                 Tag = "Rich Text Box Text Wrapping Binding",
-                FallbackValue = TextWrapping.NoWrap
+                FallbackValue = TextWrapping.Wrap
             };
-            element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
+            element.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
         }
 
         public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
-            var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
+            var rtv = richTextBox.GetFirstDescendantOfType<RichEditView>();
             return rtv?.GetRegionDocument();
         }
         
         public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
-            RichTextView rtv = null;
+            RichEditView rtv = null;
             var dataField = docController.GetField(key);
             var refToRichText = dataField as ReferenceController;
-            rtv = new RichTextView();
+            rtv = new RichEditView();
             //{
             //    LayoutDocument = docController,
             //    // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument

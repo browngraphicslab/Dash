@@ -9,7 +9,7 @@ namespace Dash
     {
         TypeInfo ListSubTypeInfo { get; }
 
-        void Remove(FieldControllerBase fmc);
+        bool Remove(FieldControllerBase fmc);
         void AddBase(FieldControllerBase fmc);
         void AddRange(IEnumerable<FieldControllerBase> fmcs);
 
