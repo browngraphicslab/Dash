@@ -224,7 +224,7 @@ namespace Dash
         /// <summary>
         /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
         /// </summary>
-        Storyboard _storyboard1, _storyboard2;
+        private Storyboard _storyboard1, _storyboard2;
 
         public void Move(TranslateTransform translate)
         {
