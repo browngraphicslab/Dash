@@ -168,14 +168,14 @@
         <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="2" 
                 Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Left" >
             <FlyoutBase.AttachedFlyout>
-                <MenuFlyout Opening="FlyoutBase_OnOpen">
+                <MenuFlyout x:Name="XMenuFlyout" Opening="FlyoutBase_OnOpen">
                     <MenuFlyoutSubItem Text="Document">
-                        <MenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
+                        <ToggleMenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
+                        <ToggleMenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
+                        <ToggleMenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
+                        <ToggleMenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
+                        <ToggleMenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
+                        <ToggleMenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
@@ -194,6 +194,12 @@
             </FlyoutBase.AttachedFlyout>
 
         </Button>
+
+        <Grid Grid.Row="2" Grid.Column="2">
+            <Button Content="3-o" Background="{StaticResource DashDarkBlueBrush}" Foreground ="White"/>
+        </Grid>
+
+        
         
         
     </Grid>

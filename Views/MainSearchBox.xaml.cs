@@ -691,8 +691,15 @@ namespace Dash
                     mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
             }
+
+            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
         }
 
+        private void XMenuFlyoutOnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        {
+            args.Cancel = true;
+            XMenuFlyout.Closing -= XMenuFlyoutOnClosing;
+        }
 
         private void Author_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -710,6 +717,7 @@ namespace Dash
                     mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
             }
+            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
         }
 
         private MenuFlyoutSubItem _authorItem;
