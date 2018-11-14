@@ -625,6 +625,7 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            //bcz: fix this -- it dies for multiple document selections
             foreach (var docView in SelectedDocs)
             {
                 var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
