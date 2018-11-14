@@ -52,29 +52,7 @@ namespace Dash.Views.TreeView
             }
 
             Bindings.Update();
-            bool wasLoaded = _oldViewModel?.IsLoaded ?? true;
-            if (wasLoaded)
-            {
-                _oldViewModel?.Loaded(false);
-            }
-
             _oldViewModel = ViewModel;
-
-            if (wasLoaded)
-            {
-                _oldViewModel?.Loaded(true);
-            }
-        }
-
-
-        private void TreeView_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            ViewModel?.Loaded(true);
-        }
-
-        private void TreeView_OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            _oldViewModel?.Loaded(false);
         }
 
         private void OnFilterChanged()

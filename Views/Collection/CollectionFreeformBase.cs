@@ -1270,21 +1270,36 @@ namespace Dash
                     {
                         using (UndoManager.GetBatchHandle())
                         {
-                            var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
-
-                            //check if a doc is currently in link activation mode
-                            if (LinkActivationManager.ActivatedDocs.Count >= 1)
+                            var content = Clipboard.GetContent();
+                            if (content.HasClipboardData())
                             {
-                                foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
+                                var docs = content.GetClipboardData().GetDocuments(where);
+                                foreach (var doc in docs)
                                 {
-                                    //make this rich text an annotation for activated  doc
-                                    if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
-                                    {
-                                        var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-                                            postitNote.GetPosition());
+                                    ViewModel.AddDocument(doc);
+                                }
+                            }
+                            else
+                            {
+                                var postitNote = await ViewModel.Paste(content, where);
 
-                                        //link region to this text 
-                                        region.Link(postitNote, LinkBehavior.Overlay);
+                                //check if a doc is currently in link activation mode
+                                if (LinkActivationManager.ActivatedDocs.Count >= 1)
+                                {
+                                    foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
+                                    {
+                                        //make this rich text an annotation for activated  doc
+                                        if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController
+                                            .DocumentType))
+                                        {
+                                            var region =
+                                                KeyStore.RegionCreator[
+                                                    activated.ViewModel.DocumentController.DocumentType](activated,
+                                                    postitNote.GetPosition());
+
+                                            //link region to this text 
+                                            region.Link(postitNote, LinkBehavior.Overlay);
+                                        }
                                     }
                                 }
                             }

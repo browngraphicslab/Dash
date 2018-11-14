@@ -41,14 +41,6 @@ namespace Dash
 
                 var view = new CollectionView() { DataContext = collectionViewModel };
 
-                void docContextChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                {
-                    collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
-                }
-
-                view.Loaded += (sender, args) => docController.AddFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
-                view.Unloaded += (sender, args) => docController.RemoveFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
-
                 return view;
             }
 

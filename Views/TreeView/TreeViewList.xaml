@@ -10,8 +10,6 @@
     d:DesignWidth="400"
     x:Name="XList"
     DataContextChanged="TreeView_OnDataContextChanged"
-    Loaded="TreeView_OnLoaded"
-    Unloaded="TreeView_OnUnloaded"
     AllowDrop="True"
     DragOver="TreeViewList_OnDragOver"
     DragLeave="TreeViewList_OnDragLeave"

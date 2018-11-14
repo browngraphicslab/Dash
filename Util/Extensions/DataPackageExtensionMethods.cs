@@ -187,6 +187,26 @@ namespace Dash
             return dragModel is DragFieldModel || dragModel is DragDocumentModel ddm && ddm.CanDrop(target);
         }
 
+        public static bool HasClipboardData(this DataPackageView packageView)
+        {
+            return packageView.Properties.ContainsKey(nameof(CopyPasteModel));
+        }
+
+        public static void SetClipboardData(this DataPackage package, CopyPasteModel data)
+        {
+            package.Properties[nameof(CopyPasteModel)] = data;
+        }
+
+        public static CopyPasteModel GetClipboardData(this DataPackageView packageView)
+        {
+            return (CopyPasteModel)packageView.Properties[nameof(CopyPasteModel)];
+        }
+
+        public static bool HasClipboardData(this DataPackage packageView)
+        {
+            return packageView.Properties.ContainsKey(nameof(CopyPasteModel));
+        }
+
         public static bool HasDragModel(this DataPackageView packageView)
         {
             return packageView.Properties.ContainsKey(nameof(DragModelBase));

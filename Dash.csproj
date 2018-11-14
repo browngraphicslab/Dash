@@ -226,6 +226,7 @@
     <Compile Include="Controllers\Operators\Point\PointAddOperator.cs" />
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
+    <Compile Include="Models\DragModels\CopyPasteModel.cs" />
     <Compile Include="Models\DragModels\JoinDragModel.cs" />
     <Compile Include="Popups\JoinGroupMenuPopup.xaml.cs">
       <DependentUpon>JoinGroupMenuPopup.xaml</DependentUpon>
@@ -728,9 +729,6 @@
     </Compile>
     <Compile Include="Views\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\KeyValueScriptView.xaml.cs">
-      <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\KVPDocBox.xaml.cs">
       <DependentUpon>KVPDocBox.xaml</DependentUpon>
@@ -1338,10 +1336,6 @@
     <Page Include="Views\KeyValuePane.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\KeyValueScriptView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\KVPDocBox.xaml">
       <SubType>Designer</SubType>

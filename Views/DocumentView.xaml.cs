@@ -149,18 +149,18 @@ namespace Dash
             //}
             //else
             //{
-                if (ViewModel?.IsDimensionless == true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch;
-                    VerticalAlignment = VerticalAlignment.Stretch;
-                    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
-                    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
-                }
-                else
-                {
-                    CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
-                    CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
-                }
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
             //}
         }
 
@@ -1090,6 +1090,19 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Cut",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Cut }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCut_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Copy",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Copy }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemClipboardCopy_Click;
+
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Copy Path",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.CodeFork }
             });
@@ -1138,7 +1151,7 @@ namespace Dash
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
                 {
-                    await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
+                    await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
                 };
             //Add the Layout Template Popup
            xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1189,6 +1202,43 @@ namespace Dash
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
             }
+        }
+
+        private void Cut(bool delete)
+        {
+            var selected = SelectionManager.GetSelectedDocs();
+            if (selected.Any())
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetClipboardData(new CopyPasteModel(selected.Select(view => view.ViewModel.DocumentController).ToList(), !delete));
+                if (delete)
+                {
+                    selected.ForEach(dv => dv.DeleteDocument());
+                }
+                Clipboard.SetContent(dataPackage);
+            }
+            else
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetClipboardData(new CopyPasteModel(new List<DocumentController> { ViewModel.DocumentController }, !delete));
+                if (delete)
+                {
+                    DeleteDocument();
+                }
+
+                Clipboard.SetContent(dataPackage);
+            }
+
+        }
+
+        private void MenuFlyoutItemClipboardCopy_Click(object sender, RoutedEventArgs e)
+        {
+            Cut(false);
+        }
+
+        private void MenuFlyoutItemCut_Click(object sender, RoutedEventArgs e)
+        {
+            Cut(true);
         }
 
         private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
