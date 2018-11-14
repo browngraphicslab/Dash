@@ -220,7 +220,11 @@ namespace Dash
                     !TouchInteractions.handledTouch.Contains(e))
                 {
                     TouchInteractions.handledTouch.Add(e);
-                    TouchInteractions.NumFingers++;
+       
+                    if (!(sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
+                    {
+                        TouchInteractions.NumFingers++;
+                    }
                     TouchInteractions.HeldDocument = this;
 
                     if (!SelectionManager.IsSelected(this))
@@ -273,7 +277,7 @@ namespace Dash
                     (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
                     //case where we want the pdf to scroll, rather than be moved
-                    if (e.PointerDeviceType == PointerDeviceType.Touch && this.GetFirstDescendantOfType<PdfView>() != null && TouchInteractions.NumFingers == 2)
+                    if (e.PointerDeviceType == PointerDeviceType.Touch && (s as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType) && (s as DocumentView).GetFirstDescendantOfType<PdfAnnotationView>().ScrollViewer.VerticalScrollMode == ScrollMode.Enabled)
                     {
                         return;
                     }

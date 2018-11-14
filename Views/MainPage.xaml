@@ -76,7 +76,7 @@
 
                     </Grid.Resources>
                 </Grid>
-
+            <local:TouchContextMenu x:Name="xTouchMenu" x:FieldModifier="public" />
             </Canvas>
 
             <Grid x:Name="XGrid" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />

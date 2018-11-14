@@ -11,13 +11,13 @@
     d:DesignWidth="400">
 
     <Grid>
-        <userControl:RadialMenu Diameter="280" StartAngle="-22.5" Background="{StaticResource DashDarkBlue}" BorderBrush="{StaticResource DashDarkBlue}" BackgroundEllipseFill="{StaticResource DashDarkBlueColor}" CenterButtonBackgroundFill="{StaticResource DashLightBlue}" 
-                                CenterButtonIcon="&#x1f369;" CenterButtonForeground="White" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" Loaded="RadialMenu_Loaded" >
+        <userControl:RadialMenu x:Name="xRadialMenu" IsHitTestVisible="True" IsEnabled="True" Diameter="250" StartAngle="-22.5" Background="{StaticResource DashDarkBlue}" BorderBrush="{StaticResource DashDarkBlue}" BackgroundEllipseFill="{StaticResource DashDarkBlueColor}" CenterButtonBackgroundFill="{StaticResource DashLightBlue}" 
+                                CenterButtonIcon="&#x1f369;" IsCenterButtonNavigationEnabled="False" CenterButtonForeground="White" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" OuterThickness="15" >
             <userControl:RadialMenu.Buttons>
-                <components:RadialMenuButton Label="xDelete" IconFontFamily="Segoe MDL2 Assets" Icon="&#59213;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}"/>
-                <components:RadialMenuButton Label="xCopy" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE8C8;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}"/>
-                <components:RadialMenuButton Label="Option3" IconFontFamily="Segoe MDL2 Assets" Icon="&#59213;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}"/>
-                <components:RadialMenuButton Label="Option4" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE8C8;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}"/>
+                <components:RadialMenuButton x:Name="xDelete" IsEnabled="True" IsHitTestVisible="True" Label="Delete" IconFontFamily="Segoe MDL2 Assets" Icon="&#59213;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XDelete_OnInnerArcPressed"/>
+                <components:RadialMenuButton x:Name="xCopy" Label="Copy" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE8C8;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XCopy_OnInnerArcPressed"/>
+                <components:RadialMenuButton x:Name="xSomething" Label="Open" IconFontFamily="Segoe MDL2 Assets" Icon="&#59213;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" />
+                <components:RadialMenuButton x:Name="xSomethingElse" Label="Option4" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE8C8;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" />
             </userControl:RadialMenu.Buttons>
         </userControl:RadialMenu>
     </Grid>

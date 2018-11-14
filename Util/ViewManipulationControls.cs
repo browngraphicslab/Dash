@@ -104,6 +104,7 @@ namespace Dash
             TouchInteractions.NumFingers = 0;
             TouchInteractions.DraggingDoc = false;
             TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+            TouchInteractions.HeldDocument = null;
             SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;         
         }
 
