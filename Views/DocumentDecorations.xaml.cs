@@ -319,15 +319,12 @@ namespace Dash
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
             var parentIsFreeform = true;
-            var parentIsPDF = false;
             try
             {
                 foreach (var doc in SelectedDocs)
                 {
                     if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
                         parentIsFreeform = false;
-                    if (doc.ViewModel?.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType) == true)
-                        parentIsPDF = true;
                     var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 
                     topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
@@ -348,9 +345,7 @@ namespace Dash
             }
             xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            xActivationCanvas.Visibility = parentIsPDF ? Visibility.Visible : Visibility.Collapsed;
-            xActivationButton.Fill = new SolidColorBrush(LinkActivationManager.IsActivated(SelectedDocs.FirstOrDefault()) ? Colors.Red : Colors.LightSkyBlue);
-
+            
             ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && (  _selectedDocs.First().GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.First().ViewModel?.ResizersVisible == true) ? Visibility.Visible : Visibility.Collapsed;
 
             if (rebuildMenu)
@@ -610,20 +605,6 @@ namespace Dash
                         e.GetPosition(doc));
             }
         }
-        private void xToggleActivationButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (SelectedDocs.FirstOrDefault() is DocumentView first)
-            {
-                var onoff = !LinkActivationManager.ActivatedDocs.Contains(first);
-                if (onoff) { 
-                    LinkActivationManager.ActivateDoc(first);
-                }
-                else
-                {
-                    LinkActivationManager.DeactivateDoc(first);
-                }
-            }
-        }
         
 
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -779,34 +760,6 @@ namespace Dash
                     }
                 }
             }
-        }
-
-        private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            //activation mode only relevant for images & pdfs now
-            var shouldActivate = true;
-            foreach (DocumentView doc in SelectedDocs)
-            {
-                var docType = doc.ViewModel.DocumentController.DocumentType;
-                if (!docType.Equals(ImageBox.DocumentType) && !docType.Equals(PdfBox.DocumentType)) shouldActivate = false;
-            }
-
-            if (shouldActivate == false) return;
-
-            using (UndoManager.GetBatchHandle())
-            {
-                if (!MainPage.Instance.IsShiftPressed())
-                {
-                    LinkActivationManager.DeactivateAllExcept(SelectedDocs);
-                }
-
-                foreach (var doc in SelectedDocs)
-                {
-                    LinkActivationManager.ToggleActivation(doc);
-                }
-            }
-
-
         }
 
         private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)

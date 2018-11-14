@@ -1251,18 +1251,7 @@ namespace Dash
             }
             Actions.DisplayDocument(ViewModel, postitNote, where);
 
-            //move link activation stuff here
-            //check if a doc is currently in link activation mode
-            foreach (var activated in LinkActivationManager.ActivatedDocs.Where((dv) => dv.ViewModel != null))
-            {
-                if (KeyStore.RegionCreator.TryGetValue(activated.ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
-                {
-                    //make this rich text an annotation for activated  doc
-                    var region = func(activated, Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, activated));
-                    //link region to this text  
-                    region.Link(postitNote, LinkBehavior.Annotate);
-                }
-            }
+            ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, MainPage.Instance));
         }
 
         #endregion

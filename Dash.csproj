@@ -327,7 +327,6 @@
     <Compile Include="Rest\Endpoints\CachedEndpoint.cs" />
     <Compile Include="Util\Extensions\DataPackageExtensionMethods.cs" />
     <Compile Include="Models\OperatorModels\FunctionOperatorModel.cs" />
-    <Compile Include="LinkActivationManager.cs" />
     <Compile Include="Models\Revised DragModels\DragFieldModel.cs" />
     <Compile Include="Models\Revised DragModels\DragModelBase.cs" />
     <Compile Include="Views\Annotations\AnnotationOverlay.xaml.cs">

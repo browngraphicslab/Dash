@@ -336,19 +336,6 @@ namespace Dash
                 }
             }
 
-            //deactivate all docs if esc was pressed
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    LinkActivationManager.DeactivateAll();
-                }
-
-            }
-
-            
-       
-
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {

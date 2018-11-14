@@ -205,7 +205,6 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
-                LinkActivationManager.DeactivateDoc(this);
             };
 
             PointerPressed += (sender, e) =>
@@ -547,7 +546,6 @@ namespace Dash
             }
             else if (ParentCollection != null)
             {
-                LinkActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();

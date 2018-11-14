@@ -26,6 +26,15 @@ namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
+        public delegate void DocumentAddedHandler(CollectionViewModel model, DocumentController added, Point where);
+        public event DocumentAddedHandler DocumentAdded;
+        public void GenerateDocumentAddedEvent(DocumentController added, Point where)
+        {
+            if (DocumentAdded != null)
+            {
+                DocumentAdded(this, added, where);
+            }
+        }
         private static ICollectionView _previousDragEntered;
         private bool _canDragItems = true;
         private double _cellFontSize = 9;
