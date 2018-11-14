@@ -11,6 +11,8 @@ namespace Dash.Popups
 
         public ComboBox TriggerModifier { get; set; }
 
+        public string Title { get; set; }
+
         public string Script { get; set; }
 
         /*
@@ -21,11 +23,12 @@ namespace Dash.Popups
          */
         public int[] Indices;
 
-        public DocumentBehavior(string trigger, string behavior, ComboBox triggerModifier, string script, int[] indices)
+        public DocumentBehavior(string trigger, string behavior, ComboBox triggerModifier, string title, string script, int[] indices)
         {
             Trigger = trigger;
             Behavior = behavior;
             TriggerModifier = triggerModifier;
+            Title = title;
             Script = script;
             Indices = indices;
         }

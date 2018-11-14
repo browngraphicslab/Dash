@@ -1120,13 +1120,18 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = AnyScripts() ? FontAwesomeIcon.AddressBook : FontAwesomeIcon.Plus }
             });
             const string script = "function(doc) {" +
-                                  "  var funcText = text_input();" +
-                                  "  var op = exec(funcText);" +
-                                  "  if(doc.TappedEvent == null) {" +
-                                  "     doc.TappedEvent = [op];" +
-                                  "  } else {" +
-                                  "      doc.TappedEvent = doc.TappedEvent + op;" +
-                                  "  }" +
+                                  "   var scripts = manage_behaviors(doc);" +
+                                  "   if (scripts != null) {" +
+                                  "      doc.TappedEvent = null" +
+                                  "      for (var s in scripts) {" +
+                                  "         var op = exec(s);" +
+                                  "         if (doc.TappedEvent == null) {" +
+                                  "            doc.TappedEvent = [op];" +
+                                  "         } else {" +
+                                  "             doc.TappedEvent = doc.TappedEvent + op;" +
+                                  "         }" +
+                                  "      }" +
+                                  "   }" + 
                                   "}";
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>

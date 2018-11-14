@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
@@ -13,13 +14,15 @@ namespace Dash.Popups
 {
     public sealed partial class ManageBehaviorsPopup
     {
-        private TaskCompletionSource<List<OperatorController>> _tcs;
+        private TaskCompletionSource<List<TextController>> _tcs;
         private readonly Dictionary<int, ComboBox> _modifierMapping = new Dictionary<int, ComboBox>();
         private readonly ObservableCollection<string> _behaviors = new ObservableCollection<string>();
         private const int BehaviorCount = 3;
         private bool _editMode;
         private DocumentBehavior _editing;
         private string _scriptState;
+        private string _titleState;
+        private ManageBehaviorsViewModel _oldViewModel;
 
         public ManageBehaviorsViewModel ViewModel => DataContext as ManageBehaviorsViewModel;
 
@@ -30,11 +33,6 @@ namespace Dash.Popups
             SetupComboBoxes();
         }
 
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-
-        }
-
         private void SetupComboBoxes()
         {
             _modifierMapping[0] = xTappedModifiers;
@@ -42,14 +40,10 @@ namespace Dash.Popups
             _modifierMapping[2] = xFieldModifiers;
         }
 
-        private void OnOpened(object sender, object e)
+        public Task<List<TextController>> OpenAsync()
         {
-            //xComboBox.SelectedItem = null;
-        }
-
-        public Task<List<OperatorController>> OpenAsync()
-        {
-            _tcs = new TaskCompletionSource<List<OperatorController>>();
+            _tcs = new TaskCompletionSource<List<TextController>>();
+            _oldViewModel = ViewModel;
             xBehaviorsPopup.IsOpen = true;
             MainPage.Instance.XGrid.Children.Add(this);
             MainPage.Instance.xOverlay.Visibility = Visibility.Visible;
@@ -74,10 +68,13 @@ namespace Dash.Popups
                     var trigger = ((ComboBoxItem)xTriggeringEvent.SelectedItem).Content?.ToString();
                     var behavior = ((ComboBoxItem)xBehavior.SelectedItem).Content?.ToString();
                     var triggerModifier = _modifierMapping[xTriggeringEvent.SelectedIndex];
+                    var title = XTitleBox.Text;
 
                     if (_editMode) ViewModel.Behaviors.Remove(_editing);
 
-                    ViewModel.Behaviors.Add(new DocumentBehavior(trigger, behavior, triggerModifier, xScript.Text, new[]
+                    if (behavior != null && behavior.Equals("Custom")) behavior += ": " + title;
+
+                    ViewModel.Behaviors.Add(new DocumentBehavior(trigger, behavior, triggerModifier, title, XScript.Text, new[]
                     {
                         xTriggeringEvent.SelectedIndex,
                         triggerModifier.SelectedIndex,
@@ -85,7 +82,8 @@ namespace Dash.Popups
                         xBehaviorModifiers.SelectedIndex
                     }));
 
-                    xScript.Text = "";
+                    XTitleBox.Text = "";
+                    XScript.Text = "";
                 }
             }
             else
@@ -125,16 +123,22 @@ namespace Dash.Popups
             MainPage.Instance.XGrid.Children.Remove(this);
             MainPage.Instance.xOverlay.Visibility = Visibility.Collapsed;
 
-            var outOps = new List<OperatorController>();
+            var outOps = new List<TextController>();
             foreach (var b in ViewModel.Behaviors)
             {
-                outOps.Add(Process(b));
-            }
-        }
+                var script = b.Script;
+                if (!b.Trigger.Equals("Tapped") || script == null || script.Equals("")) continue;
 
-        private OperatorController Process(DocumentBehavior behavior)
-        {
-            return null;
+                outOps.Add(new TextController($"function(doc) {{\n\t{script}\n}}"));
+            }
+
+            //if (_oldViewModel == ViewModel)
+            //{
+            //    _tcs.SetResult(null);
+            //    return;
+            //}
+
+            _tcs.SetResult(outOps);
         }
 
         private void ExistingBehaviorClicked(object sender, ItemClickEventArgs e)
@@ -149,7 +153,8 @@ namespace Dash.Popups
             b.TriggerModifier.SelectedIndex = b.Indices[1];
             xBehavior.SelectedIndex = b.Indices[2];
             xBehaviorModifiers.SelectedIndex = b.Indices[3];
-            xScript.Text = b.Script;
+            XTitleBox.Text = b.Title;
+            XScript.Text = b.Script;
 
             DisplayAddNewPane();
             xAddButton.Visibility = Visibility.Visible;
@@ -162,20 +167,21 @@ namespace Dash.Popups
 
         private void Cancel(object sender, RoutedEventArgs e)
         {
-            if (xScriptAddButton.Visibility == Visibility.Collapsed)
+            if (XScriptEntry.Visibility == Visibility.Collapsed)
             {
                 xAddNewBehaviorPanel.Visibility = Visibility.Collapsed;
                 xCancelButton.Visibility = Visibility.Collapsed;
                 xConfirmButton.Visibility = Visibility.Visible;
                 xAddButton.Visibility = Visibility.Visible;
                 xAddTextbox.Text = "Add New";
-                xScript.Text = "";
+                XScript.Text = "";
             } else
             {
-                xScriptEntry.Visibility = Visibility.Collapsed;
-                xAddButton.Visibility = Visibility.Visible;
+                XScriptEntry.Visibility = Visibility.Collapsed;
+                xAddButton.Visibility = XTitleBox.Text.Equals("") || XScript.Text.Equals("") ? Visibility.Collapsed : Visibility.Visible;
                 xScriptAddButton.Visibility = Visibility.Collapsed;
-                xScript.Text = _scriptState;
+                XScript.Text = _scriptState;
+                XTitleBox.Text = _titleState;
             }
         }
 
@@ -184,9 +190,9 @@ namespace Dash.Popups
             xAddNewBehaviorPanel.Visibility = Visibility.Visible;
             xCancelButton.Visibility = Visibility.Visible;
             xConfirmButton.Visibility = Visibility.Collapsed;
-            xAddButton.Visibility = Visibility.Visible;
+            xAddButton.Visibility = xTriggeringEvent.SelectedIndex != -1 ? Visibility.Visible : Visibility.Collapsed;
             xScriptAddButton.Visibility = Visibility.Collapsed;
-            xScriptEntry.Visibility = Visibility.Collapsed;
+            XScriptEntry.Visibility = Visibility.Collapsed;
             xAddTextbox.Text = "Apply";
         }
 
@@ -207,7 +213,7 @@ namespace Dash.Popups
 
         private void BehaviorChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (xScriptEntry.Visibility == Visibility.Visible) return;
+            if (XScriptEntry.Visibility == Visibility.Visible) return;
 
             var selectedIndex = xBehavior.SelectedIndex;
             if (selectedIndex < 0) return;
@@ -232,22 +238,31 @@ namespace Dash.Popups
 
         private void ShowScript()
         {
-            xScript.Focus(FocusState.Programmatic);
-            xScript.Focus(FocusState.Keyboard);
-            xScript.Focus(FocusState.Pointer);
-            xScriptEntry.Visibility = Visibility.Visible;
+            XScript.Focus(FocusState.Programmatic);
+            XScript.Focus(FocusState.Keyboard);
+            XScript.Focus(FocusState.Pointer);
+            XScriptEntry.Visibility = Visibility.Visible;
             xAddButton.Visibility = Visibility.Collapsed;
-            xScriptAddButton.Visibility = Visibility.Visible;
+            xScriptAddButton.Visibility = Visibility.Collapsed;
             xBehaviorModifiers.Visibility = Visibility.Collapsed;
             xEditScriptPanel.Visibility = Visibility.Visible;
             xModifiersText.Visibility = Visibility.Collapsed;
-            _scriptState = xScript.Text;
+            _scriptState = XScript.Text;
+            _titleState = XTitleBox.Text;
         }
 
-        private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        private void Script_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            if (XScriptEntry.Visibility == Visibility.Collapsed) return;
+            xScriptAddButton.Visibility = XScript.Text.Equals("") || XTitleBox.Text.Equals("") ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void EditScript(object sender, TappedRoutedEventArgs e) => ShowScript();
+
+        private void TitleChanged(object sender, TextChangedEventArgs e)
+        {
+            if (XScriptEntry.Visibility == Visibility.Collapsed) return;
+            xScriptAddButton.Visibility = XScript.Text.Equals("") || XTitleBox.Text.Equals("") ? Visibility.Collapsed : Visibility.Visible;
+        }
     }
 }

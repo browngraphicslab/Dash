@@ -28,14 +28,11 @@ namespace Dash
             return null;
         }
 
-        public static async Task<List<OperatorController>> ManageBehaviors()
+        public static async Task<List<FieldControllerBase>> ManageBehaviors(DocumentController docRef)
         {
-            var manageBehaviors = new ManageBehaviorsPopup
-            {
-                DataContext = new ManageBehaviorsViewModel()
-            };
+            var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel() };
 
-            var newBehaviors = new List<OperatorController>(); 
+            var newBehaviors = new List<TextController>(); 
             if ((newBehaviors = await manageBehaviors.OpenAsync()) != null)
             {
                 

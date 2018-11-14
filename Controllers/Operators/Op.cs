@@ -199,7 +199,7 @@ namespace Dash
             help,
             print,
             get_selected_docs,
-            text_input,
+            manage_behaviors,
             copy
         }
 
