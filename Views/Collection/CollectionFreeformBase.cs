@@ -671,7 +671,7 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
+                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Marquee.Width, _marquee.Marquee.Height))), this.IsShiftPressed());
                 ResetMarquee(true);
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 if (e != null) e.Handled = true;
@@ -794,6 +794,11 @@ namespace Dash
 		         TouchInteractions.NumFingers++;
 		        TouchInteractions.isPanning = false;
 		        args.Handled = true;
+                //CASE WHERE DOC IS HELD & background is tapped -> launch radial menu!
+		        if (TouchInteractions.NumFingers == 2 && TouchInteractions.HeldDocument != null)
+		        {
+		            TouchInteractions.ShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position, TouchInteractions.HeldDocument);
+		        }
 
 		    }
 			// marquee on left click by default
@@ -930,7 +935,7 @@ namespace Dash
                     where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                         SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     marquee = _marquee;
-                    viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Marquee.Width, _marquee.Marquee.Height)));
                 } else
                 {
                     var bounds = GetBoundingRectFromSelection();
@@ -950,7 +955,7 @@ namespace Dash
                 var toSelectFrom = viewsToSelectFrom.ToList();
                 using (UndoManager.GetBatchHandle())
                 {
-                    action(toSelectFrom, where, new Size(marquee.Width, marquee.Height));
+                    action(toSelectFrom, where, new Size(marquee.Marquee.Width, marquee.Marquee.Height));
                 }
 
                 ResetMarquee(false);

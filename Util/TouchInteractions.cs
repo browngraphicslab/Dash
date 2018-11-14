@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml.Input;
 
 namespace Dash
@@ -45,5 +47,26 @@ namespace Dash
 
         public static bool DraggingDoc;
         public static bool isPanning;
+        public static DocumentView docHeld;
+
+        public static DocumentView HeldDocument {
+            get => docHeld;
+            set
+            {
+                docHeld = value;
+                if (value == null) HideMenu();
+                Debug.WriteLine("docHeld value: " + value);
+            }
+        }
+
+        public static void ShowMenu(Point point, DocumentView view)
+        {
+            MainPage.Instance.xTouchMenu.InitializeMenu(point, view);
+        }
+
+        public static void HideMenu()
+        {
+            MainPage.Instance.xTouchMenu.HideMenuAsync();
+        }
     }
 }

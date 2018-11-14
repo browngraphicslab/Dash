@@ -53,6 +53,7 @@ namespace Dash
         private double            _scrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private DispatcherTimer   _scrollTimer;
         private AnnotationOverlay _annotationOverlay;
+        private int _localFingers = 0;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
         public DocumentController                 DataDocument => ViewModel.DataDocument;
@@ -104,6 +105,8 @@ namespace Dash
             ScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
             Canvas.SetZIndex(xButtonPanel, 999);
+
+            AddHandler(PointerReleasedEvent, new PointerEventHandler(XPdfGrid_PointerReleased), true);
 
             _scrollTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
             _scrollTimer.Tick += (s, e) =>
@@ -474,6 +477,8 @@ namespace Dash
             if (TouchInteractions.NumFingers == 0)
             {
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+                if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
+                    TouchInteractions.HeldDocument = null;
             }
 
             (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
@@ -509,9 +514,10 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            Debug.WriteLine((sender as FrameworkElement).CapturePointer(e.Pointer));
             _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed && e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
             {
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, e.GetCurrentPoint(_annotationOverlay).Position);
@@ -525,8 +531,10 @@ namespace Dash
 
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
-                e.Handled = true;
+                e.Handled = false;
+
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
+                TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
             }
         }
 
@@ -664,6 +672,41 @@ namespace Dash
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+        }
+
+
+        /// <summary>
+        /// Enable scrolling only when 2 fingers are on the pdf
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+
+        private void ScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            _localFingers++;
+            // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
+            if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+                e.Handled = true;
+            }
+            else
+            {
+                ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+            }
+
+            e.Handled = false;
+        }
+
+        private void ScrollViewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+           //test
+        }
+
+        private void ScrollViewer_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            _localFingers--;
+            //test;
         }
     }
 }
