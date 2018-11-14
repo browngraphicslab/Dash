@@ -841,6 +841,7 @@
     <Compile Include="Views\QuickEntryPanel.xaml.cs">
       <DependentUpon>QuickEntryPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\RichEditView.cs" />
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -872,9 +873,6 @@
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
     <Compile Include="Util\NoteDocuments.cs" />
-    <Compile Include="Views\RichTextView.xaml.cs">
-      <DependentUpon>RichTextView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
@@ -1447,10 +1445,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\RichTextView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

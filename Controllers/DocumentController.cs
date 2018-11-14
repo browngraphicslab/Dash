@@ -1123,7 +1123,7 @@ namespace Dash
                 var fieldKey = KeyController.Get(fieldName);
                 TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
-            var richTextFields = g.GetDescendantsOfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            var richTextFields = g.GetDescendantsOfType<RichEditView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
