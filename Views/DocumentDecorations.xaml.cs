@@ -346,7 +346,7 @@ namespace Dash
             xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             
-            ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && (  _selectedDocs.First().GetFirstAncestorOfType<ItemsPresenter>() == null || _selectedDocs.First().ViewModel?.ResizersVisible == true) ? Visibility.Visible : Visibility.Collapsed;
+            ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && _selectedDocs.First().ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
 
             if (rebuildMenu)
             {
@@ -1103,7 +1103,7 @@ namespace Dash
                     <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
                 </Border>
                 <Border Grid.Row="1" Background="CadetBlue" >
-                    <dash:RichTextView x:Name="xRichTextFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+                    <dash:RichEditView x:Name="xRichTextFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
                 </Border>
             <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
                 <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
@@ -1126,7 +1126,7 @@ namespace Dash
             <dash:EditableImage x:Name="xImageFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
         </Border>
         <Border Grid.Row="1" Background="CadetBlue" MinHeight="30">
-            <dash:RichTextView x:Name="xRichTextFieldCaption" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+            <dash:RichEditView x:Name="xRichTextFieldCaption" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
         </Border>
 </Grid>
         <Grid
