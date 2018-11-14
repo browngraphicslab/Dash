@@ -132,6 +132,8 @@ namespace Dash
                 for (int i = 0; i < missingIds.Count; i++)
                 {
                     FieldControllerBase field;
+                    //This is necessary because the same item might be in ids more than once,
+                    //so we could have put it in the cache in a previous iteration
                     if (_cache.TryGetValue(missingIds[i], out var getField))
                     {
                         field = getField;
@@ -144,6 +146,7 @@ namespace Dash
                     }
                     fields[missingIdxs[i]] = field;
                 }
+                //TODO This can/should be a Task.WhenAll
                 initFields.ForEach(async (f) => await f.InitializeAsync());
             }
 

@@ -151,6 +151,7 @@
                     SnapsTo="StepValues"/>
                 </StackPanel>
         </StackPanel>
+        <TextBlock x:Name="XVersionTextBlock" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
     </Grid>
 </Page>
 

@@ -54,8 +54,9 @@ namespace Dash
         private DispatcherTimer   _scrollTimer;
         private AnnotationOverlay _annotationOverlay;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
-        public DocumentController                 DataDocument => (DataContext as DocumentViewModel).DataDocument;
-        public DocumentController                 LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
+        public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
+        public DocumentController                 DataDocument => ViewModel.DataDocument;
+        public DocumentController                 LayoutDocument => ViewModel.LayoutDocument;
         public DataVirtualizationSource           Pages { get; set; }
         public WPdf.PdfDocument                   PDFdoc { get; set; }
         public ObservableCollection<DocumentView> Annotations
@@ -85,7 +86,9 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        
+        public bool                               CanSetAnnotationVisibilityOnScroll { get; set; }
+        public bool                               ActiveView { get; set; }
+
         public PdfAnnotationView()
         {
             InitializeComponent();
@@ -108,7 +111,8 @@ namespace Dash
                 _scrollTimer.Stop();
                 AddToStack(_BackStack, ScrollViewer);
             };
-
+            PointerEntered += (s, e) => ActiveView = true;
+            PointerExited += (s, e) => ActiveView = false;
             _scrollTimer.Start();
         }
         ~PdfAnnotationView()
@@ -185,27 +189,21 @@ namespace Dash
         /// <summary>
         /// This creates a region document at a Point specified in the coordinates of the containing DocumentView
         /// </summary>
-        /// <param name="docViewPoint"></param>
+        /// <param name="pointInAnnotationOverlayCoords"></param>
         /// <returns></returns>
-        public DocumentController GetRegionDocument(Point? docViewPoint = null)
+        public DocumentController GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
         {
             var regionDoc = AnnotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null)
+            if (regionDoc == null && pointInAnnotationOverlayCoords != null) // make a pushpin if we have a point and no region
             {
-                if (docViewPoint != null)
-                {
-
-                    //else, make a new push pin region closest to given point
-                    var OverlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), AnnotationOverlay);
-                    var newPoint = calculateClosestPointOnPDF(OverlayPoint);
-
-                    regionDoc = AnnotationOverlay.CreatePinRegion(newPoint);
-                }
-                else
-                    regionDoc = LayoutDocument;
+                regionDoc = AnnotationOverlay.CreatePinRegion(calculateClosestPointOnPDF(pointInAnnotationOverlayCoords.Value));
             }
-            AnnotationOverlay.RegionDocsList.Add(regionDoc);
-            return regionDoc;
+            if (regionDoc != null)
+            {
+                AnnotationOverlay.RegionDocsList.Add(regionDoc);
+                return regionDoc;
+            }
+            return LayoutDocument;
         }
 
         private Point calculateClosestPointOnPDF(Point p)
@@ -404,7 +402,6 @@ namespace Dash
 
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            (xCollectionView.CurrentView as CollectionFreeformView)?.ViewManipulationControls.SetDisableScrollWheel(true);
             Pages.ScrollViewerContentWidth = ActualWidth;
             KeyDown += PdfAnnotationView_KeyDown;
             SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
@@ -415,10 +412,21 @@ namespace Dash
                 
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
-            xCollectionView.DataContext = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+            cvm.DocumentAdded += Cvm_DocumentAdded;
+            xCollectionView.DataContext = cvm;
+            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
             xInkToolbar.TargetInkCanvas = AnnotationOverlay.XInkCanvas;
             if (Pages.PageSizes.Count != 0)
                 Pages.Initialize();
+        }
+
+        private void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
+        {
+            if (KeyStore.RegionCreator.TryGetValue(ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
+            {
+                GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay)).Link(added, LinkBehavior.Annotate);
+            }
         }
 
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
@@ -530,7 +538,10 @@ namespace Dash
                 _scrollTimer.Start();
             }
 
-            SetAnnotationsVisibleOnScroll(null);
+            if (CanSetAnnotationVisibilityOnScroll)
+            {
+                SetAnnotationsVisibleOnScroll(null);
+            }
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)

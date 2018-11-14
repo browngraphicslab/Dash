@@ -98,7 +98,6 @@ namespace Dash
             int length = endIndex - startIndex;
             List<DocumentViewModel> newViewModels = new List<DocumentViewModel>(length);
             var createdViewModels = new List<KeyValuePair<int, DocumentViewModel>>();
-            var docs = _collection.GetElements();
             for (int i = 0; i < length; ++i)
             {
                 if (i + startIndex >= _startIndex && i + startIndex < _endIndex)
@@ -107,7 +106,7 @@ namespace Dash
                 }
                 else
                 {
-                    var documentViewModel = new DocumentViewModel(docs[startIndex + i]);
+                    var documentViewModel = new DocumentViewModel(_collection[startIndex + i]);
                     newViewModels.Add(documentViewModel);
                     createdViewModels.Add(new KeyValuePair<int, DocumentViewModel>(i + startIndex, documentViewModel));
                 }
@@ -157,7 +156,7 @@ namespace Dash
             {
                 return -1;
             }
-            return _collection.GetElements().IndexOf(item.DocumentController);
+            return _collection.IndexOf(item.DocumentController);
         }
 
         public DocumentViewModel this[int index]

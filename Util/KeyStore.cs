@@ -92,7 +92,6 @@ namespace Dash
 		public static KeyController BackgroundImageOpacityKey            = KeyController.Get("_Background Image Opacity");
 		public static KeyController SettingsUpwardPanningKey             = KeyController.Get("_Infinite Upward Panning Enabled");
 		public static KeyController SettingsMarkdownModeKey              = KeyController.Get("_Markdown vs RTF");
-		public static KeyController ActivationKey                        = KeyController.Get("_Document Template activation phase");
 		public static KeyController TemplateListKey                      = KeyController.Get("List of templates for the Mainpage");
 		public static KeyController RowInfoKey                           = KeyController.Get("List of grid row sizes");
 		public static KeyController ColumnInfoKey                        = KeyController.Get("List of grid column sizes");

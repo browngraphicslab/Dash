@@ -257,7 +257,12 @@ namespace Dash
             var wHandler = new WeakEventListener<DependencyObject, DocumentController,
                     DocumentController.DocumentFieldUpdatedEventArgs>(element)
                 {
-                    OnEventAction = (instance, controller, arg3) => binding.ConvertToXaml(instance, property, binding.Context),
+                    OnEventAction = (instance, controller, arg3) => {
+                    var dargs = arg3.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                    if (dargs == null || dargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+            
+                        binding.ConvertToXaml(instance, property, binding.Context);
+                        },
                     OnDetachAction = listener => binding.Remove(listener.OnEvent)
                 };
 

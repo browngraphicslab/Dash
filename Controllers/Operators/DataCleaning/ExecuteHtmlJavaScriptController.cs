@@ -126,8 +126,8 @@ namespace Dash
                     var children = Cnote.Document.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
-                            foreach (var d in (f.Value as ListController<DocumentController>).TypedData)
-                                if (!children.GetElements().Contains(d))
+                            foreach (var d in (f.Value as ListController<DocumentController>))
+                                if (!children.Contains(d))
                                 {
                                     foreach (var field in d.EnumDisplayableFields().ToArray())
                                     {

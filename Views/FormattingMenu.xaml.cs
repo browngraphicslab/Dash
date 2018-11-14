@@ -20,7 +20,6 @@ namespace Dash
     {
         #region instance variables
 
-        private RichTextView richTextView { get; set; }
         private RichEditBox xRichEditBox { get; set; }
 
         /// <summary>
@@ -69,10 +68,9 @@ namespace Dash
             //xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
         }
 
-        public void SetRichTextBinding(RichTextView view)
+        public void SetRichTextBinding(RichEditView view)
         {
-            richTextView = view;
-            xRichEditBox = view.xRichEditBox;
+            xRichEditBox = view;
             UpdateFontFamilyDisplay();
             UpdateFontSizeDisplay();
         }
@@ -220,70 +218,70 @@ namespace Dash
 
         private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Bold();
+            xRichEditBox.Bold();
         }
 
         private void ItalicsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Italicize();
+            xRichEditBox.Italicize();
         }
 
         private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Underline();
+            xRichEditBox.Underline();
         }
 
         private void AllCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.AllCaps();
+            xRichEditBox.AllCaps();
         }
 
         private void SmallCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.SmallCaps();
+            xRichEditBox.SmallCaps();
         }
 
         public void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-                richTextView.Superscript();
+                xRichEditBox.Superscript();
         }
 
         public void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-                richTextView.Subscript();
+                xRichEditBox.Subscript();
         }
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Strikethrough();
+            xRichEditBox.Strikethrough();
         }
 
         private void LeftAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Alignment(ParagraphAlignment.Left);
+            xRichEditBox.Alignment(ParagraphAlignment.Left);
         }
 
         private void CenterAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Alignment(ParagraphAlignment.Center);
+            xRichEditBox.Alignment(ParagraphAlignment.Center);
         }
 
         private void RightAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            richTextView.Alignment(ParagraphAlignment.Right);
+            xRichEditBox.Alignment(ParagraphAlignment.Right);
         }
 
         private void BulletedListButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
             {
-                richTextView.Marker(MarkerType.None);
+                xRichEditBox.Marker(MarkerType.None);
             }
             else
             {
-                richTextView.Marker(MarkerType.Bullet);
+                xRichEditBox.Marker(MarkerType.Bullet);
             }
         }
 
@@ -291,11 +289,11 @@ namespace Dash
         {
             if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.UnicodeSequence)
             {
-                richTextView.Marker(MarkerType.None);
+                xRichEditBox.Marker(MarkerType.None);
             }
             else
             {
-                richTextView.Marker(MarkerType.UnicodeSequence);
+                xRichEditBox.Marker(MarkerType.UnicodeSequence);
             }
         }
 
@@ -411,7 +409,7 @@ namespace Dash
             if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
-                richTextView.Foreground(color);
+                xRichEditBox.Foreground(color);
             }
         }
 
@@ -420,7 +418,7 @@ namespace Dash
             if (sender is DashColorPicker colorPicker)
             {
                 var color = colorPicker.SelectedColor;
-                richTextView.Highlight(color);
+                xRichEditBox.Highlight(color);
             }
         }
 

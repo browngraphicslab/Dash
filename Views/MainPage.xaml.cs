@@ -68,6 +68,20 @@ namespace Dash
             }
         }
 
+        public Point? ForceFocusPoint = null;
+        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
+        {
+            ForceFocusPoint = where;
+            TextPreviewer = collection;
+        }
+        public void ClearForceFocus()
+        {
+            MainPage.Instance.TextPreviewer.ClearPreview();
+            MainPage.Instance.ForceFocusPoint = null;
+        }
+
+        public CollectionFreeformBase TextPreviewer = null;
+
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
@@ -169,14 +183,6 @@ namespace Dash
                 MainDocument.GetDataDocument().SetField<TextController>(KeyStore.TitleKey, "Workspaces", true);
             }
             FieldControllerBase.MakeRoot(MainDocument);
-
-            var l = new ListController<TextController>();
-            for (int i = 0; i < 2000; i++)
-            {
-                l.Add(new TextController());
-            }
-
-            MainDocument.SetField(KeyController.Get("some string it doesnt matter"), l, true);
 
             LoadSettings();
 
@@ -329,19 +335,6 @@ namespace Dash
                         }
                 }
             }
-
-            //deactivate all docs if esc was pressed
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    LinkActivationManager.DeactivateAll();
-                }
-
-            }
-
-            
-       
 
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
@@ -819,6 +812,7 @@ namespace Dash
             else
             {
                 //Dock_Link(linkDoc, direction);
+                //target.SetHidden(false);
                 ToggleFloatingDoc(target);
             }
 
