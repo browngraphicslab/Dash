@@ -67,13 +67,14 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.RichText;
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
+            return StringSearchModel.False;
             var richEditBox = new RichEditBox();
             richEditBox.Document.SetText(TextSetOptions.FormatRtf, RichTextFieldModel.Data.RtfFormatString);
             richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
             readableText = readableText.Replace("\r", "\n");
-            return readableText.Contains(searchString) ? new StringSearchModel(readableText) : StringSearchModel.False;
+            return options.Matches(readableText);
         }
 
         public override string ToScriptString(DocumentController thisDoc)

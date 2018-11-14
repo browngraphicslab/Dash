@@ -16,8 +16,10 @@ namespace Dash
         {
             public string SearchString { get; }
             public Regex Regex { get; }
+            private bool MatchCase;
             public SearchOptions(string searchString, bool matchCase, bool useRegex, bool matchWholeWord)
             {
+                MatchCase = matchCase;
                 if (useRegex)
                 {
                     Regex = new Regex(searchString);
@@ -26,20 +28,19 @@ namespace Dash
                 {
                     if (matchCase && matchWholeWord)
                     {
-                        Regex = new Regex(@"(?:^|\W)" + searchString + @"(?:$|\W)",
+                        Regex = new Regex(@"\b" + searchString + @"\b",
                             RegexOptions.Compiled);
                     }
                     else
                     {
                         if (matchWholeWord)
                         {
-                            Regex = new Regex(@"(?:^|\W)" + searchString + @"(?:$|\W)",
+                            Regex = new Regex(@"\b" + searchString + @"\b",
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
                         }
                         else
                         {
-                            Regex = new Regex(searchString,
-                                RegexOptions.Compiled);
+                            SearchString = matchCase ? searchString : searchString.ToLower();
                         }
                     }
                 }
@@ -49,6 +50,12 @@ namespace Dash
             {
                 int maxStringSize = 125;
                 int textDecrementForContext = 8;
+
+                if (data == null)
+                {
+                    return new StringSearchModel("");
+                }
+
                 if (Regex!=null)
                 {
                     if (Regex.IsMatch(data))
@@ -59,6 +66,7 @@ namespace Dash
                 else
                 // standard text search
                 {
+                    data = MatchCase ? data : data.ToLower();
                     int index = data.IndexOf(SearchString);
                     if (index < 0)
                     {
@@ -72,11 +80,11 @@ namespace Dash
                     }
                 }
 
-                return null;
+                return StringSearchModel.False;
             }
         }
 
-        private SearchOptions ConvertStringOptionstoSeachOptions(string inputString,HashSet<string> stringoptions)
+        private static SearchOptions ConvertStringOptionstoSearchOptions(string inputString,HashSet<string> stringoptions)
         {
             bool matchword = false;
             bool matchcase = false;
@@ -121,6 +129,8 @@ namespace Dash
         {
             if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
 
+            var searchOptions = ConvertStringOptionstoSearchOptions(inputString, options);
+
 
             var searchBoxLexer = new SearchGrammarLexer(new AntlrInputStream(inputString));
             var parser = new SearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
@@ -131,54 +141,15 @@ namespace Dash
             var keyRefs = new List<string>();
             var fieldRefs = new List<string>();
 
-            Regex rx = null;
-
-            if (options != null && options.Count > 0)
-            {
-                if (options.Count == 1)
-                {
-                    if (options.Contains("Match whole word"))
-                    {
-                        rx = new Regex(@"(?:^|\W)" + inputString + @"(?:$|\W)",
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    }
-                    else if (options.Contains("Case sensitive"))
-                    {
-                        rx = new Regex(inputString,
-                            RegexOptions.Compiled);
-                    }
-                    else
-                    {
-                        rx = new Regex(@inputString);
-                    }
-                }
-                else
-                {
-                    rx = new Regex(@"(?:^|\W)" + inputString + @"(?:$|\W)",
-                        RegexOptions.Compiled);
-                }
-            }
 
             void DocSearch(DocumentController doc)
             {
-                var res = parseTree(doc);
+                var res = parseTree(doc,searchOptions);
                 foreach (var result in res)
                 {
-                    string keyref = result.Key.Name;
-                    string fieldRef = result.Value.RelatedString;
-                    if (rx != null)
-                    {
-                        if (rx.IsMatch(fieldRef))
-                        {
-                            keyRefs.Add(keyref);
-                            fieldRefs.Add(fieldRef);
-                        }
-                    }
-                    else
-                    {
-                        keyRefs.Add(keyref);
-                        fieldRefs.Add(fieldRef);
-                    }
+                    keyRefs.Add(result.Key.Name);
+                    fieldRefs.Add(result.Value.RelatedString);
+
                 }
             }
 

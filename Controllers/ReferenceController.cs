@@ -141,7 +141,7 @@ namespace Dash
         /// </summary>
         /// <param name="searchString"></param>
         /// <returns></returns>
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
             return StringSearchModel.False;
         }

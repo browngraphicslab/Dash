@@ -50,9 +50,10 @@ namespace Dash
             OnFieldModelUpdated(null);
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
 		{
 			var data = (Model as VideoModel)?.Data;
+		    return options.Matches(data.AbsoluteUri);
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
 			{

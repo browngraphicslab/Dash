@@ -492,7 +492,7 @@ namespace Dash
             }
 
             var first = vmGroups
-                .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+                .Where(doc => !doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
@@ -730,10 +730,14 @@ namespace Dash
                 {
                     if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                     {
-                        var author = node.DataDocument.GetAuthor();
-                        if (!currentAuthors.Contains(author) && author != null)
+                        if (!node.Parent.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) ==
+                            true)
                         {
-                            currentAuthors.Add(author);
+                            var author = node.DataDocument.GetAuthor();
+                            if (!currentAuthors.Contains(author) && author != null)
+                            {
+                                currentAuthors.Add(author);
+                            }
                         }
                     }
                 }
@@ -785,7 +789,11 @@ namespace Dash
 
         private void XRegex_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            Clear_Options();
+            if (!_options.Contains("Regex"))
+            {
+                Clear_Options();
+            }
+
             xOptions_SelectionChanged(sender,e);
         }
     }

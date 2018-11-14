@@ -77,6 +77,8 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
+            return options.Matches(Data);
+
             int maxStringSize = 125;
             int textDecrementForContext = 8;
 
