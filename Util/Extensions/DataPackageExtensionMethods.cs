@@ -72,7 +72,7 @@ namespace Dash
 
         // DATA ACCESS
 
-        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point? where = null)
+        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point? where = null, bool dontMove = false)
         {
             var dropDocs = new List<DocumentController>();
 
@@ -128,7 +128,7 @@ namespace Dash
 
             else if (transferType.HasFlag(Internal))
             {
-                dropDocs.AddRange(packageView.GetAllInternalDroppableDocuments(where, targetElement));
+                dropDocs.AddRange(packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
             }
 
             return dropDocs;
@@ -136,10 +136,10 @@ namespace Dash
 
         // HELPER METHODS
 
-        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender)
+        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender, bool dontMove = false)
         {
             var dragModel = packageView.GetDragModel();
-            return (dragModel?.CanDrop(sender) ?? false) ? dragModel.GetDropDocuments(where, sender) : new List<DocumentController>();
+            return (dragModel?.CanDrop(sender) ?? false) ? dragModel.GetDropDocuments(where, sender, dontMove) : new List<DocumentController>();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)

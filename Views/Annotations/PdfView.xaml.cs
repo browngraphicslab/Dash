@@ -85,7 +85,7 @@ namespace Dash
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
 
-            _botPdf.CanSetAnnotationVisibilityOnScroll = true;
+            //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
         ~PdfView()
         {

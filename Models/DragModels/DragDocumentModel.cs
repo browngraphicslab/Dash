@@ -75,7 +75,7 @@ namespace Dash
         /*
          * Gets the document which will be dropped based on the current state of the syste
          */
-        public override List<DocumentController> GetDropDocuments(Point? where, FrameworkElement target)
+        public override List<DocumentController> GetDropDocuments(Point? where, FrameworkElement target, bool dontMove = false)
         {
             // For each dragged document...
             var docs = new List<DocumentController>();
@@ -88,7 +88,7 @@ namespace Dash
                                   where.Value.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
             }
             // ...if CTRL pressed, create a key value pane
-            if (MainPage.Instance.IsCtrlPressed())
+            if ( MainPage.Instance.IsCtrlPressed())
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
@@ -123,7 +123,7 @@ namespace Dash
                     var draggedDoc = DraggedDocuments[i];
 
                     var pos = GetPosition(i);
-                    if (pos.HasValue)
+                    if (pos.HasValue && !dontMove)
                     {
                         draggedDoc.SetPosition(pos.Value);
                     }

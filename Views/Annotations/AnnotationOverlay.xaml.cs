@@ -847,10 +847,10 @@ namespace Dash
             var where = e.GetPosition(XAnnotationCanvas);
             if (e.DataView.HasDataOfType(Internal) && !this.IsAltPressed())
             {
-                var dragModel = e.DataView.GetDragModel();
-                if (!this.IsShiftPressed())
+                var dm = e.DataView.GetDragModel() as DragDocumentModel;
+                if (!this.IsShiftPressed() &&  dm?.DraggingLinkButton == false)
                 {
-                    if (!(dragModel is DragDocumentModel dm) || dm.DraggingLinkButton)
+                    if (dm == null)
                         return;
                     // if docs are being moved within the overlay, then they will be placed appropriately and returned from this call.
                     // if docs are being dragged onto this overlay, we disallow that and no droppedDocs are returned from this call.
@@ -882,15 +882,15 @@ namespace Dash
                                 dm.DraggedDocCollectionViews[i].RemoveDocument(dm.DraggedDocuments[i]);
                             }
                         }
-                }
+                    }
                 }
                 else 
                 {
-                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
+                    var forcecopy = (dm.DraggingLinkButton && !this.IsShiftPressed());
+                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, forcecopy);
 
                     foreach (var doc in targets)
                     {
-                        doc.SetBackgroundColor(Colors.White);
                         if (!doc.DocumentType.Equals(RichTextBox.DocumentType) &&
                             !doc.DocumentType.Equals(TextingBox.DocumentType))
                         {
