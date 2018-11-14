@@ -195,8 +195,17 @@
 
         </Button>
 
-        <Grid Grid.Row="2" Grid.Column="2">
-            <Button Content="3-o" Background="{StaticResource DashDarkBlueBrush}" Foreground ="White"/>
+        <Grid x:Name="XOptionsGrid" Grid.Row="2" Grid.Column="2" Visibility ="Visible">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="XCaseSensButton" Grid.Column="0" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Gray" BorderThickness="0 0 0 0" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XMatchWordButton" Grid.Column="1" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="10 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Gray" BorderThickness="0 0 0 0" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XRegexButton" Grid.Column="2" Content=".*" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="10 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" Width ="15" BorderBrush="Gray" BorderThickness="0 0 0 0" />
+            <Button x:Name="XClearFiltersButton" Grid.Column="3" Content="X" Background="{StaticResource DashDarkBlueBrush}" Foreground="Red" Margin="10 0 0 0" Width="20" Click="XClearFiltersButton_OnClick" BorderBrush="Gray" BorderThickness="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
         </Grid>
 
         

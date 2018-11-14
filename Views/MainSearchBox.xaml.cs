@@ -31,6 +31,7 @@ namespace Dash
         private Dictionary<string, string> _filterDictionary;
         private Dictionary<string, MenuFlyoutItem> _filtertoMenuFlyout;
         private Dictionary<string, MenuFlyoutItem> _filtertoOption;
+        private Dictionary<Button, string> _optiontofilter;
         private HashSet<string> _options;
         private HashSet<string> _documentFilters;
         private HashSet<string> _authorFilters;
@@ -85,10 +86,57 @@ namespace Dash
                 ["Regex"] = xRegex
             };
 
+            _optiontofilter = new Dictionary<Button, string>()
+            {
+                [XCaseSensButton] = "Case sensitive",
+                [XMatchWordButton] = "Match whole word",
+                [XRegexButton] = "Regex"
+            };
+
+
             _options = new HashSet<string>();
             _documentFilters = new HashSet<string>();
             _authorFilters = new HashSet<string>();
 
+            var t1 = new ToolTip
+            {
+                Content = "Case sensitive"
+            };
+            ToolTipService.SetToolTip(XCaseSensButton,t1);
+            var t2 = new ToolTip
+            {
+                Content = "Match whole word"
+            };
+            ToolTipService.SetToolTip(XMatchWordButton,t2);
+            var t3 = new ToolTip
+            {
+                Content = "Use Regex"
+            };
+            ToolTipService.SetToolTip(XRegexButton,t3);
+            var t4 = new ToolTip
+            {
+                Content = "Clear all filters"
+            };
+            ToolTipService.SetToolTip(XClearFiltersButton,t4);
+
+        }
+
+        private void ShowToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Button button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
+            
+        }
+
+        private void HideToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Button button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
+             
         }
 
         #endregion
@@ -277,10 +325,9 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
-                //xMoreSearch.Visibility = Visibility.Collapsed;
                 xFilterButton.Visibility = Visibility.Collapsed;
                 xMoreOptions.Visibility = Visibility.Collapsed;
-                //xComboBox.PlaceholderText = "Filter by:";
+                XOptionsGrid.Visibility = Visibility.Collapsed;
 
             }
             else
@@ -292,9 +339,9 @@ namespace Dash
                     easingType: EasingType.Default).Start();
                 xSearchCodeBox.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
-                //xMoreSearch.Visibility = Visibility.Visible;
                 xFilterButton.Visibility = Visibility.Visible;
                 xMoreOptions.Visibility = Visibility.Visible;
+                XOptionsGrid.Visibility = Visibility.Visible;
             }
         }
 
@@ -677,6 +724,8 @@ namespace Dash
 
         private void Document_OnClick(object sender, TappedRoutedEventArgs e)
         {
+
+            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
             if (sender is MenuFlyoutItem mf)
             {
                 var document = mf.Text;
@@ -691,8 +740,6 @@ namespace Dash
                     mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
             }
-
-            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
         }
 
         private void XMenuFlyoutOnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
@@ -703,6 +750,7 @@ namespace Dash
 
         private void Author_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
+            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
             if (sender is MenuFlyoutItem mf)
             {
                 string author = mf.Text;
@@ -717,7 +765,6 @@ namespace Dash
                     mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
             }
-            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
         }
 
         private MenuFlyoutSubItem _authorItem;
@@ -783,6 +830,9 @@ namespace Dash
             {
                 var mfi = _filtertoOption[option];
                 mfi.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                var bt = _optiontofilter.FirstOrDefault(x => x.Value == option).Key;
+                bt.BorderThickness = new Thickness(0, 0, 0, 0);
+
             }
             _options.Clear();
         }
@@ -803,6 +853,42 @@ namespace Dash
             }
 
             xOptions_SelectionChanged(sender,e);
+        }
+
+        private void XRegexButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button bt)
+            {
+                if (!_options.Contains("Regex"))
+                {
+                    Clear_Options();
+                }
+                XOptionButton_OnClick(sender,e);
+            }
+        }
+
+        private void XClearFiltersButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Clear_Filters();
+            Clear_Options();
+        }
+
+        private void XOptionButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button bt)
+            {
+                var option = _optiontofilter[bt];
+                if (_options.Contains(option))
+                {
+                    _options.Remove(option);
+                    bt.BorderThickness = new Thickness(0, 0, 0, 0);
+                }
+                else
+                {
+                    _options.Add(option);
+                    bt.BorderThickness = new Thickness(2, 1, 1, 2);
+                }
+            }
         }
     }
 }
