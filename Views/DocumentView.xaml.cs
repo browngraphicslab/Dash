@@ -38,7 +38,7 @@ namespace Dash
 
         public DocumentViewModel ViewModel
         {
-            get  { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
+            get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
 
@@ -680,9 +680,9 @@ namespace Dash
                             await Task.WhenAll(tasks);
                         }
                     }
-                }
 
-                return true;
+                    return true;
+                }
             }
             if (!wasHandled)
             {
@@ -1148,9 +1148,9 @@ namespace Dash
                          "}";
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
-                {
-                    await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
-                };
+            {
+                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+            };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
