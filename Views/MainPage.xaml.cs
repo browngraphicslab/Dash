@@ -210,6 +210,15 @@ namespace Dash
             xMainTreeView.SetUseActiveFrame(true);
             //xMainTreeView.ToggleDarkMode(true);
 
+            var toolbar = MainDocument.GetField<DocumentController>(KeyStore.ToolbarKey);
+            if (toolbar == null)
+            {
+                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
+            }
+
+            //MenuToolbar.Instance.SetCollection(toolbar);
+
             SetupMapView(lastWorkspace);
 
             if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);

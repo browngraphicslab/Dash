@@ -200,7 +200,12 @@ namespace Dash
             case SyntaxKind.TemplateTail:
                 break;
             case SyntaxKind.Identifier:
-                var identifierExpression = node as Identifier;
+                var identifierExpression = (Identifier) node;
+
+                if (identifierExpression.Text == "NaN")
+                {
+                    return new LiteralExpression(new NumberController(double.NaN));
+                }
 
                 return new VariableExpression(identifierExpression.Text);
             case SyntaxKind.BreakKeyword:

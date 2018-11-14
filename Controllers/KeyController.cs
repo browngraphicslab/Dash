@@ -61,12 +61,15 @@ namespace Dash
         /// <param name="guid"></param>
         private KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
+            HashCode = Id.GetHashCode();
         }
 
         public KeyController(KeyModel model) : base(model)
         {
             Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
             _nameDictionary[model.Name] = this;
+
+            HashCode = Id.GetHashCode();
         }
 
         public override string ToString()
@@ -80,11 +83,10 @@ namespace Dash
             return k != null && k.Id.Equals(Id);
         }
 
+        private int HashCode { get; } 
         public override int GetHashCode()
         {
-
-            return Id.GetHashCode();
-
+            return HashCode;
         }
 
         public override FieldControllerBase Copy()

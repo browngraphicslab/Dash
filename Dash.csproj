@@ -187,6 +187,9 @@
     <Compile Include="Controllers\Functions\DocumentationFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\Functions\DocumentFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\ListFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
@@ -196,9 +199,11 @@
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
     <Compile Include="Controllers\Functions\Operators\ConstructorFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\DocumentFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\ListFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\MathFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\SplitFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
@@ -207,6 +212,9 @@
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\SelectionFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\SplitFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
