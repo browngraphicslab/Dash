@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
+﻿using System;
+using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -456,6 +457,17 @@ namespace Dash
             SelectedFontColor = new SolidColorBrush(xForegroundColorPicker.SelectedColor);
         }
 
+        private async void XAddSpeechButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            string newText = await CollectionView.getSpokenText();
+            if (!String.IsNullOrEmpty(newText))
+            {
+                string oldText = string.Empty;
+                _currBox.Document.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out oldText);
+                _currBox.Document.SetText(Windows.UI.Text.TextSetOptions.None, oldText + " " + newText);
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
@@ -469,6 +481,7 @@ namespace Dash
         private ToolTip _subscript;
         private ToolTip _superScript;
         private ToolTip _backgroundColor;
+        private ToolTip _addSpeech;
 
         private void SetUpToolTips()
         {
@@ -514,6 +527,14 @@ namespace Dash
                 VerticalOffset = offset
             };
             ToolTipService.SetToolTip(xBackgroundColorButton, _backgroundColor);
+
+            _addSpeech = new ToolTip()
+            {
+                Content = "Speech to Text",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAddSpeechButton, _addSpeech);
         }
 
         private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)

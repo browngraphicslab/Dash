@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.Foundation;
 using Windows.Media.Capture;
@@ -290,14 +291,8 @@ namespace Dash
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += ScriptEdit_OnClick;
         }
 
-        private static uint HResultPrivacyStatementDeclined = 0x80045509;
-        private async void MakeSpeechDoc(object sender, RoutedEventArgs e)
+        public static async Task<String> getSpokenText()
         {
-            var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
-            var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
-            //TODO: offset where by menu height
-
             try
             {
                 // Create an instance of SpeechRecognizer.
@@ -321,26 +316,8 @@ namespace Dash
                 // Start recognition.
                 Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeWithUIAsync();
 
-                // Make doc out of result
-                var textDoc = new RichTextNote(text: "text", where: where, size: new Size(300, double.NaN)).Document;
-                Actions.DisplayDocument(this.ViewModel, textDoc, where);
-                
-                //generate audio for this text
-                // The object for controlling the speech synthesis engine (voice).
-                var synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
-                // Generate the audio stream from plain text.
-                SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync("text");
-                var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                StorageFile file = await localFolder.CreateFileAsync("audio.mp3", CreationCollisionOption.GenerateUniqueName);
-                using (var reader = new DataReader(stream))
-                {
-                    await reader.LoadAsync((uint)stream.Size);
-                    IBuffer buffer = reader.ReadBuffer((uint)stream.Size);
-                    await FileIO.WriteBufferAsync(file, buffer);
-                }
-                
-                var audDoc = new AudioNote(new Uri(file.Path)).Document;
-                Actions.DisplayDocument(this.ViewModel, audDoc, new Point(where.X, where.Y + 40));
+                return speechRecognitionResult.Text;
+
             }
             catch (Exception exception)
             {
@@ -359,6 +336,44 @@ namespace Dash
                     var messageDialog = new Windows.UI.Popups.MessageDialog(exception.Message, "Exception");
                     await messageDialog.ShowAsync();
                 }
+            }
+
+            return null;
+        }
+
+        private static uint HResultPrivacyStatementDeclined = 0x80045509;
+        private async void MakeSpeechDoc(object sender, RoutedEventArgs e)
+        {
+            var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
+            var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            //TODO: offset where by menu height
+
+            //get spoken text
+            string text = await getSpokenText();
+            if (text != null)
+            {
+                // Make doc out of result
+                var textDoc = new RichTextNote(text: text, where: where, size: new Size(300, double.NaN)).Document;
+                Actions.DisplayDocument(this.ViewModel, textDoc, where);
+
+                //generate audio for this text
+                // The object for controlling the speech synthesis engine (voice).
+                var synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
+                // Generate the audio stream from plain text.
+                SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync(text);
+                var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                StorageFile file =
+                    await localFolder.CreateFileAsync("audio.mp3", CreationCollisionOption.GenerateUniqueName);
+                using (var reader = new DataReader(stream))
+                {
+                    await reader.LoadAsync((uint)stream.Size);
+                    IBuffer buffer = reader.ReadBuffer((uint)stream.Size);
+                    await FileIO.WriteBufferAsync(file, buffer);
+                }
+
+                var audDoc = new AudioNote(new Uri(file.Path)).Document;
+                Actions.DisplayDocument(this.ViewModel, audDoc, new Point(where.X, where.Y + 40));
             }
         }
 
