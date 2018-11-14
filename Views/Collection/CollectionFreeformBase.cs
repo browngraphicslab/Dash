@@ -1127,6 +1127,7 @@ namespace Dash
         }
 
         #endregion
+
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
@@ -1173,9 +1174,9 @@ namespace Dash
                 dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
                 dt.Start();
             }
-            foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
+            foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
             {
-                rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
+                rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
             }
         }
         private void ShowPreviewTextbox(Point where)

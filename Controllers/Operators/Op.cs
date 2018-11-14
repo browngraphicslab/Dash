@@ -208,7 +208,8 @@ namespace Dash
             tan,
             for_in,
             rand,
-            rand_i
+            rand_i,
+            remove
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
