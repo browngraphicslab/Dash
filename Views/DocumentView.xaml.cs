@@ -228,7 +228,7 @@ namespace Dash
 
                     if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
-                    SelectionManager.TryInitiateDragDrop(this, e, null);
+                   // SelectionManager.TryInitiateDragDrop(this, e, null);
                 }
 
                 e.Handled = true;

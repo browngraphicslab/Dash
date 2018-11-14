@@ -683,19 +683,29 @@ namespace Dash
 
         private void ScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            _localFingers++;
-            // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
-            if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
-                ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
-                e.Handled = true;
-            }
-            else
-            {
-                ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-            }
+                if (TouchInteractions.HeldDocument == null)
+                    TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
+                _localFingers++;
+                // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
+                if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+                    this.GetFirstAncestorOfType<DocumentView>().CanDrag = false;
+                    this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
 
-            e.Handled = false;
+                    e.Handled = true;
+                }
+                else
+                {
+                    ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+                    this.GetFirstAncestorOfType<DocumentView>().CanDrag = true;
+                    this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.All;
+                }
+
+                e.Handled = false;
+            }
         }
 
         private void ScrollViewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
@@ -705,8 +715,26 @@ namespace Dash
 
         private void ScrollViewer_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            _localFingers--;
+            if (_localFingers > 0) _localFingers--;
+            if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>() && _localFingers == 0)
+                TouchInteractions.HeldDocument = null;
             //test;
+            // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
+            if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+              //  this.GetFirstAncestorOfType<DocumentView>().CanDrag = false;
+              //  this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+
+                e.Handled = true;
+            }
+            else
+            {
+                ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+              //  this.GetFirstAncestorOfType<DocumentView>().CanDrag = true;
+               // this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.All;
+            }
+
         }
     }
 }
