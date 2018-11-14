@@ -290,7 +290,8 @@ namespace Dash
                         TryGetText(containedLine, out string text, out KeyController key,
                             intersectionEnumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                         var relativePosition = new Point(containedRect.X - topLeft.X, containedRect.Y - topLeft.Y);
-                        doc.ParseDocField(key, "="+text);
+                        //TODO
+                        //doc.ParseDocField(key, "="+text);
                         var field = doc.GetField(key);
                         if (field != null)
                         {

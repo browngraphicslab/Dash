@@ -341,17 +341,17 @@ namespace Dash
             return document.GetField<ListController<OperatorController>>(scriptKey);
         }
 
-        public static List<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
         {
             if (linkFromOrToKey == null)
             {
                 var fromLinks = document.GetLinks(KeyStore.LinkFromKey);
                 var toLinks   = document.GetLinks(KeyStore.LinkToKey);
-                var allinks   = new List<DocumentController>(fromLinks);
+                var allinks   = new ListController<DocumentController>(fromLinks);
                 allinks.AddRange(toLinks);
                 return allinks;
             }
-            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null)?.TypedData ?? new List<DocumentController>();
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null) ?? new ListController<DocumentController>();
         }
 
         public static TextController GetLinkTag(this DocumentController document)
@@ -407,8 +407,7 @@ namespace Dash
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);
 
-            switch (annoType) { 
-            
+            switch (annoType) {
                 case AnnotationType.Pin:       return new PinAnnotation(overlay, new Selection(regionDocumentController,
                                                              new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red)));
                 case AnnotationType.Region:    return new RegionAnnotation(overlay, new Selection(regionDocumentController));

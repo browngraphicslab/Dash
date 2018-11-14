@@ -38,7 +38,7 @@ namespace Dash
 
         public DocumentViewModel ViewModel
         {
-            get => DataContext as DocumentViewModel;
+            get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
 
@@ -149,18 +149,18 @@ namespace Dash
             //}
             //else
             //{
-                if (ViewModel?.IsDimensionless == true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch;
-                    VerticalAlignment = VerticalAlignment.Stretch;
-                    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
-                    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
-                }
-                else
-                {
-                    CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
-                    CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
-                }
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
             //}
         }
 
@@ -173,7 +173,7 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
-            MinHeight = 25;
+            MinHeight = 10;
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
@@ -205,9 +205,7 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
-                LinkActivationManager.DeactivateDoc(this);
             };
-
             PointerPressed += (sender, e) =>
             {
                 Debug.WriteLine("Pointer Pressed: " + TouchInteractions.NumFingers);
@@ -221,7 +219,12 @@ namespace Dash
                     !TouchInteractions.handledTouch.Contains(e))
                 {
                     TouchInteractions.handledTouch.Add(e);
-                    TouchInteractions.NumFingers++;
+       
+                    if (!(sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
+                    {
+                        TouchInteractions.NumFingers++;
+                    }
+                    TouchInteractions.HeldDocument = this;
 
                     if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
@@ -243,6 +246,7 @@ namespace Dash
                 {
                     TouchInteractions.handledTouch.Add(e);
                     TouchInteractions.NumFingers--;
+                    if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 }
             };
             PointerCanceled += (sender, e) =>
@@ -252,6 +256,7 @@ namespace Dash
                 {
                     TouchInteractions.handledTouch.Add(e);
                     TouchInteractions.NumFingers--;
+                    if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 }
             };
             MenuFlyout.Opened += (s, e) =>
@@ -271,7 +276,7 @@ namespace Dash
                     (TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.DocumentManipulation)))
                 {
                     //case where we want the pdf to scroll, rather than be moved
-                    if (e.PointerDeviceType == PointerDeviceType.Touch && this.GetFirstDescendantOfType<PdfView>() != null && TouchInteractions.NumFingers == 2)
+                    if (e.PointerDeviceType == PointerDeviceType.Touch && (s as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType) && (s as DocumentView).GetFirstDescendantOfType<PdfAnnotationView>().ScrollViewer.VerticalScrollMode == ScrollMode.Enabled)
                     {
                         return;
                     }
@@ -310,6 +315,7 @@ namespace Dash
             DropCompleted += (s, e) =>
             {
                 TouchInteractions.NumFingers = 0;
+                if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 SelectionManager.DropCompleted(this, s, e);
             };
@@ -358,7 +364,7 @@ namespace Dash
                 foreach (DocumentController l in docs)
                 {
                     l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
-                    l.SetField<BoolController>(KeyStore.HiddenKey, allVisible, true);
+                    l.SetHidden(allVisible);
                 }
             }
         }
@@ -600,7 +606,7 @@ namespace Dash
         /// Deletes the document from the view.
         /// </summary>
         /// <param name="addTextBox"></param>
-        public void DeleteDocument(bool addTextBox = false)
+        public void DeleteDocument()
         {
             if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
             {
@@ -612,17 +618,10 @@ namespace Dash
             }
             else if (ParentCollection != null)
             {
-                LinkActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
                 FadeOutBegin?.Invoke();
-
-                if (addTextBox)
-                {
-                    (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
-                }
-
             }
         }
 
@@ -652,7 +651,6 @@ namespace Dash
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
-
 
         /// <summary>
         /// Copes the DocumentView for the document
@@ -740,17 +738,22 @@ namespace Dash
                 var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
                 if (scripts != null)
                 {
-                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
-                    var tasks = new List<Task>(scripts.Count);
-                    foreach (var operatorController in scripts)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                        var tasks = new List<Task>(scripts.Count);
+                        foreach (var operatorController in scripts)
+                        {
+                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        }
+
+                        if (tasks.Any())
+                        {
+                            await Task.WhenAll(tasks);
+                        }
                     }
 
-                    if (tasks.Any())
-                    {
-                        await Task.WhenAll(tasks);
-                    }
+                    return true;
                 }
             }
             if (!wasHandled)
@@ -821,7 +824,10 @@ namespace Dash
                 }
             }
 
-            collection.LoadNewActiveTextBox("", where, true);
+            using (UndoManager.GetBatchHandle())
+            {
+                collection.LoadNewActiveTextBox("", where);
+            }
         }
 
         #endregion
@@ -1154,6 +1160,19 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Cut",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Cut }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCut_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Copy",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Copy }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemClipboardCopy_Click;
+
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Copy Path",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.CodeFork }
             });
@@ -1201,9 +1220,9 @@ namespace Dash
                          "}";
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
-                {
-                    await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
-                };
+            {
+                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+            };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1245,6 +1264,43 @@ namespace Dash
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
             }
+        }
+
+        private void Cut(bool delete)
+        {
+            var selected = SelectionManager.GetSelectedDocs();
+            if (selected.Any())
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetClipboardData(new CopyPasteModel(selected.Select(view => view.ViewModel.DocumentController).ToList(), !delete));
+                if (delete)
+                {
+                    selected.ForEach(dv => dv.DeleteDocument());
+                }
+                Clipboard.SetContent(dataPackage);
+            }
+            else
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetClipboardData(new CopyPasteModel(new List<DocumentController> { ViewModel.DocumentController }, !delete));
+                if (delete)
+                {
+                    DeleteDocument();
+                }
+
+                Clipboard.SetContent(dataPackage);
+            }
+
+        }
+
+        private void MenuFlyoutItemClipboardCopy_Click(object sender, RoutedEventArgs e)
+        {
+            Cut(false);
+        }
+
+        private void MenuFlyoutItemCut_Click(object sender, RoutedEventArgs e)
+        {
+            Cut(true);
         }
 
         private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)

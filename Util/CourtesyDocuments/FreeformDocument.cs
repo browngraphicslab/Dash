@@ -61,12 +61,12 @@ namespace Dash
 
         private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
         {
-            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
+            var layoutDocuments = GetLayoutDocumentCollection(docController, context);
             grid.Children.Clear();
             AddDocuments(layoutDocuments, context, grid);
         }
 
-        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid)
+        private static void AddDocuments(IList<DocumentController> docs, Context context, Grid grid)
         {
             foreach (var layoutDocument in docs)
             {

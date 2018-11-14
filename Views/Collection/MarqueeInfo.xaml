@@ -10,17 +10,17 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xMarqueeGrid">
+    <Grid x:Name="xMarqueeGrid" HorizontalAlignment="Left">
 
     <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,0" BorderThickness="1.5 1.5 1.5 0" BorderBrush="Gray">
 
-        <Grid x:Name="Collection" Background="White" PointerPressed="Collection_OnPointerPressed" PointerReleased="Collection_OnPointerReleased">
+        <Grid x:Name="Collection" Background="White" PointerPressed="Collection_OnPointerPressed" PointerReleased="Collection_OnPointerReleased" Visibility="Collapsed">
             <StackPanel Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" BorderThickness="0 0 1.5 0" BorderBrush="Gray">
                 <TextBlock Text="C" TextAlignment="Center" FontSize="16" Margin="0,-5,0,0" Foreground="{StaticResource DashDarkBlue}"/>
                     <TextBlock Text="= new collection" TextAlignment="Center" FontSize="11"  Margin="-5,0,0,0" Foreground="{StaticResource DashDarkBlue}" />
             </StackPanel>
         </Grid>
-        <Grid x:Name="Group" Background="White" PointerPressed="Group_OnPointerPressed" PointerReleased="Collection_OnPointerReleased">
+            <Grid x:Name="Group" Background="White" PointerPressed="Group_OnPointerPressed" PointerReleased="Collection_OnPointerReleased" Visibility="Collapsed">
             <StackPanel  Height="30" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <TextBlock Text="G" HorizontalAlignment="Center" FontSize="16"  Margin="0,-5,0,0" Foreground="{StaticResource DashDarkBlue}"/>
                     <TextBlock Text="= new group" HorizontalAlignment="Center" FontSize="11" Margin="-5,0,0,0" Foreground="{StaticResource DashDarkBlue}"/>

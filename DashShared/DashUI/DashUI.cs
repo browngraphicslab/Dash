@@ -11,13 +11,6 @@
         }
     }
 
-    public enum TextWrapping
-    {
-        NoWrap = 1,
-        Wrap = 2,
-        WrapWholeWords = 3
-    }
-
     public class FontWeights
     {
         /// <summary>Specifies a "Black" font weight.</summary>

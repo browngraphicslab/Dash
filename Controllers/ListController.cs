@@ -53,11 +53,6 @@ namespace Dash
          * Wrapper to retrieve the list items stored in the ListController.
          */
         private List<T> _typedData;
-        public List<T> TypedData
-        {
-            get => _typedData;
-            set => Set(value);
-        }
 
         public bool IsEmpty => Count == 0;
 
@@ -165,7 +160,7 @@ namespace Dash
 
         protected override IEnumerable<FieldControllerBase> GetReferencedFields()
         {
-            return TypedData;
+            return _typedData;
         }
 
         private void ReferenceContainedField(T field)
@@ -189,7 +184,7 @@ namespace Dash
 
         protected override void RefInit()
         {
-            foreach (var fieldControllerBase in TypedData)
+            foreach (var fieldControllerBase in _typedData)
             {
                 ReferenceContainedField(fieldControllerBase);
             }
@@ -197,7 +192,7 @@ namespace Dash
 
         protected override void RefDestroy()
         {
-            foreach (var fieldControllerBase in TypedData)
+            foreach (var fieldControllerBase in _typedData)
             {
                 ReleaseContainedField(fieldControllerBase);
             }
@@ -227,13 +222,13 @@ namespace Dash
         /*
          * Returns the zero-based index of the specified element in the list. If absent, returns -1
          */
-        public int IndexOf(T element) => TypedData.IndexOf(element);
+        public int IndexOf(T element) => _typedData.IndexOf(element);
 
         // @IList<T> //
         /*
          * Returns whether or not the specified element is present in the list
          */
-        public bool Contains(T element) => TypedData.Contains(element);
+        public bool Contains(T element) => _typedData.Contains(element);
 
         // @IList<T> //
         /*
@@ -241,15 +236,15 @@ namespace Dash
          */
         public T this[int index]
         {
-            get => TypedData[CheckedIndex(index, TypedData)];
+            get => _typedData[CheckedIndex(index, _typedData)];
             set
             {
-                index = CheckedIndex(index, TypedData);
+                index = CheckedIndex(index, _typedData);
 
-                var prevElement = TypedData[index]; // for undo and event args
+                var prevElement = _typedData[index]; // for undo and event args
                 ReleaseContainedField(prevElement);
 
-                TypedData[index] = value;
+                _typedData[index] = value;
                 ListModel.Data[index] = value.Id;
 
                 ReferenceContainedField(value);
@@ -263,9 +258,6 @@ namespace Dash
             }
         }
 
-        //TODO: Remove this accessor - leverage new functionality to improve encapsulation
-        public List<T> GetElements() => TypedData.ToList();
-
         /*
          * Gets the type of the elements in the actual list
          */
@@ -274,7 +266,7 @@ namespace Dash
         /*
          * Creates and returns a duplicate of this ListController and its underlying data
          */
-        public override FieldControllerBase Copy() => new ListController<T>(new List<T>(TypedData));
+        public override FieldControllerBase Copy() => new ListController<T>(new List<T>(_typedData));
 
         /*
          * Creates and returns an empty list of the specified type T
@@ -292,19 +284,19 @@ namespace Dash
             }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
-            return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
+            return _typedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
         }
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return "[" + string.Join(", ", TypedData.Select(f => f.ToScriptString(thisDoc))) + "]";
+            return "[" + string.Join(", ", _typedData.Select(f => f.ToScriptString(thisDoc))) + "]";
         }
 
         // @IList<T> //
         /*
          * Wraps the CopyTo method in the format mandated by IList<Implementation>
          */
-        public void CopyTo(T[] destination, int index) => TypedData.CopyTo(destination, index);
+        public void CopyTo(T[] destination, int index) => _typedData.CopyTo(destination, index);
 
         public override string ToString()
         {
@@ -316,15 +308,14 @@ namespace Dash
             return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
         }
 
-        public override object GetValue(Context context) => TypedData.ToList();
+        public override object GetValue(Context context) => _typedData.ToList();
 
         public override bool TrySetValue(object value)
         {
             if (value is List<T> list)
             {
-                var prevList = TypedData;
-                TypedData = list;
-                //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, TypedData, prevList));
+                Set(list);
+                //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, _typedData, prevList));
                 return true;
             }
             return false;
@@ -371,24 +362,24 @@ namespace Dash
         public void Add(T element)
         {
             if (IsReadOnly) return;
+            var prevList = new List<T>(_typedData);
             if (!AddHelper(element)) return;
 
-            var prevList = TypedData;
             var newEvent = new UndoCommand(() => Add(element), () => Remove(element));
 
             UpdateOnServer(newEvent);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, new List<T> { element }, prevList, prevList.Count - 1));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, new List<T> { element }, prevList, prevList.Count));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T> { element }));
         }
 
         private bool AddHelper(T element)
         {
             Debug.Assert(element != null);
-            if (AvoidDuplicates) if (TypedData.Contains(element)) return false; // Conditionally avoid duplicate addition
+            if (AvoidDuplicates) if (_typedData.Contains(element)) return false; // Conditionally avoid duplicate addition
 
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
-            TypedData.Add(element);
+            _typedData.Add(element);
             ListModel.Data.Add(element.Id);
 
             ReferenceContainedField(element);
@@ -420,7 +411,7 @@ namespace Dash
             {
                 return;
             }
-            var prevList = TypedData.ToList();
+            var prevList = _typedData.ToList();
             var enumerable = elements.ToList();
             foreach (var element in enumerable)
             {
@@ -450,10 +441,10 @@ namespace Dash
             {
                 return;
             }
-            var prevList = TypedData;
-            index = CheckedIndex(index, TypedData);
+            var prevList = _typedData.ToList();
+            index = CheckedIndex(index, _typedData);
 
-            TypedData.Insert(index, element);
+            _typedData.Insert(index, element);
             ListModel.Data.Insert(index, element.Id);
 
             ReferenceContainedField(element);
@@ -469,9 +460,10 @@ namespace Dash
 
         #region // REMOVAL //
 
-        public void Remove(FieldControllerBase element)
+        public bool Remove(FieldControllerBase element)
         {
-            if (element is T checkedElement) Remove(checkedElement);
+            if (element is T checkedElement) return Remove(checkedElement);
+            return false;
         }
 
         // @IList<T> //
@@ -490,7 +482,7 @@ namespace Dash
 
             UpdateOnServer(newEvent);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Remove, TypedData, new List<T> { element }, prevIndex));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Remove, _typedData, new List<T> { element }, prevIndex));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new List<T> { element }));
 
             return true;
@@ -500,7 +492,7 @@ namespace Dash
         {
             ReleaseContainedField(element);
 
-            var removed = TypedData.Remove(element);
+            var removed = _typedData.Remove(element);
             ListModel.Data.Remove(element.Id);
 
             return removed;
@@ -513,7 +505,7 @@ namespace Dash
             {
                 return;
             }
-            index = CheckedIndex(index, TypedData);
+            index = CheckedIndex(index, _typedData);
             var element = RemoveAtHelper(index);
             if (element == null) return;
 
@@ -521,16 +513,16 @@ namespace Dash
 
             UpdateOnServer(newEvent);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Remove, TypedData, new List<T> { element }, index));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Remove, _typedData, new List<T> { element }, index));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new List<T> { element }));
         }
 
         private T RemoveAtHelper(int index)
         {
-            var element = TypedData[index];
+            var element = _typedData[index];
             ReleaseContainedField(element);
 
-            TypedData.RemoveAt(index);
+            _typedData.RemoveAt(index);
             ListModel.Data.RemoveAt(index);
 
             return element;
@@ -547,19 +539,19 @@ namespace Dash
             {
                 return;
             }
-            var prevList = new List<T>(TypedData);
-            foreach (var element in TypedData)
+            var prevList = new List<T>(_typedData);
+            foreach (var element in _typedData)
             {
                 ReleaseContainedField(element);
             }
-            TypedData.Clear();
+            _typedData.Clear();
             ListModel.Data.Clear();
 
-            var newEvent = new UndoCommand(Clear, () => TypedData = prevList);
+            var newEvent = new UndoCommand(Clear, () => Set(prevList));
 
             UpdateOnServer(newEvent);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Clear, TypedData, prevList, 0));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Clear, _typedData, prevList, 0));
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
@@ -570,7 +562,7 @@ namespace Dash
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         // @IList<T> //
-        public IEnumerator<T> GetEnumerator() => TypedData.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => _typedData.GetEnumerator();
 
         #endregion
 

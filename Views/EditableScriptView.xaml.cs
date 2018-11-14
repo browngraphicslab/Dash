@@ -131,6 +131,11 @@ namespace Dash
             XTextBox.Focus(FocusState.Programmatic);
             XTextBox.Text = GetExpression() ?? XTextBlock.Text;
             XTextBox.SelectAll();
+            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            {
+                MainPage.Instance.ClearForceFocus();
+                MakeEditable();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

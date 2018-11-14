@@ -120,7 +120,7 @@
             <FontFamily x:Key="FontAwesome">ms-appx:/Assets/Fonts/FontAwesome.otf#FontAwesome</FontFamily>
             <Style TargetType="TextBlock" x:Key="xFontAwesomeIcon">
                 <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/FontAwesome.otf#FontAwesome"></Setter>
-                <Setter Property="TextAlignment" Value="Center"></Setter>
+                <Setter Property="TextAlignment" Value="Left"></Setter>
                 <Setter Property="VerticalAlignment" Value="Center"></Setter>
                 <Setter Property="Height" Value="Auto"></Setter>
                 <Setter Property="FontSize" Value="16"></Setter>
@@ -1761,7 +1761,7 @@
                 <Setter Property="FontSize" Value="12"></Setter>
                 <Setter Property="Width" Value="18"></Setter>
                 <Setter Property="VerticalAlignment" Value="Center"></Setter>
-                <Setter Property="TextAlignment" Value="Center"></Setter>
+                <Setter Property="TextAlignment" Value="Left"></Setter>
                 <Setter Property="HorizontalAlignment" Value="Right"></Setter>
             </Style>
             <Style TargetType="TextBlock" x:Key="xMenuItemIconType">
@@ -2005,7 +2005,7 @@
 
             <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="White"/>
 
-            <Style TargetType="RichEditBox">
+            <Style TargetType="local:RichEditView">
                 <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
                 <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
                 <Setter Property="Foreground" Value="{StaticResource MainText}" />

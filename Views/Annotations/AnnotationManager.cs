@@ -29,7 +29,7 @@ namespace Dash
             _linkFlyout.Items?.Clear();
             var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
 	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
-            var subregions = region.GetDataDocument().GetRegions()?.TypedData;
+            var subregions = region.GetDataDocument().GetRegions();
             if (subregions != null)
             {
                 foreach (var subregion in subregions.Select((sr) => sr.GetDataDocument()))

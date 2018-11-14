@@ -41,8 +41,8 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var aDocs = (inputs[AKey] as ListController<DocumentController>).GetElements();
-            var bDocs = (inputs[BKey] as ListController<DocumentController>).GetElements();
+            var aDocs = inputs[AKey] as ListController<DocumentController>;
+            var bDocs = inputs[BKey] as ListController<DocumentController>;
             int count = Math.Min(aDocs.Count, bDocs.Count);
             var newDocs = new List<DocumentController>(count);
 
