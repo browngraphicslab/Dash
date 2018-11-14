@@ -326,7 +326,7 @@ namespace Dash
                 {
                     if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
                         parentIsFreeform = false;
-                    if (doc.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType))
+                    if (doc.ViewModel?.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType) ?? false)
                         parentIsPDF = true;
                     var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
 

@@ -675,18 +675,23 @@ namespace Dash
                 var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
                 if (scripts != null)
                 {
-                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
-                    var tasks = new List<Task>(scripts.Count);
-                    foreach (var operatorController in scripts)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
-                    }
+                        var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                        var tasks = new List<Task>(scripts.Count);
+                        foreach (var operatorController in scripts)
+                        {
+                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        }
 
-                    if (tasks.Any())
-                    {
-                        await Task.WhenAll(tasks);
+                        if (tasks.Any())
+                        {
+                            await Task.WhenAll(tasks);
+                        }
                     }
                 }
+
+                return true;
             }
             if (!wasHandled)
             {

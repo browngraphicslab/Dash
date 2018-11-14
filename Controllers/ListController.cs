@@ -460,9 +460,10 @@ namespace Dash
 
         #region // REMOVAL //
 
-        public void Remove(FieldControllerBase element)
+        public bool Remove(FieldControllerBase element)
         {
-            if (element is T checkedElement) Remove(checkedElement);
+            if (element is T checkedElement) return Remove(checkedElement);
+            return false;
         }
 
         // @IList<T> //
