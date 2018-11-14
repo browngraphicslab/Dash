@@ -27,6 +27,8 @@ using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -417,6 +419,39 @@ namespace Dash
                 Pages.Initialize();
         }
 
+        public void Bind(Binding pdfColBinding, Binding pdfNotesColBinding)
+        {
+            Pages.Initialize();
+            BindingOperations.SetBinding(xPdfCol, ColumnDefinition.WidthProperty, pdfColBinding);
+            BindingOperations.SetBinding(xPdfNotesCol, ColumnDefinition.WidthProperty, pdfNotesColBinding);
+            var xfBinding = new Binding()
+            {
+                Source = xPdfCol,
+                Path = new PropertyPath("Width"),
+                Converter = new WidthToScaleXFConverter(PdfMaxWidth)
+            };
+            xCollectionView.SetBinding(RenderTransformProperty, xfBinding);
+        }
+
+         public class WidthToScaleXFConverter : SafeDataToXamlConverter<GridLength, Transform>
+        {
+            private double _pdfMaxWidth;
+            public WidthToScaleXFConverter(double pdfMaxWidth)
+            {
+                _pdfMaxWidth = pdfMaxWidth;
+            }
+            public override Transform ConvertDataToXaml(GridLength xaml, object parameter = null)
+            {
+                var ratio = xaml.Value / _pdfMaxWidth;
+                return new ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
+            }
+            public override GridLength ConvertXamlToData(Transform data, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+
         private void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
         {
             if (KeyStore.RegionCreator.TryGetValue(ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
@@ -442,8 +477,6 @@ namespace Dash
             if (PdfMaxWidth > 0)
             {
                 Pages.ScrollViewerContentWidth = xPdfCol.ActualWidth;
-                var ratio = xPdfCol.ActualWidth / PdfMaxWidth;
-                xCollectionView.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
             }
         }
 

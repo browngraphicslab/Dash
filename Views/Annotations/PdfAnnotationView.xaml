@@ -53,7 +53,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="xPdfCol" x:FieldModifier="public"/>
                     <ColumnDefinition Width="10"/>
-                    <ColumnDefinition x:Name="xPdfNotesCol"/>
+                    <ColumnDefinition x:Name="xPdfNotesCol" x:FieldModifier="public"/>
                 </Grid.ColumnDefinitions>
                 <!--This Grid will have the width and height of the pdf that is being displayed-->
                 <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
