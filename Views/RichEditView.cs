@@ -48,7 +48,7 @@ namespace Dash
             CanDrag = true;
             Foreground = Application.Current.Resources["TextBrush"] as Brush;
             BorderThickness = new Thickness(0);
-            TextWrapping = TextWrapping.NoWrap;
+            TextWrapping = TextWrapping.Wrap;
             IsColorFontEnabled = true;
             SelectionHighlightColor = Application.Current.Resources["DarkWindowsBlue"] as SolidColorBrush;
             IsTextPredictionEnabled = true;
