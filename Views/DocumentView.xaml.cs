@@ -1260,7 +1260,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                //var template = MainPage.Instance.GetLayoutTemplate();
+                var template = MainPage.Instance.GetLayoutTemplate();
                 
                 ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, TemplateList.Templates[1].GetField<TextController>(KeyStore.XamlKey).Data, true);
                     //this.ShowXaml();

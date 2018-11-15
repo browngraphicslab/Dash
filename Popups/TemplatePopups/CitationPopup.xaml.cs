@@ -16,18 +16,18 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Popups
+namespace Dash.Popups.TemplatePopups
 {
-    public sealed partial class LayoutTemplatesPopup : UserControl, DashPopup
+    public sealed partial class CitationPopup : UserControl
     {
-        public LayoutTemplatesPopup()
+        public CitationPopup()
         {
             this.InitializeComponent();
         }
 
-        public Task<TemplateList.TemplateType> GetTemplate()
+        public Task<SettingsView.WebpageLayoutMode> GetTemplate()
         {
-            var tcs = new TaskCompletionSource<TemplateList.TemplateType>();
+            var tcs = new TaskCompletionSource<SettingsView.WebpageLayoutMode>();
             xLayoutPopup.IsOpen = true;
             xConfirmButton.Tapped += XConfirmButton_OnClick;
             void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
@@ -40,7 +40,7 @@ namespace Dash.Popups
             return tcs.Task;
         }
 
-        
+
 
         private void Popup_OnOpened(object sender, object e)
         {

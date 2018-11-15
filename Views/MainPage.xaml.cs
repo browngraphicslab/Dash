@@ -575,8 +575,19 @@ namespace Dash
             var popup = new LayoutTemplatesPopup();
             SetUpPopup(popup);
 
-            var template = await popup.GetTemplate();
+            var templateType = await popup.GetTemplate();
             UnsetPopup();
+
+            switch (templateType)
+            {
+            case TemplateList.TemplateType.Citation:
+                break;
+            case TemplateList.TemplateType.Standard:
+                break;
+            default:
+                break;
+            }
+
             return 1;
         }
 

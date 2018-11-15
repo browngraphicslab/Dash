@@ -79,5 +79,11 @@ namespace Dash
                 return _templates;
             }
         }
+
+        public enum TemplateType
+        {
+            Standard,
+            Citation
+        }
     }
 }

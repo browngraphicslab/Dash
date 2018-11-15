@@ -244,6 +244,9 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TemplatePopups\CitationPopup.xaml.cs">
+      <DependentUpon>CitationPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\TextInputPopup.xaml.cs">
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
     </Compile>
@@ -1109,6 +1112,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\NewTemplatePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\CitationPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
