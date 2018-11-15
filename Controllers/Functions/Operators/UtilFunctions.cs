@@ -26,6 +26,11 @@ namespace Dash
             return new TextController(input?.GetValue(null).ToString() ?? "<null>");
         }
 
+        public static DocumentController MainDocument()
+        {
+            return MainPage.Instance.MainDocument;
+        }
+
         public static void Undo()
         {
             UndoManager.UndoOccured();

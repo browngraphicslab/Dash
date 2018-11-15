@@ -209,7 +209,7 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
-                bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
+                bool right = e.IsRightPressed();
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
@@ -222,7 +222,7 @@ namespace Dash
                     SelectionManager.TryInitiateDragDrop(this, e, null);
                 }
 
-                e.Handled = true;
+                //e.Handled = true;
 
                 if (parentParentFreeform != null && !this.IsShiftPressed())
                 {

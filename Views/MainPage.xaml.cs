@@ -217,7 +217,7 @@ namespace Dash
                 MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
             }
 
-            //MenuToolbar.Instance.SetCollection(toolbar);
+            MenuToolbar.Instance.SetCollection(toolbar);
 
             SetupMapView(lastWorkspace);
 
@@ -401,7 +401,7 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
-            xToolbar.SwitchTheme(nightModeOn);
+            //xToolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)

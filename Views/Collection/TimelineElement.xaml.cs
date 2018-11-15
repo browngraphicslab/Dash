@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -62,8 +63,8 @@ namespace Dash
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
 
             // get the sort key value and display it
-            var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
-                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null).Data;
+            var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()?
+                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null)?.Data ?? DateTime.Now;
             xTimeBlock.Text = date.ToShortDateString();
             xDateBlock.Text = date.ToShortTimeString();
 

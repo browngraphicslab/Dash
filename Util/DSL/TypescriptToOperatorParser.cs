@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -430,13 +431,20 @@ namespace Dash
             case SyntaxKind.ObjectLiteralExpression:
                 var objectProps = (node as ObjectLiteralExpression)?.Children;
                 var parsedObList = new List<ScriptExpression>();
+                var keys = new List<string>();
                 foreach (var element in objectProps)
                 {
+                    if (element.Children[0] is Identifier id)
+                    {
+                        keys.Add(id.Text);
+                    } else if (element.Children[0] is StringLiteral st)
+                    {
+                        keys.Add(st.Text);
+                    }
                     parsedObList.Add(ParseToExpression(element.Children[1]));
                 }
 
-                var names = objectProps.Select(n => ((Identifier)n.Children[0]).Text).ToList();
-                var dict = new Dictionary<string, ScriptExpression>(names.Zip(parsedObList,
+                var dict = new Dictionary<string, ScriptExpression>(keys.Zip(parsedObList,
                         (s, expression) => new KeyValuePair<string, ScriptExpression>(s, expression)));
 
                 return new ObjectExpression(dict);

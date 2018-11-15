@@ -95,7 +95,7 @@ namespace Dash
             Loaded += OnBaseLoaded;
             Unloaded += OnBaseUnload;
             KeyDown += _marquee_KeyDown;
-            
+
             previewTextbox = new TextBox
             {
                 Width = 200,
@@ -526,7 +526,7 @@ namespace Dash
                 var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
                 var scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image   = scale < 1 ? _bgImageDot : _bgImage;
+                _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
 
                 // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
@@ -547,11 +547,13 @@ namespace Dash
             {
                 // As _background task was set to LoadBackgroundAsync, should have already completed. Wait will be moot. 
                 _backgroundTask.Wait();
-            } catch (AggregateException ae)
+            }
+            catch (AggregateException ae)
             {
                 // Catch any task-related errors along the way
                 ae.Handle(ex => throw ex);
-            } finally
+            }
+            finally
             {
                 // _backgroundTask will be set to null, so that CreateResourcesAsync won't be concerned with phantom existing tasks
                 _backgroundTask = null;
@@ -688,7 +690,7 @@ namespace Dash
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
                 handledTouch.Add(e);
-                if(NumFingers > 0) NumFingers--;
+                if (NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
             {
@@ -784,42 +786,37 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-		{
-		    if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
-		    {
+        {
+            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
+            {
                 handledTouch.Add(args);
                 NumFingers++;
                 //var docview = this.GetFirstAncestorOfType<DocumentView>();
                 //      if (SelectionManager.IsSelected(docview))
                 //    //SelectionManager.Select(docview, false);
                 //SelectionManager.TryInitiateDragDrop(docview, args, null);
-		        ViewManipulationControls.isPanning = false;
+                ViewManipulationControls.isPanning = false;
             }
-			// marquee on left click by default
-			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
-			{
-				if (
-					(args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-					( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
-					  // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
-						((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
-				{
-                    ParentDocument.ManipulationMode = ManipulationModes.None;
-					if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-						SelectionManager.DeselectAll();
+            // marquee on left click by default
+            if (
+                (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                !args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)
+            {
+                ParentDocument.ManipulationMode = ManipulationModes.None;
+                if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
+                    SelectionManager.DeselectAll();
 
-					GetOuterGrid().CapturePointer(args.Pointer);
-                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
-                    _isMarqueeActive = true;
-                    previewTextbox.Visibility = Visibility.Collapsed;
-                    if (ParentDocument != null)
-                    {
-                        ParentDocument.ManipulationMode = ManipulationModes.None;
-                    }
-					args.Handled = true;
-					GetOuterGrid().PointerMoved -= OnPointerMoved;
-					GetOuterGrid().PointerMoved += OnPointerMoved;
-				}
+                GetOuterGrid().CapturePointer(args.Pointer);
+                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                _isMarqueeActive = true;
+                previewTextbox.Visibility = Visibility.Collapsed;
+                if (ParentDocument != null)
+                {
+                    ParentDocument.ManipulationMode = ManipulationModes.None;
+                }
+                args.Handled = true;
+                GetOuterGrid().PointerMoved -= OnPointerMoved;
+                GetOuterGrid().PointerMoved += OnPointerMoved;
             }
         }
 
@@ -930,7 +927,8 @@ namespace Dash
                         SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     marquee = _marquee;
                     viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                } else
+                }
+                else
                 {
                     var bounds = GetBoundingRectFromSelection();
 
@@ -1006,14 +1004,14 @@ namespace Dash
                                 double alignedY = v.ViewModel.LayoutDocument.GetPosition().Value.Y;
                                 if (centered)
                                 {
-                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up)    ? (rect.Left + rect.Right)/2-v.ActualWidth  /2 : alignedX;
-                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom)/2-v.ActualHeight /2 : alignedY;
+                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up) ? (rect.Left + rect.Right) / 2 - v.ActualWidth / 2 : alignedX;
+                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom) / 2 - v.ActualHeight / 2 : alignedY;
 
                                 }
                                 else
                                 {
-                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right -v.ActualWidth  : alignedX;
-                                    alignedY = modifier == VirtualKey.Up   ? rect.Top  : modifier == VirtualKey.Down  ? rect.Bottom-v.ActualHeight : alignedY;
+                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right - v.ActualWidth : alignedX;
+                                    alignedY = modifier == VirtualKey.Up ? rect.Top : modifier == VirtualKey.Down ? rect.Bottom - v.ActualHeight : alignedY;
                                 }
                                 v.ViewModel.LayoutDocument.SetPosition(new Point(alignedX, alignedY));
                             }
@@ -1096,7 +1094,8 @@ namespace Dash
                     deselect = true;
                     break;
                 }
-            } else if (this.IsShiftPressed())
+            }
+            else if (this.IsShiftPressed())
             {
                 switch (modifier)
                 {

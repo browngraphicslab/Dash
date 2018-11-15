@@ -219,7 +219,9 @@ namespace Dash
             frame_history_back,
             frame_history_forward,
             undo,
-            redo
+            redo,
+            main_document,
+            clear
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
