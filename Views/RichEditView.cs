@@ -581,7 +581,7 @@ namespace Dash
                 if (depth is double dep)
                 {
                     var rt = new RichTextNote("").Document;
-                    MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10));
+                    MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10)));
                     rt.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep, true);
                     var parent = getDocView().GetFirstAncestorOfType<DocumentView>();
                     var items = parent.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("DiscussionItems"), null);
@@ -676,7 +676,7 @@ namespace Dash
         </Grid>";
                 Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 Document.Selection.Delete(TextRangeUnit.Character, 1);
-                MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5));
+                MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5)));
                 var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
                 var rtn = new RichTextNote("").Document;
                 var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
@@ -903,6 +903,7 @@ namespace Dash
             //DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
             if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
             {
+                MainPage.Instance.ClearForceFocus();
                 GotFocus += RichTextView_GotFocus;
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
@@ -932,13 +933,11 @@ namespace Dash
         private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
         {
             GotFocus -= RichTextView_GotFocus;
-            var text = MainPage.Instance.TextPreviewer.Visibility == Visibility.Visible ?
-                    MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
+            var text = MainPage.Instance.TextPreviewer?.Visibility == Visibility.Visible ? MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
             Document.Selection.SetRange(0, 0);
             Document.SetText(TextSetOptions.None, text);
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
-            MainPage.Instance.ClearForceFocus();
             SelectionManager.Select(getDocView(), false);
         }
 

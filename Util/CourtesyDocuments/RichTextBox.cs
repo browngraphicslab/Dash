@@ -34,6 +34,7 @@ namespace Dash
         }
         public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key, Context context)
         {
+            element.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Black);
             element.DataFieldKey = key;
             var binding = new FieldBinding<RichTextController>()
             {

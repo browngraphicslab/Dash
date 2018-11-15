@@ -236,6 +236,11 @@ namespace Dash
                 Path = new PropertyPath("Width"),
                 Mode = BindingMode.OneWay,
             };
+            if (ActualWidth > 1200)
+            {
+                xPdfNotesCol.Width = new GridLength(ActualWidth/2, GridUnitType.Star);
+                xPdfCol.Width = new GridLength(ActualWidth / 2, GridUnitType.Star);
+            }
             _botPdf.Bind(binding, bindingNotes);
             _topPdf.Bind(binding, bindingNotes);
 

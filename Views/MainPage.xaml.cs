@@ -68,16 +68,17 @@ namespace Dash
             }
         }
 
-        public Point? ForceFocusPoint = null;
+        private Point? _forceFocusPoint;
+        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
         public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
-            ForceFocusPoint = where;
+            _forceFocusPoint = where;
             TextPreviewer = collection;
         }
         public void ClearForceFocus()
         {
-            MainPage.Instance.TextPreviewer.ClearPreview();
-            MainPage.Instance.ForceFocusPoint = null;
+            TextPreviewer?.ClearPreview();
+            _forceFocusPoint = null;
         }
 
         public CollectionFreeformBase TextPreviewer = null;
@@ -144,8 +145,27 @@ namespace Dash
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
+         
+
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
+        }
+
+        public DocumentController MiscellaneousFolder
+        {
+            get
+            {
+                var folders = MainDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                var misc = folders.Where((doc) => doc.Title == "Miscellaneous").FirstOrDefault();
+                if (misc == null)
+                {
+                    misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
+                    misc.SetTitle("Miscellaneous");
+                    MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
+                   // folders.Add(misc);
+                }
+                return misc;
+            }
         }
 
         public void Query(string search)

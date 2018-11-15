@@ -66,7 +66,7 @@ namespace Dash
         private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
         {
             r.Stroke = new SolidColorBrush(Colors.Black);
-            r.StrokeThickness = 2;
+            r.StrokeThickness = 0.5;
             r.StrokeDashArray = new DoubleCollection {2};
             r.HorizontalAlignment = HorizontalAlignment.Left;
             r.VerticalAlignment = VerticalAlignment.Top;
@@ -124,8 +124,8 @@ namespace Dash
         {
             XRegionRect = new Rectangle
             {
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection {2},
+                StrokeThickness = 0.5,
+                StrokeDashArray = new DoubleCollection { 2 },
                 Fill = ParentOverlay.XPreviewRect.Fill,
                 Opacity = ParentOverlay.XPreviewRect.Opacity,
                 Stroke = new SolidColorBrush(Colors.Black),

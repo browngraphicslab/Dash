@@ -1184,7 +1184,7 @@ namespace Dash
             PreviewTextBuffer = PreviewFormatString;
             if (previewTextbox != null)
             {
-                MainPage.Instance.ForceFocusPoint = null;
+                MainPage.Instance.ClearForceFocus();
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
                 previewTextbox.Visibility = Visibility.Visible;
