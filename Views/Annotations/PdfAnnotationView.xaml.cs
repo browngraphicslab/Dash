@@ -399,7 +399,10 @@ namespace Dash
                 }
             }
         }
-
+        private void viewTypeChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
+        }
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
@@ -415,6 +418,7 @@ namespace Dash
             cvm.DocumentAdded += Cvm_DocumentAdded;
             xCollectionView.DataContext = cvm;
             (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
+            DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
             if (Pages.PageSizes.Count != 0)
                 Pages.Initialize();
         }

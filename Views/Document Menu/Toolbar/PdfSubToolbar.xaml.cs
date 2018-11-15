@@ -101,7 +101,7 @@ namespace Dash
             xRegionToggle.IsChecked = false;
             xInkToggle.IsChecked = false;
 
-            _currentPdfView.SetAnnotationType(AnnotationType.Selection);
+            _currentPdfView?.SetAnnotationType(AnnotationType.Selection);
         }
 
         private void XRegionToggle_OnChecked(object sender, RoutedEventArgs e)

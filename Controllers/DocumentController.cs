@@ -1108,43 +1108,43 @@ namespace Dash
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            var g = sender as FrameworkElement;
-            var textFields = g.GetDescendantsOfType<TextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
+            var descendants = (sender as FrameworkElement).GetDescendants().ToList();
+            var textFields = descendants.OfType<TextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
             foreach (var fieldReplacement in textFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
-            var editTextFields = g.GetDescendantsOfType<EditableTextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
+            var editTextFields = descendants.OfType<EditableTextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
             foreach (var fieldReplacement in editTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 TextingBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
-            var richTextFields = g.GetDescendantsOfType<RichEditView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            var richTextFields = descendants.OfType<RichEditView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 RichTextBox.SetupBindings(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
-            var imageFields = g.GetDescendantsOfType<EditableImage>().Where((rtv) => rtv.Name.StartsWith("xImageField"));
+            var imageFields = descendants.OfType<EditableImage>().Where((rtv) => rtv.Name.StartsWith("xImageField"));
             foreach (var fieldReplacement in imageFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xImageField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 ImageBox.SetupBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey,  null);
             }
-            var pdfFields = g.GetDescendantsOfType<PdfView>().Where((rtv) => rtv.Name.StartsWith("xPdfField"));
+            var pdfFields = descendants.OfType<PdfView>().Where((rtv) => rtv.Name.StartsWith("xPdfField"));
             foreach (var fieldReplacement in pdfFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xPdfField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 PdfBox.SetupPdfBinding(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey, null);
             }
-            var listFields = g.GetDescendantsOfType<CollectionView>().Where((rtv) => rtv.Name.StartsWith("xCollectionField"));
+            var listFields = descendants.OfType<CollectionView>().Where((rtv) => rtv.Name.StartsWith("xCollectionField"));
             foreach (var fieldReplacement in listFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xCollectionField", "");
@@ -1152,14 +1152,14 @@ namespace Dash
                 var cvm = new CollectionViewModel(this, fieldKey);
                 fieldReplacement.DataContext = cvm;
             }
-            var contentFields = g.GetDescendantsOfType<ContentPresenter>().Where((rtv) => rtv.Name.StartsWith("xDataField"));
+            var contentFields = descendants.OfType<ContentPresenter>().Where((rtv) => rtv.Name.StartsWith("xDataField"));
             foreach (var fieldReplacement in contentFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xDataField", "");
                 var fieldKey = KeyController.Get(fieldName);
                 DataBox.BindContent(fieldReplacement, GetDataDocument().GetDataDocument(), fieldKey);
             }
-            var doclistFields = g.GetDescendantsOfType<ListView>().Where((rtv) => rtv.Name.StartsWith("xDocumentList"));
+            var doclistFields = descendants.OfType<ListView>().Where((rtv) => rtv.Name.StartsWith("xDocumentList"));
             foreach (var fieldReplacement in doclistFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xDocumentList", "");
@@ -1174,7 +1174,7 @@ namespace Dash
                 };
                 fieldReplacement.AddFieldBinding(ListView.ItemsSourceProperty, binding);
             }
-            var docFields = g.GetDescendantsOfType<DocumentView>().Where((rtv) => rtv.Name.StartsWith("xDocumentField"));
+            var docFields = descendants.OfType<DocumentView>().Where((rtv) => rtv.Name.StartsWith("xDocumentField"));
             foreach (var fieldReplacement in docFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xDocumentField", "");

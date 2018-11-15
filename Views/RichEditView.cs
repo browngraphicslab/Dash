@@ -19,6 +19,29 @@ using Dash.Controllers.Operators;
 
 namespace Dash
 {
+    public class RichEditHackView : RichEditBox {
+
+
+        public double clean(Size availableSize)
+        {
+            var value = 100.0;
+            GetChildrenInTabFocusOrder()?.OfType<FrameworkElement>().ToList().ForEach((fe) => {
+                if (fe is Grid g)
+                {
+                    g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => {
+                        if (ge is ScrollViewer se)
+                        {
+                            value = se.GetDescendants().OfType<FrameworkElement>().First().DesiredSize.Width;
+                        }
+                        ge.Width = double.IsInfinity(availableSize.Width) ? 10000 : availableSize.Width;
+                    });
+                }
+                fe.Width = double.IsInfinity(availableSize.Width) ? 10000 : availableSize.Width;
+            });
+            return value+10;
+        }
+    }
+
     public class RichEditView : RichEditBox
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
@@ -31,18 +54,54 @@ namespace Dash
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
+        private Size  _lastSize = new Size();
+        private string _lastSizeRTFText = "";
+        private double _lastSizeRTFWidth = 0;
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var panel = this.GetFirstAncestorOfType<Panel>();
-            var rtv = MainPage.Instance.RTBHack;
-            var rtb = new RichEditBox();
-            rtv.Children.Add(rtb);
-            rtb.Document.SetText(TextSetOptions.FormatRtf, getRtfText());
-            rtb.Measure(availableSize);
-            var desired = rtb.DesiredSize;
-            rtv.Children.Remove(rtb);
-            return desired;
+            if (!double.IsNaN(ViewModel.Width))
+            {
+                return base.MeasureOverride(availableSize);
+            }
+
+            var gtet = getRtfText();
+            if (gtet != _lastSizeRTFText || _lastSize == new Size() || _lastSizeRTFWidth != availableSize.Width)
+            {
+                var rtv = MainPage.Instance.RTBHack;
+                if (!(rtv.Children.FirstOrDefault() is RichEditHackView rtb))
+                {
+                    rtb = new RichEditHackView();
+                    rtv.Children.Add(rtb);
+                }
+                if (!double.IsInfinity(availableSize.Width))
+                {
+                    rtb.Width = availableSize.Width;
+                }
+                rtb.Document.SetText(TextSetOptions.FormatRtf, gtet);
+                rtb.Measure(availableSize);
+                var value = rtb.clean(availableSize);
+                var desired = rtb.DesiredSize;
+                _lastSize = desired;
+                _lastSizeRTFText = gtet;
+                _lastSizeRTFWidth = availableSize.Width;
+                GetChildrenInTabFocusOrder().OfType<FrameworkElement>().ToList().ForEach((fe) =>
+                {
+                    if (fe is Grid g)
+                    {
+                        g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => ge.Width = value);
+                        g.Width = value;
+                    }
+                    fe.Width = value;
+                });
+                _lastSize = new Size(value, desired.Height);
+            }
+            return _lastSize;
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            return base.ArrangeOverride(finalSize);
         }
 
         public RichEditView()
@@ -896,7 +955,7 @@ namespace Dash
             }
             if (GetValue(TextProperty) is RichTextModel.RTD xamlText)
             {
-                Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+                //Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
             }
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
