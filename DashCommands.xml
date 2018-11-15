@@ -4,16 +4,17 @@
     <AppName> Dash </AppName>
     <Example> Search Dash for Quantum Mechanics </Example>
 
-     <Command Name="searchForTerm">
-        <Example> Search Dash for Quantum Mechanics </Example>
-         <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {destination} </ListenFor>
-          <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {destination} </ListenFor>
-          <Feedback> Searching for term "{destination}" </Feedback>
-         <Navigate />
-     </Command>
+      <Command Name="showTripToDestination">
+          <Example> Show trip to London </Example>
+          <ListenFor RequireAppName="BeforeOrAfterPhrase"> show [my] trip to {destination} </ListenFor>
+          <ListenFor RequireAppName="ExplicitlySpecified"> show [my] {builtin:AppName} trip to {destination} </ListenFor>
+          <Feedback> Showing trip to {destination} </Feedback>
+          <Navigate />
+      </Command>
 
 
-          <Command Name="searchForTerm">
+
+      <Command Name="searchForTerm">
       <Example> Search Dash for Quantum Mechanics </Example>
       <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {destination} </ListenFor>
       <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {destination} </ListenFor>

@@ -145,7 +145,7 @@ namespace Dash
 
                 //TODO: idk which type works
                 await Windows.ApplicationModel.VoiceCommands.VoiceCommandDefinitionManager.
-                    InstallCommandDefinitionsFromStorageFileAsync(storageFile);
+                    InstallCommandDefinitionsFromStorageFileAsync(vcdStorageFile);
 
                 // Update phrase list.
                 //ViewModel.ViewModelLocator locator = App.Current.Resources["ViewModelLocator"] as ViewModel.ViewModelLocator;
@@ -200,6 +200,21 @@ namespace Dash
 
                 switch (voiceCommandName)
                 {
+                case "showTripToDestination":
+                    // Access the value of {destination} in the voice command.
+                    string destination = this.SemanticInterpretation("destination", speechRecognitionResult);
+
+                    // Create a navigation command object to pass to the page. 
+                    navigationCommand = new DashVoiceCommand(
+                        voiceCommandName,
+                        commandMode,
+                        textSpoken,
+                        destination);
+
+                    // Set the page to navigate to for this voice command.
+                    //TODO: save XAML page to navigate to
+                    //navigationToPageType = typeof(View.TripDetails);
+                    break;
                 case "searchForTerm":
                     // Access the value of {destination} in the voice command.
                     string term = this.SemanticInterpretation("term", speechRecognitionResult);
