@@ -41,7 +41,7 @@ namespace Dash
         {
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastSize;
-            if (!double.IsNaN(ViewModel.Width))
+            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width > 0)
             {
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
                 return base.MeasureOverride(availableSize);
