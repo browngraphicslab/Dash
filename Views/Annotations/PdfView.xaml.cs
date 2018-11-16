@@ -72,9 +72,10 @@ namespace Dash
 
         private void setupCollectionViewType()
         {
-            if (xCollectionView != null)
+            if (xCollectionView != null && this.IsInVisualTree())
             {
-                if (DataDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionViewType.Freeform.ToString())
+                var vtype = DataDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data;
+                if (vtype == null || vtype == CollectionViewType.Freeform.ToString())
                 {
                     xCollectionView.Visibility = Visibility.Collapsed;
                     _topPdf.xCollectionView.Visibility = Visibility.Visible;
@@ -99,7 +100,6 @@ namespace Dash
                 if (xCollectionView == null)
                 {
                     var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
-                    cvm.ViewType = CollectionViewType.Stacking;
                     xCollectionView = new CollectionView();
                     setupCollectionViewType();
                     DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
@@ -212,9 +212,11 @@ namespace Dash
                 tgts.ToList().ForEach((tgt) =>
                 {
                     if (tgt.ViewModel.LayoutDocument.GetHidden())
+                    {
                         tgt.ViewModel.LayoutDocument.ToggleHidden();
-                    SelectionManager.Deselect(this.GetFirstAncestorOfType<DocumentView>());
-                    SelectionManager.Select(tgt, true);
+                    }
+
+                    tgt.ViewModel.ToggleHighlight();
                 });
                 return LinkHandledResult.HandledClose;
             }
