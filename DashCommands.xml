@@ -21,6 +21,21 @@
       <Feedback> Searching for term "{destination}" </Feedback>
       <Navigate />
     </Command>
+   
+      <Command Name="searchForTerm">
+          <Example> Search for apples </Example>
+          <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {name} </ListenFor>
+          <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {name} </ListenFor>
+          <Feedback> Searching for {name} </Feedback>
+          <Navigate />
+      </Command>
+      
+      <Command Name="openDash">
+          <Example> Open Dash </Example>
+          <ListenFor RequireAppName="BeforeOrAfterPhrase"> open up </ListenFor>
+          <Feedback> Opening Dash </Feedback>
+          <Navigate />
+      </Command>
 
     <Command Name="whenIsTripToDestination">
       <Example> When is my trip to Las Vegas?</Example>
@@ -45,8 +60,9 @@
       <Item>Melbourne</Item>
       <Item>Yosemite National Park</Item>
     </PhraseList>
-
-      <PhraseTopic Label="term" Scenario="Search" />
+      
+      <PhraseTopic Label="name" Scenario="Dictation">
+      </PhraseTopic>
   </CommandSet>
 
 </VoiceCommands>

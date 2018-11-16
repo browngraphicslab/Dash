@@ -177,7 +177,7 @@ namespace Dash
         {
             base.OnActivated(args);
 
-            Type navigationToPageType;
+            Type navigationToPageType = typeof(MainPage);
             DashVoiceCommand navigationCommand = null;
 
             // Voice command activation.
@@ -217,7 +217,7 @@ namespace Dash
                     break;
                 case "searchForTerm":
                     // Access the value of {destination} in the voice command.
-                    string term = this.SemanticInterpretation("term", speechRecognitionResult);
+                    string term = this.SemanticInterpretation("name", speechRecognitionResult);
 
                     // Create a navigation command object to pass to the page. 
                     navigationCommand = new DashVoiceCommand(
@@ -227,13 +227,11 @@ namespace Dash
                         term);
 
                     // Set the page to navigate to for this voice command.
-                    //TODO: save XAML page to navigate to
-                    //navigationToPageType = typeof(View.TripDetails);
+                    navigationToPageType = typeof(MainPage);
                     break;
                 default:
                     // If we can't determine what page to launch, go to the default entry point.
-                    //TODO: save XAML page to navigate to
-                    //navigationToPageType = typeof(View.TripListView);
+                    navigationToPageType = typeof(MainPage);
                     break;
                 }
             }
@@ -254,41 +252,82 @@ namespace Dash
                                         "destination",
                                         destination);
 
-                //TODO: save XAML page to navigate to
-                //navigationToPageType = typeof(View.TripDetails);
+                navigationToPageType = typeof(MainPage);
             }
             else
             {
                 // If we were launched via any other mechanism, fall back to the main page view.
                 // Otherwise, we'll hang at a splash screen.
 
-                //TODO: save XAML page to navigate to
-                //navigationToPageType = typeof(View.TripListView);
+                navigationToPageType = typeof(MainPage);
             }
 
+
+
+            Container = RegisterServices();
             // Repeat the same basic initialization as OnLaunched() above, taking into account whether
             // or not the app is already active.
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active.
+            // just ensure that the window is active
             if (rootFrame == null)
             {
-                // Create a frame to act as the navigation context and navigate to the first page.
+                // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
-                //App.NavigationService = new NavigationService(rootFrame);
+                
+                   
 
-                rootFrame.NavigationFailed += OnNavigationFailed;
+                    //TODO: do I need this?
+                    //App.NavigationService = new NavigationService(rootFrame);
 
-                // Place the frame in the current window.
+                    rootFrame.NavigationFailed += OnNavigationFailed;
+
+                // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
             }
+            if (rootFrame.Content == null)
+            {
+                KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, (doc, context) => RichTextBox.MakeView(doc, KeyStore.DataKey, context), RichTextBox.MakeRegionDocument);
+                KeyStore.RegisterDocumentTypeRenderer(DiscussionBox.DocumentType, (doc, context) => DiscussionBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(TableBox.DocumentType, (doc, context) => TableBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, (doc, context) => ImageBox.MakeView(doc, KeyStore.DataKey, context), ImageBox.MakeRegionDocument);
+                KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, (doc, context) => PdfBox.MakeView(doc, KeyStore.DataKey, context), PdfBox.MakeRegionDocument);
+                KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, (doc, context) => TextingBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DishReplBox.DocumentType, DishReplBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(DishScriptBox.DocumentType, DishScriptBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
+                KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, (doc, context) => VideoBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, (doc, context) => AudioBox.MakeView(doc, KeyStore.DataKey, context), null);
+                // When the navigation stack isn't restored navigate to the first page,
+                // configuring the new page by passing required information as a navigation
+                // parameter
+                //TODO Navigate to a prelogged in page if we can!
+                // Since we're expecting to always show a details page, navigate even if 
+                // a content frame is in place (unlike OnLaunched).
+                // Navigate to either the main trip list page, or if a valid voice command
+                // was provided, to the details page for that trip.
+                rootFrame.Navigate(navigationToPageType, null);
+                ListContainedFieldFlag.Enabled = true; // works but slows things down A LOT!
+            }
 
-            // Since we're expecting to always show a details page, navigate even if 
-            // a content frame is in place (unlike OnLaunched).
-            // Navigate to either the main trip list page, or if a valid voice command
-            // was provided, to the details page for that trip.
-            //rootFrame.Navigate(navigationToPageType, navigationCommand);
+            ApplicationView.PreferredLaunchViewSize = new Size(1800, 1000);
+            ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
             // Ensure the current window is active
             Window.Current.Activate();
