@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    class DashVoiceCommand
+    public class DashVoiceCommand
     {
-        public string voiceCommand;
+        public string commandType;
         public string commandMode;
         public string textSpoken;
         public string searchTerm;
@@ -28,7 +28,7 @@ namespace Dash
         /// <param name="textSpoken">The raw voice command text.</param>
         public DashVoiceCommand(string voiceCommand, string commandMode, string textSpoken, string term)
         {
-            this.voiceCommand = voiceCommand;
+            this.commandType = voiceCommand;
             this.commandMode = commandMode;
             this.textSpoken = textSpoken;
             this.searchTerm = term;

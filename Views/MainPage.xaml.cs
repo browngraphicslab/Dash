@@ -236,6 +236,34 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
+
+            if (e.Parameter.GetType() == typeof(Dash.DashVoiceCommand))
+            {
+                handleVoidCommand(e.Parameter as DashVoiceCommand);
+            }
+        }
+
+        public void handleVoidCommand(DashVoiceCommand command)
+        {
+            switch (command.commandType)
+            {
+                case "searchForTerm":
+                //this is a bit of a HACK - making a bunch of search things public
+                    if (xSearchBoxGrid.Visibility != Visibility.Visible)
+                    {
+                        xSearchBoxGrid.Visibility = Visibility.Visible;
+                        xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                        xMainSearchBox.Focus(FocusState.Programmatic);
+                    }
+
+                    String searchTerm = command.textSpoken.Substring(", search for ".Length);
+                    xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
+                    MainSearchBox.ExecuteDishSearch(xMainSearchBox.xAutoSuggestBox);
+                break;
+                default:
+                     break;
+
+            }
         }
 
         #region LOAD AND UPDATE SETTINGS

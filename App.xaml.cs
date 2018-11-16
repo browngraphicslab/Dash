@@ -275,13 +275,10 @@ namespace Dash
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
-                
-                   
 
-                    //TODO: do I need this?
                     //App.NavigationService = new NavigationService(rootFrame);
 
-                    rootFrame.NavigationFailed += OnNavigationFailed;
+                 rootFrame.NavigationFailed += OnNavigationFailed;
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
@@ -322,8 +319,12 @@ namespace Dash
                 // a content frame is in place (unlike OnLaunched).
                 // Navigate to either the main trip list page, or if a valid voice command
                 // was provided, to the details page for that trip.
-                rootFrame.Navigate(navigationToPageType, null);
+                rootFrame.Navigate(navigationToPageType, navigationCommand);
                 ListContainedFieldFlag.Enabled = true; // works but slows things down A LOT!
+            }
+            else
+            {
+                MainPage.Instance.handleVoidCommand(navigationCommand);
             }
 
             ApplicationView.PreferredLaunchViewSize = new Size(1800, 1000);

@@ -314,7 +314,7 @@ namespace Dash
         #endregion
 
         #region Search
-        private static void ExecuteDishSearch(AutoSuggestBox searchBox)
+        public static void ExecuteDishSearch(AutoSuggestBox searchBox)
         {
             if (searchBox == null) return;
 

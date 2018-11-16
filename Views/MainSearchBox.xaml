@@ -48,6 +48,7 @@
                     QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                     UpdateTextOnSelect="False"
                     Name="xAutoSuggestBox"
+                     x:FieldModifier="public"
                     GotFocus="XAutoSuggestBox_OnGotFocus"
                     LostFocus="XAutoSuggestBox_OnLostFocus"
                     TextBoxStyle="{StaticResource AutoFontSize}"
