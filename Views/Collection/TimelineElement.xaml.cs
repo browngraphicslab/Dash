@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -64,7 +63,7 @@ namespace Dash
 
             // get the sort key value and display it
             var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()?
-                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null)?.Data ?? DateTime.Now;
+                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null)?.Data ?? System.DateTime.Now;
             xTimeBlock.Text = date.ToShortDateString();
             xDateBlock.Text = date.ToShortTimeString();
 

@@ -15,7 +15,6 @@ namespace Dash
         {
             _variableDoc = doc;
 
-            _dictionary = new Dictionary<string, FieldControllerBase>();
             foreach (var var in _variableDoc.EnumFields())
             {
                 _dictionary.Add(var.Key.Name, var.Value);
@@ -25,8 +24,6 @@ namespace Dash
         public OuterReplScope()
         {
             _variableDoc = new DocumentController();
-
-            _dictionary = new Dictionary<string, FieldControllerBase>();
         }
 
         public override void DeclareVariable(string variableName, FieldControllerBase valueToSet)
@@ -43,11 +40,7 @@ namespace Dash
 
         public override void SetVariable(string variableName, FieldControllerBase valueToSet)
         {
-            var child = (Scope)this;
-            while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
-            if (child == null || child._dictionary[variableName].Equals(valueToSet)) return;
-
-            child._dictionary[variableName] = valueToSet;
+            base.SetVariable(variableName, valueToSet);
 
             var key = KeyController.Get(variableName);
             _variableDoc.SetField(key, valueToSet, true);

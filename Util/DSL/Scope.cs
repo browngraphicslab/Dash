@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Flurl.Util;
 
 namespace Dash
 {
-    public class Scope
+    public class Scope : IEnumerable<KeyValuePair<string, FieldControllerBase>>
     {
         public static string THIS_NAME = "this";
 
-        private FieldControllerBase _returnValue;
-
-        internal Dictionary<string, FieldControllerBase> _dictionary;
+        protected readonly Dictionary<string, FieldControllerBase> _dictionary;
         public Scope Parent;
 
         public Scope(IDictionary<string, FieldControllerBase> existingScope = null) { _dictionary = existingScope != null ? new Dictionary<string, FieldControllerBase>(existingScope) : new Dictionary<string, FieldControllerBase>(); }
@@ -21,6 +20,37 @@ namespace Dash
         {
             var scope = new Scope();
             scope.DeclareVariable(THIS_NAME, thisDocument);
+            return scope;
+        }
+
+        public DocumentController ToDocument(bool useParent)
+        {
+            var doc = new DocumentController();
+            AddToDocument(doc, useParent);
+            return doc;
+        }
+
+        private void AddToDocument(DocumentController doc, bool useParent)
+        {
+            if (useParent)
+            {
+                Parent?.AddToDocument(doc, true);
+            }
+
+            foreach (var fieldControllerBase in _dictionary)
+            {
+                doc.SetField(KeyController.Get(fieldControllerBase.Key), fieldControllerBase.Value, true);
+            }
+        }
+
+        public static Scope FromDocument(DocumentController doc)
+        {
+            var scope = new Scope();
+            foreach (var field in doc.EnumDisplayableFields())
+            {
+                scope.SetVariable(field.Key.Name, field.Value);
+            }
+
             return scope;
         }
 
@@ -100,6 +130,27 @@ namespace Dash
             }
 
             return collector;
+        }
+
+        public IEnumerator<KeyValuePair<string, FieldControllerBase>> GetEnumerator()
+        {
+            foreach (var kvp in _dictionary)
+            {
+                yield return kvp;
+            }
+
+            if (Parent != null)
+            {
+                foreach (var kvp in Parent)
+                {
+                    yield return kvp;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
