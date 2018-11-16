@@ -55,10 +55,7 @@ namespace Dash
                 _lastSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeRTFWidth = availableSize.Width;
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
-            } else
-            {
-
-            }
+            } 
             return _lastSize;
         }
 
