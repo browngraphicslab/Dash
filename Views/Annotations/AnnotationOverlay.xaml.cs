@@ -885,7 +885,7 @@ namespace Dash
                         }
                     }
                 }
-                else if (dm.DraggingLinkButton && !this.IsShiftPressed())
+                else if (dm?.DraggingLinkButton == true && !this.IsShiftPressed())
                 {
                     var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, true);
                     StartAnnotation(AnnotationType.Pin, where, new AnchorableAnnotation.Selection(CreatePinRegion(where, targets.FirstOrDefault())));

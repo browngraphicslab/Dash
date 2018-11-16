@@ -977,10 +977,38 @@ namespace Dash
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         }
-
+        private void MenuFlyoutItemCaption_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (ViewModel.LayoutDocument != null)
+                {
+                    ViewModel.LayoutDocument.SetField<TextController>(KeyStore.XamlKey,
+                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                 xmlns:dash=""using:Dash""
+                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""*"" ></RowDefinition>
+                            </Grid.RowDefinitions>
+                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
+                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
+                                </Border>
+                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
+                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
+                                </Border>
+                        </Grid>",
+                        true);
+                }
+            }
+        }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (IsTopLevel()) return;
+            if (IsTopLevel())
+            {
+                return;
+            }
 
             using (UndoManager.GetBatchHandle())
             {
@@ -1114,6 +1142,12 @@ namespace Dash
 
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add Caption",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.FileText }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCaption_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Add to Presentation",

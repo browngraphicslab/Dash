@@ -32,16 +32,16 @@ namespace Dash
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
-        private Size                      _lastSize = new Size();
+        private Size                      _lastDesiredSize = new Size();
         private string                    _lastSizeRTFText = "";
-        private double                    _lastSizeRTFWidth = 0;
+        private Size                      _lastSizeAvailableSize = new Size();
         private bool                      _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
 
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
-                return _lastSize;
-            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width > 0)
+                return _lastDesiredSize;
+            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width > ViewModel.Width)
             {
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
                 return base.MeasureOverride(availableSize);
@@ -51,18 +51,18 @@ namespace Dash
             var readable = getReadableText();
             if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
                 Document.GetText(TextGetOptions.FormatRtf, out text);
-            if (text != _lastSizeRTFText || _lastSize == new Size() || _lastSizeRTFWidth != availableSize.Width)
+            if (text != _lastSizeRTFText || _lastDesiredSize == new Size() || _lastSizeAvailableSize != availableSize)
             {
                 var rtb = MainPage.Instance.RTBHackBox;
                 rtb.Width = double.IsInfinity(availableSize.Width) ? double.NaN : availableSize.Width;
                 rtb.Document.SetText(TextSetOptions.FormatRtf, text);
                 rtb.Measure(availableSize);
                 _lastSizeRTFText = text;
-                _lastSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
-                _lastSizeRTFWidth = availableSize.Width;
+                _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
+                _lastSizeAvailableSize = availableSize;
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
             } 
-            return _lastSize;
+            return _lastDesiredSize;
         }
 
          ~RichEditView()
