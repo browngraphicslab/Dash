@@ -170,42 +170,32 @@
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout x:Name="XMenuFlyout" Opening="FlyoutBase_OnOpen">
                     <MenuFlyoutSubItem Text="Document">
-                        <ToggleMenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
-                        <ToggleMenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
-                        <ToggleMenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
-                        <ToggleMenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
-                        <ToggleMenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
-                        <ToggleMenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
+                        <MenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
                     </MenuFlyoutSubItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
         </Button>
 
-
-        <Button x:Name="xMoreOptions" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Options:" Visibility="Collapsed" Background="{StaticResource DashDarkBlueBrush}"
-                Foreground ="White" HorizontalAlignment="Left" Click="Options_Tapped">
-            <FlyoutBase.AttachedFlyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem x:Name="xClearFilters" Text="Clear Filters" Tapped="ClearFilters_OnClick"/>
-                    <MenuFlyoutItem x:Name="xMatchWord" Text="Match whole word" Tapped="xOptions_SelectionChanged"/>
-                    <MenuFlyoutItem x:Name="xCaseSens" Text="Case sensitive" Tapped="xOptions_SelectionChanged"/>
-                    <MenuFlyoutItem x:Name="xRegex" Text="Regex" Tapped="XRegex_OnTapped"/>
-                </MenuFlyout>
-            </FlyoutBase.AttachedFlyout>
-
-        </Button>
-
-        <Grid x:Name="XOptionsGrid" Grid.Row="2" Grid.Column="2" Visibility ="Visible">
+        <Grid x:Name="XOptionsGrid" Grid.Row="2" Grid.Column="0" Visibility ="Collapsed" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="XCaseSensButton" Grid.Column="0" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Gray" BorderThickness="0 0 0 0" Click="XOptionButton_OnClick"/>
-            <Button x:Name="XMatchWordButton" Grid.Column="1" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="10 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Gray" BorderThickness="0 0 0 0" Click="XOptionButton_OnClick"/>
-            <Button x:Name="XRegexButton" Grid.Column="2" Content=".*" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="10 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" Width ="15" BorderBrush="Gray" BorderThickness="0 0 0 0" />
-            <Button x:Name="XClearFiltersButton" Grid.Column="3" Content="X" Background="{StaticResource DashDarkBlueBrush}" Foreground="Red" Margin="10 0 0 0" Width="20" Click="XClearFiltersButton_OnClick" BorderBrush="Gray" BorderThickness="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
+            <Button x:Name="XCaseSensButton" Grid.Column="0" Grid.Row="0" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="2 2 2 2" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XMatchWordButton" Grid.Column="1" Grid.Row="0" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="5 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="2 2 2 2" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XRegexButton" Grid.Column="2" Grid.Row="0" Content=".*" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="5 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" Width ="15" BorderBrush="Transparent" BorderThickness="2 2 2 2" />
+            <Button x:Name="XClearFiltersButton" Grid.Column="0" Grid.Row="1" Content="X" Background="{StaticResource DashDarkBlueBrush}" Foreground="Red" Margin="0 5 0 0" Width="20" Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
         </Grid>
 
         

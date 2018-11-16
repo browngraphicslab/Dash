@@ -11,8 +11,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using MyToolkit.UI;
@@ -30,7 +32,6 @@ namespace Dash
 
         private Dictionary<string, string> _filterDictionary;
         private Dictionary<string, MenuFlyoutItem> _filtertoMenuFlyout;
-        private Dictionary<string, MenuFlyoutItem> _filtertoOption;
         private Dictionary<Button, string> _optiontofilter;
         private HashSet<string> _options;
         private HashSet<string> _documentFilters;
@@ -79,13 +80,6 @@ namespace Dash
                 ["Collection"] = xCollectionFilter
             };
 
-            _filtertoOption = new Dictionary<string, MenuFlyoutItem>()
-            {
-                ["Match whole word"] = xMatchWord,
-                ["Case sensitive"] = xCaseSens,
-                ["Regex"] = xRegex
-            };
-
             _optiontofilter = new Dictionary<Button, string>()
             {
                 [XCaseSensButton] = "Case sensitive",
@@ -98,24 +92,30 @@ namespace Dash
             _documentFilters = new HashSet<string>();
             _authorFilters = new HashSet<string>();
 
+            var placementMode = PlacementMode.Bottom;
+
             var t1 = new ToolTip
             {
-                Content = "Case sensitive"
+                Content = "Case sensitive",
+                Placement = placementMode
             };
             ToolTipService.SetToolTip(XCaseSensButton,t1);
             var t2 = new ToolTip
             {
-                Content = "Match whole word"
+                Content = "Match whole word",
+                Placement = placementMode
             };
             ToolTipService.SetToolTip(XMatchWordButton,t2);
             var t3 = new ToolTip
             {
-                Content = "Use Regex"
+                Content = "Use Regex",
+                Placement = placementMode
             };
             ToolTipService.SetToolTip(XRegexButton,t3);
             var t4 = new ToolTip
             {
-                Content = "Clear all filters"
+                Content = "Clear all filters",
+                Placement = placementMode
             };
             ToolTipService.SetToolTip(XClearFiltersButton,t4);
 
@@ -326,7 +326,6 @@ namespace Dash
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
                 xFilterButton.Visibility = Visibility.Collapsed;
-                xMoreOptions.Visibility = Visibility.Collapsed;
                 XOptionsGrid.Visibility = Visibility.Collapsed;
 
             }
@@ -340,7 +339,6 @@ namespace Dash
                 xSearchCodeBox.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
                 xFilterButton.Visibility = Visibility.Visible;
-                xMoreOptions.Visibility = Visibility.Visible;
                 XOptionsGrid.Visibility = Visibility.Visible;
             }
         }
@@ -691,25 +689,6 @@ namespace Dash
 
         }
 
-
-        private void xOptions_SelectionChanged(object sender, TappedRoutedEventArgs e)
-        {
-            if (sender is MenuFlyoutItem mf)
-            {
-                var option = mf?.Text;
-                if (_options.Contains(option))
-                {
-                    _options.Remove(option);
-                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
-                }
-                else
-                {
-                    _options.Add(option);
-                    mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
-                }
-            }
-        }
-
         private void Filter_Tapped(object sender, RoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
@@ -725,7 +704,6 @@ namespace Dash
         private void Document_OnClick(object sender, TappedRoutedEventArgs e)
         {
 
-            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
             if (sender is MenuFlyoutItem mf)
             {
                 var document = mf.Text;
@@ -828,10 +806,8 @@ namespace Dash
         {
             foreach (var option in _options)
             {
-                var mfi = _filtertoOption[option];
-                mfi.FontWeight = Windows.UI.Text.FontWeights.Normal;
                 var bt = _optiontofilter.FirstOrDefault(x => x.Value == option).Key;
-                bt.BorderThickness = new Thickness(0, 0, 0, 0);
+                bt.BorderBrush = new SolidColorBrush(Colors.Transparent);
 
             }
             _options.Clear();
@@ -839,30 +815,11 @@ namespace Dash
 
         #endregion
 
-        private void ClearFilters_OnClick(object sender, TappedRoutedEventArgs e)
-        {
-            Clear_Filters();
-            Clear_Options();
-        }
-
-        private void XRegex_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (!_options.Contains("Regex"))
-            {
-                Clear_Options();
-            }
-
-            xOptions_SelectionChanged(sender,e);
-        }
 
         private void XRegexButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (sender is Button bt)
             {
-                if (!_options.Contains("Regex"))
-                {
-                    Clear_Options();
-                }
                 XOptionButton_OnClick(sender,e);
             }
         }
@@ -881,12 +838,12 @@ namespace Dash
                 if (_options.Contains(option))
                 {
                     _options.Remove(option);
-                    bt.BorderThickness = new Thickness(0, 0, 0, 0);
+                    bt.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 }
                 else
                 {
                     _options.Add(option);
-                    bt.BorderThickness = new Thickness(2, 1, 1, 2);
+                    bt.BorderBrush = new SolidColorBrush(Colors.Black);
                 }
             }
         }

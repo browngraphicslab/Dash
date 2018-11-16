@@ -22,7 +22,15 @@ namespace Dash
                 MatchCase = matchCase;
                 if (useRegex)
                 {
-                    Regex = new Regex(searchString);
+                    if (matchWholeWord)
+                    {
+                        Regex = new Regex(@"\b" + searchString + @"\b",
+                            RegexOptions.Compiled);
+                    }
+                    else
+                    {
+                        Regex = new Regex(searchString);
+                    }
                 }
                 else
                 {
@@ -89,20 +97,24 @@ namespace Dash
             bool matchword = false;
             bool matchcase = false;
             bool useregex = false;
-            if (stringoptions.Contains("Match whole word"))
+            if (stringoptions != null)
             {
-                matchword = true;
+                if (stringoptions.Contains("Match whole word"))
+                {
+                    matchword = true;
+                }
+
+                if (stringoptions.Contains("Case sensitive"))
+                {
+                    matchcase = true;
+                }
+
+                if (stringoptions.Contains("Regex"))
+                {
+                    useregex = true;
+                }
             }
 
-            if (stringoptions.Contains("Case sensitive"))
-            {
-                matchcase = true;
-            }
-
-            if (stringoptions.Contains("Regex"))
-            {
-                useregex = true;
-            }
             return new SearchOptions(inputString,matchcase,useregex,matchword);
         }
 
@@ -128,6 +140,7 @@ namespace Dash
             IEnumerable<DocumentController> docs = null, HashSet<string> options = null)
         {
             if (string.IsNullOrEmpty(inputString)) return new List<SearchResult>();
+
 
             var searchOptions = ConvertStringOptionstoSearchOptions(inputString, options);
 
