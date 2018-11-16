@@ -39,7 +39,9 @@
         </Grid.Resources>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <Canvas x:Name="RTBHack" x:FieldModifier="public" Visibility="Collapsed"  RenderTransform="1 0 0 1 10000 10000"  IsHitTestVisible="false" />
+        <StackPanel  Visibility="Visible" Grid.ColumnSpan="4" Grid.Column="0" RenderTransform="1 0 0 1 10000 10000"  IsHitTestVisible="false" >
+            <RichEditBox x:Name="RTBHackBox" HorizontalAlignment="Left" x:FieldModifier="public" />
+        </StackPanel>
 
         <Grid x:Name="xMainContent" Grid.Column="2">
             <local:SplitManager x:Name="XMainSplitter" Grid.Column="2"/>

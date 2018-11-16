@@ -19,29 +19,6 @@ using Dash.Controllers.Operators;
 
 namespace Dash
 {
-    public class RichEditHackView : RichEditBox {
-
-
-        public double clean(Size availableSize)
-        {
-            var value = 100.0;
-            GetChildrenInTabFocusOrder()?.OfType<FrameworkElement>().ToList().ForEach((fe) => {
-                if (fe is Grid g)
-                {
-                    g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => {
-                        if (ge is ScrollViewer se)
-                        {
-                            value = se.GetDescendants().OfType<FrameworkElement>().First().DesiredSize.Width;
-                        }
-                        ge.Width = double.IsInfinity(availableSize.Width) ? 10000 : availableSize.Width;
-                    });
-                }
-                fe.Width = double.IsInfinity(availableSize.Width) ? 10000 : availableSize.Width;
-            });
-            return value+10;
-        }
-    }
-
     public class RichEditView : RichEditBox
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
@@ -62,39 +39,43 @@ namespace Dash
         {
             if (!double.IsNaN(ViewModel.Width))
             {
+                var desired = DesiredSize;
+                GetChildrenInTabFocusOrder().OfType<FrameworkElement>().ToList().ForEach((fe) =>
+                {
+                    if (fe is Grid g)
+                    {
+                        g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => ge.Width = desired.Width);
+                        g.Width = desired.Width;
+                    }
+                    fe.Width = desired.Width;
+                });
                 return base.MeasureOverride(availableSize);
             }
 
             var gtet = getRtfText();
             if (gtet != _lastSizeRTFText || _lastSize == new Size() || _lastSizeRTFWidth != availableSize.Width)
             {
-                var rtv = MainPage.Instance.RTBHack;
-                if (!(rtv.Children.FirstOrDefault() is RichEditHackView rtb))
-                {
-                    rtb = new RichEditHackView();
-                    rtv.Children.Add(rtb);
-                }
-                if (!double.IsInfinity(availableSize.Width))
-                {
-                    rtb.Width = availableSize.Width;
-                }
+                var rtb = MainPage.Instance.RTBHackBox;
+                rtb.Width = double.IsInfinity(availableSize.Width) ? double.NaN : availableSize.Width;
                 rtb.Document.SetText(TextSetOptions.FormatRtf, gtet);
                 rtb.Measure(availableSize);
-                var value = rtb.clean(availableSize);
                 var desired = rtb.DesiredSize;
                 _lastSize = desired;
                 _lastSizeRTFText = gtet;
+                _lastSize = new Size(desired.Width+10, desired.Height);
                 _lastSizeRTFWidth = availableSize.Width;
                 GetChildrenInTabFocusOrder().OfType<FrameworkElement>().ToList().ForEach((fe) =>
                 {
                     if (fe is Grid g)
                     {
-                        g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => ge.Width = value);
-                        g.Width = value;
+                        g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => ge.Width = desired.Width);
+                        g.Width = desired.Width;
                     }
-                    fe.Width = value;
+                    fe.Width = desired.Width;
                 });
-                _lastSize = new Size(value, desired.Height);
+            } else
+            {
+
             }
             return _lastSize;
         }
@@ -117,6 +98,7 @@ namespace Dash
             Background = new SolidColorBrush(Colors.Transparent);
             Loaded += OnLoaded;
             Unloaded += UnLoaded;
+            MinWidth = 1;
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
@@ -173,10 +155,6 @@ namespace Dash
 
             TextChanged += (s, e) =>
             {
-                if (double.IsNaN(Width))
-                {
-                    InvalidateMeasure();
-                }
                 var xamlRTF = getRtfText();
                 if (xamlRTF != _lastXamlRTFText)
                 {
@@ -328,6 +306,10 @@ namespace Dash
                     rtv.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
                     rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
                 }
+            }
+            if (double.IsNaN(rtv.Width))
+            {
+                rtv.InvalidateMeasure();
             }
         }
 
@@ -549,6 +531,10 @@ namespace Dash
         /// <param name="e"></param>
         private void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (double.IsNaN(Width))
+            {
+                InvalidateMeasure();
+            }
             //handles batching for undo typing
             //TypeTimer.typeEvent();
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
