@@ -143,6 +143,7 @@ namespace Dash
                 var file = new Uri("ms-appx:///DashCommands.xml");
                 var storageFile = await StorageFile.GetFileFromApplicationUriAsync(file);
 
+                var defs = Windows.ApplicationModel.VoiceCommands.VoiceCommandDefinitionManager.InstalledCommandDefinitions;
                 //TODO: idk which type works
                 await Windows.ApplicationModel.VoiceCommands.VoiceCommandDefinitionManager.
                     InstallCommandDefinitionsFromStorageFileAsync(vcdStorageFile);
@@ -217,7 +218,7 @@ namespace Dash
                     break;
                 case "searchForTerm":
                     // Access the value of {destination} in the voice command.
-                    string term = this.SemanticInterpretation("name", speechRecognitionResult);
+                    string term = this.SemanticInterpretation("destination", speechRecognitionResult);
 
                     // Create a navigation command object to pass to the page. 
                     navigationCommand = new DashVoiceCommand(

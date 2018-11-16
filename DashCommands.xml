@@ -1,68 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <VoiceCommands xmlns="http://schemas.microsoft.com/voicecommands/1.2">
-  <CommandSet xml:lang="en-us" Name="DashCommandSet_en-us">
-    <AppName> Dash </AppName>
-    <Example> Search Dash for Quantum Mechanics </Example>
+    <CommandSet xml:lang="en-us" Name="DashCommandSet_en-us">
+        <AppName> Dash </AppName>
+        <Example> Search Dash for Quantum Mechanics </Example>
 
-      <Command Name="showTripToDestination">
-          <Example> Show trip to London </Example>
-          <ListenFor RequireAppName="BeforeOrAfterPhrase"> show [my] trip to {destination} </ListenFor>
-          <ListenFor RequireAppName="ExplicitlySpecified"> show [my] {builtin:AppName} trip to {destination} </ListenFor>
-          <Feedback> Showing trip to {destination} </Feedback>
-          <Navigate />
-      </Command>
+        <Command Name="searchForTerm">
+            <Example> Search Dash for Quantum Mechanics </Example>
+            <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {destination} </ListenFor>
+            <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {destination} </ListenFor>
+            <Feedback> Searching for term {destination} </Feedback>
+            <Navigate />
+        </Command>
 
+        <Command Name="whenIsTripToDestination">
+            <Example> When is my trip to Las Vegas?</Example>
+            <ListenFor RequireAppName="BeforeOrAfterPhrase"> when is [my] trip to {destination}</ListenFor>
+            <ListenFor RequireAppName="ExplicitlySpecified"> when is [my] {builtin:AppName} trip to {destination} </ListenFor>
+            <Feedback> Looking for trip to {destination}</Feedback>
+            <VoiceCommandService Target="DashVoiceCommandService"/>
+        </Command>
 
+        <Command Name="cancelTripToDestination">
+            <Example> Cancel my trip to Las Vegas </Example>
+            <ListenFor RequireAppName="BeforeOrAfterPhrase"> cancel [my] trip to {destination}</ListenFor>
+            <ListenFor RequireAppName="ExplicitlySpecified"> cancel [my] {builtin:AppName} trip to {destination} </ListenFor>
+            <Feedback> Cancelling trip to {destination}</Feedback>
+            <Navigate />
+        </Command>
 
-      <Command Name="searchForTerm">
-      <Example> Search Dash for Quantum Mechanics </Example>
-      <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {destination} </ListenFor>
-      <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {destination} </ListenFor>
-      <Feedback> Searching for term "{destination}" </Feedback>
-      <Navigate />
-    </Command>
-   
-      <Command Name="searchForTerm">
-          <Example> Search for apples </Example>
-          <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {name} </ListenFor>
-          <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {name} </ListenFor>
-          <Feedback> Searching for {name} </Feedback>
-          <Navigate />
-      </Command>
-      
-      <Command Name="openDash">
-          <Example> Open Dash </Example>
-          <ListenFor RequireAppName="BeforeOrAfterPhrase"> open up </ListenFor>
-          <Feedback> Opening Dash </Feedback>
-          <Navigate />
-      </Command>
-
-    <Command Name="whenIsTripToDestination">
-      <Example> When is my trip to Las Vegas?</Example>
-      <ListenFor RequireAppName="BeforeOrAfterPhrase"> when is [my] trip to {destination}</ListenFor>
-      <ListenFor RequireAppName="ExplicitlySpecified"> when is [my] {builtin:AppName} trip to {destination} </ListenFor>
-      <Feedback> Looking for trip to {destination}</Feedback>
-      <VoiceCommandService Target="DashVoiceCommandService"/>
-    </Command>
-    
-    <Command Name="cancelTripToDestination">
-      <Example> Cancel my trip to Las Vegas </Example>
-      <ListenFor RequireAppName="BeforeOrAfterPhrase"> cancel [my] trip to {destination}</ListenFor>
-      <ListenFor RequireAppName="ExplicitlySpecified"> cancel [my] {builtin:AppName} trip to {destination} </ListenFor>
-      <Feedback> Cancelling trip to {destination}</Feedback>
-        <Navigate />
-    </Command>
-     
-
-    <PhraseList Label="destination">
-      <Item>London</Item>
-      <Item>Las Vegas</Item>
-      <Item>Melbourne</Item>
-      <Item>Yosemite National Park</Item>
-    </PhraseList>
-      
-      <PhraseTopic Label="name" Scenario="Dictation">
-      </PhraseTopic>
-  </CommandSet>
+        <PhraseList Label="destination">
+            <Item>London</Item>
+            <Item>Las Vegas</Item>
+            <Item>Melbourne</Item>
+            <Item>Yosemite National Park</Item>
+        </PhraseList>
+        
+        
+    </CommandSet>
 
 </VoiceCommands>
