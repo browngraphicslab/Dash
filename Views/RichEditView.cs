@@ -819,12 +819,15 @@ namespace Dash
         private async void Clipboard_ContentChanged(object sender, object e)
         {
             Clipboard.ContentChanged -= Clipboard_ContentChanged;
-            var dataPackage = new DataPackage();
-            DataPackageView clipboardContent = Clipboard.GetContent();
-            dataPackage.SetText(await clipboardContent.GetTextAsync());
-            //set RichEditView property to this view
-            dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
-            Clipboard.SetContent(dataPackage);
+            var clipboardContent = Clipboard.GetContent();
+            if (clipboardContent.Properties[nameof(DocumentController)]?.Equals(LayoutDocument) != true)
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(await clipboardContent.GetTextAsync());
+                //set RichEditView property to this view
+                dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
+                Clipboard.SetContent(dataPackage);
+            }
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
 
