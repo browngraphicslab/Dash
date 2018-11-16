@@ -39,16 +39,7 @@ namespace Dash
         {
             if (!double.IsNaN(ViewModel.Width))
             {
-                var desired = DesiredSize;
-                GetChildrenInTabFocusOrder().OfType<FrameworkElement>().ToList().ForEach((fe) =>
-                {
-                    if (fe is Grid g)
-                    {
-                        g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => ge.Width = desired.Width);
-                        g.Width = desired.Width;
-                    }
-                    fe.Width = desired.Width;
-                });
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
                 return base.MeasureOverride(availableSize);
             }
 
@@ -59,20 +50,11 @@ namespace Dash
                 rtb.Width = double.IsInfinity(availableSize.Width) ? double.NaN : availableSize.Width;
                 rtb.Document.SetText(TextSetOptions.FormatRtf, gtet);
                 rtb.Measure(availableSize);
-                var desired = rtb.DesiredSize;
-                _lastSize = desired;
+                _lastSize = rtb.DesiredSize;
                 _lastSizeRTFText = gtet;
-                _lastSize = new Size(desired.Width+10, desired.Height);
+                _lastSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeRTFWidth = availableSize.Width;
-                GetChildrenInTabFocusOrder().OfType<FrameworkElement>().ToList().ForEach((fe) =>
-                {
-                    if (fe is Grid g)
-                    {
-                        g.Children.OfType<FrameworkElement>().ToList().ForEach((ge) => ge.Width = desired.Width);
-                        g.Width = desired.Width;
-                    }
-                    fe.Width = desired.Width;
-                });
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
             } else
             {
 
