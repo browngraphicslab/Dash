@@ -648,11 +648,11 @@ namespace Dash
                 WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
                 await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
 
-                StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
-                StorageFile savefile = await storageFolder.CreateFileAsync("paste.jpg",
+                var storageFolder = ApplicationData.Current.LocalFolder;
+                var savefile = await storageFolder.CreateFileAsync(Guid.NewGuid().ToString() + ".jpg",
                     CreationCollisionOption.ReplaceExisting);
-                IRandomAccessStream stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
-                BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
+                var stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
                 // Get pixels of the WriteableBitmap object 
                 Stream pixelStream = writeableBitmap.PixelBuffer.AsStream();
                 byte[] pixels = new byte[pixelStream.Length];
