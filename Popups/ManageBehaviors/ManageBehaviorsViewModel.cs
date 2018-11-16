@@ -4,19 +4,19 @@ namespace Dash.Popups
 {
     public class ManageBehaviorsViewModel : ViewModelBase
     {
-        private ObservableCollection<DocumentBehavior> _behaviors;
+        private ObservableCollection<DocumentController> _behaviors;
 
-        public ObservableCollection<DocumentBehavior> Behaviors
+        public ObservableCollection<DocumentController> Behaviors
         {
             get => _behaviors;
             set => SetProperty(ref _behaviors, value);
         }
 
-        public void RemoveBehavior(DocumentBehavior behavior) => Behaviors.Remove(behavior);
+        public void RemoveBehavior(DocumentController behavior) => Behaviors.Remove(behavior);
 
         public ManageBehaviorsViewModel()
         {
-            Behaviors = new ObservableCollection<DocumentBehavior>();
+            Behaviors = new ObservableCollection<DocumentController>();
         }
     }
 }

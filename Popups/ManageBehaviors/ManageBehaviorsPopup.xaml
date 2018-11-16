@@ -49,7 +49,7 @@
                             CanDragItems="True"
                             BorderBrush="{StaticResource DashDarkBlueBrush}">
                             <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="local:DocumentBehavior">
+                                <DataTemplate x:DataType="dash:DocumentController">
                                     <Grid 
                                         HorizontalAlignment="Stretch"
                                         Width="550"

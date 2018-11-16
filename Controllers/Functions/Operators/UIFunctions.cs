@@ -33,7 +33,7 @@ namespace Dash
             var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel() };
 
             var newBehaviors = new List<TextController>(); 
-            if ((newBehaviors = await manageBehaviors.OpenAsync()) != null)
+            if ((newBehaviors = await manageBehaviors.OpenAsync(docRef)) != null)
             {
                 
             }

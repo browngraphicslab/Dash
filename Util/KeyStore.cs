@@ -118,6 +118,10 @@ namespace Dash
 		public static KeyController ReplCurrentIndentKey                 = KeyController.Get("_Repl Stored Tab Setting");
 		public static KeyController ReplScopeKey                         = KeyController.Get("_Repl Scope");
 		public static KeyController ScriptTextKey                        = KeyController.Get("_Script Text");
+	    public static KeyController ScriptTitleKey                       = KeyController.Get("_Script Title");
+	    public static KeyController BehaviorIndicesKey                   = KeyController.Get("_Selected UI Indices");
+        public static KeyController DocBehaviorNameKey                   = KeyController.Get("_Document Behavior Name");
+        public static KeyController TriggerKey                           = KeyController.Get("_Trigger Text");
 		public static KeyController ExceptionKey                         = KeyController.Get("Exception");
 		public static KeyController ReceivedKey                          = KeyController.Get("Inputs Received");
 		public static KeyController ExpectedKey                          = KeyController.Get("Inputs Expected");

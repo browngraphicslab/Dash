@@ -14,15 +14,14 @@ namespace Dash.Popups
 {
     public sealed partial class ManageBehaviorsPopup
     {
-        private TaskCompletionSource<List<TextController>> _tcs;
+        private TaskCompletionSource<List<DocumentController>> _tcs;
         private readonly Dictionary<int, ComboBox> _modifierMapping = new Dictionary<int, ComboBox>();
         private readonly ObservableCollection<string> _behaviors = new ObservableCollection<string>();
         private const int BehaviorCount = 3;
         private bool _editMode;
-        private DocumentBehavior _editing;
+        private DocumentController _editing;
         private string _scriptState;
         private string _titleState;
-        private ManageBehaviorsViewModel _oldViewModel;
 
         public ManageBehaviorsViewModel ViewModel => DataContext as ManageBehaviorsViewModel;
 
@@ -40,10 +39,9 @@ namespace Dash.Popups
             _modifierMapping[2] = xFieldModifiers;
         }
 
-        public Task<List<TextController>> OpenAsync()
+        public Task<List<DocumentController>> OpenAsync(DocumentController docRef)
         {
-            _tcs = new TaskCompletionSource<List<TextController>>();
-            _oldViewModel = ViewModel;
+            _tcs = new TaskCompletionSource<List<DocumentController>>();
             xBehaviorsPopup.IsOpen = true;
             MainPage.Instance.XGrid.Children.Add(this);
             MainPage.Instance.xOverlay.Visibility = Visibility.Visible;
@@ -74,13 +72,21 @@ namespace Dash.Popups
 
                     if (behavior != null && behavior.Equals("Custom")) behavior += ": " + title;
 
-                    ViewModel.Behaviors.Add(new DocumentBehavior(trigger, behavior, triggerModifier, title, XScript.Text, new[]
+                    var behaviorDoc = new DocumentController();
+
+                    behaviorDoc.SetField<TextController>(KeyStore.ScriptTextKey, XScript.Text, true);
+                    behaviorDoc.SetField<TextController>(KeyStore.TriggerKey, trigger, true);
+                    behaviorDoc.SetField<TextController>(KeyStore.DocBehaviorNameKey, behavior, true);
+                    behaviorDoc.SetField<TextController>(KeyStore.ScriptTitleKey, title, true);
+                    behaviorDoc.SetField<ListController<NumberController>>(KeyStore.BehaviorIndicesKey, new[]
                     {
                         xTriggeringEvent.SelectedIndex,
                         triggerModifier.SelectedIndex,
                         xBehavior.SelectedIndex,
                         xBehaviorModifiers.SelectedIndex
-                    }));
+                    }, true);
+
+                    ViewModel.Behaviors.Add(behaviorDoc);
 
                     XTitleBox.Text = "";
                     XScript.Text = "";
@@ -131,12 +137,6 @@ namespace Dash.Popups
 
                 outOps.Add(new TextController($"function(doc) {{\n\t{script}\n}}"));
             }
-
-            //if (_oldViewModel == ViewModel)
-            //{
-            //    _tcs.SetResult(null);
-            //    return;
-            //}
 
             _tcs.SetResult(outOps);
         }

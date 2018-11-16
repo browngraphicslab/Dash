@@ -1,5 +1,6 @@
 ﻿using Windows.UI;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 namespace Dash.Popups
 {
@@ -15,22 +16,17 @@ namespace Dash.Popups
 
         public string Script { get; set; }
 
-        /*
-         * 0 = Triggering event
-         * 1 = Trigger modifiers
-         * 2 = Behavior
-         * 3 = Behavior modifiers
-         */
-        public int[] Indices;
+        public DocumentController BehaviorDoc { get; set; }
 
-        public DocumentBehavior(string trigger, string behavior, ComboBox triggerModifier, string title, string script, int[] indices)
+        public DocumentBehavior(DocumentController behaviorDoc)
         {
-            Trigger = trigger;
-            Behavior = behavior;
-            TriggerModifier = triggerModifier;
-            Title = title;
-            Script = script;
-            Indices = indices;
+            var binding = new FieldBinding<TextController>()
+            {
+                Document = behaviorDoc,
+                Mode = BindingMode.OneWay,
+                Key = KeyStore.ScriptTextKey,
+            };
+            
         }
     }
 }
