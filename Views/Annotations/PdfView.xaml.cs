@@ -64,10 +64,58 @@ namespace Dash
         //This makes the assumption that both pdf views are always in the same annotation mode
         public AnnotationType                     CurrentAnnotationType => _botPdf.AnnotationOverlay.CurrentAnnotationType;
 
+        private CollectionView xCollectionView;
+        private void viewTypeChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            setupCollectionViewType();
+        }
+
+        private void setupCollectionViewType()
+        {
+            if (xCollectionView != null)
+            {
+                if (DataDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionViewType.Freeform.ToString())
+                {
+                    xCollectionView.Visibility = Visibility.Collapsed;
+                    _topPdf.xCollectionView.Visibility = Visibility.Visible;
+                    _botPdf.xCollectionView.Visibility = Visibility.Visible;
+
+                }
+                else
+                {
+                    _topPdf.xCollectionView.Visibility = Visibility.Collapsed;
+                    _botPdf.xCollectionView.Visibility = Visibility.Collapsed;
+                    xCollectionView.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
         public PdfView()
         {
             InitializeComponent();
-            Loaded += (s, e) =>  LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
+            _topPdf.Visibility = Visibility.Collapsed;
+            Loaded += (s, e) =>
+            {
+                if (xCollectionView == null)
+                {
+                    var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
+                    cvm.ViewType = CollectionViewType.Stacking;
+                    xCollectionView = new CollectionView();
+                    setupCollectionViewType();
+                    DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
+                    xCollectionView.DataContext = cvm;
+                    Grid.SetColumn(xCollectionView, 2);
+                    Grid.SetRow(xCollectionView, 0);
+                    Grid.SetRowSpan(xCollectionView, 3);
+                    xPdfContainer.Children.Add(xCollectionView);
+                }
+                LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
+            };
+            Unloaded += (s, e) =>
+            {
+                xPdfContainer.Children.Remove(xCollectionView);
+                xCollectionView = null;
+            };
             SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
@@ -156,10 +204,18 @@ namespace Dash
                 }
             }
             var target = linkDoc.GetLinkedDocument(direction); 
-            var tgt = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument())).FirstOrDefault();
-            if (tgt != null)
+            var tgts = xCollectionView.Visibility == Visibility.Visible  ?
+                xCollectionView.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument()))
+                : activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument()));
+            if (tgts.Count() > 0)
             {
-                tgt.ViewModel.LayoutDocument.ToggleHidden();
+                tgts.ToList().ForEach((tgt) =>
+                {
+                    if (tgt.ViewModel.LayoutDocument.GetHidden())
+                        tgt.ViewModel.LayoutDocument.ToggleHidden();
+                    SelectionManager.Deselect(this.GetFirstAncestorOfType<DocumentView>());
+                    SelectionManager.Select(tgt, true);
+                });
                 return LinkHandledResult.HandledClose;
             }
             return LinkHandledResult.Unhandled;
@@ -347,6 +403,13 @@ namespace Dash
                 {
                     xFirstPanelRow.Height = activeView == null ? new GridLength(0, GridUnitType.Star) : xFirstPanelRow.Height;
                 }
+                if (xFirstPanelRow.Height.Value != 0)
+                {
+                    _topPdf.Visibility = Visibility.Visible;
+                } else
+                {
+                    _topPdf.Visibility = Visibility.Collapsed;
+                }
                 // bcz: Ugh need to update layout because the Scroll viewer may not end up in the right place if its viewport size has just changed
                 (activeView ?? _botPdf).UpdateLayout();
                 (firstSplit == 0 ? activeView ?? _botPdf : _botPdf).ScrollViewer.ChangeView(null, (firstSplit == 0 ? relativeOffsets.First() : firstSplit) - ((ActualHeight - (xFirstPanelRow.Height.Value/(xFirstPanelRow.Height.Value + xSecondPanelRow.Height.Value))*ActualHeight) / 2), null);
@@ -370,6 +433,7 @@ namespace Dash
 
         private void XPdfDivider_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            _topPdf.Visibility = Visibility.Visible;
             e.Handled = true;
         }
 
@@ -378,7 +442,11 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
+        private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _topPdf.Visibility = Visibility.Collapsed;
+            xFirstPanelRow.Height = new GridLength(0);
+        }
         
         private void xSiderbarSplitter_Tapped(object sender, TappedRoutedEventArgs e)
         {
