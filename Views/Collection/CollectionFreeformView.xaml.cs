@@ -322,7 +322,6 @@ namespace Dash
                         </Grid>",
                         true);
                     var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-                    var caption = new RichTextNote(docController.Title).Document;
                     docController.SetWidth(docController.GetWidth());
                     docController.SetHeight(double.NaN);
                     docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);

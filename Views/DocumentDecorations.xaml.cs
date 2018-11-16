@@ -109,7 +109,7 @@ namespace Dash
 
         public List<DocumentView> SelectedDocs
         {
-            get => _selectedDocs;
+            get => _selectedDocs.Where((s) => s.IsInVisualTree()).ToList();
             set
             {
                 foreach (var docView in _selectedDocs)

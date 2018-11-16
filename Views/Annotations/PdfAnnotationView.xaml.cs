@@ -27,6 +27,8 @@ using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -397,7 +399,10 @@ namespace Dash
                 }
             }
         }
-
+        private void viewTypeChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
+        }
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
@@ -407,15 +412,52 @@ namespace Dash
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
                 xPdfGrid.Children.Add(AnnotationOverlay);
+                xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
             var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
             cvm.DocumentAdded += Cvm_DocumentAdded;
             xCollectionView.DataContext = cvm;
             (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
+            DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
             if (Pages.PageSizes.Count != 0)
+            {
                 Pages.Initialize();
+            }
         }
+
+        public void Bind(Binding pdfColBinding, Binding pdfNotesColBinding)
+        {
+            Pages.Initialize();
+            BindingOperations.SetBinding(xPdfCol, ColumnDefinition.WidthProperty, pdfColBinding);
+            BindingOperations.SetBinding(xPdfNotesCol, ColumnDefinition.WidthProperty, pdfNotesColBinding);
+            var xfBinding = new Binding()
+            {
+                Source = xPdfCol,
+                Path = new PropertyPath("Width"),
+                Converter = new WidthToScaleXFConverter(PdfMaxWidth)
+            };
+            xCollectionView.SetBinding(RenderTransformProperty, xfBinding);
+        }
+
+        public class WidthToScaleXFConverter : SafeDataToXamlConverter<GridLength, Transform>
+        {
+            private double _pdfMaxWidth;
+            public WidthToScaleXFConverter(double pdfMaxWidth)
+            {
+                _pdfMaxWidth = pdfMaxWidth;
+            }
+            public override Transform ConvertDataToXaml(GridLength xaml, object parameter = null)
+            {
+                var ratio = xaml.Value / _pdfMaxWidth;
+                return new ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
+            }
+            public override GridLength ConvertXamlToData(Transform data, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
 
         private void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
         {
@@ -442,8 +484,6 @@ namespace Dash
             if (PdfMaxWidth > 0)
             {
                 Pages.ScrollViewerContentWidth = xPdfCol.ActualWidth;
-                var ratio = xPdfCol.ActualWidth / PdfMaxWidth;
-                xCollectionView.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
             }
         }
 
@@ -504,7 +544,8 @@ namespace Dash
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, e.GetCurrentPoint(_annotationOverlay).Position);
+                var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
+                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             } else if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)

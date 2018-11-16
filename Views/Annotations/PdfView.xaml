@@ -18,7 +18,7 @@
             <RowDefinition x:Name="xSecondPanelRow" Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="xPdfCol"/>
+            <ColumnDefinition Width="*" x:Name="xPdfCol"/>
             <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
         </Grid.ColumnDefinitions>
@@ -30,9 +30,6 @@
         <Grid x:Name="xTopPdfGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" >
             <local:PdfAnnotationView x:Name="_topPdf"/>
         </Grid>
-
-        <Grid Column="0" SizeChanged="xPdfColSizeChanged"></Grid>
-
         <controls:GridSplitter x:Name="xSidebarSplitter" Grid.Column="1" Tapped="xSiderbarSplitter_Tapped"  Width="0" MinWidth="0" Grid.Row="0" Grid.RowSpan="3"
                                ManipulationStarted="xSiderbarSplitter_OnManipulationStarted" ManipulationDelta="xSiderbarSplitter_OnManipulationDelta" ManipulationCompleted="xSiderbarSplitter_OnManipulationCompleted" PointerPressed="xSiderbarSplitter_OnPointerPressed" >
             <controls:GridSplitter.Element>
