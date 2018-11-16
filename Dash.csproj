@@ -278,6 +278,9 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\AnnotationOverlayEmbeddings.xaml.cs">
+      <DependentUpon>AnnotationOverlayEmbeddings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
       <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
     </Compile>
@@ -1145,6 +1148,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\AnnotationOverlayEmbeddings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

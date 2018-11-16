@@ -536,7 +536,7 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument()
         {
-            if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
+            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() != null)
             {
                 // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
                 //      but it would still be in the list of pinned annotations.  That means the document would reappear

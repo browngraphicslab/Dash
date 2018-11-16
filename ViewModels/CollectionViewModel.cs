@@ -753,7 +753,7 @@ namespace Dash
 
                         if (dragDocModel.DraggedDocCollectionViews[i] == null)
                         {
-                            var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
+                            var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlayEmbeddings>();
                             overlay?.EmbeddedDocsList.Remove(dragDocModel.DraggedDocuments[i]);
                         }
                         else

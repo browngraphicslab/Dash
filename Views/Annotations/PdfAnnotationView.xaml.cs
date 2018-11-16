@@ -412,6 +412,7 @@ namespace Dash
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
                 xPdfGrid.Children.Add(AnnotationOverlay);
+                xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
             var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
@@ -420,7 +421,9 @@ namespace Dash
             (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
             DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
             if (Pages.PageSizes.Count != 0)
+            {
                 Pages.Initialize();
+            }
         }
 
         public void Bind(Binding pdfColBinding, Binding pdfNotesColBinding)
@@ -437,7 +440,7 @@ namespace Dash
             xCollectionView.SetBinding(RenderTransformProperty, xfBinding);
         }
 
-         public class WidthToScaleXFConverter : SafeDataToXamlConverter<GridLength, Transform>
+        public class WidthToScaleXFConverter : SafeDataToXamlConverter<GridLength, Transform>
         {
             private double _pdfMaxWidth;
             public WidthToScaleXFConverter(double pdfMaxWidth)
@@ -541,7 +544,8 @@ namespace Dash
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, e.GetCurrentPoint(_annotationOverlay).Position);
+                var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
+                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             } else if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)

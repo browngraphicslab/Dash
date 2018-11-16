@@ -57,9 +57,11 @@
                 </Grid.ColumnDefinitions>
                 <!--This Grid will have the width and height of the pdf that is being displayed-->
                 <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
-                    <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                        <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+                    <Grid x:Name="xPdfGridWithEmbeddings" CompositeMode="SourceOver">
+                        <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                            <!-- ItemsControl that stores the page images -->
+                            <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+                        </Grid>
                     </Grid>
                 </Viewbox>
 
