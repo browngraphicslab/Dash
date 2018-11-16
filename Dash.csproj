@@ -235,7 +235,11 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TraveloguePopup.xaml.cs">
+      <DependentUpon>TraveloguePopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Rest\Endpoints\LocalPDFEndpoint.cs" />
+    <Compile Include="Util\EventManager.cs" />
     <Compile Include="Util\KMeansCluster.cs" />
     <Compile Include="Popups\TextInputPopup.xaml.cs">
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
@@ -1104,6 +1108,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\TextInputPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TraveloguePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

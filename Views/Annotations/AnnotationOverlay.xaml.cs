@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -19,6 +20,7 @@ using Windows.UI.Xaml.Shapes;
 using NewControls.Geometry;
 using static Dash.DataTransferTypeInfo;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -146,7 +148,7 @@ namespace Dash
         /// Creates a region document from a preview, or returns an already selected region
         /// </summary>
         /// <returns></returns>
-        public DocumentController CreateRegionFromPreviewOrSelection()
+        public async Task<DocumentController> CreateRegionFromPreviewOrSelection()
         {
             var annotation = SelectedRegion?.RegionDocument;
             if (annotation == null &&
@@ -155,7 +157,19 @@ namespace Dash
                 if (CurrentAnchorableAnnotations.Any() &&
                     !CurrentAnchorableAnnotations.OfType<RegionAnnotation>().Any(i => i?.Width < 10 && i?.Height < 10))
                 {
-                    annotation = GetRegion(CurrentAnnotationType);
+                    var rtb = new RenderTargetBitmap();
+                    var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
+                    await rtb.RenderAsync(pdfview, (int) pdfview.ActualWidth, (int) pdfview.ActualHeight);
+                    
+                    var buf = (await rtb.GetPixelsAsync()).ToArray();
+                    var bitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
+                    bitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
+
+                    var util = new ImageToDashUtil();
+                    var imgnote = await util.ParseBitmapAsync(bitmap);
+
+                    annotation = imgnote;
+                    //annotation = GetRegion(CurrentAnnotationType);
 
                     var subRegionsOffsets = CurrentAnchorableAnnotations.Select((item) => item.AddToRegion(annotation)).ToList();
                     subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
@@ -164,12 +178,22 @@ namespace Dash
                     annotation.SetRegionDefinition(MainDocument);
                     annotation.SetAnnotationType(CurrentAnnotationType);
                     RegionDocsList.Add(annotation); // this actually adds the region to the parent document's Regions list
+
+                    var text = "Created an annotation using pdf: " + pdfview.ViewModel.DocumentController.Title;
+                    var eventDoc = new RichTextNote(text).Document;
+                    var tags = "pdf, annotation, " + pdfview.ViewModel.DocumentController.Title;
+                    eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+                    eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                        pdfview.ParentCollection.ViewModel.ContainerDocument, true);
+                    eventDoc.Link(annotation, LinkBehavior.Annotate);
+                    EventManager.EventOccured(eventDoc);
                 }
                 ClearSelection(true);
             }
 
             return annotation;
         }
+
         public DocumentController CreatePinRegion(Point point, DocumentController linkedDoc = null)
         {
             var annotation = GetRegion(AnnotationType.Pin);
@@ -842,7 +866,7 @@ namespace Dash
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
-                var val = this.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(dest.GetDataDocument())).FirstOrDefault();
+                var val = this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DataDocument.Equals(dest.GetDataDocument()));
                 if (val != null)
                 {
                     val.ViewModel.LayoutDocument.ToggleHidden();

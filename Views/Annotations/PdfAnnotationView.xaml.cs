@@ -188,9 +188,9 @@ namespace Dash
         /// </summary>
         /// <param name="docViewPoint"></param>
         /// <returns></returns>
-        public DocumentController GetRegionDocument(Point? docViewPoint = null)
+        public async Task<DocumentController> GetRegionDocument(Point? docViewPoint = null)
         {
-            var regionDoc = AnnotationOverlay.CreateRegionFromPreviewOrSelection();
+            var regionDoc = await AnnotationOverlay.CreateRegionFromPreviewOrSelection();
             if (regionDoc == null)
             {
                 if (docViewPoint != null)

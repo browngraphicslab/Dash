@@ -181,9 +181,9 @@ namespace Dash
         /// </summary>
         /// <param name="docViewPoint"></param>
         /// <returns></returns>
-        public DocumentController GetRegionDocument(Point? docViewPoint = null)
+        public async Task<DocumentController> GetRegionDocument(Point? docViewPoint = null)
         {
-            return _botPdf.GetRegionDocument(docViewPoint);
+            return await _botPdf.GetRegionDocument(docViewPoint);
         }
 
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
 
 // ReSharper disable once CheckNamespace
@@ -13,7 +14,7 @@ namespace Dash {
 
         public DragFieldModel(params DocumentFieldReference[] draggedRefs) => DraggedRefs = draggedRefs.ToList();
 
-        public override List<DocumentController> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target)
+        public override Task<List<DocumentController>> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target)
         {
             var dropDocuments = DraggedRefs.Select(RefToDBox).ToList();
 
@@ -33,7 +34,7 @@ namespace Dash {
                 return dbox;
             }
 
-            return dropDocuments;
+            return Task.FromResult(dropDocuments);
         }
     }
 }

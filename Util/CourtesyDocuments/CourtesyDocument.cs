@@ -194,7 +194,9 @@ namespace Dash
         Annotate,
         Dock,
         Float,
-        Overlay
+        Overlay,
+        ShowRegion,
+        ShowDocument
     }
 
     public static class CourtesyDocumentExtensions

@@ -1280,7 +1280,7 @@ namespace Dash
                                     //make this rich text an annotation for activated  doc
                                     if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
                                     {
-                                        var region = KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
+                                        var region = await KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
                                             postitNote.GetPosition());
 
                                         //link region to this text 
@@ -1312,7 +1312,7 @@ namespace Dash
         }
 
 
-        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
+        public async Task LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
         {
             if (!loadingPermanentTextbox)
             {
@@ -1346,7 +1346,7 @@ namespace Dash
                                 if (KeyStore.RegionCreator.TryGetValue(activated.ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
                                 {
                                     //make this rich text an annotation for activated  doc
-                                    var region = func( activated,
+                                    var region = await func( activated,
                                                        Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, activated));
                                     //link region to this text  
                                     region.Link(postitNote, LinkBehavior.Annotate);

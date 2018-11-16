@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
@@ -154,6 +155,9 @@ namespace Dash
         public static KeyController RemoveOperatorsKey                   = KeyController.Get("_RemoveOperators");
         public static KeyController XamlKey                              = KeyController.Get("Xaml");
         public static KeyController DefaultTextboxXamlKey                = KeyController.Get("DefaultTextboxXamlKey");
+        public static KeyController EventManagerKey                      = KeyController.Get("_EventManagerKey");
+        public static KeyController EventCollectionKey                   = KeyController.Get("EventCollectionKey");
+        public static KeyController EventTagsKey                         = KeyController.Get("EventTagsKey");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
@@ -162,7 +166,7 @@ namespace Dash
 		}
 
 		public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
-		public delegate DocumentController MakeRegionFunc(DocumentView view, Point? point = null);
+		public delegate Task<DocumentController> MakeRegionFunc(DocumentView view, Point? point = null);
 		public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
 		public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -37,9 +38,9 @@ namespace Dash
             SetupPdfBinding(pdfView, docController, key, context);
             return pdfView;
         }
-        public static DocumentController MakeRegionDocument(DocumentView documentView, Point? point = null)
+        public static async Task<DocumentController> MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
-            return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
+            return await documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
 
         public static void SetupPdfBinding(PdfView pdf, DocumentController controller, KeyController key, Context context)

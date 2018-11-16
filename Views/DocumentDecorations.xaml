@@ -161,6 +161,11 @@
                     <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>
                 </ComboBox>
+                <TextBlock>Link To:</TextBlock>
+                <ComboBox x:Name="xLinkToBox" SelectionChanged="XLinkToBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10" DropDownOpened="XLinkToBox_OnDropDownOpened">
+                    <ComboBoxItem x:Name="xToRegion">Region</ComboBoxItem>
+                    <ComboBoxItem x:Name="xToDocument">Document</ComboBoxItem>
+                </ComboBox>
 
 
                 <!--CONTEXT-->
