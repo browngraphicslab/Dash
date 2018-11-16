@@ -80,7 +80,7 @@
             </ListView.ItemTemplate>
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value ="Left" />
+                    <Setter Property="HorizontalContentAlignment" Value ="Stretch" />
                     <Setter Property="VerticalContentAlignment" Value = "Top" />
                     <Setter Property="MinHeight" Value ="5" />
                     <Setter Property="Padding" Value ="0" />
