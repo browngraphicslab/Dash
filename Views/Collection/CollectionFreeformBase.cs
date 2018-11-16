@@ -1222,13 +1222,12 @@ namespace Dash
             var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
             using (UndoManager.GetBatchHandle())
             {
-                if (text == null && Clipboard.GetContent()?.HasClipboardData() == true)
+                if (text == null && Clipboard.GetContent()?.HasClipboardData() == true) // clipboard will have data if from outside of Dash, otherwise fall through to paste from within dash
                 {
                     foreach (var doc in Clipboard.GetContent().GetClipboardData().GetDocuments(where))
                     {
                         ViewModel.AddDocument(doc);
                     }
-                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
@@ -1237,6 +1236,10 @@ namespace Dash
                     {
                         LoadNewActiveTextBox(text, where);
                     }
+                }
+                if (text == null)
+                {
+                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
             }
         }
