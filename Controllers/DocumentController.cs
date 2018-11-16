@@ -1108,6 +1108,7 @@ namespace Dash
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
+            (sender as FrameworkElement).Loaded -= Grid_Loaded;
             var descendants = (sender as FrameworkElement).GetDescendants().ToList();
             var textFields = descendants.OfType<TextBlock>().Where((ggg) => ggg.Name.StartsWith("xTextField"));
             foreach (var fieldReplacement in textFields)
@@ -1170,7 +1171,8 @@ namespace Dash
                     Mode = BindingMode.OneWay,
                     Document = GetDataDocument(),
                     Key = fieldKey,
-                    Tag="bind ItemSource in DocumentController"
+                    Tag="bind ItemSource in DocumentController",
+                    CanBeNull=true
                 };
                 fieldReplacement.AddFieldBinding(ListView.ItemsSourceProperty, binding);
             }

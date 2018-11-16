@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers.Operators;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -31,27 +32,31 @@ namespace Dash
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
-        private Size  _lastSize = new Size();
-        private string _lastSizeRTFText = "";
-        private double _lastSizeRTFWidth = 0;
+        private Size                      _lastSize = new Size();
+        private string                    _lastSizeRTFText = "";
+        private double                    _lastSizeRTFWidth = 0;
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (ignore)
+                return _lastSize;
             if (!double.IsNaN(ViewModel.Width))
             {
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
                 return base.MeasureOverride(availableSize);
             }
 
-            var gtet = getRtfText();
-            if (gtet != _lastSizeRTFText || _lastSize == new Size() || _lastSizeRTFWidth != availableSize.Width)
+            var text = getRtfText();
+            var readable = getReadableText();
+            if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
+                Document.GetText(TextGetOptions.FormatRtf, out text);
+            if (text != _lastSizeRTFText || _lastSize == new Size() || _lastSizeRTFWidth != availableSize.Width)
             {
                 var rtb = MainPage.Instance.RTBHackBox;
                 rtb.Width = double.IsInfinity(availableSize.Width) ? double.NaN : availableSize.Width;
-                rtb.Document.SetText(TextSetOptions.FormatRtf, gtet);
+                rtb.Document.SetText(TextSetOptions.FormatRtf, text);
                 rtb.Measure(availableSize);
-                _lastSize = rtb.DesiredSize;
-                _lastSizeRTFText = gtet;
+                _lastSizeRTFText = text;
                 _lastSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeRTFWidth = availableSize.Width;
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
@@ -59,11 +64,10 @@ namespace Dash
             return _lastSize;
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
+         ~RichEditView()
         {
-            return base.ArrangeOverride(finalSize);
+            // Debug.WriteLine("Disposing RichEditView");
         }
-
         public RichEditView()
         {
             AllowDrop = true;
@@ -613,91 +617,14 @@ namespace Dash
                     e.Handled = true;
                     return;
                 }
-                var xamlReplies =
-        @"<Grid
-            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-            xmlns:dash=""using:Dash""
-            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
-            Background=""Beige"">
-            <Grid.RowDefinitions>
-                <RowDefinition Height=""Auto""></RowDefinition>
-                <RowDefinition Height= ""Auto""></RowDefinition>
-            </Grid.RowDefinitions>
-            <dash:RichEditView Margin=""6 0 0 0"" x:Name=""xRichTextFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" VerticalAlignment =""Top"" />
-            <ToggleButton x:Name=""cb"" Grid.Column=""1"" Width =""18"" Height =""16"" IsChecked =""true"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" >
-                <ToggleButton.Template>
-                    <ControlTemplate TargetType=""ToggleButton"">
-                        <Grid x:Name=""RootGrid"">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name=""CommonStates"">
-                                    <VisualState x:Name=""PointerOver"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""Pressed"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""Normal"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""Checked"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""CheckedPressed"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""CheckedPointerOver"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                            <Viewbox>
-                                <TextBlock Text=""Hello"" FontWeight=""Bold"" FontSize=""12"" x:Name=""txt"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch""/>
-                            </Viewbox>
-                        </Grid>
-                    </ControlTemplate>
-                </ToggleButton.Template>
-            </ToggleButton>
-            <ListView Margin=""8 0 0 0""  Grid.Row=""1"" Visibility=""{Binding ElementName=cb,Path=IsChecked,Mode=OneWay}"" Padding=""0"" x:Name=""xDocumentListReplies"">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <dash:DocumentView />
-                    </DataTemplate>
-                </ListView.ItemTemplate><ListView.ItemContainerStyle>
-                    <Style TargetType=""ListViewItem"">
-                        <Setter Property=""HorizontalContentAlignment"" Value =""Left"" />
-                        <Setter Property=""VerticalContentAlignment"" Value = ""Top"" />
-                        <Setter Property=""MinHeight"" Value =""5"" />
-                        <Setter Property=""Padding"" Value =""0"" />
-                        <Setter Property=""Margin"" Value =""0"" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
-        </Grid>";
+                var xamlReplies = @"<Grid
+                                    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                    xmlns:dash=""using:Dash""
+                                    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+                                    Background=""Beige"">
+                                    <dash:HierarchicalText />
+                                </Grid>";
                 Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 Document.Selection.Delete(TextRangeUnit.Character, 1);
                 MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5)));
@@ -869,8 +796,10 @@ namespace Dash
                     align = origAlign;
                 }
             }
+            var didSomething = false;
             if (hashcount > 0 || extracount > 0)
             {
+                ignore = true;
                 Document.Selection.SetRange(Document.Selection.StartPosition,
                                                          Document.Selection.StartPosition + hashcount + extracount);
                 if (Document.Selection.StartPosition == 0)
@@ -880,11 +809,14 @@ namespace Dash
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
                 Document.Selection.ParagraphFormat.Alignment = align;
                 Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
+                didSomething = true;
             }
             Document.Selection.SetRange(s1, s2);
             Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
             Document.Selection.CharacterFormat.Size = origFormat.Size;
+            ignore = false;
         }
+        bool ignore = false;
 
         private async void Clipboard_ContentChanged(object sender, object e)
         {
