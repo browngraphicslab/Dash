@@ -35,10 +35,11 @@ namespace Dash
         private Size                      _lastSize = new Size();
         private string                    _lastSizeRTFText = "";
         private double                    _lastSizeRTFWidth = 0;
+        private bool                      _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (ignore)
+            if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastSize;
             if (!double.IsNaN(ViewModel.Width))
             {
@@ -796,10 +797,9 @@ namespace Dash
                     align = origAlign;
                 }
             }
-            var didSomething = false;
             if (hashcount > 0 || extracount > 0)
             {
-                ignore = true;
+                _hackToIgnoreMeasuringWhenProcessingMarkdown = true;
                 Document.Selection.SetRange(Document.Selection.StartPosition,
                                                          Document.Selection.StartPosition + hashcount + extracount);
                 if (Document.Selection.StartPosition == 0)
@@ -809,14 +809,12 @@ namespace Dash
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
                 Document.Selection.ParagraphFormat.Alignment = align;
                 Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
-                didSomething = true;
             }
             Document.Selection.SetRange(s1, s2);
             Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
             Document.Selection.CharacterFormat.Size = origFormat.Size;
-            ignore = false;
+            _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
         }
-        bool ignore = false;
 
         private async void Clipboard_ContentChanged(object sender, object e)
         {
