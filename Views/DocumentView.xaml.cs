@@ -250,7 +250,7 @@ namespace Dash
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
             Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
-            DoubleTapped += (sender, args) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
+            DoubleTapped += async (sender, args) => await ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
