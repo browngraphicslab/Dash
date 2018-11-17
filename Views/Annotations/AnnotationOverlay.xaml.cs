@@ -953,7 +953,7 @@ namespace Dash
         }
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (XPreviewRect.GetBoundingRect(this).Contains(e.GetCurrentPoint(this).Position))
+            if (XPreviewRect.IsInVisualTree() && XPreviewRect.GetBoundingRect(this).Contains(e.GetCurrentPoint(this).Position))
             {
                 e.Handled = true;
             }

@@ -533,8 +533,8 @@ namespace Dash
                         {
                             if (shouldAddNewSection != null)
                             {
-                                shouldAddNewSection.Bounds =
-                                    RectHelper.Union(section.Bounds, shouldAddNewSection.Bounds);
+                                shouldAddNewSection.Bounds = 
+                                    Union(section.Bounds, shouldAddNewSection.Bounds);
                                 shouldAddNewSection.SectionElements.AddRange(section.SectionElements);
                                 sectionsToRemove.Add(section);
                                 continue;
@@ -542,7 +542,7 @@ namespace Dash
                             section.SectionElements.Add(elem);
                             if ((elem.Contents as string).Any() && !(char.IsWhiteSpace((elem.Contents as string)[0]) || (elem.Contents as string)[0] == 0xa0))
                             {
-                                section.Bounds = RectHelper.Union(section.Bounds, elem.Bounds);
+                                section.Bounds = Union(section.Bounds, elem.Bounds);
                                 //section.Bounds.Union(elem.Bounds);
                                 shouldAddNewSection = section;
                             }
@@ -567,6 +567,15 @@ namespace Dash
             }
 
             return sections;
+        }
+
+        private Rect Union(Rect r1, Rect r2)
+        {
+            double left = Math.Min(r1.Left, r2.Left);
+            double right = Math.Max(r1.Right, r2.Right);
+            double top = Math.Min(r1.Top, r2.Top);
+            double bottom = Math.Max(r1.Bottom, r2.Bottom);
+            return new Rect(left, top, right - left, bottom - top);
         }
 
         private List<PDFSection> SplitIntoVagueSections(double wordSpacing, double lineSpacing, List<PDFSection> sections)
@@ -599,7 +608,7 @@ namespace Dash
                     if ((validLeft && validRight))
                     {
                         vagueSection.SectionElements.AddRange(sectionWidth.section.SectionElements);
-                        vagueSection.Bounds = RectHelper.Union(vagueSection.Bounds, sectionWidth.section.Bounds);
+                        vagueSection.Bounds = Union(vagueSection.Bounds, sectionWidth.section.Bounds);
                         shouldAddNewSection = false;
                     }
                 }

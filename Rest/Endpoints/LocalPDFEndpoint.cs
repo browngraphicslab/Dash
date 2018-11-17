@@ -20,6 +20,7 @@ namespace Dash
         private readonly object _transactionMutex = new object();
 
         private const string FileName = "pdf.db";
+        private Dictionary<Uri, (List<SelectableElement>, List<int>)> _cachedElements = new Dictionary<Uri, (List<SelectableElement>, List<int>)>();
 
         public LocalPDFEndpoint()
         {
@@ -32,7 +33,6 @@ namespace Dash
             // instantiate the connection to the database and open it
             _db = new SqliteConnection(connectionStringBuilder.ConnectionString);
             _db.Open();
-;
         }
 
         private bool SafeExecuteMutateQuery(IDbCommand command, string source)
@@ -56,6 +56,8 @@ namespace Dash
         {
             lock (_transactionMutex)
             {
+                _cachedElements[pdf] = (selectableElements, pages);
+                Debug.WriteLine(_cachedElements.Keys);
                 using (var transaction = _db.BeginTransaction())
                 {
 
@@ -156,10 +158,15 @@ namespace Dash
             }
         }
 
-        public Task<(IEnumerable<SelectableElement>, List<int>)> GetSelectableElements(Uri pdfUri, int page = -1)
+        public Task<(List<SelectableElement>, List<int>)> GetSelectableElements(Uri pdfUri, int page = -1)
         {
             lock(_transactionMutex)
             {
+                if (_cachedElements.ContainsKey(pdfUri))
+                {
+                    return Task.FromResult(_cachedElements[pdfUri]);
+                }
+
                 var getDocCommand = new SqliteCommand
                 {
                     CommandText = @"SELECT * FROM '" + pdfUri.Segments.Last() + "';",
@@ -175,14 +182,15 @@ namespace Dash
 
                 if (selectableElements == null)
                 {
-                    return Task.FromException<(IEnumerable<SelectableElement>, List<int>)>(new InvalidOperationException());
+                    return Task.FromException<(List<SelectableElement>, List<int>)>(new InvalidOperationException());
                 }
 
+                _cachedElements.Add(pdfUri, (selectableElements, pages));
                 return Task.FromResult((selectableElements, pages));
             }
         }
 
-        private (IEnumerable<SelectableElement>, List<int>) SafeExecuteAccessQuery(IDbCommand command, string source)
+        private (List<SelectableElement>, List<int>) SafeExecuteAccessQuery(IDbCommand command, string source)
         {
             //Try to perform the access/reading. Catch any resulting SQL errors
             try
@@ -197,7 +205,7 @@ namespace Dash
             }
         }
 
-        private static (IEnumerable<SelectableElement>, List<int>) GetSelectables(IDataReader reader)
+        private static (List<SelectableElement>, List<int>) GetSelectables(IDataReader reader)
         {
             var selectables = new List<SelectableElement>();
             var pages = new List<int>();

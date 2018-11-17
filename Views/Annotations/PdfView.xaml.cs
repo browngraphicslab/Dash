@@ -345,46 +345,52 @@ namespace Dash
             });
 
             _topPdf.PDFdoc = _botPdf.PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
-            bool hasPdf;
-            try
+            var uri = PdfUri;
+            var newstrategy = strategy;
+            await Task.Run(async () =>
             {
-                hasPdf = await _pdfEndpoint.ContainsPDF(PdfUri);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                hasPdf = false;
-            }
-
-            if (hasPdf)
-            {
+                bool hasPdf;
                 try
                 {
-                    var (elems, pages) = await _pdfEndpoint.GetSelectableElements(PdfUri);
-                    _botPdf.AnnotationOverlay.TextSelectableElements =
-                        new List<SelectableElement>(elems);
-                    _botPdf.AnnotationOverlay.PageEndIndices = pages;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
-            else
-            {
-                try
-                {
-                    var (selectableElements, text, pages, vagueSections) = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-                    _botPdf.AnnotationOverlay.TextSelectableElements =
-                        new List<SelectableElement>(selectableElements);
-                    _botPdf.AnnotationOverlay.PageEndIndices = pages;
-                    await _pdfEndpoint.AddPdf(PdfUri, pages, selectableElements);
+                    hasPdf = await _pdfEndpoint.ContainsPDF(uri);
                 }
                 catch (InvalidOperationException ex)
                 {
                     Console.WriteLine(ex.ToString());
+                    hasPdf = false;
                 }
-            }
+
+                if (hasPdf)
+                {
+                    try
+                    {
+                        var (elems, pages) = await _pdfEndpoint.GetSelectableElements(uri);
+                        _botPdf.AnnotationOverlay.TextSelectableElements =
+                            new List<SelectableElement>(elems);
+                        _botPdf.AnnotationOverlay.PageEndIndices = pages;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        var (selectableElements, text, pages, vagueSections) =
+                            newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                        _botPdf.AnnotationOverlay.TextSelectableElements =
+                            new List<SelectableElement>(selectableElements);
+                        _botPdf.AnnotationOverlay.PageEndIndices = pages;
+                        await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+                }
+            });
 
             //try
             //{
