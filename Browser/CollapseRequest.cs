@@ -32,24 +32,20 @@ namespace Dash
                         var uri    = new Uri(url);
                         var dockedPdfView = Recent.ContainsKey(uri) ? Recent[uri] : null;
                         if (dockedPdfView == null)
-                        { 
-                            var note = new RichTextNote("PDF HEADER");
-                            note.Document.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Center);
-                            note.Document.SetHeight(45);
-                            var pdfLayout = await new PdfToDashUtil().UriToDoc(uri);
-                            pdfLayout.SetHeight(MainPage.Instance.ActualHeight - 45);
-                            pdfLayout.SetWidth(double.NaN);
-                            pdfLayout.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
-                            pdfLayout.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Top);
-                            var docs = new List<DocumentController>(new DocumentController[] { note.Document, pdfLayout });
-                            dockedPdfView = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Stacking, double.NaN, double.NaN, docs).Document;
+                        {
+                            dockedPdfView = await new PdfToDashUtil().UriToDoc(uri);
                             Recent.Add(uri, dockedPdfView);
+                            MainPage.Instance.MiscellaneousFolder.GetDataDocument().AddToListField(KeyStore.DataKey, dockedPdfView);
                         }
-
-                        if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
-                            SplitFrame.ActiveFrame.Split(SplitDirection.Left, dockedPdfView, true);
-                        else LastFrame.OpenDocument(dockedPdfView);
-                        LastFrame = MainPage.Instance.MainSplitter.GetFrameWithDoc(Recent[uri], false);
+                        dockedPdfView.SetHeight(double.NaN);// MainPage.Instance.ActualHeight - 110);
+                        dockedPdfView.SetWidth(double.NaN);
+                        dockedPdfView.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
+                        dockedPdfView.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
+                        SplitFrame.ActiveFrame.OpenDocument(dockedPdfView);
+                        //if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
+                        //    SplitFrame.ActiveFrame.Split(SplitDirection.Left, dockedPdfView, true);
+                        //else 
+                        //LastFrame = MainPage.Instance.MainSplitter.GetFrameWithDoc(Recent[uri], false);
                     }
                     else
                     {

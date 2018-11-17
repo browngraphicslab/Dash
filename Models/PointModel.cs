@@ -12,13 +12,9 @@ namespace Dash
             Data = data;
         }
 
-        public PointModel():this(0,0)
+        public PointModel():this(new Point(0, 0))
         {
             
-        }
-
-        public PointModel(double x, double y) : this(new Point(x, y))
-        {
         }
 
         public Point Data;

@@ -43,21 +43,7 @@ namespace Dash.Views.TreeView
 
     public sealed partial class TreeViewNode : UserControl, INotifyPropertyChanged
     {
-        public DocumentViewModel ViewModel
-        {
-            get
-            {
-                //TODO DBUpdate: This shouldn't be necessary
-                try
-                {
-                    return DataContext as DocumentViewModel;
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-        }
+        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
         public TreeView TreeView => this.GetFirstAncestorOfType<TreeView>();
 

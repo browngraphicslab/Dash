@@ -35,21 +35,24 @@
     setTimeout(() => {
         Array.from(document.getElementsByTagName("table")).forEach(table => {
             console.log("Iterating...");
-            table.addEventListener("mousedown", (e) => {
-                console.log("Mousing...");
-            });
-            table.addEventListener("dragstart", (e) => {
-                console.log("drag starting...");
-                if (isEnabled) {
-                    e.stopPropagation();
-                    console.log("target=" + e.currentTarget);
-                    console.log("   " + JSON.stringify(tableToJson(e.currentTarget)));
-                    e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)));
-                    e.dataTransfer.setData("Tabledrop", JSON.stringify(tableToJson(e.currentTarget)));
-                }
-            }, true);
+            table.addEventListener("mousedown",
+                (e) => {
+                    console.log("Mousing...");
+                });
+            table.addEventListener("dragstart",
+                (e) => {
+                    console.log("drag starting...");
+                    if (isEnabled) {
+                        e.stopPropagation();
+                        console.log("target=" + e.currentTarget);
+                        console.log("   " + JSON.stringify(tableToJson(e.currentTarget)));
+                        e.dataTransfer.setData("text/plain", JSON.stringify(tableToJson(e.currentTarget)));
+                        e.dataTransfer.setData("Tabledrop", JSON.stringify(tableToJson(e.currentTarget)));
+                    }
+                },
+                true);
         });
-    }
+    });
 
     chrome.runtime.sendMessage({action: "requestStatus"});
 

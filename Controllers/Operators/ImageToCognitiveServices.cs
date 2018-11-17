@@ -46,7 +46,7 @@ namespace Dash.Controllers.Operators
         /// <param name="args"></param>
         /// <param name="scope"></param>
         /// <param name="state"></param>
-        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -58,22 +58,20 @@ namespace Dash.Controllers.Operators
                 AnalysisResult result = null;
                 try
                 {
-                    result = Task
-                        .Run(() => ComputerVision.UploadAndAnalyzeImage(controller.ImageFieldModel.Data.LocalPath))
-                        .Result;
+                    result = await ComputerVision.UploadAndAnalyzeImage(controller.ImageFieldModel.Data.LocalPath);
                 }
                 catch
                 {
-                    result = Task.Run(() => ComputerVision.AnalyzeUrl(controller.ImageFieldModel.Data.AbsoluteUri)).Result;
+                    result = await ComputerVision.AnalyzeUrl(controller.ImageFieldModel.Data.AbsoluteUri);
                 }
+
                 if (result == null)
-                    return Task.CompletedTask;
+                    return;
                 var allTags = result.Tags.Select(tag => tag.Name);
                 tags = allTags.Aggregate(tags, (current, tag) => current + tag + ", ");
             }
             tags = tags.TrimEnd(' ').TrimEnd(',');
             outputs[DescriptorKey] = new TextController(tags);
-            return Task.CompletedTask;
         }
 
         /// <summary>

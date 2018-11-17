@@ -14,25 +14,9 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override Task<FieldControllerBase> Execute(Scope scope)
+        public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            return null;
-            //if (_parameters == null) { return null; }
-            //var inputs = new List<FieldControllerBase>();
-            //foreach (var parameter in _parameters)
-            //{
-            //    inputs.Add(parameter.Value?.Execute(scope));
-            //}
-
-            //try
-            //{
-            //    var output = OperatorScript.Run(_opName, inputs, scope);
-            //    return output;
-            //}
-            //catch (Exception e)
-            //{
-            //    throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
-            //}
+            return Task.FromResult<(FieldControllerBase, ControlFlowFlag)>((null, ControlFlowFlag.Break));
         }
 
         public Op.Name GetOperatorName() => _opName;

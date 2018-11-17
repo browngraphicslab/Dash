@@ -75,7 +75,7 @@ namespace Dash
         /*
          * Gets the document which will be dropped based on the current state of the syste
          */
-        public override List<DocumentController> GetDropDocuments(Point? where, FrameworkElement target)
+        public override List<DocumentController> GetDropDocuments(Point? where, FrameworkElement target, bool dontMove = false)
         {
             // For each dragged document...
             var docs = new List<DocumentController>();
@@ -88,7 +88,7 @@ namespace Dash
                                   where.Value.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
             }
             // ...if CTRL pressed, create a key value pane
-            if (MainPage.Instance.IsCtrlPressed())
+            if ( MainPage.Instance.IsCtrlPressed())
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
@@ -98,10 +98,8 @@ namespace Dash
             // ...if ALT pressed, create a data instance
             else if (MainPage.Instance.IsAltPressed())
             {
-                for (int i = 0; i < DraggedDocuments.Count; i++)
-                {
-                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
-                }
+                Debug.Assert(where.HasValue);
+                docs = GetLinkDocuments((Point)where);
             }
             else if (MainPage.Instance.IsShiftPressed())
             {
@@ -111,10 +109,12 @@ namespace Dash
                    docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
                 }
             }
-            else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
+            else if (target?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
-                Debug.Assert(where.HasValue);
-                docs = GetLinkDocuments((Point)where);
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
+                }
             }
             else
             {
@@ -123,7 +123,7 @@ namespace Dash
                     var draggedDoc = DraggedDocuments[i];
 
                     var pos = GetPosition(i);
-                    if (pos.HasValue)
+                    if (pos.HasValue && !dontMove)
                     {
                         draggedDoc.SetPosition(pos.Value);
                     }

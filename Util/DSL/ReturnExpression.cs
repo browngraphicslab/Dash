@@ -10,14 +10,13 @@ namespace Dash
 
         public ReturnExpression(ScriptExpression value) => _value = value;
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             if (_value == null) throw new ScriptExecutionException(new InvalidReturnStatementErrorModel());
-            var val = await _value.Execute(scope);
+            var (val, _) = await _value.Execute(scope);
             //now return val
-            scope.SetReturn(val);
 
-            throw new ReturnException();
+            return (val, ControlFlowFlag.Return);
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

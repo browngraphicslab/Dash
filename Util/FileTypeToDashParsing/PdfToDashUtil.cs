@@ -30,7 +30,7 @@ namespace Dash
             var uniqueFilePath = Guid.NewGuid() + ".pdf";
             var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
             await uri.GetHttpStreamToStorageFileAsync(localFile);
-            return GetPDFDoc(localFile);
+            return GetPDFDoc(localFile, uri.LocalPath.Trim('/'));
         }
 
         public DocumentController GetPDFDoc(StorageFile file, string title = null)
@@ -55,8 +55,10 @@ namespace Dash
 //            });
 
             // return a new pdf box
-            DocumentController layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
+            var layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
             layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
+            var docContextReference = new DocumentReferenceController(layout, KeyStore.DocumentContextKey);
+            layout.SetField(KeyStore.TitleKey, new PointerReferenceController(docContextReference, KeyStore.TitleKey), true);
             return layout;
         }
 

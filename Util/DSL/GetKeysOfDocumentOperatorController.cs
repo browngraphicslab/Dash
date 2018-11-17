@@ -49,7 +49,7 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (doc != null)
             {
-                var names = doc.EnumFields().Select(i => i.Key.Name).ToArray();
+                var names = doc.EnumDisplayableFields().Select(i => i.Key.Name).ToArray();
                 var nameControllers = names.Select(n => new TextController(n)).ToList();
                 var list = new ListController<TextController>();
                 list.AddRange(nameControllers);

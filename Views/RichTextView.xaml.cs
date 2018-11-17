@@ -33,7 +33,7 @@ namespace Dash
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallbackStatic));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
-            "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping)));
+            "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping), xRichTextView_TextWrappingChangedCallbackStatic));
         
         private int           _prevQueryLength;// The length of the previous search query
         private int           _nextMatch;// Index of the next highlighted search result
@@ -49,7 +49,7 @@ namespace Dash
         
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
-        public static bool _searchHighlight = false;
+        public static bool                _searchHighlight = false;
 
         /// <summary>
         /// Constructor
@@ -163,7 +163,7 @@ namespace Dash
                 }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
-                if (string.IsNullOrEmpty(getReadableText()))
+                if (string.IsNullOrEmpty(getReadableText()) &&  DataFieldKey.Equals(KeyStore.DataKey))
                 {
                     var docView = getDocView();
                     if (!SelectionManager.IsSelected(docView))
@@ -216,11 +216,13 @@ namespace Dash
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
+            if (DataFieldKey.Equals(KeyStore.DataKey) && string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != xRichEditBox)
             {
                 var docView = getDocView();
                 if (args.DeselectedViews.Contains(docView))
+                {
                     docView.DeleteDocument();
+                }
             }
         }
 
@@ -233,21 +235,24 @@ namespace Dash
         //    }
         //}
 
-        public DocumentController    DataDocument => getDataDoc();
-        public DocumentController    LayoutDocument => getLayoutDoc();
+        public TextWrapping TextWrapping { get => (TextWrapping)GetValue(TextWrappingProperty);
+            set => this.SetValue(TextWrappingProperty, value);
+        }
+        public KeyController         DataFieldKey { get; set; }
+        public DocumentController    DataDocument => ViewModel?.DataDocument;
+        public DocumentController    LayoutDocument => ViewModel?.LayoutDocument;
+        public DocumentViewModel     ViewModel => getDocView()?.ViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
         private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
-        private DocumentController   getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
-        private DocumentController   getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
-        private List<TextController> getSelected()
+        private IList<TextController> getSelected()
         {
-            return getDataDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData
-                ?? getLayoutDoc()?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)?.TypedData;
+            return DataDocument?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)
+                ?? LayoutDocument?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null);
         }
         
         private void SetSelected(string query)
         {
             var value = query.Equals("") ? new ListController<TextController>(new TextController()) : new ListController<TextController>(new TextController(query));
-            getDataDoc()?.SetField(CollectionDBView.SelectedKey, value, true);
+            DataDocument?.SetField(CollectionDBView.SelectedKey, value, true);
         }
 
         private string getReadableText()
@@ -266,6 +271,17 @@ namespace Dash
         #endregion
 
         #region eventhandlers
+        /// <summary>
+        /// This gets called every time the Dash binding changes.  So we need to update the RichEditBox here *unless* the change
+        /// to the Dash binding was caused by editing this richEditBox (ie, the edit value == lastXamlRTFText), in which case we should do nothing.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="dp"></param>
+        private static void xRichTextView_TextWrappingChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
+        {
+            var rtv = sender as RichTextView;
+            rtv.xRichEditBox.TextWrapping = (TextWrapping) dp.NewValue;
+        }
 
         /// <summary>
         /// This gets called every time the Dash binding changes.  So we need to update the RichEditBox here *unless* the change
@@ -275,9 +291,9 @@ namespace Dash
         /// <param name="dp"></param>
         private static void xRichTextView_TextChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
+            var rtv = sender as RichTextView;
             if (!_searchHighlight)
             {
-                var rtv = sender as RichTextView;
                 var newRtFormatString = ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString;
                 if (newRtFormatString != null && newRtFormatString != rtv._lastXamlRTFText)
                 {
@@ -320,7 +336,7 @@ namespace Dash
                 var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target);
                 if (theDoc != null)
                 {
-                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.Contains(theDoc) == true)
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
@@ -552,7 +568,7 @@ namespace Dash
             //TypeTimer.typeEvent();
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
-                getDataDoc().CaptureNeighboringContext();
+                DataDocument.CaptureNeighboringContext();
             }
 
             if (e.Key == (VirtualKey)191) // 191 = '/' 
@@ -595,12 +611,156 @@ namespace Dash
                     CloseActionMenu();
                 }
             }
+            if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Tab))
+            {
+                var depth = DataDocument.GetDereferencedField<NumberController>(KeyController.Get("DiscussionDepth"), null)?.Data;
+                if (depth is double dep)
+                {
+                    DataDocument.SetField<NumberController>(KeyController.Get("DiscussionDepth"), Math.Max(0,dep- 1), true);
+                    DataDocument.SetField<TextController>(KeyStore.TitleKey, Math.Max(0, dep - 1).ToString(), true);
+                    e.Handled = true;
+                    getDocView().GetFirstAncestorOfType<DocumentView>().UpdateLayout();
+                    return;
+                }
+                var precontainer = getDocView().GetFirstAncestorOfType<DocumentView>();
+                var preprecontainer = precontainer?.GetFirstAncestorOfType<DocumentView>();
+                var prereplies = precontainer?.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
+                var preprereplies = preprecontainer?.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
+                if (preprereplies != null && prereplies != null)
+                {
+                    prereplies.Remove(LayoutDocument);
+                    preprereplies.Add(LayoutDocument);
+                }
+
+                e.Handled = true;
+                return;
+            }
+            else if (e.Key.Equals(VirtualKey.Tab))
+            {
+
+                var depth = DataDocument.GetDereferencedField<NumberController>(KeyController.Get("DiscussionDepth"), null)?.Data;
+                if (depth is double dep)
+                {
+                    DataDocument.SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep + 1, true);
+                    DataDocument.SetField<TextController>(KeyStore.TitleKey,(dep+1).ToString(), true);
+                    e.Handled = true;
+                    getDocView().GetFirstAncestorOfType<DocumentView>().UpdateLayout();
+                    return;
+                }
+            }
 
             if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
+                var depth = DataDocument.GetDereferencedField<NumberController>(KeyController.Get("DiscussionDepth"), null)?.Data;
+                if (depth is double dep)
+                {
+                    var rt = new RichTextNote("").Document;
+                    MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10));
+                    rt.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep, true);
+                    var parent = getDocView().GetFirstAncestorOfType<DocumentView>();
+                    var items = parent.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("DiscussionItems"), null);
+                    items.Insert(items.IndexOf(LayoutDocument)+1, rt);
+                    e.Handled = true;
+                    return;
+                }
+                var xamlReplies =
+        @"<Grid
+            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+            xmlns:dash=""using:Dash""
+            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+            Background=""Beige"">
+            <Grid.RowDefinitions>
+                <RowDefinition Height=""Auto""></RowDefinition>
+                <RowDefinition Height= ""Auto""></RowDefinition>
+            </Grid.RowDefinitions>
+            <dash:RichTextView Margin=""6 0 0 0"" x:Name=""xRichTextFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" VerticalAlignment =""Top"" />
+            <ToggleButton x:Name=""cb"" Grid.Column=""1"" Width =""18"" Height =""16"" IsChecked =""true"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" >
+                <ToggleButton.Template>
+                    <ControlTemplate TargetType=""ToggleButton"">
+                        <Grid x:Name=""RootGrid"">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name=""CommonStates"">
+                                    <VisualState x:Name=""PointerOver"">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
+                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name=""Pressed"">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
+                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name=""Normal"">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
+                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name=""Checked"">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
+                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name=""CheckedPressed"">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
+                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name=""CheckedPointerOver"">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
+                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Viewbox>
+                                <TextBlock Text=""Hello"" FontWeight=""Bold"" FontSize=""12"" x:Name=""txt"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch""/>
+                            </Viewbox>
+                        </Grid>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
+            <ListView Margin=""8 0 0 0""  Grid.Row=""1"" Visibility=""{Binding ElementName=cb,Path=IsChecked,Mode=OneWay}"" Padding=""0"" x:Name=""xDocumentListReplies"">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <dash:DocumentView />
+                    </DataTemplate>
+                </ListView.ItemTemplate><ListView.ItemContainerStyle>
+                    <Style TargetType=""ListViewItem"">
+                        <Setter Property=""HorizontalContentAlignment"" Value =""Left"" />
+                        <Setter Property=""VerticalContentAlignment"" Value = ""Top"" />
+                        <Setter Property=""MinHeight"" Value =""5"" />
+                        <Setter Property=""Padding"" Value =""0"" />
+                        <Setter Property=""Margin"" Value =""0"" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+        </Grid>";
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                getDocView().HandleShiftEnter();
+                MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight+5));
+                var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
+                var rtn = new RichTextNote("").Document;
+                var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
+                if (xaml == null) {
+                    xaml = xamlReplies;
+                    LayoutDocument.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                }
+                rtn.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                replies.Add(rtn);
+                var found = VisualTreeHelper.FindElementsInHostCoordinates((Point)MainPage.Instance.ForceFocusPoint, this).ToList().OfType<RichEditBox>();
                 e.Handled = true;
             }
             if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
@@ -650,11 +810,6 @@ namespace Dash
             else if (this.IsTabPressed())
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
-                e.Handled = true;
-            }
-            else if (e.Key == VirtualKey.Space)
-            {
-                xRichEditBox.Document.Selection.TypeText(Convert.ToChar(160).ToString());
                 e.Handled = true;
             }
             else if (this.IsCtrlPressed())   // ctrl-B, ctrl-I, ctrl-U handled natively by the text editor
@@ -809,13 +964,17 @@ namespace Dash
         // Someone please find out why this is being called twice
         private void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e)
         {
-            _searchHighlight = true;
-            MatchQuery(getSelected());
-            // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
+            if (DataContext != null)
+            {
+                _searchHighlight = true;
+                MatchQuery(getSelected());
+                // Dispatcher.RunIdleAsync((x) => MatchQuery(getSelected()));
+            }
         }
 
         private void UnLoaded(object s, RoutedEventArgs e)
         {
+            GotFocus -= RichTextView_GotFocus;
             ClearSearchHighlights(true);
             Application.Current.Suspending -= AppSuspending;
             SetSelected("");
@@ -842,7 +1001,7 @@ namespace Dash
             }
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
-            DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
+            //DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
             Application.Current.Suspending += AppSuspending;
 
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
@@ -867,6 +1026,24 @@ namespace Dash
                     xRichEditBox.Document.Selection.EndPosition = xRichEditBox.Document.Selection.StartPosition;
                 }
             }
+
+            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            {
+                GotFocus += RichTextView_GotFocus;
+                xRichEditBox.Focus(FocusState.Programmatic);
+            }
+        }
+
+        private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
+        {
+            GotFocus -= RichTextView_GotFocus;
+            var text = MainPage.Instance.TextPreviewer.Visibility == Visibility.Visible ?
+                    MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
+            xRichEditBox.Document.Selection.SetRange(0, 0);
+            xRichEditBox.Document.SetText(TextSetOptions.None, text);
+            xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+            xRichEditBox.Document.Selection.SetRange(text.Length, text.Length);
+            MainPage.Instance.ClearForceFocus();
         }
 
         #endregion
@@ -1071,7 +1248,7 @@ namespace Dash
         /// Searches through richtextbox for textcontrollers in queries- does so by storing the formatting/state of the textbox before the search was conducted
         /// and modifying the rtf directly, since the previous method of using iTextSelection was way too slow to be useful
         /// </summary>
-        private void MatchQuery(List<TextController> queries)
+        private void MatchQuery(IList<TextController> queries)
         {
             if (getDocView() == null) // || FocusManager.GetFocusedElement() != xSearchBox.GetFirstDescendantOfType<TextBox>())
                 return;

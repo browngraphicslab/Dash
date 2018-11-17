@@ -49,9 +49,9 @@ namespace Dash
             //TODO make different operators for string and list (use overrides instead of type checking)
             switch (indexable)
             {
-                case BaseListController listToIndex:
-                    if (varIndex >= listToIndex?.Count) throw new ScriptExecutionException(new IndexOutOfBoundsErrorModel((int)varIndex, listToIndex.Count));
-                    outputs[ResultsKey] = listToIndex.Data[(int)varIndex];
+                case IListController listToIndex:
+                    if (varIndex >= listToIndex.Count) throw new ScriptExecutionException(new IndexOutOfBoundsErrorModel((int)varIndex, listToIndex.Count));
+                    outputs[ResultsKey] = listToIndex.GetValue((int)varIndex);
                     break;
                 case TextController stringToIndex:
                     var length = stringToIndex.Data.Length;

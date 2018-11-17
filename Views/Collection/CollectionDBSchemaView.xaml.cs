@@ -151,9 +151,9 @@ namespace Dash
                 //xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
 
-                var keys = InitializeDocs().ToList();
+                var keys = (IList<KeyController>)InitializeDocs().ToList();
                 var savedKeys = ViewModel.ContainerDocument
-                    .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).TypedData;
+                    .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
                 foreach (var key in savedKeys ?? keys)
                 {
                     AddKey(key);
@@ -272,7 +272,8 @@ namespace Dash
                 xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { HeaderStyle = xHeaderStyle });
             }
 
-            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            //TODO tfs Events
+            if (/*ViewModel.IsLoaded &&*/ xDataGrid.ItemsSource == null)
             {
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
             }

@@ -50,7 +50,7 @@ namespace Dash.Popups
             var behaviors = docRef.GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey);
             if (behaviors != null)
             {
-                ViewModel.Behaviors = new ObservableCollection<DocumentController>(behaviors.TypedData);
+                ViewModel.Behaviors = new ObservableCollection<DocumentController>(behaviors);
             }
 
             xFieldModifiers.ItemsSource = docRef.GetDataDocument().EnumDisplayableFields().ToList().Select(f => f.Key.Name);

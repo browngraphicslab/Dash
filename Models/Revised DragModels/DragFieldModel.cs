@@ -13,7 +13,7 @@ namespace Dash {
 
         public DragFieldModel(params DocumentFieldReference[] draggedRefs) => DraggedRefs = draggedRefs.ToList();
 
-        public override List<DocumentController> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target)
+        public override List<DocumentController> GetDropDocuments(Point? where, Windows.UI.Xaml.FrameworkElement target, bool dontMove = false)
         {
             var dropDocuments = DraggedRefs.Select(RefToDBox).ToList();
 

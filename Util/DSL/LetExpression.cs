@@ -19,9 +19,9 @@ namespace Dash
             _expression = expression;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            var val = await _value.Execute(scope);
+            var (val, flags) = await _value.Execute(scope);
             scope.SetVariable(_variableName, val);
             return await _expression.Execute(scope);
         }

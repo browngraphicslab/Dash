@@ -161,9 +161,9 @@ namespace Dash
                 var fieldType = fieldTypes.FirstOrDefault();
                 var genericListType = typeof(ListController<>);
                 var specificListType = genericListType.MakeGenericType(fieldType);
-                var listController = Activator.CreateInstance(specificListType) as BaseListController;
+                var listController = (IListController) Activator.CreateInstance(specificListType);
                 listController.AddRange(fieldList);
-                return listController; // return a new list
+                return listController as FieldControllerBase; // return a new list
             }
             if (fieldList.Count != 0 && docList.Count == 0)
             {

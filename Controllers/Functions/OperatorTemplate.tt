@@ -88,6 +88,8 @@ public sealed class <#= className #> : OperatorController
             var typeName = "None";
             if(type == "FieldControllerBase") {
                 typeName = "Any";
+            } else if(type == "IListController") {
+                typeName = "List";
             } else if(type.EndsWith("Controller")) {
                 typeName = type.Substring(0, type.Length - "Controller".Length);
             } else if(type.StartsWith("List")) {

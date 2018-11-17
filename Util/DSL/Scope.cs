@@ -32,12 +32,8 @@ namespace Dash
 
         public virtual void DeclareVariable(string variableName, FieldControllerBase targetValue)
         {
-            var existingValue = GetVariable(variableName);
-            if (existingValue != null)
-            {
-                bool alreadyEqual = targetValue.GetValue(null).Equals(existingValue.GetValue(null));
-                throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, targetValue, existingValue, alreadyEqual));
-            }
+            if (_dictionary.TryGetValue(variableName, out var value)) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, targetValue));
+
             _dictionary[variableName] = targetValue;
 
             //add varible to autosuggest option
@@ -54,9 +50,28 @@ namespace Dash
 
         public FieldControllerBase GetVariable(string variableName)
         {
+            return TryGetVariable(variableName, out var field) ? field : null;
+        }
+
+        public bool TryGetVariable(string variableName, out FieldControllerBase value)
+        {
             Scope child = this;
             while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
-            return child?._dictionary[variableName];
+
+            if (child == null)
+            {
+                value = null;
+                return false;
+            }
+
+            value = child._dictionary[variableName];
+            return true;
+
+        }
+
+        public bool CanDeclareVariable(string variableName)
+        {
+            return !_dictionary.ContainsKey(variableName);
         }
 
         public void DeleteVariable(string variableName)
@@ -87,9 +102,5 @@ namespace Dash
 
             return collector;
         }
-
-        public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }
-        public virtual void SetReturn(FieldControllerBase ret) { Parent.SetReturn(ret); }
-        public virtual FieldControllerBase GetReturn => Parent.GetReturn;
     }
 }
