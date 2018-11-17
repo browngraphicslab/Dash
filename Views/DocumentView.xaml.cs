@@ -408,21 +408,27 @@ namespace Dash
             var w = ActualWidth - extraOffsetX;
             var h = ActualHeight - extraOffsetY;
 
+            Rect dragBounds = Rect.Empty;
             // clamp the drag position to the available Bounds
-            var parentViewPresenter = this.GetFirstAncestorOfType<ItemsPresenter>(); // presenter of this document which defines the drag area bounds
-            var parentViewTransformationCanvas = parentViewPresenter.GetFirstDescendantOfType<Canvas>(); // bcz: assuming the content being presented has a Canvas ItemsPanelTemplate which may contain a RenderTransformation of the parent (which affects the drag area)
-            var rect = parentViewTransformationCanvas.RenderTransform.Inverse.TransformBounds(new Rect(0, 0, parentViewPresenter.ActualWidth, parentViewPresenter.ActualHeight));
-            var dragBounds = ViewModel.DragWithinParentBounds ? rect : Rect.Empty;
-            if (dragBounds != Rect.Empty)
+            if (ViewModel.DragWithinParentBounds)
             {
-                var width = ActualWidth;
-                var height = ActualHeight;
-                var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
-                    ViewModel.YPos + height * (1 - moveYScale));
-                if (!dragBounds.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
-                    return;
-                var clamped = Util.Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), dragBounds);
-                delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
+                var parentViewPresenter =
+                    this.GetFirstAncestorOfType<ItemsPresenter >(); // presenter of this document which defines the drag area bounds
+                var parentViewTransformationCanvas = parentViewPresenter .GetFirstDescendantOfType<Canvas >(); // bcz: assuming the content being presented has a Canvas ItemsPanelTemplate which may contain a RenderTransformation of the parent (which affects the drag area)
+                var rect = parentViewTransformationCanvas.RenderTransform.Inverse.TransformBounds(new Rect(0, 0,
+                    parentViewPresenter.ActualWidth, parentViewPresenter.ActualHeight));
+                dragBounds = rect;
+                if (dragBounds != Rect.Empty)
+                {
+                    var width = ActualWidth;
+                    var height = ActualHeight;
+                    var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
+                        ViewModel.YPos + height * (1 - moveYScale));
+                    if (!dragBounds.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
+                        return;
+                    var clamped = Util.Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), dragBounds);
+                    delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
+                }
             }
 
             double diffX;

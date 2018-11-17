@@ -629,7 +629,13 @@ namespace Dash
             foreach (var docView in SelectedDocs)
             {
                 var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
-                args.Data.SetDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionViewModel>(new[] { docCollectionView.ViewModel } ) });
+                var dragDocumentModel = new DragDocumentModel(docView) { DraggingLinkButton = true};
+                if (docCollectionView != null)
+                {
+                    dragDocumentModel.DraggedDocCollectionViews = new List<CollectionViewModel>
+                        {docCollectionView.ViewModel};
+                }
+                args.Data.SetDragModel(dragDocumentModel);
                 args.AllowedOperations =
                     DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation =

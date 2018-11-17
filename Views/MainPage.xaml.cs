@@ -214,6 +214,7 @@ namespace Dash
             if (toolbar == null)
             {
                 toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                await InitToolbar(toolbar);
                 MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
             }
 
@@ -245,6 +246,55 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
+        }
+
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler)
+        {
+            var op = await new DSL().Run(tappedHandler, true) as OperatorController;
+            if (op == null)
+            {
+                return null;
+            }
+            var doc = new DocumentController();
+            doc.SetField<TextController>(KeyStore.XamlKey,
+                @"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+      xmlns:dash='using:Dash'
+      xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center' />
+</Grid>" , true);
+            doc.SetField<TextController>(KeyStore.DataKey, icon, true);
+            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> {op}, true);
+
+            return doc;
+        }
+
+        private async Task InitToolbar(DocumentController toolbar)
+        {
+            toolbar.SetBackgroundColor(Colors.SkyBlue);
+            var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+
+            data.Add(await GetButton("\uE107", @"
+function(d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.remove(doc.Document);
+    }
+}
+"));
+            data.Add(await GetButton("\uE10E", @"
+function(d) {
+    undo();
+}
+"));
+            data.Add(await GetButton("\uE10D", @"
+function(d) {
+    redo();
+}
+"));
         }
 
         #region LOAD AND UPDATE SETTINGS
