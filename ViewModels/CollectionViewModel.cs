@@ -774,7 +774,8 @@ namespace Dash
                         docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
                     if (double.IsNaN(docsToAdd[i].GetWidth()) && !docsToAdd[i].DocumentType.Equals(WebBox.DocumentType))
                         docsToAdd[i].SetWidth(300);
-                    if (double.IsNaN(docsToAdd[i].GetHeight()) && docsToAdd[i].DocumentType.Equals(PdfBox.DocumentType))
+                    if (double.IsNaN(docsToAdd[i].GetHeight()) && (
+                        docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType) || docsToAdd[i].DocumentType.Equals(PdfBox.DocumentType)))
                         docsToAdd[i].SetHeight(500);
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);
