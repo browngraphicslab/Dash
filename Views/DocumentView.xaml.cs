@@ -228,7 +228,11 @@ namespace Dash
 
                     if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
-                   // SelectionManager.TryInitiateDragDrop(this, e, null);
+                    if (!((sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType) && e.Pointer.PointerDeviceType == PointerDeviceType.Touch))
+                    {
+                        SelectionManager.TryInitiateDragDrop(this, e, null);
+                    }
+                   
                 }
 
                 e.Handled = true;
@@ -315,6 +319,8 @@ namespace Dash
             DropCompleted += (s, e) =>
             {
                 TouchInteractions.NumFingers = 0;
+                //inform pdf of drop (if holding pdf
+                if(TouchInteractions.HoldingPDF()) this.GetFirstDescendantOfType<PdfAnnotationView>().PdfOnDrop();
                 if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 SelectionManager.DropCompleted(this, s, e);

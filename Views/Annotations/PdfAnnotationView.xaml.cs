@@ -473,10 +473,17 @@ namespace Dash
 
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            TouchInteractions.NumFingers--;
-            if (TouchInteractions.NumFingers == 0)
+            //TouchInteractions.NumFingers--;
+            if (_localFingers > 1)
             {
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+                _localFingers -= 2;
+            } else if (_localFingers == 1)
+            {
+                _localFingers--;
+            }
+            if (_localFingers == 0)
+            {
+               TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
                     TouchInteractions.HeldDocument = null;
             }
@@ -497,6 +504,8 @@ namespace Dash
 
                 this.Focus(FocusState.Pointer);
             }
+
+            Debug.Write("local after pointer released: " + _localFingers);
         }
 
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -534,8 +543,9 @@ namespace Dash
                 e.Handled = false;
 
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
-                TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
+                if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
             }
+            Debug.Write("local after Pdf pointer pressed: " + _localFingers);
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -687,7 +697,7 @@ namespace Dash
             {
                 if (TouchInteractions.HeldDocument == null)
                     TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
-                _localFingers++;
+                if (_localFingers < 2) _localFingers++;
                 // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
                 if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
@@ -703,39 +713,30 @@ namespace Dash
                     this.GetFirstAncestorOfType<DocumentView>().CanDrag = true;
                     this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.All;
                 }
+                Debug.Write("local after PointerEntered: " + _localFingers);
 
                 e.Handled = false;
             }
         }
 
-        private void ScrollViewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
-        {
-           //test
-        }
-
-        private void ScrollViewer_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        public void PdfOnDrop()
         {
             if (_localFingers > 0) _localFingers--;
-            if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>() && _localFingers == 0)
-                TouchInteractions.HeldDocument = null;
-            //test;
-            // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
-            if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            {
-                ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
-              //  this.GetFirstAncestorOfType<DocumentView>().CanDrag = false;
-              //  this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+           if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>() && _localFingers == 0)
+               TouchInteractions.HeldDocument = null;
 
-                e.Handled = true;
-            }
-            else
-            {
-                ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-              //  this.GetFirstAncestorOfType<DocumentView>().CanDrag = true;
-               // this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.All;
-            }
+           // if (_localFingers >= 2)
+          //  {
+          //      ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;;
+          //  }
+          //  else if (_localFingers)
+           // {
+           ///     ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+           // }
 
+            Debug.Write("local after PdfOnDrop: " + _localFingers);
         }
+
     }
 }
 

@@ -68,5 +68,21 @@ namespace Dash
         {
             MainPage.Instance.xTouchMenu.HideMenuAsync();
         }
+
+        public static void TryShowMenu(Point position)
+        {
+            if ((NumFingers == 2 && HeldDocument != null) || HoldingPDF())
+            {
+                ShowMenu(position, HeldDocument);
+            }
+        }
+
+        public static bool HoldingPDF()
+        {
+            return HeldDocument == null ? false :
+                HeldDocument.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
+        }
+
+
     }
 }
