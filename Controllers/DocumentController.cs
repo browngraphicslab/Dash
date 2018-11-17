@@ -1431,6 +1431,9 @@ namespace Dash
                     }
                 }
             }
+            GetField<ListController<DocumentController>>(KeyStore.LowPriorityOpsKey).ToList().ForEach(opDoc => MainPage.Instance.LowPriorityOps.Remove(opDoc));
+            GetField<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey).ToList().ForEach(opDoc => MainPage.Instance.ModeratePriorityOps.Remove(opDoc));
+            GetField<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey).ToList().ForEach(opDoc => MainPage.Instance.HighPriorityOps.Remove(opDoc));
             BehaviorKeys.ForEach(k => RemoveField(k));
         }
     }

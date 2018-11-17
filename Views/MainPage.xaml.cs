@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
@@ -94,6 +95,14 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public Timer LowPriorityTimer = new Timer(3600000);     // every hour
+        public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
+        public Timer HighPriorityTimer = new Timer(60000);      // every minute
+
+        public ListController<DocumentController> LowPriorityOps;
+        public ListController<DocumentController> ModeratePriorityOps;
+        public ListController<DocumentController> HighPriorityOps;
+
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
@@ -109,6 +118,7 @@ namespace Dash
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
+            
 
             SetUpToolTips();
 
@@ -248,6 +258,18 @@ namespace Dash
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
 
+            LowPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.LowPriorityOpsKey);
+            ModeratePriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey);
+            HighPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey);
+
+            LowPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, LowPriorityOps);
+            ModeratePriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, ModeratePriorityOps);
+            HighPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, HighPriorityOps);
+
+            LowPriorityTimer.Start();
+            ModeratePriorityTimer.Start();
+            HighPriorityTimer.Start();
+
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
@@ -265,6 +287,30 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
+        }
+
+        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e, ListController<DocumentController> opList)
+        {
+            if (opList.Any())
+            {
+                var tasks = new List<Task>(opList.Count);
+                foreach (var opDoc in opList)
+                {
+                    var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
+                    var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
+                    var task = OperatorScript.Run(op, new List<FieldControllerBase>() { layoutDoc }, new Scope());
+                    if (!task.IsFaulted) tasks.Add(task);
+                }
+
+                if (tasks.Any())
+                {
+                    await Task.WhenAll(tasks);
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         #region LOAD AND UPDATE SETTINGS

@@ -118,7 +118,7 @@
                                     Width="150"
                                     SelectionChanged="TriggeringEventChanged">
                                     <ComboBoxItem>Tapped</ComboBoxItem>
-                                    <ComboBoxItem>Deleted</ComboBoxItem>
+                                    <ComboBoxItem>Scheduled</ComboBoxItem>
                                     <ComboBoxItem>Field Updated</ComboBoxItem>
                                 </ComboBox>
                                 <TextBlock
@@ -130,22 +130,26 @@
                                 <ComboBox
                                     x:Name="xTappedModifiers"
                                     HorizontalAlignment="Center"
+                                    SelectionChanged="ModifierChanged"
                                     Width="150">
-                                    <ComboBoxItem>Single</ComboBoxItem>
-                                    <ComboBoxItem>Double</ComboBoxItem>
+                                    <ComboBoxItem>Left</ComboBoxItem>
                                     <ComboBoxItem>Right</ComboBoxItem>
+                                    <ComboBoxItem>Double</ComboBoxItem>
                                 </ComboBox>
                                 <ComboBox
-                                    x:Name="xDeletedModifiers"
+                                    x:Name="xScheduledModifiers"
+                                    SelectionChanged="ModifierChanged"
                                     HorizontalAlignment="Center"
                                     Width="150"
                                     Visibility="Collapsed">
-                                    <ComboBoxItem>UI</ComboBoxItem>
-                                    <ComboBoxItem>Scripting</ComboBoxItem>
+                                    <ComboBoxItem>Low Priority</ComboBoxItem>
+                                    <ComboBoxItem>Moderate Priority</ComboBoxItem>
+                                    <ComboBoxItem>High Priority</ComboBoxItem>
                                 </ComboBox>
                                 <ComboBox
                                     x:Name="xFieldModifiers"
                                     HorizontalAlignment="Center"
+                                    SelectionChanged="ModifierChanged"
                                     Width="150"
                                     Visibility="Collapsed">
                                 </ComboBox>
@@ -253,6 +257,7 @@
                                 FontSize="15"
                                 PlaceholderText="Title..."/>
                             <TextBlock
+                                x:Name="xSignatureText"
                                 Text="function(doc) {"
                                 FontSize="15"/>
                             <ScrollViewer 

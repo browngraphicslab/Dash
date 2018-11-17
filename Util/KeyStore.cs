@@ -126,7 +126,12 @@ namespace Dash
 	    public static KeyController RightTappedOpsKey                    = KeyController.Get("_Right Tapped Ops");
 	    public static KeyController DoubleTappedOpsKey                   = KeyController.Get("_Double Tapped Ops");
 	    public static KeyController FieldUpdatedOpsKey                   = KeyController.Get("_Field Updated Ops");
-	    public static KeyController WatchFieldKey                       = KeyController.Get("_Watched Fields");
+	    public static KeyController LowPriorityOpsKey                    = KeyController.Get("_Low Priority Ops");
+	    public static KeyController ModeratePriorityOpsKey               = KeyController.Get("_Moderate Priority Ops");
+	    public static KeyController HighPriorityOpsKey                   = KeyController.Get("_High Priority Ops");
+	    public static KeyController ScheduledOpKey                       = KeyController.Get("_Operator in pair");
+	    public static KeyController ScheduledDocKey                      = KeyController.Get("_Document in pair");
+        public static KeyController WatchFieldKey                        = KeyController.Get("_Watched Fields");
         public static KeyController ExceptionKey                         = KeyController.Get("Exception");
 		public static KeyController ReceivedKey                          = KeyController.Get("Inputs Received");
 		public static KeyController ExpectedKey                          = KeyController.Get("Inputs Expected");

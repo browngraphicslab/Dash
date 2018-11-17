@@ -15,13 +15,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash.Controllers.Operators;
-using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.FontIcons;
 using Dash.Converters;
-using Dash.Popups;
 using DashShared;
-using Dash.Views.Collection;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -154,8 +150,8 @@ namespace Dash
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch;
                 VerticalAlignment = VerticalAlignment.Stretch;
-                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
-                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+                this.AddFieldBinding(HorizontalAlignmentProperty, null);
+                this.AddFieldBinding(VerticalAlignmentProperty, null);
             }
             else
             {
@@ -191,7 +187,7 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 PointerWheelChanged += wheelChangedHandler;
 
-                this.UpdateAlignmentBindings();
+                UpdateAlignmentBindings();
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
@@ -251,6 +247,7 @@ namespace Dash
             RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
             Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
             DoubleTapped += async (sender, args) => await ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
+            RightTapped += async (sender, args) => await ExhibitBehaviors(KeyStore.RightTappedOpsKey);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
@@ -262,7 +259,7 @@ namespace Dash
             UpdateVisibilityBinding();
             UpdateAlignmentBindings();
 
-            this.BindBackgroundColor();
+            BindBackgroundColor();
             ViewModel?.Load();
         }
 
@@ -544,7 +541,7 @@ namespace Dash
                 //      but it would still be in the list of pinned annotations.  That means the document would reappear
                 //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
                 //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
-                this.ViewModel.DocumentController.SetHidden(true);
+                ViewModel.DocumentController.SetHidden(true);
             }
             else if (ParentCollection != null)
             {
@@ -663,8 +660,7 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (await ExhibitBehaviors(wasRightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey))
-                return true;
+            if (await ExhibitBehaviors(wasRightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey)) return true;
             
             if (!wasHandled) FocusedDocument = this;
 
@@ -712,7 +708,7 @@ namespace Dash
                     foreach (var operatorController in behaviors)
                     {
                         var task = OperatorScript.Run(operatorController, args, new Scope());
-                        if (!task.IsFaulted && !task.IsCompleted) tasks.Add(task);
+                        if (!task.IsFaulted) tasks.Add(task);
                     }
 
                     if (tasks.Any())
@@ -1065,7 +1061,7 @@ namespace Dash
                     Converter = new StringToBrushConverter(),
                     Mode = BindingMode.TwoWay,
                     Context = new Context(),
-                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
+                    FallbackValue = new SolidColorBrush(Colors.Transparent)
                 };
                 xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }
@@ -1209,16 +1205,16 @@ namespace Dash
             }
             else if (ViewModel.Content.GetFirstDescendantOfType<CollectionView>() is CollectionView cView)
             {
-                cView.SetupContextMenu(this.xMenuFlyout);
+                cView.SetupContextMenu(xMenuFlyout);
             }
             if ((ViewModel.Content is ContentPresenter cpresent) &&
                 (cpresent.Content is CollectionView collectionView2))
             {
-                collectionView2.SetupContextMenu(this.xMenuFlyout);
+                collectionView2.SetupContextMenu(xMenuFlyout);
             }
         }
 
-        private bool AnyBehaviors() => ViewModel.LayoutDocument.GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
+        private bool AnyBehaviors() => ViewModel.LayoutDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
 
         private void Cut(bool delete)
         {

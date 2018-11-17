@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using Dash.Popups;
 using static System.String;
 
@@ -11,14 +11,15 @@ namespace Dash
 {
     public static class UIFunctions
     {
-        public static async Task<ListController<DocumentController>> ManageBehaviors(DocumentController docRef)
+        public static async Task<ListController<DocumentController>> ManageBehaviors(DocumentController layoutDoc)
         {
             var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel() };
-            var updatedBehaviors = await manageBehaviors.OpenAsync(docRef);
+            var updatedBehaviors = await manageBehaviors.OpenAsync(layoutDoc);
+            var dataDoc = layoutDoc.GetDataDocument();
 
-            docRef.SetField(KeyStore.DocumentBehaviorsKey, updatedBehaviors, true);
+            dataDoc.SetField(KeyStore.DocumentBehaviorsKey, updatedBehaviors, true);
 
-            docRef.ClearBehaviors();
+            dataDoc.ClearBehaviors();
 
             foreach (var bDoc in updatedBehaviors)
             {
@@ -28,9 +29,10 @@ namespace Dash
                 var trigger = bDoc.GetField<TextController>(KeyStore.TriggerKey).Data;
                 var indices = bDoc.GetField<ListController<NumberController>>(KeyStore.BehaviorIndicesKey);
                 var triggerInd = (int)indices[0].Data;
+                var triggerModifierInd = (int)indices[1].Data;
 
-                string signature = triggerInd == 2 ? "function(doc, field) " : "function(doc) ";
-                script = $"{signature}{{\n\t{script}\n}}";
+                var signature = triggerInd == 2 ? "function(layoutDoc, fieldName, updatedValue) {" : "function(layoutDoc) {";
+                script = $"{signature}\n\t{script}\n}}";
             
                 OperatorController op;
                 try
@@ -45,40 +47,68 @@ namespace Dash
                     throw;
                 }
 
-                switch (trigger)
+                switch (trigger.Split(" ").Last())
                 {
                     case "Tapped":
                         Debug.Assert(triggerInd == 0);
                         KeyController triggerKey = null;
-                        switch ((int)indices[1].Data)
+                        switch (triggerModifierInd)
                         {
                             case 0:
                                 triggerKey = KeyStore.LeftTappedOpsKey;
                                 break;
                             case 1:
-                                triggerKey = KeyStore.DoubleTappedOpsKey;
-                                    break;
-                            case 2:
                                 triggerKey = KeyStore.RightTappedOpsKey;
+                                break;
+                            case 2:
+                                triggerKey = KeyStore.DoubleTappedOpsKey;
                                 break;
                             default:
                                 Debug.Fail($"Trigger modifier combo box index {trigger} not supported!");
                                 break;
                         }
-                        docRef.AddBehavior(triggerKey, op);
-                    break;
-                    case "Deleted":
+                        dataDoc.AddBehavior(triggerKey, op);
                         break;
-                    case "Field Updated":
+                    case "Priority":
+                        Debug.Assert(triggerInd == 1);
+                        List<DocumentController> opGroup = null;
+                        switch (triggerModifierInd)
+                        {
+                            case 0:
+                                opGroup = MainPage.Instance.LowPriorityOps;
+                                break;
+                            case 1:
+                                opGroup = MainPage.Instance.ModeratePriorityOps;
+                                break;
+                            case 2:
+                                opGroup = MainPage.Instance.HighPriorityOps;
+                                break;
+                            default:
+                                Debug.Fail($"Trigger modifier combo box index {trigger} not supported!");
+                                break;
+                        }
+                        opGroup?.Add(new KeyValuePair<OperatorController, DocumentController>(op, layoutDoc));
+                        break;
+                    case "Updated":
                         Debug.Assert(triggerInd == 2);
 
                         var opDoc = new DocumentController();
                         opDoc.AddToListField(KeyStore.OperatorKey, op);
-                        var watchKey = bDoc.GetField<KeyController>(KeyStore.WatchFieldKey);
-                        Debug.Assert(watchKey != null);
-                        opDoc.SetField(op?.Inputs[0].Key, docRef, true);
-                        opDoc.SetField(op?.Inputs[1].Key, new PointerReferenceController(new DocumentReferenceController(docRef, KeyStore.DocumentContextKey), watchKey), true);
-                        docRef.AddToListField(KeyStore.FieldUpdatedOpsKey, opDoc);
+
+                        var watchKeyParts = bDoc.GetField<KeyController>(KeyStore.WatchFieldKey).Name.Split(".");
+                        Debug.Assert(watchKeyParts.Length == 2);
+                        var specifier = watchKeyParts[0];
+                        var watchKey = KeyController.Get(watchKeyParts[1]);
+                        Debug.Assert(specifier.Equals("v") || specifier.Equals("d"));
+                        bool layout = specifier.Equals("v");
+
+                        opDoc.SetField(op?.Inputs[0].Key, layoutDoc, true);
+                        opDoc.SetField<TextController>(op?.Inputs[1].Key, watchKey.Name, true);
+                        var reference = layout ? new DocumentReferenceController(layoutDoc, watchKey)
+                            : (ReferenceController)new PointerReferenceController(new DocumentReferenceController(layoutDoc, KeyStore.DocumentContextKey), watchKey);
+                        opDoc.SetField(op?.Inputs[2].Key, reference, true);
+
+                        dataDoc.AddToListField(KeyStore.FieldUpdatedOpsKey, opDoc);
                         break;
                     default:
                         throw new Exception();
