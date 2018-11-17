@@ -944,5 +944,35 @@ function spiral(col) {
 }
 
 
+Flashcard code:
+Previous:
+var card = doc.Doc.data_doc();
+var coll = card.Collection;
+var c = coll.Data.len();
+card.CurrentIndex--;
+card.CurrentIndex = (card.CurrentIndex + c) % c;
+card.Card = coll.Data[card.CurrentIndex];
+card.Card.Xaml = card.NameTemplate;
+card.ShowingName = true;
+
+Next:
+var card = doc.Doc.data_doc();
+var coll = card.Collection;
+var c = coll.Data.len();
+card.CurrentIndex++;
+card.CurrentIndex = card.CurrentIndex % c;
+card.Card = coll.Data[card.CurrentIndex];
+card.Card.Xaml = card.NameTemplate;
+card.ShowingName = true;
+
+Flip:
+if(doc.Doc.ShowingName){
+  doc.Doc.data_doc().ShowingName = false;
+  doc.Doc.Xaml = doc.Doc.data_doc().YearTemplate;
+} else {
+  doc.Doc.data_doc().ShowingName = true;
+  doc.Doc.Xaml = doc.Doc.data_doc().NameTemplate;
+}
+
      */
 }

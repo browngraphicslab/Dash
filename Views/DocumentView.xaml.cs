@@ -38,7 +38,7 @@ namespace Dash
 
         public DocumentViewModel ViewModel
         {
-            get => DataContext as DocumentViewModel;
+            get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
 
@@ -149,18 +149,18 @@ namespace Dash
             //}
             //else
             //{
-                if (ViewModel?.IsDimensionless == true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Stretch;
-                    VerticalAlignment = VerticalAlignment.Stretch;
-                    this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
-                    this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
-                }
-                else
-                {
-                    CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
-                    CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
-                }
+            if (ViewModel?.IsDimensionless == true)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch;
+                VerticalAlignment = VerticalAlignment.Stretch;
+                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
+                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+            }
+            else
+            {
+                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+            }
             //}
         }
 
@@ -173,7 +173,7 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
-            MinHeight = 25;
+            MinHeight = 10;
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
@@ -205,7 +205,6 @@ namespace Dash
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
                 _oldViewModel?.UnLoad();
-                LinkActivationManager.DeactivateDoc(this);
             };
 
             PointerPressed += (sender, e) =>
@@ -535,9 +534,9 @@ namespace Dash
         /// Deletes the document from the view.
         /// </summary>
         /// <param name="addTextBox"></param>
-        public void DeleteDocument(bool addTextBox = false)
+        public void DeleteDocument()
         {
-            if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
+            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() != null)
             {
                 // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
                 //      but it would still be in the list of pinned annotations.  That means the document would reappear
@@ -547,17 +546,10 @@ namespace Dash
             }
             else if (ParentCollection != null)
             {
-                LinkActivationManager.DeactivateDoc(this);
                 SelectionManager.Deselect(this);
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
                 FadeOut.Begin();
                 FadeOutBegin?.Invoke();
-
-                if (addTextBox)
-                {
-                    (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
-                }
-
             }
         }
 
@@ -587,7 +579,6 @@ namespace Dash
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
-
 
         /// <summary>
         /// Copes the DocumentView for the document
@@ -675,17 +666,22 @@ namespace Dash
                 var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
                 if (scripts != null)
                 {
-                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
-                    var tasks = new List<Task>(scripts.Count);
-                    foreach (var operatorController in scripts)
+                    using (UndoManager.GetBatchHandle())
                     {
-                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                        var tasks = new List<Task>(scripts.Count);
+                        foreach (var operatorController in scripts)
+                        {
+                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                        }
+
+                        if (tasks.Any())
+                        {
+                            await Task.WhenAll(tasks);
+                        }
                     }
 
-                    if (tasks.Any())
-                    {
-                        await Task.WhenAll(tasks);
-                    }
+                    return true;
                 }
             }
             if (!wasHandled)
@@ -756,7 +752,10 @@ namespace Dash
                 }
             }
 
-            collection.LoadNewActiveTextBox("", where, true);
+            using (UndoManager.GetBatchHandle())
+            {
+                collection.LoadNewActiveTextBox("", where);
+            }
         }
 
         #endregion
@@ -978,10 +977,38 @@ namespace Dash
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         }
-
+        private void MenuFlyoutItemCaption_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (ViewModel.LayoutDocument != null)
+                {
+                    ViewModel.LayoutDocument.SetField<TextController>(KeyStore.XamlKey,
+                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                 xmlns:dash=""using:Dash""
+                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""*"" ></RowDefinition>
+                            </Grid.RowDefinitions>
+                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
+                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
+                                </Border>
+                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
+                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
+                                </Border>
+                        </Grid>",
+                        true);
+                }
+            }
+        }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (IsTopLevel()) return;
+            if (IsTopLevel())
+            {
+                return;
+            }
 
             using (UndoManager.GetBatchHandle())
             {
@@ -1089,6 +1116,19 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Cut",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Cut }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCut_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Copy",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Copy }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemClipboardCopy_Click;
+
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Copy Path",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.CodeFork }
             });
@@ -1102,6 +1142,12 @@ namespace Dash
 
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add Caption",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.FileText }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCaption_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Add to Presentation",
@@ -1136,9 +1182,9 @@ namespace Dash
                          "}";
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
-                {
-                    await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
-                };
+            {
+                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+            };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1180,6 +1226,43 @@ namespace Dash
             {
                 collectionView2.SetupContextMenu(this.xMenuFlyout);
             }
+        }
+
+        private void Cut(bool delete)
+        {
+            var selected = SelectionManager.GetSelectedDocs();
+            if (selected.Any())
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetClipboardData(new CopyPasteModel(selected.Select(view => view.ViewModel.DocumentController).ToList(), !delete));
+                if (delete)
+                {
+                    selected.ForEach(dv => dv.DeleteDocument());
+                }
+                Clipboard.SetContent(dataPackage);
+            }
+            else
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetClipboardData(new CopyPasteModel(new List<DocumentController> { ViewModel.DocumentController }, !delete));
+                if (delete)
+                {
+                    DeleteDocument();
+                }
+
+                Clipboard.SetContent(dataPackage);
+            }
+
+        }
+
+        private void MenuFlyoutItemClipboardCopy_Click(object sender, RoutedEventArgs e)
+        {
+            Cut(false);
+        }
+
+        private void MenuFlyoutItemCut_Click(object sender, RoutedEventArgs e)
+        {
+            Cut(true);
         }
 
         private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)

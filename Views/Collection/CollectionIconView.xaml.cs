@@ -34,7 +34,7 @@ namespace Dash.Views.Collection
             using (UndoManager.GetBatchHandle())
             {
                 var doc = ViewModel.ContainerDocument.GetViewCopy();
-                ViewModel.ViewType = Enum.Parse<CollectionViewType>(ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionViewType.Freeform.ToString());
+                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey,ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionViewType.Freeform.ToString(), true);
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
                 doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);

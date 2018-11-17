@@ -68,6 +68,21 @@ namespace Dash
             }
         }
 
+        private Point? _forceFocusPoint;
+        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
+        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
+        {
+            _forceFocusPoint = where;
+            TextPreviewer = collection;
+        }
+        public void ClearForceFocus()
+        {
+            TextPreviewer?.ClearPreview();
+            _forceFocusPoint = null;
+        }
+
+        public CollectionFreeformBase TextPreviewer = null;
+
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
@@ -130,8 +145,27 @@ namespace Dash
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
+         
+
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
+        }
+
+        public DocumentController MiscellaneousFolder
+        {
+            get
+            {
+                var folders = MainDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                var misc = folders.Where((doc) => doc.Title == "Miscellaneous").FirstOrDefault();
+                if (misc == null)
+                {
+                    misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
+                    misc.SetTitle("Miscellaneous");
+                    MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
+                   // folders.Add(misc);
+                }
+                return misc;
+            }
         }
 
         public void Query(string search)
@@ -170,14 +204,6 @@ namespace Dash
             }
             FieldControllerBase.MakeRoot(MainDocument);
 
-            var l = new ListController<TextController>();
-            for (int i = 0; i < 2000; i++)
-            {
-                l.Add(new TextController());
-            }
-
-            MainDocument.SetField(KeyController.Get("some string it doesnt matter"), l, true);
-
             LoadSettings();
 
             //get current presentations if any and set data context of pres view to pres view model
@@ -203,6 +229,15 @@ namespace Dash
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
             //xMainTreeView.ToggleDarkMode(true);
+
+            var toolbar = MainDocument.GetField<DocumentController>(KeyStore.ToolbarKey);
+            if (toolbar == null)
+            {
+                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
+            }
+
+            //MenuToolbar.Instance.SetCollection(toolbar);
 
             SetupMapView(lastWorkspace);
 
@@ -331,19 +366,6 @@ namespace Dash
                         }
                 }
             }
-
-            //deactivate all docs if esc was pressed
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    LinkActivationManager.DeactivateAll();
-                }
-
-            }
-
-            
-       
 
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())

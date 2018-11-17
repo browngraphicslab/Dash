@@ -58,6 +58,11 @@ namespace Dash
                 var source = Image.Source as BitmapSource;
                 XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
+
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+                XAnnotationGrid.Children.Add(_annotationOverlay);
+                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
 
             Loaded += EditableImage_Loaded;
@@ -69,10 +74,6 @@ namespace Dash
             LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdated(controller, arg3));
             
             _imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
-            
-            _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-            _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
-            XAnnotationGrid.Children.Add(_annotationOverlay);
         }
 
         private DocumentController RegionGetter(AnnotationType type)
@@ -422,7 +423,6 @@ namespace Dash
         {
             if (IsCropping) e.Handled = true;
             var point = e.GetCurrentPoint(_annotationOverlay);
-
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);

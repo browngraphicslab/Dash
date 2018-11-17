@@ -6,6 +6,7 @@ using Windows.Foundation;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
@@ -65,8 +66,20 @@ namespace Dash
                 _visibleElementsRenderedWidth.Add(-1);
                 _visibleElementsIsRendering.Add(false);
             }
-            
-            _scrollViewer.ViewChanging  += (s,e) => RenderIndices(e.FinalView.VerticalOffset);
+            var timer = new DispatcherTimer()
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 100)
+            };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                RenderIndices(_scrollViewer.VerticalOffset);
+            };
+            _scrollViewer.ViewChanging += (s, e) =>
+            {
+                timer.Stop();
+                timer.Start();
+            };
             _scrollViewer.SizeChanged   += (s,e) => RenderIndices(_verticalOffset);
             RenderIndices(0);
         }
@@ -87,8 +100,7 @@ namespace Dash
                     {
                         _visibleElementsIsRendering[i] = true;
                         _visibleElementsTargetedWidth[i] = targetWidth;
-                        //if (_view.PdfUri != null)
-                            RenderPage(i);
+                        RenderPage(i);
                     }
                     else
                     {

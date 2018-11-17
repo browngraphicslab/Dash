@@ -127,4 +127,70 @@ public sealed class ToStringOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.undo)]
+public sealed class UndoOperator : OperatorController
+{
+
+    public UndoOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public UndoOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("UndoOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new UndoOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        Dash.UtilFunctions.Undo();
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.redo)]
+public sealed class RedoOperator : OperatorController
+{
+
+    public RedoOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public RedoOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("RedoOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new RedoOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        Dash.UtilFunctions.Redo();
+        return Task.CompletedTask;
+    }
+
+}
+
 }

@@ -4,34 +4,31 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.System;
-using Windows.UI;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
+using System.Threading;
 using Dash.Views.Collection;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 using NewControls.Geometry;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
+using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.System;
+using Windows.UI;
+using Windows.UI.Input;
+using Windows.UI.Input.Inking;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using Task = System.Threading.Tasks.Task;
-using Window = Windows.UI.Xaml.Window;
-using DashShared;
-using System.Threading;
-using Windows.Devices.Input;
-using Windows.Storage.Streams;
-using Windows.Storage;
-using Windows.UI.Input;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
-using Windows.UI.Input.Inking;
 
 namespace Dash
 {
@@ -98,6 +95,17 @@ namespace Dash
             Loaded += OnBaseLoaded;
             Unloaded += OnBaseUnload;
             KeyDown += _marquee_KeyDown;
+            
+            previewTextbox = new TextBox
+            {
+                Width = 200,
+                Height = 50,
+                Background = new SolidColorBrush(Colors.Transparent),
+                Visibility = Visibility.Collapsed,
+                ManipulationMode = ManipulationModes.All
+            };
+            previewTextbox.LostFocus += (s, e) => previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.KeyDown += PreviewTextbox_KeyDown;
         }
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
@@ -116,7 +124,7 @@ namespace Dash
             _backgroundCanvas.VerticalAlignment = VerticalAlignment.Stretch;
 
             GetInkHostCanvas().Children.Clear();
-            MakePreviewTextbox();
+            GetInkHostCanvas().Children.Add(previewTextbox);
 
             //make and add selectioncanvas 
             SelectionCanvas = new Canvas();
@@ -216,7 +224,7 @@ namespace Dash
         /// <summary>
         /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
         /// </summary>
-        Storyboard _storyboard1, _storyboard2;
+        private Storyboard _storyboard1, _storyboard2;
 
         public void Move(TranslateTransform translate)
         {
@@ -803,7 +811,7 @@ namespace Dash
 					GetOuterGrid().CapturePointer(args.Pointer);
                     _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
                     _isMarqueeActive = true;
-					PreviewTextbox_LostFocus(null, null);
+                    previewTextbox.Visibility = Visibility.Collapsed;
                     if (ParentDocument != null)
                     {
                         ParentDocument.ManipulationMode = ManipulationModes.None;
@@ -837,6 +845,7 @@ namespace Dash
                 var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
                 TriggerActionFromSelection(e.Key, useMarquee);
             }
+            PreviewTextBuffer += Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;
@@ -1119,49 +1128,6 @@ namespace Dash
 
         #endregion
 
-        #region Activation
-
-		protected void OnTapped(object sender, TappedRoutedEventArgs e)
-		{
-			//if (XInkCanvas.IsTopmost())
-			{
-				_isMarqueeActive = false;
-                if (!this.IsShiftPressed())
-                {
-                    var dt = new DispatcherTimer();
-                    var pt = e.GetPosition(xTransformedCanvas);
-                    dt.Tick += (s, ee) => { RenderPreviewTextbox(pt); dt.Stop(); };
-                    dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
-                    dt.Start();
-                    // RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
-                }
-			}
-			foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
-				rtv.xRichEditBox.Document.Selection.EndPosition = rtv.xRichEditBox.Document.Selection.StartPosition;
-		}
-        static public string PreviewFormatString = "#";
-		public void RenderPreviewTextbox(Point where)
-        {
-            previewTextBuffer = PreviewFormatString;
-            if (previewTextbox != null)
-            {
-                Canvas.SetLeft(previewTextbox, where.X);
-                Canvas.SetTop(previewTextbox, where.Y);
-                previewTextbox.Visibility = Visibility.Visible;
-                AddHandler(KeyDownEvent, previewTextHandler, false);
-                previewTextbox.Text = PreviewFormatString;
-                previewTextbox.SelectionStart = PreviewFormatString.Length;
-                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-                previewTextbox.LostFocus += PreviewTextbox_LostFocus;
-                previewTextbox.Focus(FocusState.Pointer);
-            }
-        }
-        #endregion
-
-        #region TextInputBox
-
-        string previewTextBuffer = "";
-        private bool previewSelectText = false;
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
@@ -1185,86 +1151,67 @@ namespace Dash
             }
         }
 
-        bool loadingPermanentTextbox;
+        #region TextInputBox
 
-        /// <summary>
-        /// THIS IS KIND OF A HACK, DON'T USE THIS
-        /// </summary>
-        public void MarkLoadingNewTextBox(string text = "", bool selectText = false)
+        static public string PreviewFormatString = "#";
+        public string PreviewTextBuffer { get; set; } = "";
+
+        private TextBox previewTextbox  = null;
+        public void ClearPreview()
         {
-            previewTextBuffer = text;
-            previewSelectText = selectText;
-            if (!loadingPermanentTextbox)
+            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Text = string.Empty;
+        }
+
+        protected void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            _isMarqueeActive = false;
+            if (!this.IsShiftPressed())
             {
-                loadingPermanentTextbox = true;
+                var dt = new DispatcherTimer();
+                var pt = e.GetPosition(xTransformedCanvas);
+                dt.Tick += (s, ee) => { ShowPreviewTextbox(pt); dt.Stop(); };
+                dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
+                dt.Start();
+            }
+            foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
+            {
+                rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
+            }
+        }
+        private void ShowPreviewTextbox(Point where)
+        {
+            PreviewTextBuffer = PreviewFormatString;
+            if (previewTextbox != null)
+            {
+                MainPage.Instance.ClearForceFocus();
+                Canvas.SetLeft(previewTextbox, where.X);
+                Canvas.SetTop(previewTextbox, where.Y);
+                previewTextbox.Visibility = Visibility.Visible;
+                previewTextbox.Text = PreviewFormatString;
+                previewTextbox.SelectionStart = PreviewFormatString.Length;
+                previewTextbox.Focus(FocusState.Pointer);
             }
         }
 
-        TextBox previewTextbox { get; set; }
-
-        object previewTextHandler = null;
-        void MakePreviewTextbox()
-        {
-            if (previewTextHandler == null)
-                previewTextHandler = new KeyEventHandler(PreviewTextbox_KeyDown);
-
-            previewTextbox = new TextBox
-            {
-                Width = 200,
-                Height = 50,
-                Background = new SolidColorBrush(Colors.Transparent),
-                Visibility = Visibility.Collapsed,
-                ManipulationMode = ManipulationModes.All
-            };
-            previewTextbox.Paste += previewTextbox_Paste;
-            previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
-            GetInkHostCanvas().Children.Add(previewTextbox);
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
-        }
-
-        void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (previewTextHandler != null)
-            {
-                RemoveHandler(KeyDownEvent, previewTextHandler);
-                previewTextbox.Visibility = Visibility.Collapsed;
-                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            }
-        }
-
-        protected void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
-        {
-            var text = previewTextbox.Text;
-            if (previewTextbox.Visibility != Visibility.Collapsed)
-            {
-                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-            }
-        }
-
-        async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key.Equals(VirtualKey.Escape))
             {
                 e.Handled = true;
-                PreviewTextbox_LostFocus(null, null);
-                return;
+                previewTextbox.Visibility = Visibility.Collapsed;
             }
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            var text = KeyCodeToUnicode(e.Key);
-            if (e.Key == VirtualKey.Back)
+            else if (e.Key == VirtualKey.Back)
             {
-                previewTextBuffer = previewTextBuffer == PreviewFormatString ? "" : previewTextBuffer;
-                previewTextbox.Text = previewTextBuffer;
+                PreviewTextBuffer = PreviewTextBuffer == PreviewFormatString ? "" : PreviewTextBuffer;
+                previewTextbox.Text = PreviewTextBuffer;
             }
-            if (string.IsNullOrEmpty(text))
-                return;
-            if (previewTextbox.Visibility != Visibility.Collapsed)
+            else
             {
-                e.Handled = true;
-                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                if (this.IsCtrlPressed())
+                var text = Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
+                if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
                 {
+<<<<<<< HEAD
                     //deals with control V pasting
                     if (text == "v")
                     {
@@ -1307,24 +1254,29 @@ namespace Dash
                     previewTextBuffer += text;
                     if (text.Length > 0)
                         LoadNewActiveTextBox(text, where);
+=======
+                    e.Handled = true;
+                    convertPreviewToRealText(this.IsCtrlPressed() && text == "v" ? null : text);
+>>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
                 }
             }
         }
 
+<<<<<<< HEAD
 
         public async Task LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
+=======
+        private void convertPreviewToRealText(string text)
+>>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
         {
-            if (!loadingPermanentTextbox)
+            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            using (UndoManager.GetBatchHandle())
             {
-                using (UndoManager.GetBatchHandle())
+                if (text == null && Clipboard.GetContent()?.HasClipboardData() == true) // clipboard will have data if from outside of Dash, otherwise fall through to paste from within dash
                 {
-
-                    if (resetBuffer)
-                        previewTextBuffer = "";
-                    loadingPermanentTextbox = true;
-
-                    if (SettingsView.Instance.MarkdownEditOn)
+                    foreach (var doc in Clipboard.GetContent().GetClipboardData().GetDocuments(where))
                     {
+<<<<<<< HEAD
                         var postitNote = new MarkdownNote(text: text).Document;
                         Actions.DisplayDocument(ViewModel, postitNote, where);
                     } else
@@ -1353,227 +1305,47 @@ namespace Dash
                                 }
                             }
                         }
+=======
+                        ViewModel.AddDocument(doc);
+>>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
                     }
+                }
+                else
+                {
+                    PreviewTextBuffer += text;
+                    if (MainPage.Instance.ForceFocusPoint == null)
+                    {
+                        LoadNewActiveTextBox(text, where);
+                    }
+                }
+                if (text == null)
+                {
+                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
             }
         }
 
-        public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
+        public async void LoadNewActiveTextBox(string text, Point where)
         {
-            if (!loadingPermanentTextbox)
+            var postitNote  = text == null ? await ViewModel.Paste(Clipboard.GetContent(), where) : SettingsView.Instance.MarkdownEditOn ? new MarkdownNote(text: text).Document : new RichTextNote(text: text).Document;
+            var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
+            if (!string.IsNullOrEmpty(defaultXaml))
             {
-                if (resetBuffer)
-                    previewTextBuffer = "";
-                loadingPermanentTextbox = true;
-                var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = KeyController.Get(keyname);
-                if (containerData.GetField(keycontroller, true) == null)
-                    containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
-                var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
-                dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
-                dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
-                Actions.DisplayDocument(ViewModel, dbox, where);
+                postitNote.SetField<TextController>(KeyStore.XamlKey, defaultXaml, true);
             }
-        }
-
-        string KeyCodeToUnicode(VirtualKey key)
-        {
-
-            var shiftState = this.IsShiftPressed();
-            var capState = this.IsCapsPressed();
-            var virtualKeyCode = (uint)key;
-
-            string character = null;
-
-            // take care of symbols
-            if (key == VirtualKey.Space)
+            if (text != null)
             {
-                character = " ";
-            }
-            if (key == VirtualKey.Multiply)
-            {
-                character = "*";
-            }
-            // TODO take care of more symbols
+                MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
 
-            //Take care of letters
-            if (virtualKeyCode >= 65 && virtualKeyCode <= 90)
+                Actions.DisplayDocument(ViewModel, postitNote, where);
+            } else
             {
-                if ((!shiftState && !capState) || (shiftState && capState))
-                {
-                    character = key.ToString().ToLower();
-                } else
-                {
-                    character = key.ToString();
-                }
+                MainPage.Instance.ClearForceFocus();
             }
 
-            //Take care of numbers
-            if (virtualKeyCode >= 48 && virtualKeyCode <= 57)
-            {
-                character = (virtualKeyCode - 48).ToString();
-                if ((shiftState != false || capState != false) &&
-                    (!shiftState || !capState))
-                {
-                    switch ((virtualKeyCode - 48))
-                    {
-                    case 1: character = "!"; break;
-                    case 2: character = "@"; break;
-                    case 3: character = "#"; break;
-                    case 4: character = "$"; break;
-                    case 5: character = "%"; break;
-                    case 6: character = "^"; break;
-                    case 7: character = "&"; break;
-                    case 8: character = "*"; break;
-                    case 9: character = "("; break;
-                    case 0: character = ")"; break;
-                    default: break;
-                    }
-                }
-            }
-
-            if (virtualKeyCode >= 186 && virtualKeyCode <= 222)
-            {
-                var shifted = ((shiftState != false || capState != false) &&
-                    (!shiftState || !capState));
-                switch (virtualKeyCode)
-                {
-                case 186: character = shifted ? ":" : ";"; break;
-                case 187: character = shifted ? "=" : "+"; break;
-                case 188: character = shifted ? "<" : ","; break;
-                case 189: character = shifted ? "_" : "-"; break;
-                case 190: character = shifted ? ">" : "."; break;
-                case 191: character = shifted ? "?" : "/"; break;
-                case 192: character = shifted ? "~" : "`"; break;
-                case 219: character = shifted ? "{" : "["; break;
-                case 220: character = shifted ? "|" : "\\"; break;
-                case 221: character = shifted ? "}" : "]"; break;
-                case 222: character = shifted ? "\"" : "'"; break;
-                }
-
-            }
-            //Take care of numpad numbers
-            if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
-            {
-                character = (virtualKeyCode - 96).ToString();
-            }
-
-            return character;
-        }
-
-        /// <summary>
-        /// OnLoad handler. Interfaces with DocumentView to call corresponding functions.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is DocumentView documentView)
-            {
-                if (loadingPermanentTextbox)
-                {
-                    var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
-                    var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
-                    var editableScriptBox = documentView.GetDescendantsOfType<EditableScriptView>().FirstOrDefault();
-                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
-                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
-                    if (richEditBox != null)
-                    {
-                        richEditBox.GotFocus -= RichEditBox_GotFocus;
-                        richEditBox.GotFocus += RichEditBox_GotFocus;
-                        richEditBox.Focus(FocusState.Programmatic);
-                        //if (previewSelectText)
-                        //{
-                        // RoutedEventHandler loaded = null;
-                        // loaded = (o, args) =>
-                        // {
-                        //  richEditBox.Loaded -= loaded;
-                        //  richEditBox.Document.GetText(TextGetOptions.None, out var str);
-                        //  richEditBox.Document.Selection.SetRange(0, str.Length);
-                        // };
-                        // richEditBox.Loaded += loaded;
-
-                        // previewSelectText = false;
-                        //}
-                    }
-                    else if (textBox != null)
-                    {
-                        textBox.Loaded -= TextBox_Loaded;
-                        textBox.Loaded += TextBox_Loaded;
-                    }
-                    else if (editableScriptBox != null)
-                    {
-                        editableScriptBox.Loaded -= EditableScriptView_Loaded;
-                        editableScriptBox.Loaded += EditableScriptView_Loaded;
-                    }
-                    else if (editableMarkdownBox != null)
-                    {
-                        editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
-                        editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
-                    }
-                }
-            }
-
-        }
-
-        protected void EditableScriptView_Loaded(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as EditableScriptView;
-            textBox.Loaded -= EditableScriptView_Loaded;
-            textBox.MakeEditable();
-            textBox.XTextBox.GotFocus -= TextBox_GotFocus;
-            textBox.XTextBox.GotFocus += TextBox_GotFocus;
-            textBox.XTextBox.Focus(FocusState.Programmatic);
-        }
-
-        protected void TextBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as EditableTextBlock;
-            textBox.Loaded -= TextBox_Loaded;
-            textBox.MakeEditable();
-            textBox.XTextBox.GotFocus -= TextBox_GotFocus;
-            textBox.XTextBox.GotFocus += TextBox_GotFocus;
-            textBox.XTextBox.Focus(FocusState.Programmatic);
-        }
-        private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as EditableMarkdownBlock;
-            textBox.Loaded -= EditableMarkdownBlock_Loaded;
-            textBox.MakeEditable();
-            textBox.XMarkdownBox.GotFocus -= TextBox_GotFocus;
-            textBox.XMarkdownBox.GotFocus += TextBox_GotFocus;
-            textBox.XMarkdownBox.Focus(FocusState.Programmatic);
-        }
-
-        void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            loadingPermanentTextbox = false;
-            var text = previewTextBuffer;
-            var richEditBox = sender as RichEditBox;
-            richEditBox.GotFocus -= RichEditBox_GotFocus;
-            previewTextbox.Text = string.Empty;
-            richEditBox.Document.Selection.SetRange(0, 0);
-            richEditBox.Document.SetText(TextSetOptions.None, text);
-            richEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
-            richEditBox.Document.Selection.SetRange(text.Length, text.Length);
-        }
-
-        void TextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as TextBox;
-
-            RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            loadingPermanentTextbox = false;
-            var text = previewTextBuffer;
-            textBox.GotFocus -= TextBox_GotFocus;
-            previewTextbox.Text = string.Empty;
+            ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, MainPage.Instance));
         }
 
         #endregion
-
     }
-
 }

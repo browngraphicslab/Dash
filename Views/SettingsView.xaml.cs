@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -208,6 +210,9 @@ namespace Dash
             _clearConfidence = BackupClearSafetyConfidence.Unconfident;
             _eraseConfidence = DbEraseSafetyConfidence.Unconfident;
             _endpoint = App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>();
+
+            var version = Package.Current.Id.Version;
+            XVersionTextBlock.Text = $"Version: {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
 
             _mainPanels = new List<StackPanel>
             {

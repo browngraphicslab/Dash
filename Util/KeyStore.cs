@@ -28,7 +28,7 @@ namespace Dash
 		public static KeyController HeightFieldKey                       = KeyController.Get("Height");
 		public static KeyController TransientKey                         = KeyController.Get("Transient");
 		public static KeyController HiddenKey                            = KeyController.Get("Hidden");
-		public static KeyController DataKey                             { get; } = KeyController.Get("Data");
+		public static KeyController DataKey                              = KeyController.Get("Data");
 		public static KeyController SnapshotsKey                         = KeyController.Get("Snaphshots");
 		public static KeyController SourceUriKey                         = KeyController.Get("SourceUriKeys");
 		public static KeyController SourceTitleKey                       = KeyController.Get("SourceTitle");
@@ -93,7 +93,6 @@ namespace Dash
 		public static KeyController BackgroundImageOpacityKey            = KeyController.Get("_Background Image Opacity");
 		public static KeyController SettingsUpwardPanningKey             = KeyController.Get("_Infinite Upward Panning Enabled");
 		public static KeyController SettingsMarkdownModeKey              = KeyController.Get("_Markdown vs RTF");
-		public static KeyController ActivationKey                        = KeyController.Get("_Document Template activation phase");
 		public static KeyController TemplateListKey                      = KeyController.Get("List of templates for the Mainpage");
 		public static KeyController RowInfoKey                           = KeyController.Get("List of grid row sizes");
 		public static KeyController ColumnInfoKey                        = KeyController.Get("List of grid column sizes");
@@ -159,6 +158,7 @@ namespace Dash
         public static KeyController EventCollectionKey                   = KeyController.Get("Event Collection");
         public static KeyController EventTagsKey                         = KeyController.Get("Event Tags");
         public static KeyController EventDisplayKey                      = KeyController.Get("_EventDisplayKey");
+        public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{

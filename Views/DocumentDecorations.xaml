@@ -82,13 +82,6 @@
             <Border Grid.RowSpan="2"  VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
-        <Canvas x:Name="xActivationCanvas" VerticalAlignment="Bottom" Grid.Column="1" Width="26" Margin="-70 0 0 30">
-            <Grid  x:Name="xToggleActivationButton" HorizontalAlignment="Left" VerticalAlignment="Top" 
-                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="xToggleActivationButton_OnTapped">
-                <Ellipse x:Name="xActivationButton"/>
-                <TextBlock FontFamily="Segoe MDL2 Assets" x:Name="xToggleActivationText"  Text="&#xE70F;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
-            </Grid>
-        </Canvas>
         <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
                 <Grid x:Name="xAnnotationButtonsStack" Padding="5 0 0 0" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
                     <Grid.RowDefinitions>
@@ -97,7 +90,7 @@
                     </Grid.RowDefinitions>
                     <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
                             PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
-                            DragStarting="XAnnotateEllipseBorder_OnDragStarting" RightTapped="XAnnotateEllipseBorder_OnRightTapped">
+                            DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                         <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
                         <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
                         <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -156,7 +149,7 @@
 
                 </Grid>
                 <ComboBox x:Name="xLinkTypeBox" SelectionChanged="XLinkTypeBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10" DropDownOpened="XLinkTypeBox_OnDropDownOpened">
-                    <ComboBoxItem x:Name="xTypeZoom">Zoom</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeZoom">Follow</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeAnnotation">Annotation</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>

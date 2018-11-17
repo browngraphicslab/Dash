@@ -20,4 +20,16 @@ namespace Dash
             return 0.0;
         }
     }
+    public class DoubleToIntConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            return (int)(double)value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            return (double)(int)value;
+        }
+    }
 }

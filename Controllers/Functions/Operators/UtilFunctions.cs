@@ -25,5 +25,15 @@ namespace Dash
         {
             return new TextController(input?.GetValue(null).ToString() ?? "<null>");
         }
+
+        public static void Undo()
+        {
+            UndoManager.UndoOccured();
+        }
+
+        public static void Redo()
+        {
+            UndoManager.RedoOccured();
+        }
     }
 }

@@ -59,9 +59,14 @@ namespace Dash
                 }
             }
 
+<<<<<<< HEAD
             DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true };
             GC.Collect();
             GC.WaitForPendingFinalizers();
+=======
+            DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true, ResizersVisible = false };
+
+>>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
             return doc;
         }
 
@@ -403,7 +408,7 @@ namespace Dash
                 _history.RemoveAt(_history.Count - 1);
                 _future.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) { IsDimensionless = true };
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true, Undecorated = true, ResizersVisible = false };
             }
         }
 
@@ -415,7 +420,7 @@ namespace Dash
                 _future.RemoveAt(_future.Count - 1);
                 _history.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) { IsDimensionless = true };
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true, Undecorated = true, ResizersVisible = false };
             }
         }
 

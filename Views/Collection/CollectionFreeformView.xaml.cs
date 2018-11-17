@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using System;
+using System.Collections.Generic;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -41,6 +42,12 @@ namespace Dash
         ~CollectionFreeformView()
         {
             //Debug.WriteLine("FINALIZING CollectionFreeFormView");
+        }
+
+        public void SetDisableTransformations()
+        {
+            ViewManipulationControls.SetDisableScrollWheel(true);
+            ViewModel.DisableTransformations = true;
         }
 
         private void OnLoad(object sender, RoutedEventArgs e)
@@ -173,11 +180,12 @@ namespace Dash
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
+            menu.AddAction("BASIC", new ActionViewModel("Add Discussion",      "Add a discussion", AddDiscussion, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Image(s)",        "Add one or more images",  AddMultipleImages, source));
             menu.AddAction("BASIC", new ActionViewModel("Add Collection",      "Collection",AddCollection,source));
 
             var templates = MainPage.Instance.MainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey).TypedData;
+                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
             foreach (var template in templates)
             {
                 var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,
@@ -256,7 +264,22 @@ namespace Dash
 
             return true;
         }
+        private async Task<bool> AddDiscussion(ActionFuncParams actionParams)
+        {
+            var pt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
+            var docController = new DiscussionNote("testing...", pt).Document;
+            var note1 = new RichTextNote("Testing...").Document;
+            note1.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), 0, true);
+            docController.GetDataDocument().SetField(KeyController.Get("DiscussionItems"), new ListController<DocumentController>(note1), true);
+            docController.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), 1, true);
+            docController.SetWidth(double.NaN);
+            docController.SetHeight(double.NaN);
+            docController.SetHorizontalAlignment(HorizontalAlignment.Left);
+            docController.SetVerticalAlignment(VerticalAlignment.Stretch);
+            ViewModel.AddDocument(docController);
 
+            return true;
+        }
         private async Task<bool> AddImageWithCaption(ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker
@@ -288,18 +311,17 @@ namespace Dash
                                  xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height=""Auto"" ></RowDefinition>
-                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""*"" ></RowDefinition>
                             </Grid.RowDefinitions>
                                 <Border Grid.Row=""0"" Background =""CadetBlue"" >
                                     <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
                                 </Border>
                                 <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
-                                    <dash:RichTextView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
+                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
                                 </Border>
                         </Grid>",
                         true);
                     var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-                    var caption = new RichTextNote(docController.Title).Document;
                     docController.SetWidth(docController.GetWidth());
                     docController.SetHeight(double.NaN);
                     docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);

@@ -63,22 +63,6 @@ namespace Dash
 		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key, 
 			Context context)
 		{
-			var data = controller.GetField(key);
-			if (data is ReferenceController reference)
-			{
-				//add fieldUpdatedListener to the doc controller of the reference
-				var dataDoc = reference.GetDocumentController(context);
-				dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-					delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-					{
-						var doc = sender;
-						var dargs = args;
-						if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
-							return;
-						//bind the MediaPlayerElement source to the new video
-						BindVideoSource(video, doc, reference.FieldKey);
-					});
-			}
 			BindVideoSource(video, controller, key);
 		}
 

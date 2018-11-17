@@ -77,14 +77,14 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var collection = inputs[InputCollection] as ListController<DocumentController>;;
-            var variableName = inputs[VariableName] as TextController;
-            var valueName = inputs[ValueName] as TextController;
-            var columnVariables = inputs[ColumnVariables] as ListController<KeyController>;
+            var collection = (ListController<DocumentController>) inputs[InputCollection];;
+            var variableName = (TextController) inputs[VariableName];
+            var valueName = (TextController) inputs[ValueName];
+            var columnVariables = (ListController<KeyController>) inputs[ColumnVariables];
             Debug.Assert(columnVariables != null);
-            var columnKeys = columnVariables.TypedData;
+            var columnKeys = columnVariables;
             var allHeaderKeys = Util.GetDisplayableTypedHeaders(collection);
-            var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
+            var dataKeys = allHeaderKeys.Keys.Except(columnKeys).ToList();
 
             var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
             var variableKey = KeyController.Get(variableName.Data);
@@ -93,7 +93,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
 
             // iterate over all the original documents
-            foreach (var originalDoc in collection.TypedData)
+            foreach (var originalDoc in collection)
             {
                 // for each data key, create a new document
                 // containing references for each column variable

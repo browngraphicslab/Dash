@@ -139,7 +139,7 @@ namespace Dash
             }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
-            if (ParentOverlay.TextSelectableElements != null && indexList.Any() && _selectionViewModel != null)
+            if (ParentOverlay.TextSelectableElements?.Count() > 0 && indexList.Any() && _selectionViewModel != null)
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);

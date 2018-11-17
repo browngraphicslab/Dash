@@ -53,18 +53,20 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="xPdfCol" x:FieldModifier="public"/>
                     <ColumnDefinition Width="10"/>
-                    <ColumnDefinition x:Name="xPdfNotesCol"/>
+                    <ColumnDefinition x:Name="xPdfNotesCol" x:FieldModifier="public"/>
                 </Grid.ColumnDefinitions>
                 <!--This Grid will have the width and height of the pdf that is being displayed-->
                 <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
-                    <Grid x:Name="xPdfGrid" Background="Transparent" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                        <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+                    <Grid x:Name="xPdfGridWithEmbeddings" CompositeMode="SourceOver">
+                        <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                            <!-- ItemsControl that stores the page images -->
+                            <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+                        </Grid>
                     </Grid>
                 </Viewbox>
 
                 <Canvas x:Name="xAnnotationBox" Background="white" Grid.Column="2">
-                    <local:CollectionView x:Name="xCollectionView" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="3000" />
+                    <local:CollectionView x:Name="xCollectionView" x:FieldModifier="public" HorizontalAlignment="Left" Height="{x:Bind PdfTotalHeight, Mode=OneWay}" VerticalAlignment="Top" Width="3000" />
                 </Canvas>
             </Grid>
         </ScrollViewer>

@@ -72,7 +72,7 @@ namespace Dash
 
         // DATA ACCESS
 
-        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point? where = null)
+        public static async Task<List<DocumentController>> GetDroppableDocumentsForDataOfType(this DataPackageView packageView, DataTransferTypeInfo transferType, FrameworkElement targetElement, Point? where = null, bool dontMove = false)
         {
             var dropDocs = new List<DocumentController>();
 
@@ -128,7 +128,7 @@ namespace Dash
 
             else if (transferType.HasFlag(Internal))
             {
-                dropDocs.AddRange(await packageView.GetAllInternalDroppableDocuments(where, targetElement));
+                dropDocs.AddRange(await packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
             }
 
             return dropDocs;
@@ -136,10 +136,10 @@ namespace Dash
 
         // HELPER METHODS
 
-        public static async Task<List<DocumentController>> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender)
+        public static async Task<List<DocumentController>> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender, bool dontMove = false)
         {
             var dragModel = packageView.GetDragModel();
-            return (dragModel?.CanDrop(sender) ?? false) ? await dragModel.GetDropDocuments(where, sender) : new List<DocumentController>();
+            return (dragModel?.CanDrop(sender) ?? false) ? await dragModel.GetDropDocuments(where, sender, dontMove) : new List<DocumentController>();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)
@@ -185,6 +185,26 @@ namespace Dash
         private static bool IsDroppable(DragModelBase dragModel, FrameworkElement target)
         {
             return dragModel is DragFieldModel || dragModel is DragDocumentModel ddm && ddm.CanDrop(target);
+        }
+
+        public static bool HasClipboardData(this DataPackageView packageView)
+        {
+            return packageView.Properties.ContainsKey(nameof(CopyPasteModel));
+        }
+
+        public static void SetClipboardData(this DataPackage package, CopyPasteModel data)
+        {
+            package.Properties[nameof(CopyPasteModel)] = data;
+        }
+
+        public static CopyPasteModel GetClipboardData(this DataPackageView packageView)
+        {
+            return (CopyPasteModel)packageView.Properties[nameof(CopyPasteModel)];
+        }
+
+        public static bool HasClipboardData(this DataPackage packageView)
+        {
+            return packageView.Properties.ContainsKey(nameof(CopyPasteModel));
         }
 
         public static bool HasDragModel(this DataPackageView packageView)
