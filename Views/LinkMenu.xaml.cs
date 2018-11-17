@@ -33,9 +33,9 @@ namespace Dash
 
         public WrapPanel XTagContainer => xTagContainer;
 
-        ////these lists save the RecentTags and Tags in between refreshes/restarts so that they are preserved for the user
-        //public ListController<DocumentController> RecentTagsSave;
-        //public ListController<DocumentController> TagsSave;
+        //these lists save the RecentTags and Tags in between refreshes/restarts so that they are preserved for the user
+        public List<Tuple<String, Color>> RecentTagsSave;
+        public List<Tuple<String, Color>> TagsSave;
 
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
         public Dictionary<string, Tag> _tagNameDict = new Dictionary<string, Tag>();
@@ -46,7 +46,41 @@ namespace Dash
             this.InitializeComponent();
             //Tags = new List<Tag>();
             _recentTags = new Queue<Tag>();
-          
+            Loaded += LinkMenu_Loaded;
+            Unloaded += LinkMenu_Unloaded;
+
+        }
+
+        private void LinkMenu_Loaded(object sender, RoutedEventArgs e)
+        {
+            _recentTags.Clear();
+            var settingsDoc = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
+            RecentTagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
+            TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
+            foreach (var documentController in RecentTagsSave)
+            {
+                RecentTags.Enqueue(new Tag(this, documentController.Item1, documentController.Item2));
+            }
+
+            foreach (var documentController in TagsSave)
+            {
+                var tag = new Tag(this, documentController.Item1, documentController.Item2);
+                Tags.Add(tag);
+                _tagNameDict.Add(tag.Text, tag);
+                //possibly repopulate the TagMap here??
+                xRecentTagsDivider.Visibility = Visibility.Visible;
+            }
+
+            //graphically displays the reloaded recent tags
+            foreach (var tag in RecentTags)
+            {
+                xTagContainer.Children.Add(tag);
+            }
+        }
+
+        private void LinkMenu_Unloaded(object sender, RoutedEventArgs e)
+        {
+
         }
 
         //checks to see if a tag with the same name has already been created. if not, then a new tag is created
@@ -92,6 +126,8 @@ namespace Dash
                 if (_recentTags.Count < 5)
                 {
                     _recentTags.Enqueue(tag);
+                    Tuple<String, Color> recentTuple = new Tuple<String, Color>(tag.Name, tag.Color);
+                    RecentTagsSave.Add(recentTuple);
                     //RecentTagsSave.Add(doc);
                 }
                 //otherwise, get rid of the oldest recent tag and add the new tag to recent tags, as well as update the recenttagssave
@@ -111,6 +147,9 @@ namespace Dash
                     xTagContainer.Children.Add(recent);
                 }
             }
+
+            Tuple<String, Color> tagTuple = new Tuple<String, Color>(tag.Name, tag.Color);
+            TagsSave.Add(tagTuple);
             return tag;
         }
 
