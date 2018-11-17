@@ -59,14 +59,7 @@ namespace Dash
                 }
             }
 
-<<<<<<< HEAD
-            DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true };
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-=======
             DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true, ResizersVisible = false };
-
->>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
             return doc;
         }
 

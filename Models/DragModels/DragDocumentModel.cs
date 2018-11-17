@@ -76,7 +76,7 @@ namespace Dash
         /*
          * Gets the document which will be dropped based on the current state of the syste
          */
-        public override async Task<List<DocumentController>> GetDropDocuments(Point? where, FrameworkElement target)
+        public override async Task<List<DocumentController>> GetDropDocuments(Point? where, FrameworkElement target, bool dontMove = false)
         {
             // For each dragged document...
             var docs = new List<DocumentController>();
@@ -100,7 +100,7 @@ namespace Dash
             else if (MainPage.Instance.IsAltPressed())
             {
                 Debug.Assert(where.HasValue);
-                docs = GetLinkDocuments((Point)where);
+                docs = await GetLinkDocuments((Point)where);
             }
             else if (MainPage.Instance.IsShiftPressed())
             {

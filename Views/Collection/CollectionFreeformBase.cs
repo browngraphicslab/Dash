@@ -1211,63 +1211,13 @@ namespace Dash
                 var text = Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
                 if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
                 {
-<<<<<<< HEAD
-                    //deals with control V pasting
-                    if (text == "v")
-                    {
-                        using (UndoManager.GetBatchHandle())
-                        {
-                            var postitNote = await ViewModel.Paste(Clipboard.GetContent(), where);
-
-                            //check if a doc is currently in link activation mode
-                            if (LinkActivationManager.ActivatedDocs.Count >= 1)
-                            {
-                                foreach (DocumentView activated in LinkActivationManager.ActivatedDocs)
-                                {
-                                    //make this rich text an annotation for activated  doc
-                                    if (KeyStore.RegionCreator.ContainsKey(activated.ViewModel.DocumentController.DocumentType))
-                                    {
-                                        var region = await KeyStore.RegionCreator[activated.ViewModel.DocumentController.DocumentType](activated,
-                                            postitNote.GetPosition());
-
-                                        //link region to this text 
-                                        region.Link(postitNote, LinkBehavior.Overlay);
-                                    }
-                                }
-                            }
-
-                            previewTextbox.Visibility = Visibility.Collapsed;
-                        }
-                    } else
-                    {
-                        LoadNewActiveTextBox("", where);
-                    }
-                }
-                //else if (this.IsCtrlPressed())
-                //{
-                //    //if we can access rich text view here, we can actually respond to these events
-                //    //either call the key down event in richtextbox or handle diff control cases here
-                //    LoadNewActiveTextBox("", where);
-                //}
-                else
-                {
-                    previewTextBuffer += text;
-                    if (text.Length > 0)
-                        LoadNewActiveTextBox(text, where);
-=======
                     e.Handled = true;
                     convertPreviewToRealText(this.IsCtrlPressed() && text == "v" ? null : text);
->>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
                 }
             }
         }
 
-<<<<<<< HEAD
-
-        public async Task LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
-=======
-        private void convertPreviewToRealText(string text)
->>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
+        private async void convertPreviewToRealText(string text)
         {
             var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
             using (UndoManager.GetBatchHandle())
@@ -1276,38 +1226,7 @@ namespace Dash
                 {
                     foreach (var doc in Clipboard.GetContent().GetClipboardData().GetDocuments(where))
                     {
-<<<<<<< HEAD
-                        var postitNote = new MarkdownNote(text: text).Document;
-                        Actions.DisplayDocument(ViewModel, postitNote, where);
-                    } else
-                    {
-                        var postitNote = new RichTextNote(text: text).Document;
-                        var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
-                        if (!string.IsNullOrEmpty(defaultXaml))
-                        {
-                            postitNote.SetField<TextController>(KeyStore.XamlKey, defaultXaml, true);
-                        }
-                        Actions.DisplayDocument(ViewModel, postitNote, where);
-
-                        //move link activation stuff here
-                        //check if a doc is currently in link activation mode
-                        if (LinkActivationManager.ActivatedDocs.Count >= 1)
-                        {
-                            foreach (var activated in LinkActivationManager.ActivatedDocs.Where((dv) => dv.ViewModel != null))
-                            {
-                                if (KeyStore.RegionCreator.TryGetValue(activated.ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
-                                {
-                                    //make this rich text an annotation for activated  doc
-                                    var region = await func( activated,
-                                                       Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, activated));
-                                    //link region to this text  
-                                    region.Link(postitNote, LinkBehavior.Annotate);
-                                }
-                            }
-                        }
-=======
                         ViewModel.AddDocument(doc);
->>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
                     }
                 }
                 else

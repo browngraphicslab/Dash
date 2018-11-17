@@ -194,7 +194,7 @@ namespace Dash
         public async Task<DocumentController> GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
         {
             var regionDoc = await AnnotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null) && pointInAnnotationOverlayCoords != null)
+            if (regionDoc == null && pointInAnnotationOverlayCoords != null)
             {
                 regionDoc = AnnotationOverlay.CreatePinRegion(calculateClosestPointOnPDF(pointInAnnotationOverlayCoords.Value));
             }
@@ -455,11 +455,11 @@ namespace Dash
         }
 
 
-        private void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
+        private async void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
         {
             if (KeyStore.RegionCreator.TryGetValue(ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
             {
-                GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay)).Link(added, LinkBehavior.Annotate);
+                (await GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay))).Link(added, LinkBehavior.Annotate);
             }
         }
 

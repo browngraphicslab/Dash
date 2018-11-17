@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Windows.UI.Xaml;
 
 namespace Dash
 {
@@ -11,7 +13,25 @@ namespace Dash
             if (eventDisplay != null)
             {
                 eventController.SetField(KeyStore.EventDisplayKey, eventDisplay, true);
-                eventController.SetField<TextController>(KeyStore.XamlKey, , true);
+                eventController.SetHeight(300);
+                eventController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                eventController.SetField<TextController>(KeyStore.XamlKey, @"<Grid
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+    <Grid.RowDefinitions>
+        <RowDefinition Height=""Auto""></RowDefinition>
+        <RowDefinition Height=""*""></RowDefinition>
+        <RowDefinition Height=""*""></RowDefinition>
+    </Grid.RowDefinitions>
+    <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+        <TextBlock x:Name=""xTextFieldTitle"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+    </Border>
+    <StackPanel Orientation=""Horizontal""  Grid.Row=""2"" Height=""Auto"" Background=""White"" >
+        <dash:DocumentView x:Name=""xDocumentField_EventDisplayKey"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2"" VerticalAlignment=""Top"" />
+    </StackPanel>
+</Grid>", true);
             }
 
             EventControllers.Add(eventController);
@@ -27,7 +47,7 @@ namespace Dash
         {
             if (events != null)
             {
-                EventControllers = events.TypedData;
+                EventControllers = events.ToList();
             }
         }
     }

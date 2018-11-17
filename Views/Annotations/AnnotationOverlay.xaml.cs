@@ -198,7 +198,7 @@ namespace Dash
                     eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                         pdfview.ParentCollection.ViewModel.ContainerDocument, true);
                     eventDoc.Link(annotation, LinkBehavior.Annotate);
-                    EventManager.EventOccured(eventDoc);
+                    EventManager.EventOccured(eventDoc, annotation);
                 }
                 ClearSelection(true);
             }
@@ -235,7 +235,7 @@ namespace Dash
             eventdoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                 pdfview.ParentCollection.ViewModel.ContainerDocument, true);
             eventdoc.Link(annotation, LinkBehavior.Overlay);
-            EventManager.EventOccured(eventdoc);
+            EventManager.EventOccured(eventdoc, linkedDoc);
 
             RegionDocsList.Add(annotation);
             return annotation;
@@ -335,7 +335,7 @@ namespace Dash
             {
                 embeddedDocument = embeddedDocument ?? await createEmbeddedTextNote(this, point);
                 EmbeddedDocsList.Add(embeddedDocument);
-                StartAnnotation(AnnotationType.Region, point, new AnchorableAnnotation.Selection(CreateRegionFromPreviewOrSelection(embeddedDocument)));
+                StartAnnotation(AnnotationType.Region, point, new AnchorableAnnotation.Selection(await CreateRegionFromPreviewOrSelection(embeddedDocument)));
                 return;
             }
             _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) =>

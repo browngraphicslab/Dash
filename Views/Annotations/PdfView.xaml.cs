@@ -243,11 +243,7 @@ namespace Dash
         /// <returns></returns>
         public async Task<DocumentController> GetRegionDocument(Point? docViewPoint = null)
         {
-<<<<<<< HEAD
-            return await _botPdf.GetRegionDocument(docViewPoint);
-=======
-            return _botPdf.GetRegionDocument(!docViewPoint.HasValue ? docViewPoint : Util.PointTransformFromVisual(docViewPoint.Value, this, _botPdf.AnnotationOverlay));
->>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
+            return await _botPdf.GetRegionDocument(!docViewPoint.HasValue ? docViewPoint : Util.PointTransformFromVisual(docViewPoint.Value, this, _botPdf.AnnotationOverlay));
         }
 
         private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)

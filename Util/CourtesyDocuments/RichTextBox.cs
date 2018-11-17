@@ -63,18 +63,10 @@ namespace Dash
             };
             element.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
         }
-<<<<<<< HEAD
         public static Task<DocumentController> MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
-            var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
-            return Task.FromResult(rtv?.GetRegionDocument());
-=======
-
-        public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
-        {
             var rtv = richTextBox.GetFirstDescendantOfType<RichEditView>();
-            return rtv?.GetRegionDocument();
->>>>>>> 1f147d7802f603c8d279c7b5640a0bf02d959d05
+            return Task.FromResult(rtv?.GetRegionDocument());
         }
         
         public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
