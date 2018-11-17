@@ -31,6 +31,15 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
+        private static List<KeyController> BehaviorKeys = new List<KeyController>
+        {
+            // tapped events
+            KeyStore.LeftTappedOpsKey,
+            KeyStore.RightTappedOpsKey,
+            KeyStore.DoubleTappedOpsKey,
+            KeyStore.FieldUpdatedOpsKey
+        };
+
         public override string ToString()
         {
             string prefix = GetField<TextController>(KeyStore.CollectionViewTypeKey) == null ? "@" : "#";
@@ -51,6 +60,19 @@ namespace Dash
         public static DocumentController CreateFromServer(DocumentModel model)
         {
             return new DocumentController(model);
+        }
+
+        internal void AddBehavior(KeyController triggerKey, OperatorController op)
+        {
+            var existingOps = GetField<ListController<OperatorController>>(triggerKey);
+            if (existingOps == null)
+            {
+                var ops = new ListController<OperatorController> { op };
+                SetField(triggerKey, ops, true);
+                return;
+            }
+
+            existingOps.Add(op);
         }
 
         public override async Task InitializeAsync()
@@ -1159,6 +1181,7 @@ namespace Dash
         /// </summary>
         public void ShouldExecute(KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
+            if (args.NewValue?.DereferenceToRoot(null) is DocumentController) return;
             var usedOperators = new HashSet<Type>();
             var ops           = new List<OperatorController>();
             var remOps        = new List<OperatorController>();
@@ -1509,5 +1532,25 @@ namespace Dash
 
         #endregion
 
+        public void ClearBehaviors()
+        {
+            var fieldUpdatedBehaviors = GetField<ListController<DocumentController>>(KeyStore.FieldUpdatedOpsKey);
+            if (fieldUpdatedBehaviors != null)
+            {
+                foreach (var behave in fieldUpdatedBehaviors)
+                {
+                    var ops = behave.GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
+                    behave.RemoveField(KeyStore.OperatorKey);
+                    foreach (var operatorController in ops)
+                    {
+                        foreach (var operatorControllerInput in operatorController.Inputs)
+                        {
+                            behave.RemoveField(operatorControllerInput.Key);
+                        }
+                    }
+                }
+            }
+            BehaviorKeys.ForEach(k => RemoveField(k));
+        }
     }
 }

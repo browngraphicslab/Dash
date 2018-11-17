@@ -223,7 +223,6 @@
     <Compile Include="Popups\ManageBehaviors\BehaviorTextbox.xaml.cs">
       <DependentUpon>BehaviorTextbox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Popups\ManageBehaviors\DocumentBehavior.cs" />
     <Compile Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml.cs">
       <DependentUpon>ManageBehaviorsPopup.xaml</DependentUpon>
     </Compile>

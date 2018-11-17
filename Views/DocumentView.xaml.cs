@@ -240,7 +240,7 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                if (this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible)
+                if (this.IsRightBtnPressed() && ViewModel.AreContentsHitTestVisible)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                         e.Handled = true;
@@ -250,6 +250,7 @@ namespace Dash
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
             Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
+            DoubleTapped += (sender, args) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
@@ -670,28 +671,9 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (!wasRightTapped)
-            {
-                var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
-                if (scripts != null)
-                {
-                    var args = new List<FieldControllerBase>(){ViewModel.DocumentController};
-                    var tasks = new List<Task>(scripts.Count);
-                    foreach (var operatorController in scripts)
-                    {
-                        tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
-                    }
-
-                    if (tasks.Any())
-                    {
-                        await Task.WhenAll(tasks);
-                    }
-                }
-            }
-            if (!wasHandled)
-            {
-                FocusedDocument = this;
-            }
+            ExhibitBehaviors(wasRightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey);
+            
+            if (!wasHandled) FocusedDocument = this;
 
             if (!(FocusManager.GetFocusedElement() is FrameworkElement focused) || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
@@ -723,6 +705,26 @@ namespace Dash
             }
 
             return false;
+        }
+
+        private async void ExhibitBehaviors(KeyController behaviorKey)
+        {
+            var behaviors = ViewModel.DocumentController.GetBehaviors(behaviorKey);
+            if (behaviors != null)
+            {
+                var args = new List<FieldControllerBase> { ViewModel.DocumentController };
+                var tasks = new List<Task>(behaviors.Count);
+                foreach (var operatorController in behaviors)
+                {
+                    var task = OperatorScript.Run(operatorController, args, new Scope());
+                    if (!task.IsFaulted) tasks.Add(task);
+                }
+
+                if (tasks.Any())
+                {
+                    await Task.WhenAll(tasks);
+                }
+            }
         }
 
         #region UtilityFuncions
@@ -1116,27 +1118,12 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = AnyScripts() ? "Manage Behaviors" : "Add Behaviors",
-                Icon = new FontIcons.FontAwesome { Icon = AnyScripts() ? FontAwesomeIcon.AddressBook : FontAwesomeIcon.Plus }
+                Text = AnyBehaviors() ? "Manage Behaviors" : "Add Behaviors",
+                Icon = new FontIcons.FontAwesome { Icon = AnyBehaviors() ? FontAwesomeIcon.AddressBook : FontAwesomeIcon.Plus }
             });
-            const string script = "function(doc) {" +
-                                  "   var scripts = manage_behaviors(doc);" +
-                                  "   if (scripts != null) {" +
-                                  "      doc.TappedEvent = null" +
-                                  "      for (var s in scripts) {" +
-                                  "         var op = exec(s);" +
-                                  "         if (doc.TappedEvent == null) {" +
-                                  "            doc.TappedEvent = [op];" +
-                                  "         } else {" +
-                                  "             doc.TappedEvent = doc.TappedEvent + op;" +
-                                  "         }" +
-                                  "      }" +
-                                  "   }" + 
-                                  "}";
-            var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
                 {
-                    await OperatorScript.Run(addOp, new List<FieldControllerBase> {ViewModel.DocumentController});
+                    await UIFunctions.ManageBehaviors(ViewModel.DocumentController);
                 };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
@@ -1181,7 +1168,7 @@ namespace Dash
             }
         }
 
-        private bool AnyScripts() => ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false;
+        private bool AnyBehaviors() => ViewModel.LayoutDocument.GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.TypedData.Any() ?? false;
 
         private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
         {

@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -14,7 +15,7 @@ namespace Dash.Popups
 {
     public sealed partial class ManageBehaviorsPopup
     {
-        private TaskCompletionSource<List<DocumentController>> _tcs;
+        private TaskCompletionSource<ListController<DocumentController>> _tcs;
         private readonly Dictionary<int, ComboBox> _modifierMapping = new Dictionary<int, ComboBox>();
         private readonly ObservableCollection<string> _behaviors = new ObservableCollection<string>();
         private const int BehaviorCount = 3;
@@ -28,6 +29,10 @@ namespace Dash.Popups
         public ManageBehaviorsPopup()
         {
             InitializeComponent();
+            HorizontalAlignment = HorizontalAlignment.Center;
+            VerticalAlignment = VerticalAlignment.Center;
+            Width = 700;
+            Height = 500;
             _behaviors.Add("Add new behavior");
             SetupComboBoxes();
         }
@@ -39,16 +44,19 @@ namespace Dash.Popups
             _modifierMapping[2] = xFieldModifiers;
         }
 
-        public Task<List<DocumentController>> OpenAsync(DocumentController docRef)
+        public Task<ListController<DocumentController>> OpenAsync(DocumentController docRef)
         {
-            _tcs = new TaskCompletionSource<List<DocumentController>>();
+            _tcs = new TaskCompletionSource<ListController<DocumentController>>();
+            var behaviors = docRef.GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey);
+            if (behaviors != null)
+            {
+                ViewModel.Behaviors = new ObservableCollection<DocumentController>(behaviors.TypedData);
+            }
+
+            xFieldModifiers.ItemsSource = docRef.GetDataDocument().EnumDisplayableFields().ToList().Select(f => f.Key.Name);
             xBehaviorsPopup.IsOpen = true;
             MainPage.Instance.XGrid.Children.Add(this);
             MainPage.Instance.xOverlay.Visibility = Visibility.Visible;
-            HorizontalAlignment = HorizontalAlignment.Center;
-            VerticalAlignment = VerticalAlignment.Center;
-            Width = 700;
-            Height = 500;
             return _tcs.Task;
         }
 
@@ -64,11 +72,13 @@ namespace Dash.Popups
                     xConfirmButton.Visibility = Visibility.Visible;
                     xAddTextbox.Text = "Add New";
                     var trigger = ((ComboBoxItem)xTriggeringEvent.SelectedItem).Content?.ToString();
+                    var keyName = (string)xFieldModifiers.SelectedItem;
                     var behavior = ((ComboBoxItem)xBehavior.SelectedItem).Content?.ToString();
                     var triggerModifier = _modifierMapping[xTriggeringEvent.SelectedIndex];
                     var title = XTitleBox.Text;
 
                     if (_editMode) ViewModel.Behaviors.Remove(_editing);
+                    _editMode = false;
 
                     if (behavior != null && behavior.Equals("Custom")) behavior += ": " + title;
 
@@ -78,13 +88,14 @@ namespace Dash.Popups
                     behaviorDoc.SetField<TextController>(KeyStore.TriggerKey, trigger, true);
                     behaviorDoc.SetField<TextController>(KeyStore.DocBehaviorNameKey, behavior, true);
                     behaviorDoc.SetField<TextController>(KeyStore.ScriptTitleKey, title, true);
+                    if (keyName != null) behaviorDoc.SetField(KeyStore.WatchFieldKey, KeyController.Get(keyName), true);
                     behaviorDoc.SetField<ListController<NumberController>>(KeyStore.BehaviorIndicesKey, new[]
                     {
                         xTriggeringEvent.SelectedIndex,
                         triggerModifier.SelectedIndex,
                         xBehavior.SelectedIndex,
                         xBehaviorModifiers.SelectedIndex
-                    }, true);
+                    }.Select(i => new NumberController(i)), true);
 
                     ViewModel.Behaviors.Add(behaviorDoc);
 
@@ -128,33 +139,36 @@ namespace Dash.Popups
             xBehaviorsPopup.IsOpen = false;
             MainPage.Instance.XGrid.Children.Remove(this);
             MainPage.Instance.xOverlay.Visibility = Visibility.Collapsed;
-
-            var outOps = new List<TextController>();
-            foreach (var b in ViewModel.Behaviors)
-            {
-                var script = b.Script;
-                if (!b.Trigger.Equals("Tapped") || script == null || script.Equals("")) continue;
-
-                outOps.Add(new TextController($"function(doc) {{\n\t{script}\n}}"));
-            }
-
-            _tcs.SetResult(outOps);
+            _tcs.SetResult(new ListController<DocumentController>(ViewModel.Behaviors.ToList()));
         }
 
         private void ExistingBehaviorClicked(object sender, ItemClickEventArgs e)
         {
-            var b = (DocumentBehavior)e.ClickedItem;
+            var bDoc = (DocumentController)e.ClickedItem;
+            var indices = bDoc.GetField<ListController<NumberController>>(KeyStore.BehaviorIndicesKey);
+
+            if (indices == null) return;
 
             _editMode = true;
-            _editing = b;
+            _editing = bDoc;
 
-            xTriggeringEvent.SelectedIndex = b.Indices[0];
-            b.TriggerModifier.Visibility = Visibility.Visible;
-            b.TriggerModifier.SelectedIndex = b.Indices[1];
-            xBehavior.SelectedIndex = b.Indices[2];
-            xBehaviorModifiers.SelectedIndex = b.Indices[3];
-            XTitleBox.Text = b.Title;
-            XScript.Text = b.Script;
+            //Upper left combo box (trigger) selected index   [0]
+            //Lower left combo box (modifier) selected Index  [1]
+            //Upper right combo box (behavior) selected index [2]
+            //Lower left combo box (behavior) displayed       [3]
+
+            var triggerIndex = (int)indices[0].Data;
+            xTriggeringEvent.SelectedIndex = triggerIndex;
+            var selectedModifierBox = _modifierMapping[triggerIndex];
+
+            selectedModifierBox.Visibility = Visibility.Visible;
+            selectedModifierBox.SelectedIndex = (int)indices[1].Data;
+
+            xBehavior.SelectedIndex = (int)indices[2].Data;
+            xBehaviorModifiers.SelectedIndex = (int)indices[3].Data;
+
+            XTitleBox.Text = bDoc.GetField<TextController>(KeyStore.ScriptTitleKey).Data;
+            XScript.Text = bDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
 
             DisplayAddNewPane();
             xAddButton.Visibility = Visibility.Visible;
@@ -162,7 +176,7 @@ namespace Dash.Popups
 
         private void DeleteBehavior(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemoveBehavior((sender as Button)?.DataContext as DocumentBehavior);
+            ViewModel.RemoveBehavior((sender as Button)?.DataContext as DocumentController);
         }
 
         private void Cancel(object sender, RoutedEventArgs e)
@@ -263,6 +277,32 @@ namespace Dash.Popups
         {
             if (XScriptEntry.Visibility == Visibility.Collapsed) return;
             xScriptAddButton.Visibility = XScript.Text.Equals("") || XTitleBox.Text.Equals("") ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void TriggerDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (!(args.NewValue is DocumentController bDoc)) return;
+
+            var triggerBinding = new FieldBinding<TextController>()
+            {
+                Document = bDoc,
+                Mode = BindingMode.OneWay,
+                Key = KeyStore.TriggerKey
+            };
+            sender.AddFieldBinding(TextBlock.TextProperty, triggerBinding);
+        }
+
+        private void BehaviorDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (!(args.NewValue is DocumentController bDoc)) return;
+
+            var behaviorNameBinding = new FieldBinding<TextController>()
+            {
+                Document = bDoc,
+                Mode = BindingMode.OneWay,
+                Key = KeyStore.DocBehaviorNameKey
+            };
+            sender.AddFieldBinding(TextBlock.TextProperty, behaviorNameBinding);
         }
     }
 }

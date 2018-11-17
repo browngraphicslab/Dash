@@ -63,8 +63,8 @@
                                             Margin="10 0 20 0">
                                             <TextBlock
                                                 Margin="0 -3 0 0"
-                                                x:Name="TriggerText"
-                                                Text="{x:Bind Trigger, Mode=TwoWay}"
+                                                x:Name="xTriggerText"
+                                                DataContextChanged="TriggerDataContextChanged"
                                                 VerticalAlignment="Center"/>
                                             <TextBlock 
                                                 HorizontalAlignment="Center"
@@ -77,8 +77,8 @@
                                                 Text="{StaticResource RightCaretIcon}"/>
                                             <TextBlock
                                                 Margin="0 -3 0 0"
-                                                x:Name="BehaviorText"
-                                                Text="{x:Bind Behavior, Mode=TwoWay}"
+                                                x:Name="xBehaviorText"
+                                                DataContextChanged="BehaviorDataContextChanged"
                                                 VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Button 
@@ -148,10 +148,6 @@
                                     HorizontalAlignment="Center"
                                     Width="150"
                                     Visibility="Collapsed">
-                                    <ComboBoxItem>TODO: dynamically filled</ComboBoxItem>
-                                    <ComboBoxItem>Title</ComboBoxItem>
-                                    <ComboBoxItem>Author</ComboBoxItem>
-                                    <ComboBoxItem>Date Modified</ComboBoxItem>
                                 </ComboBox>
                             </StackPanel>
 
@@ -166,7 +162,7 @@
                             <StackPanel 
                                 Orientation="Vertical"
                                 HorizontalAlignment="Center"
-                                Width="257"
+                                Width="259"
                                 Height="250">
                                 <TextBlock
                                     FontSize="14"

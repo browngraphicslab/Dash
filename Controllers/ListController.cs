@@ -345,10 +345,10 @@ namespace Dash
 
         public override bool TrySetValue(object value)
         {
-            if (value is List<T> list)
+            if (value is IEnumerable<T> list)
             {
                 var prevList = TypedData;
-                TypedData = list;
+                Set(list);
                 //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, TypedData, prevList));
                 return true;
             }
