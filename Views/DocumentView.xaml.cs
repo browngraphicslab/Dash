@@ -672,7 +672,7 @@ namespace Dash
                         var tasks = new List<Task>(scripts.Count);
                         foreach (var operatorController in scripts)
                         {
-                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                            tasks.Add(OperatorScript.Run(operatorController, args, new DictionaryScope()));
                         }
 
                         if (tasks.Any())

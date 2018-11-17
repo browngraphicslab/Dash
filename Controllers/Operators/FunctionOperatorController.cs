@@ -30,9 +30,9 @@ namespace Dash
 
             _initialized = true;
 
-            if (FunctionModel.CaptureDocumentID != null)
+            if (FunctionModel.CaptureDocumentId != null)
             {
-                _documentScope = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>(FunctionModel.CaptureDocumentID);
+                _documentScope = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>(FunctionModel.CaptureDocumentId);
                 _funcScope = Scope.FromDocument(_documentScope);
             }
         }
@@ -56,7 +56,7 @@ namespace Dash
         }
 
         public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, DocumentController scopeDocument)
-            : base( new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel, scopeDocument.Id))
+            : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel, scopeDocument.Id))
         {
             _funcScope = Scope.FromDocument(scopeDocument);
             _documentScope = scopeDocument;
@@ -76,6 +76,31 @@ namespace Dash
 
         }
 
+        public string FunctionCode => FunctionModel.FunctionCode;
+
+        public bool TrySetFunctionCode(string code)
+        {
+            var exp = TypescriptToOperatorParser.ParseToExpression(code);
+            if (exp == null)
+            {
+                return false;
+            }
+            var functionCode = FunctionModel.FunctionCode;
+            FunctionModel.FunctionCode = code;
+            _block = exp;
+            UpdateOnServer(new UndoCommand(() => TrySetFunctionCode(code), () => TrySetFunctionCode(functionCode)));
+            return true;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            string args = string.Join(", ",
+                Inputs.Select(kvp =>
+                    kvp.Value.Type == TypeInfo.Any ? kvp.Key.Name : $"{kvp.Key.Name} : {kvp.Value.Type}"));
+            var fString = $"function({args}){{\n\t\n}}";
+            return fString;
+        }
+
         private readonly List<string> _inputNames = new List<string>();
         private ScriptExpression _block;
         private TypeInfo _returnType;
@@ -86,13 +111,10 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = KeyController.Get("Function");
 
-
         //Output keys
         public static readonly KeyController ResultKey = KeyController.Get("Result");
 
-        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
-        {
-        };
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>();
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -103,7 +125,7 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            scope = new Scope(_funcScope);
+            scope = new DictionaryScope(_funcScope);
             for (var i = 0; i < _inputNames.Count; i++)
             {
                 scope.DeclareVariable(_inputNames[i], inputs[Inputs[i].Key]);

@@ -126,7 +126,7 @@ namespace Dash
             {
                 //turn script string into function expression
                 var se = ParseToExpression(script);
-                var (field, _) = await se.Execute(scope ?? new Scope());
+                var (field, _) = await se.Execute(scope ?? new DictionaryScope());
                 return field;
             }
             catch (ScriptException scriptException)
@@ -145,7 +145,7 @@ namespace Dash
             try
             {
                 var se = ParseToExpression(script);
-                return se?.CreateReference(scope ?? new Scope());
+                return se?.CreateReference(scope ?? new DictionaryScope());
 
             }
             catch (ScriptException scriptException)
@@ -483,9 +483,10 @@ namespace Dash
             case SyntaxKind.FunctionExpression:
                 var funExpr = (node as Zu.TypeScript.TsTypes.FunctionExpression);
 
-                return new FunctionDeclarationExpression(funExpr.SourceStr, funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
+                return new FunctionDeclarationExpression(funExpr.Body.GetText(), funExpr.Parameters, ParseToExpression(funExpr.Body), TypeInfo.None);
             case SyntaxKind.ArrowFunction:
-                break;
+                var arrow = ((ArrowFunction)node);
+                return new FunctionDeclarationExpression(arrow.Body.GetText(), arrow.Parameters, ParseToExpression(arrow.Body), TypeInfo.None);
             case SyntaxKind.DeleteExpression:
                 break;
             case SyntaxKind.TypeOfExpression:

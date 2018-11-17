@@ -9,7 +9,7 @@ namespace Dash
     {
         public string FunctionCode { get; set; }
 
-        public string CaptureDocumentID { get; set; }
+        public string CaptureDocumentId { get; set; }
         public List<KeyValuePair<string, TypeInfo>> Parameters { get; set; }
 
         public TypeInfo ReturnType { get; set; }
@@ -24,7 +24,7 @@ namespace Dash
             FunctionCode = functionCode;
             Parameters = parameters;
             ReturnType = returnType;
-            CaptureDocumentID = captureId;
+            CaptureDocumentId = captureId;
         }
     }
 }

@@ -40,5 +40,11 @@ namespace Dash
         {
             UndoManager.RedoOccured();
         }
+
+        public static void GlobalExport(TextController name, FieldControllerBase field)
+        {
+            MainPage.Instance.MainDocument.GetDataDocument().GetFieldOrCreateDefault<DocumentController>(KeyStore.GlobalDefinitionsKey)
+                .SetField(KeyController.Get(name.Data), field, true);
+        }
     }
 }

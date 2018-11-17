@@ -221,7 +221,8 @@ namespace Dash
             undo,
             redo,
             main_document,
-            clear
+            clear,
+            global_export
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
