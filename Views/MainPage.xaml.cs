@@ -97,7 +97,7 @@ namespace Dash
 
         public Timer LowPriorityTimer = new Timer(3600000);     // every hour
         public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
-        public Timer HighPriorityTimer = new Timer(60000);      // every minute
+        public Timer HighPriorityTimer = new Timer(15000);      // every 15 seconds
 
         public ListController<DocumentController> LowPriorityOps;
         public ListController<DocumentController> ModeratePriorityOps;
@@ -300,6 +300,7 @@ namespace Dash
                     var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
                     var task = OperatorScript.Run(op, new List<FieldControllerBase>() { layoutDoc }, new Scope());
                     if (!task.IsFaulted) tasks.Add(task);
+                    else Debug.WriteLine("TASK FAULTED!");
                 }
 
                 if (tasks.Any())

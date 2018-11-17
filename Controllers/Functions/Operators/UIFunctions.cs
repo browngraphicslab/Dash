@@ -67,32 +67,40 @@ namespace Dash
                                 Debug.Fail($"Trigger modifier combo box index {trigger} not supported!");
                                 break;
                         }
-                        dataDoc.AddBehavior(triggerKey, op);
+                        dataDoc.AddToListField(triggerKey, op);
                         break;
                     case "Priority":
                         Debug.Assert(triggerInd == 1);
-                        List<DocumentController> opGroup = null;
+                        ListController<DocumentController> opGroup = null;
+                        triggerKey = null;
                         switch (triggerModifierInd)
                         {
                             case 0:
+                                triggerKey = KeyStore.LowPriorityOpsKey;
                                 opGroup = MainPage.Instance.LowPriorityOps;
                                 break;
                             case 1:
+                                triggerKey = KeyStore.ModeratePriorityOpsKey;
                                 opGroup = MainPage.Instance.ModeratePriorityOps;
                                 break;
                             case 2:
+                                triggerKey = KeyStore.HighPriorityOpsKey;
                                 opGroup = MainPage.Instance.HighPriorityOps;
                                 break;
                             default:
                                 Debug.Fail($"Trigger modifier combo box index {trigger} not supported!");
                                 break;
                         }
-                        opGroup?.Add(new KeyValuePair<OperatorController, DocumentController>(op, layoutDoc));
+                        var opDoc = new DocumentController();
+                        opDoc.SetField(KeyStore.ScheduledOpKey, op, true);
+                        opDoc.SetField(KeyStore.ScheduledDocKey, layoutDoc, true);
+                        opGroup?.Add(opDoc);
+                        dataDoc.AddToListField(triggerKey, opDoc);
                         break;
                     case "Updated":
                         Debug.Assert(triggerInd == 2);
 
-                        var opDoc = new DocumentController();
+                        opDoc = new DocumentController();
                         opDoc.AddToListField(KeyStore.OperatorKey, op);
 
                         var watchKeyParts = bDoc.GetField<KeyController>(KeyStore.WatchFieldKey).Name.Split(".");
