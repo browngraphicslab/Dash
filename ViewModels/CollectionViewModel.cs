@@ -38,6 +38,7 @@ namespace Dash
         private static ICollectionView _previousDragEntered;
         private bool _canDragItems = true;
         private double _cellFontSize = 9;
+        public bool IsTemplate => ContainerDocument.GetDereferencedField<BoolController>(KeyStore.IsTemplateKey, null)?.Data ?? false;
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null) ?? ContainerDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
         public InkController InkController => ContainerDocument.GetDataDocument().GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
@@ -778,6 +779,10 @@ namespace Dash
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);
                 }
+            }
+            if (collectionViewModel.IsTemplate)
+            {
+                RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
             }
 
             return docsToAdd;

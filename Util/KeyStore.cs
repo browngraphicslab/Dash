@@ -154,6 +154,7 @@ namespace Dash
         public static KeyController XamlKey                              = KeyController.Get("Xaml");
         public static KeyController DefaultTextboxXamlKey                = KeyController.Get("DefaultTextboxXamlKey");
         public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
+        public static KeyController IsTemplateKey                        = KeyController.Get("IsTemplate");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
