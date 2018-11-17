@@ -6,8 +6,14 @@ namespace Dash
     {
         private static List<DocumentController> EventControllers = new List<DocumentController>();
 
-        public static void EventOccured(DocumentController eventController)
+        public static void EventOccured(DocumentController eventController, DocumentController eventDisplay = null)
         {
+            if (eventDisplay != null)
+            {
+                eventController.SetField(KeyStore.EventDisplayKey, eventDisplay, true);
+                eventController.SetField<TextController>(KeyStore.XamlKey, , true);
+            }
+
             EventControllers.Add(eventController);
             MainPage.Instance.MainDocument.AddToListField(KeyStore.EventManagerKey, eventController);
         }

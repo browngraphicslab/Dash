@@ -510,7 +510,6 @@ namespace Dash
             var collection = new CollectionNote(this.ViewModel.Position, CollectionViewType.Stacking, 500, 500,
                 eventDocs);
             collection.Document.SetTitle("Travelogue Created " + DateTime.Now.ToLocalTime().ToString("f"));
-
             var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
             cfv?.ViewModel.AddDocument(collection.Document);
 

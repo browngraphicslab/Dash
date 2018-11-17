@@ -209,6 +209,22 @@ namespace Dash
                 annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
             }
 
+            var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
+            var text = "Created a pin annotation using pdf: " + pdfview.ViewModel.DocumentController.Title;
+
+            if (linkedDoc != null)
+            {
+                text += "\n " + linkedDoc.GetField<TextController>(KeyStore.DataKey)?.Data;
+            }
+
+            var eventdoc = new RichTextNote(text).Document;
+            var tags = "pdf, annotation, pin, " + pdfview.ViewModel.DocumentController.Title;
+            eventdoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+            eventdoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                pdfview.ParentCollection.ViewModel.ContainerDocument, true);
+            eventdoc.Link(annotation, LinkBehavior.Overlay);
+            EventManager.EventOccured(eventdoc);
+
             RegionDocsList.Add(annotation);
             return annotation;
         }

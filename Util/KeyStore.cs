@@ -156,8 +156,9 @@ namespace Dash
         public static KeyController XamlKey                              = KeyController.Get("Xaml");
         public static KeyController DefaultTextboxXamlKey                = KeyController.Get("DefaultTextboxXamlKey");
         public static KeyController EventManagerKey                      = KeyController.Get("_EventManagerKey");
-        public static KeyController EventCollectionKey                   = KeyController.Get("EventCollectionKey");
-        public static KeyController EventTagsKey                         = KeyController.Get("EventTagsKey");
+        public static KeyController EventCollectionKey                   = KeyController.Get("Event Collection");
+        public static KeyController EventTagsKey                         = KeyController.Get("Event Tags");
+        public static KeyController EventDisplayKey                      = KeyController.Get("_EventDisplayKey");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
