@@ -10,7 +10,7 @@ namespace Dash
 public sealed class ManageBehaviorsOperator : OperatorController
 {
     //Input Keys
-    public static readonly KeyController DocRefKey = KeyController.Get("DocRef");
+    public static readonly KeyController LayoutDocKey = KeyController.Get("LayoutDoc");
 
     //Output Keys
     public static readonly KeyController Output0Key = KeyController.Get("Output0");
@@ -29,7 +29,7 @@ public sealed class ManageBehaviorsOperator : OperatorController
 
     public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
     {
-        new KeyValuePair<KeyController, IOInfo>(DocRefKey, new IOInfo(DashShared.TypeInfo.Document, true)),
+        new KeyValuePair<KeyController, IOInfo>(LayoutDocKey, new IOInfo(DashShared.TypeInfo.Document, true)),
     };
 
 
@@ -40,8 +40,8 @@ public sealed class ManageBehaviorsOperator : OperatorController
 
     public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
                                  DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
-        var docRef = (DocumentController)inputs[DocRefKey];
-        var output0 = await Dash.UIFunctions.ManageBehaviors(docRef);
+        var layoutDoc = (DocumentController)inputs[LayoutDocKey];
+        var output0 = await Dash.UIFunctions.ManageBehaviors(layoutDoc);
         outputs[Output0Key] = output0;
     }
 

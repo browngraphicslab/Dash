@@ -293,21 +293,23 @@ namespace Dash
         {
             if (opList.Any())
             {
-                HighPriorityTimer.Stop();
-                var tasks = new List<Task>(opList.Count);
-                foreach (var opDoc in opList)
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                 {
-                    var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
-                    var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
-                    var task = OperatorScript.Run(op, new List<FieldControllerBase>() { layoutDoc }, new Scope());
-                    if (!task.IsFaulted) tasks.Add(task);
-                    else Debug.WriteLine("TASK FAULTED!");
-                }
+                    var tasks = new List<Task>(opList.Count);
+                    foreach (var opDoc in opList)
+                    {
+                        var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
+                        var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
+                        var task = OperatorScript.Run(op, new List<FieldControllerBase>() { layoutDoc }, new Scope());
+                        if (!task.IsFaulted) tasks.Add(task);
+                        else Debug.WriteLine("TASK FAULTED!");
+                    }
 
-                if (tasks.Any())
-                {
-                    await Task.WhenAll(tasks);
-                }
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                });
 
                 return true;
             }
