@@ -293,6 +293,7 @@ namespace Dash
         {
             if (opList.Any())
             {
+                HighPriorityTimer.Stop();
                 var tasks = new List<Task>(opList.Count);
                 foreach (var opDoc in opList)
                 {
