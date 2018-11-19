@@ -411,7 +411,7 @@ namespace Dash
             XSelectionCanvas.Children.Clear();
             XPreviewRect.Width = XPreviewRect.Height = 0;
             _clipRectSelections.Clear();
-            var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is AnchorableAnnotation.Selection) && i != XPreviewRect).ToList();
+            var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is AnchorableAnnotation.Selection)).ToList();
             if (XAnnotationCanvas.Children.Any())
             {
                 var lastAdded = XAnnotationCanvas.Children.Last();
@@ -420,7 +420,7 @@ namespace Dash
                     removeItems.Add(lastAdded);
                 }
             }
-            foreach (var item in removeItems)
+            foreach (var item in removeItems.Where((i) => i != XPreviewRect))
             {
                 XAnnotationCanvas.Children.Remove(item);
             }

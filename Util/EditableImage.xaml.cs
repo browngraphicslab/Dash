@@ -428,6 +428,7 @@ namespace Dash
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
             }
             _downPt = e.GetCurrentPoint(this).Position;
+            e.Handled = true;
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

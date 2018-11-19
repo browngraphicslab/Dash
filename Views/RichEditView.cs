@@ -360,27 +360,7 @@ namespace Dash
 
         private async void this_Drop(object sender, DragEventArgs e)
         {
-            return;
-            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
-            {
-                if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(Document.Selection.Text))
-                {
-                    e.Handled = false;
-                    return;
-                }
-
-                var dropRegion = dragDoc;
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dropRegion = KeyStore.RegionCreator[dragDoc.DocumentType](view);
-                linkDocumentToSelection(dropRegion, true);
-
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
-            }
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
-            }
-            e.Handled = true;
+            e.Handled = false;
         }
 
         private void CreateActionMenu(RichEditBox sender)
