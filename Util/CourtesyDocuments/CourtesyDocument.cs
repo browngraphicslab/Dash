@@ -167,6 +167,7 @@ namespace Dash
             // assign the default fields
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
+				[KeyStore.InitialSizeKey] = new PointController(size.Width, size.Height),
                 [KeyStore.WidthFieldKey] = new NumberController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),
@@ -398,6 +399,14 @@ namespace Dash
         public static void SetAnnotationType(this DocumentController document, AnnotationType annotationType)
         {
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
+        }
+
+        public static AnnotationType GetAnnotationType(this DocumentController document)
+        {
+            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            return t == null
+                ? AnnotationType.None
+                : Enum.Parse<AnnotationType>(t.Data);
         }
 
         public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)

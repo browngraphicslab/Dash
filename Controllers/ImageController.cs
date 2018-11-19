@@ -104,7 +104,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return ImageFieldModel.Data.AbsolutePath;
+            return ImageFieldModel.Data.AbsoluteUri;
         }
 
         public override FieldControllerBase Copy()

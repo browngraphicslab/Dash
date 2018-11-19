@@ -607,7 +607,6 @@ namespace Dash
 
             return mode;
         }
-
         public async Task<DocumentController> GetVideoFile()
         {
             var videoPopup = new ImportVideoPopup();
@@ -942,7 +941,7 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
-
+        
         public async Task<(string, string)> PromptNewTemplate()
         {
             var templatePopup = new NewTemplatePopup();
@@ -952,6 +951,17 @@ namespace Dash
             UnsetPopup();
 
             return results;
+        }
+        
+	    public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
+	    {
+			// TODO: do the following eventually; for now it will just export everything you have
+		    // var documentList = await GetDocumentsToPublish();
+
+		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+		    allDocuments.Remove(MainDocument.GetDataDocument());
+			
+		    await new Publisher().StartPublication(allDocuments);
         }
 
         public async Task<(KeyController, List<KeyController>)> PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)

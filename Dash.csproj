@@ -153,6 +153,7 @@
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\changeImage.png" />
     <Content Include="Assets\loading.png" />
+    <Content Include="Assets\PublishStyle.css" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="ChromeExt2\background.js" />
@@ -361,6 +362,9 @@
     <Compile Include="Popups\ImportVideoPopup.xaml.cs">
       <DependentUpon>ImportVideoPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\PublishSelectDocumentsPopup.xaml.cs">
+      <DependentUpon>PublishSelectDocumentsPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\PushpinTypePopup.xaml.cs">
       <DependentUpon>PushpinTypePopup.xaml</DependentUpon>
     </Compile>
@@ -548,6 +552,7 @@
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
+    <Compile Include="Util\Publisher.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
     <Compile Include="Util\Search\Search.cs" />
@@ -1155,6 +1160,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\PublishSelectDocumentsPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\PushpinTypePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1574,6 +1583,9 @@
     <Folder Include="Util\Parser\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommonMark.NET">
+      <Version>0.15.1</Version>
+    </PackageReference>
     <PackageReference Include="Antlr4.Runtime.Standard">
       <Version>4.7.1.1</Version>
     </PackageReference>

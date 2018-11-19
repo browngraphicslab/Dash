@@ -319,7 +319,7 @@ namespace Dash
             }
             return maxWidth;
         }
-
+        
         private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument)
         {
             var strategy       = new BoundsExtractionStrategy();
@@ -349,6 +349,7 @@ namespace Dash
             {
                 Console.WriteLine(ex.ToString());
             }
+            DataDocument.SetField<PointController>(KeyStore.PdfHeightKey, new Point(pdfDocument.GetPage(1).GetPageSize().GetWidth(), pdfDocument.GetPage(1).GetPageSize().GetHeight()), true);
             return pdfTotalHeight-10;
         }
 

@@ -1,0 +1,214 @@
+﻿@import url('https://fonts.googleapis.com/css?family=Karla:400,700|Vollkorn:400,400i,700,700i');
+
+body {
+    background: #FFFFFD;
+    margin: 0;
+    justify-content: left;
+    font-family: "Vollkorn", serif;
+    font-weight: 400;
+    color: #383A42;
+    font-size: 15px;
+}
+
+.heading {
+    font-family: "Karla", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+}
+
+#sidebar {
+    width: 14%;
+    height: 100%;
+    font-family: "Karla", sans-serif;
+    position: fixed;
+    z-index: 1;
+    background: #F7F7F7;
+    padding: 50px 20px 20px 40px;
+    word-wrap: break-word
+}
+
+    #sidebar i {
+        color: #8BBBE5;
+    }
+
+    #sidebar .icon {
+        margin-right: 10px;
+    }
+
+
+    /* we don't want the bullet points in the list '*/
+
+    #sidebar ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+        #sidebar ul li {
+            margin: 20px 0;
+        }
+
+
+    /* we don't want the underlines showing in the sidebar links */
+
+    #sidebar a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+
+    /* for the link in the sidebar that's the current page */
+
+    #sidebar .activeNote {
+        border-bottom: 3px solid #383A42;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+#main {
+    margin-left: 20%;
+    /* same width as sidebar */
+    width: 50%;
+    padding: 30px;
+    padding-top: 50px;
+    left: 0;
+    position: absolute;
+}
+
+#noteContent {
+    line-height: 180%;
+    font-size: 110%;
+}
+
+#annotations {
+    background: #F7F7F7;
+    padding: 30px;
+    padding-left: 3%;
+    padding-top: 50px;
+    position: absolute;
+    right: 0;
+    width: 18%;
+}
+
+.annotationWrapper {
+    margin: 20px 0;
+}
+
+.annotation {
+    padding: 15px;
+    margin-left: 8px;
+    background: white;
+    border-radius: 2px;
+    overflow-wrap: break-word;
+}
+
+.annotationLink {
+    margin-top: 10px;
+    width: 100%;
+    color: #CFCCD6;
+    font-family: "Karla", sans-serif;
+}
+
+    .annotationLink a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+
+/* ========= finer details ========= */
+
+
+/* decorate links a bit */
+
+.inlineLink {
+    border-bottom: 0.5px solid;
+    color: inherit;
+    text-transform: lowercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    font-variant: small-caps;
+    font-size: 120%;
+}
+
+
+/* to prevent media from overflowing */
+
+img,
+video,
+iframe,
+audio {
+    max-width: 100%;
+}
+
+
+/* iframes (for youtube) require more delicate formatting*/
+
+iframe {
+    width: 100%;
+    height: 500px;
+}
+
+
+/* pdfs have a small margin at the bottom -- the relative position is for annotations to eventually be able to go on the page */
+
+.pdf {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+    .pdf img,
+    audio {
+        width: 100%;
+    }
+
+.pdfOverlay {
+    opacity: 0.2;
+}
+
+
+/* Tooltip container */
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    width: 30%;
+    z-index: 1;
+}
+
+
+    /* Tooltip text */
+
+    .tooltip .tooltipItem {
+        visibility: hidden;
+        background-color: #555;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        color: #fff;
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        /* Position the tooltip text */
+        position: absolute;
+        z-index: 2;
+        left: 10%;
+        /* Fade in tooltip */
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+
+    .tooltip:hover .tooltipItem {
+        visibility: visible;
+        opacity: 1;
+    }
+
+.imgNote {
+    position: relative;
+    display: inline-block;
+}
