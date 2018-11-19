@@ -17,32 +17,14 @@
             <RowDefinition x:Name="xDivider" Height ="0"/>
             <RowDefinition x:Name="xSecondPanelRow" Height="*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" x:Name="xPdfCol"/>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="0" x:Name="xPdfNotesCol"/>
-        </Grid.ColumnDefinitions>
 
-        <Grid x:Name="xTBotPdfGrid" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" >
+        <Grid x:Name="xTBotPdfGrid" Grid.Row="2" >
             <local:PdfAnnotationView x:Name="_botPdf"/>
         </Grid>
 
-        <Grid x:Name="xTopPdfGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" >
+        <Grid x:Name="xTopPdfGrid" Grid.Row="0" >
             <local:PdfAnnotationView x:Name="_topPdf"/>
         </Grid>
-        <controls:GridSplitter x:Name="xSidebarSplitter" Grid.Column="1" Tapped="xSiderbarSplitter_Tapped"  Width="0" MinWidth="0" Grid.Row="0" Grid.RowSpan="3"
-                               ManipulationStarted="xSiderbarSplitter_OnManipulationStarted" ManipulationDelta="xSiderbarSplitter_OnManipulationDelta" ManipulationCompleted="xSiderbarSplitter_OnManipulationCompleted" PointerPressed="xSiderbarSplitter_OnPointerPressed" >
-            <controls:GridSplitter.Element>
-                <Canvas>
-                    <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-25 -25 0 0" VerticalAlignment="Top">
-                        <Grid.Clip>
-                            <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
-                        </Grid.Clip>
-                    </Grid>
-                    <Rectangle Fill="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="4" Height="2000" />
-                </Canvas>
-            </controls:GridSplitter.Element>
-        </controls:GridSplitter>
 
         <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
                                ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">
@@ -55,5 +37,28 @@
                 </Canvas>
             </controls:GridSplitter.Element>
         </controls:GridSplitter>
+        
+        <Grid x:Name="xLeftMargin" Width="5" Grid.Row="0" Grid.RowSpan="3"  HorizontalAlignment="Left" Margin="-2.5 0 0 0"  VerticalAlignment="Stretch" PointerPressed="xLeftMarginPointerPressed"  PointerReleased="xLeftMarginPointerReleased">
+            <Canvas>
+                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Left" Margin="-22.5 -25 0 0" VerticalAlignment="Top">
+                    <Grid.Clip>
+                        <RectangleGeometry Rect="25 0 50 25" Transform="1 0  0 1 0 25"/>
+                    </Grid.Clip>
+                </Grid>
+            </Canvas>
+            <Line VerticalAlignment="Top" HorizontalAlignment="Center" Y1="2000" Stroke="Black" StrokeDashArray="2 2" StrokeThickness="0.25" />
+        </Grid>
+
+        <Grid x:Name="xRightMargin" Width="5" Grid.Row="0" Grid.RowSpan="3"  HorizontalAlignment="Right" Margin="0 0 -2.5 0"  VerticalAlignment="Stretch" PointerPressed="xRightMarginPointerPressed"  PointerReleased="xRightMarginPointerReleased">
+            <Canvas>
+                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-22.5 -25 0 0" VerticalAlignment="Top">
+                <Grid.Clip>
+                    <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
+                </Grid.Clip>
+                </Grid>
+            </Canvas>
+            <Line VerticalAlignment="Top" HorizontalAlignment="Center" Y1="2000" Stroke="Black" StrokeDashArray="2 2" StrokeThickness="0.25" />
+        </Grid>
+
     </Grid>
 </UserControl>

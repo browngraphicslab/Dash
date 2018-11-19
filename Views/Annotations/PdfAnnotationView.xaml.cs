@@ -139,10 +139,9 @@ namespace Dash
         {
             var sizes = Pages.PageSizes;
             var botOffset = 0.0;
-            var annoWidth = xCollectionView.ActualWidth;
             foreach (var size in sizes)
             {
-                var scale = (ScrollViewer.ViewportWidth - annoWidth) / size.Width;
+                var scale = ScrollViewer.ViewportWidth / size.Width;
                 if (botOffset + (size.Height * scale) - pos > 1)
                 {
                     break;
@@ -154,14 +153,25 @@ namespace Dash
             ScrollViewer.ChangeView(null, botOffset, null);
         }
         
-        public double Margin { get; set; }
-        public void SetMargin(double margin)
+        public double RightMargin { get; set; }
+        public double LeftMargin { get; set; }
+        public void SetRightMargin(double margin)
         {
             xPdfGrid.Padding = new Thickness(0);
-            PdfMaxWidth -= Margin;
-            xPdfGrid.Padding = new Thickness(0, 0, margin, 0);
-            PdfMaxWidth += margin;
-            Margin = margin;
+            PdfMaxWidth -= RightMargin;
+            RightMargin = margin;
+            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+            PdfMaxWidth += RightMargin;
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+        }
+        public void SetLeftMargin(double margin)
+        {
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin/pageScaling(Pages.PageSizes[0].Width) };
+            xPdfGrid.Padding = new Thickness(0);
+            PdfMaxWidth -= LeftMargin;
+            LeftMargin = margin;
+            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+            PdfMaxWidth += LeftMargin;
         }
 
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
@@ -405,10 +415,6 @@ namespace Dash
                 }
             }
         }
-        private void viewTypeChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args)
-        {
-            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
-        }
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
@@ -423,45 +429,15 @@ namespace Dash
             }
             var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
             cvm.DocumentAdded += Cvm_DocumentAdded;
-            xCollectionView.DataContext = cvm;
-            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
-            DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
             if (Pages.PageSizes.Count != 0)
             {
                 Pages.Initialize();
             }
         }
 
-        public void Bind(Binding pdfColBinding, Binding pdfNotesColBinding)
+        public void Bind()
         {
             Pages.Initialize();
-            BindingOperations.SetBinding(xPdfCol, ColumnDefinition.WidthProperty, pdfColBinding);
-            BindingOperations.SetBinding(xPdfNotesCol, ColumnDefinition.WidthProperty, pdfNotesColBinding);
-            var xfBinding = new Binding()
-            {
-                Source = xPdfCol,
-                Path = new PropertyPath("Width"),
-                Converter = new WidthToScaleXFConverter(PdfMaxWidth)
-            };
-            xCollectionView.SetBinding(RenderTransformProperty, xfBinding);
-        }
-
-        public class WidthToScaleXFConverter : SafeDataToXamlConverter<GridLength, Transform>
-        {
-            private double _pdfMaxWidth;
-            public WidthToScaleXFConverter(double pdfMaxWidth)
-            {
-                _pdfMaxWidth = pdfMaxWidth;
-            }
-            public override Transform ConvertDataToXaml(GridLength xaml, object parameter = null)
-            {
-                var ratio = xaml.Value / _pdfMaxWidth;
-                return new ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
-            }
-            public override GridLength ConvertXamlToData(Transform data, object parameter = null)
-            {
-                throw new NotImplementedException();
-            }
         }
 
 
@@ -489,7 +465,7 @@ namespace Dash
         {
             if (PdfMaxWidth > 0)
             {
-                Pages.ScrollViewerContentWidth = xPdfCol.ActualWidth;
+                Pages.ScrollViewerContentWidth = ScrollViewer.ActualWidth;
             }
         }
 
@@ -583,11 +559,13 @@ namespace Dash
         private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext();
+            e.Handled = true;
         }
 
         private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PagePrev();
+            e.Handled = true;
         }
 
         private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -601,7 +579,8 @@ namespace Dash
         }
         private double pageScaling(double width)
         {
-            return xPdfCol.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
+            //return xPdfCol.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
+            return  ScrollViewer.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
         }
         private void PagePrev()
         {
