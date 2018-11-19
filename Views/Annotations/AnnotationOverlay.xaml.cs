@@ -198,7 +198,31 @@ namespace Dash
                     eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                         pdfview.ParentCollection.ViewModel.ContainerDocument, true);
                     eventDoc.Link(annotation, LinkBehavior.Annotate);
-                    EventManager.EventOccured(eventDoc, annotation);
+                    eventDoc.SetField(KeyStore.EventDisplay1Key, annotation, true);
+                    var displayXaml =
+                        @"<Grid
+                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                            xmlns:dash=""using:Dash""
+                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                            </Border>
+                            <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                    VerticalAlignment=""Top"" />
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
+                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                    VerticalAlignment=""Top"" />
+                            </StackPanel>
+                            </Grid>";
+                    EventManager.EventOccured(eventDoc, displayXaml);
                 }
                 ClearSelection(true);
             }
@@ -235,7 +259,32 @@ namespace Dash
             eventdoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                 pdfview.ParentCollection.ViewModel.ContainerDocument, true);
             eventdoc.Link(annotation, LinkBehavior.Overlay);
-            EventManager.EventOccured(eventdoc, linkedDoc);
+            eventdoc.SetField(KeyStore.EventDisplay1Key, annotation, true);
+            eventdoc.SetField(KeyStore.EventDisplay1Key, linkedDoc, true);
+            var displayXaml =
+                @"<Grid
+                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                            xmlns:dash=""using:Dash""
+                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                            </Border>
+                            <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                    VerticalAlignment=""Top"" />
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
+                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                    VerticalAlignment=""Top"" />
+                            </StackPanel>
+                            </Grid>";
+            EventManager.EventOccured(eventdoc);
 
             RegionDocsList.Add(annotation);
             return annotation;

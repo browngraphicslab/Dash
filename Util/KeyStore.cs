@@ -157,7 +157,8 @@ namespace Dash
         public static KeyController EventManagerKey                      = KeyController.Get("_EventManagerKey");
         public static KeyController EventCollectionKey                   = KeyController.Get("Event Collection");
         public static KeyController EventTagsKey                         = KeyController.Get("Event Tags");
-        public static KeyController EventDisplayKey                      = KeyController.Get("_EventDisplayKey");
+        public static KeyController EventDisplay1Key                     = KeyController.Get("_EventDisplay1Key");
+        public static KeyController EventDisplay2Key                     = KeyController.Get("_EventDisplay2Key");
         public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
