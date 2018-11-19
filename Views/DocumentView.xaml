@@ -23,11 +23,11 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid x:Name="xMasterStack">
+    <Grid x:Name="xMasterStack" RightTapped='XMasterStack_OnRightTapped'>
         <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
-        <Grid.ContextFlyout>
+        <FlyoutBase.AttachedFlyout>
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
-        </Grid.ContextFlyout>
+        </FlyoutBase.AttachedFlyout>
         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
         <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False" />
         <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">

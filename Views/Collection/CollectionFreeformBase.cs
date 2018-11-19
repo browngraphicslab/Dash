@@ -801,7 +801,7 @@ namespace Dash
                // if ((TouchInteractions.NumFingers == 2  && TouchInteractions.HeldDocument != null) || hold)
 		       // {
 		            TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
-		       // }
+		        // }
 
 		    }
 			// marquee on left click by default
@@ -1191,7 +1191,7 @@ namespace Dash
         private void ShowPreviewTextbox(Point where)
         {
             PreviewTextBuffer = PreviewFormatString;
-            if (previewTextbox != null)
+            if (previewTextbox != null && TouchInteractions.HeldDocument == null)
             {
                 MainPage.Instance.ForceFocusPoint = null;
                 Canvas.SetLeft(previewTextbox, where.X);

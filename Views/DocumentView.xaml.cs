@@ -320,7 +320,7 @@ namespace Dash
             {
                 TouchInteractions.NumFingers = 0;
                 //inform pdf of drop (if holding pdf
-                if(TouchInteractions.HoldingPDF()) this.GetFirstDescendantOfType<PdfAnnotationView>().PdfOnDrop();
+                if(TouchInteractions.HoldingPDF()) this.GetFirstDescendantOfType<PdfAnnotationView>()?.PdfOnDrop();
                 if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 SelectionManager.DropCompleted(this, s, e);
@@ -1117,6 +1117,11 @@ namespace Dash
 
         private async void xMenuFlyout_Opening(object sender, object e)
         {
+            if (TouchInteractions.HoldingPDF())
+            {
+                xMenuFlyout.Hide();
+                return;
+            }
             xMenuFlyout.Items.Clear();
 
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1462,7 +1467,12 @@ namespace Dash
 
         private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
         {
-            xMenuFlyout_Opening(sender, e);
+            //xMenuFlyout_Opening(sender, e);
+        }
+
+        private void XMasterStack_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+           if (e.PointerDeviceType == PointerDeviceType.Mouse) xMenuFlyout.ShowAt(xMasterStack);
         }
     }
 }
