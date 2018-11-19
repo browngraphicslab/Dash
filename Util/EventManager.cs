@@ -22,7 +22,9 @@ namespace Dash
 
         public static List<DocumentController> GetEvents()
         {
-            return EventControllers;
+            var events = new List<DocumentController>(EventControllers);
+            events.OrderBy(ec => ec.GetDataDocument().GetField<DateTimeController>(KeyStore.DateCreatedKey).Data);
+            return events;
         }
 
         public static void LoadEvents(ListController<DocumentController> events)
@@ -31,6 +33,12 @@ namespace Dash
             {
                 EventControllers = events.ToList();
             }
+        }
+
+        public static bool HasEvent(string text)
+        {
+            return EventControllers.Any(ec =>
+                ec.Title.Equals(text) || ec.GetDataDocument().GetField<TextController>(KeyStore.DocumentTextKey).Data.Equals(text));
         }
     }
 }

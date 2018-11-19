@@ -847,6 +847,38 @@ namespace Dash
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
                 Document.Selection.ParagraphFormat.Alignment = align;
                 Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
+
+                var text = ViewModel.DataDocument.GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
+                           " | Created a text note:";
+                var eventDoc = new RichTextNote(text).Document;
+                var tags = "rich text, note, " + Document.Selection.Text;
+                eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                eventDoc.SetField(KeyStore.EventDisplay1Key, ViewModel.DocumentController, true);
+                var displayXaml =
+                    @"<Grid
+                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                            xmlns:dash=""using:Dash""
+                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                            </Border>
+                            <ScrollViewer Height=""200"" Grid.Row=""2"" VerticalScrollBarVisibility=""Visible"">
+                                <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                                    <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                                        Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                        VerticalAlignment=""Top"" />
+                                </StackPanel>
+                            </ScrollViewer>
+                            </Grid>";
+                EventManager.EventOccured(eventDoc, displayXaml);
             }
             Document.Selection.SetRange(s1, s2);
             Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
