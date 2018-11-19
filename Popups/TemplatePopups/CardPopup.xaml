@@ -1,0 +1,51 @@
+﻿<UserControl
+    x:Class="Dash.Popups.TemplatePopups.CardPopup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Popups.TemplatePopups"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid HorizontalAlignment= "Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened">
+                <Border x:Name="xBorder"
+                        BorderBrush="{StaticResource AccentGreenDarkDark}"
+                        Background="White"
+                        BorderThickness="2 40 2 2" Width="400" Height="400">
+                    <StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Margin="0 40 0 0">
+                        <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
+                            <dash:EditableTextBlock x:Name="xTextFieldTitle" Text="Title" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        </Border>
+                            <Border BorderThickness="10" BorderBrush="CadetBlue" Background="White" Margin="0 0 0 0" Width="146" Height="160">
+                            <dash:EditableTextBlock x:Name="xTextFieldImage" Text="Image" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                        </Border>
+                                </StackPanel>
+                                <Border BorderThickness="2" BorderBrush="CadetBlue" Margin ="0 40 0 0" Width ="146">
+                        <StackPanel Margin="0 0 0 0">
+                                    <dash:EditableTextBlock x:Name="xTextField0" Text="Default1" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 10 10 0" />
+                                    <dash:EditableTextBlock x:Name="xTextField1" Text="Default2" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
+                                    <dash:EditableTextBlock x:Name="xTextField2" Text="Default3" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
+                                    <dash:EditableTextBlock x:Name="xTextField3" Text="Default4" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
+                                    <dash:EditableTextBlock x:Name="xTextField4" Text="Default5" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
+                            
+
+
+                                </StackPanel>
+                                    </Border>
+                        </StackPanel>
+                        <Button x:Name="xConfirmButton" Margin="0 40 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
+                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </Grid>
+</UserControl>

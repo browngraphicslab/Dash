@@ -79,10 +79,10 @@ namespace Dash
         public static string GetScriptForOperatorTree(ReferenceController operatorReference, Context context = null)
         {
             var doc = operatorReference.GetDocumentController(context);
-            var op = doc.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
+            var op = doc?.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
 
             if (op == null)
-                return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
+                return $"doc(\"{doc?.Id}\").{operatorReference.FieldKey}";
             var opCont = op.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey));
             if (opCont == null)
             {

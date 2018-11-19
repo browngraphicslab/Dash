@@ -26,6 +26,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 
 
@@ -570,25 +571,52 @@ namespace Dash
             return mode;
         }
 
-        public async Task<int> GetLayoutTemplate()
+        public async Task<string> GetLayoutTemplate()
         {
             var popup = new LayoutTemplatesPopup();
             SetUpPopup(popup);
-
+            //TODO: Eventually unset this popup after templatePopup, so that user can exit back
             var templateType = await popup.GetTemplate();
             UnsetPopup();
 
+            CustomTemplate templatePopup;
             switch (templateType)
             {
             case TemplateList.TemplateType.Citation:
+                templatePopup = new CitationPopup();
                 break;
-            case TemplateList.TemplateType.Standard:
+            case TemplateList.TemplateType.Note:
+                templatePopup = new NotePopup();
+                break;
+            case TemplateList.TemplateType.Card:
+                templatePopup = new CardPopup();
                 break;
             default:
+                //templatePopup = new LayoutTemplatesPopup();
+                templatePopup = null;
                 break;
             }
+            SetUpPopup(templatePopup);
+            var customLayout = await templatePopup.GetLayout();
+            UnsetPopup();
 
-            return 1;
+            var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
+
+            var splitXaml = templateXaml.Split(" ", StringSplitOptions.None);
+            for (int i = 0; i < customLayout.Count; i++)
+            {
+                for(int j=0; j<splitXaml.Length;j++)
+                {
+                    if (splitXaml[j].Contains("Field" + i))
+                    {
+                        splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
+                        var test = splitXaml[j];
+                    }
+                }
+            }
+
+            var stringXaml = string.Join(" ", splitXaml);
+            return stringXaml;
         }
 
         public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()

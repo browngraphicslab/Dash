@@ -11,30 +11,63 @@
 
     <Grid>
         <Grid HorizontalAlignment= "Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
-            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened">
+            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened" Width ="400" Height ="300" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border x:Name="xBorder"
                         BorderBrush="{StaticResource AccentGreenLight}"
                         Background="White"
-                        BorderThickness="2 40 2 2" Width="400" Height="300">
+                        BorderThickness="2 40 2 2" Width="600"  Height="500"
+                        Margin="-100 0 0 0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left">
                     <Grid>
+                        <TextBlock FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0">Choose a template</TextBlock>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20 40 0 0">
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                            <TextBlock FontSize="18" Margin="-10 -100 0 0">Choose a template</TextBlock>
-                            <Button x:Name="xTemplate1" Margin="0 0 0 40" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
-                            </Button>
-                            <Button x:Name="xTemplate2" Margin="0 0 0 40" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                <TextBlock FontSize="14" Foreground="White" >Hate</TextBlock>
-                            </Button>
-                            <Button x:Name="xTemplate3" Margin="0 0 0 40" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                <TextBlock FontSize="14" Foreground="White" >XAMLLLLLL</TextBlock>
-                            </Button>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="xCitation" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Citation</TextBlock>
+                                </Button>
+                                <Button x:Name="xNote" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Note</TextBlock>
+                                </Button>
+                                <Button x:Name="xCard" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Card</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate17" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="xTemplate2" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate25" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate26" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate27" Margin="0 0 0 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="xTemplate3" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate35" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate36" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                                <Button x:Name="xTemplate37" Margin="0 0 0 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                </Button>
+                            </StackPanel>
                         </StackPanel>
-
-
-                        <Button x:Name="xConfirmButton" Margin="0 0 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
-                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
-                        </Button>
                     </Grid>
                 </Border>
             </Popup>

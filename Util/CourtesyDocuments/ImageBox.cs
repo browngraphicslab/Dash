@@ -50,7 +50,7 @@ namespace Dash
             var binding = new FieldBinding<ImageController>
             {
                 Document = docController,
-                Key = KeyStore.DataKey,
+                Key = key,
                 Mode = BindingMode.OneWay,
                 Context = context,
                 Converter = UriToBitmapImageConverter.Instance

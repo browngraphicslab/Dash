@@ -244,8 +244,15 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TemplatePopups\CardPopup.xaml.cs">
+      <DependentUpon>CardPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\TemplatePopups\CitationPopup.xaml.cs">
       <DependentUpon>CitationPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\CustomTemplate.cs" />
+    <Compile Include="Popups\TemplatePopups\NotePopup.xaml.cs">
+      <DependentUpon>NotePopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\TextInputPopup.xaml.cs">
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
@@ -1115,7 +1122,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TemplatePopups\CardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\TemplatePopups\CitationPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\NotePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1532,6 +1547,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Tag.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\CardTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\CitationTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

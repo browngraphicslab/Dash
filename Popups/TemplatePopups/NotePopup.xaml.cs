@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,9 +18,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Popups.TemplatePopups
 {
-    public sealed partial class CitationPopup : UserControl, CustomTemplate
+    public sealed partial class NotePopup : UserControl, CustomTemplate
     {
-        public CitationPopup()
+        public NotePopup()
         {
             this.InitializeComponent();
         }
@@ -31,6 +30,7 @@ namespace Dash.Popups.TemplatePopups
             var tcs = new TaskCompletionSource<List<string>>();
             xLayoutPopup.IsOpen = true;
             xConfirmButton.Tapped += XConfirmButton_OnClick;
+
             void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
             {
                 var input = new List<string>
@@ -47,7 +47,6 @@ namespace Dash.Popups.TemplatePopups
 
             return tcs.Task;
         }
-
 
 
         private void Popup_OnOpened(object sender, object e)
@@ -69,4 +68,5 @@ namespace Dash.Popups.TemplatePopups
             return this;
         }
     }
+
 }

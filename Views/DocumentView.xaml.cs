@@ -1256,13 +1256,13 @@ namespace Dash
             }
         }
 
-        private void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
+        private async void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
             {
-                var template = MainPage.Instance.GetLayoutTemplate();
+                var template = await MainPage.Instance.GetLayoutTemplate();
                 
-                ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, TemplateList.Templates[1].GetField<TextController>(KeyStore.XamlKey).Data, true);
+                ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, template, true);
                     //this.ShowXaml();
             }
         }

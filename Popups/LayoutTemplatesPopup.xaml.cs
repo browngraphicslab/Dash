@@ -20,24 +20,23 @@ namespace Dash.Popups
 {
     public sealed partial class LayoutTemplatesPopup : UserControl, DashPopup
     {
+        private TaskCompletionSource<TemplateList.TemplateType> _tcs;
         public LayoutTemplatesPopup()
         {
             this.InitializeComponent();
+            HorizontalAlignment = HorizontalAlignment.Left;
+            VerticalAlignment = VerticalAlignment.Top;
         }
 
         public Task<TemplateList.TemplateType> GetTemplate()
         {
-            var tcs = new TaskCompletionSource<TemplateList.TemplateType>();
+            _tcs = new TaskCompletionSource<TemplateList.TemplateType>();
             xLayoutPopup.IsOpen = true;
-            xConfirmButton.Tapped += XConfirmButton_OnClick;
-            void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
-            {
-                xLayoutPopup.IsOpen = false;
-                SettingsView.Instance.WebpageLayout = SettingsView.WebpageLayoutMode.RTF;
-                tcs.SetResult(SettingsView.WebpageLayoutMode.RTF);
-                xConfirmButton.Tapped -= XConfirmButton_OnClick;
-            }
-            return tcs.Task;
+            xCitation.Tapped += XCitation_OnClick;
+            xNote.Tapped += XNote_OnClick;
+            xCard.Tapped += XCard_OnClick;
+
+            return _tcs.Task;
         }
 
         
@@ -60,5 +59,25 @@ namespace Dash.Popups
         {
             return this;
         }
+
+        void XCitation_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Citation);
+            xLayoutPopup.IsOpen = false;
+            xCitation.Tapped -= XCitation_OnClick;
+        }
+        void XNote_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Note);
+            xLayoutPopup.IsOpen = false;
+            xNote.Tapped -= XNote_OnClick;
+        }
+        void XCard_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Card);
+            xLayoutPopup.IsOpen = false;
+            xNote.Tapped -= XCard_OnClick;
+        }
+
     }
 }
