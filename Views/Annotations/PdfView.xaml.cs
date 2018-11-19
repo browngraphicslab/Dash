@@ -195,7 +195,11 @@ namespace Dash
             var source = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
             if (activePdf.AnnotationOverlay.RegionDocsList.Contains(source))
             {
-                ScrollToRegion(source, activeView: activePdf);
+                var absoluteOffsets = source.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+                if (absoluteOffsets.Count > 1)
+                {
+                    ScrollToRegion(source, activeView: activePdf);
+                }
                 var src = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(source.GetDataDocument()));
                 if (src.Count() > 0)
                 {
@@ -211,10 +215,7 @@ namespace Dash
             {
                 tgts.ToList().ForEach((tgt) =>
                 {
-                    if (tgt.ViewModel.LayoutDocument.GetHidden())
-                    {
-                        tgt.ViewModel.LayoutDocument.ToggleHidden();
-                    }
+                    tgt.ViewModel.LayoutDocument.SetHidden(false);
 
                     tgt.ViewModel.ToggleHighlight();
                 });
@@ -296,8 +297,9 @@ namespace Dash
             };
             if (ActualWidth > 1200)
             {
-                xPdfNotesCol.Width = new GridLength(ActualWidth/2, GridUnitType.Star);
-                xPdfCol.Width = new GridLength(ActualWidth / 2, GridUnitType.Star);
+                ToggleSidebar();
+                //xPdfNotesCol.Width = new GridLength(ActualWidth/2, GridUnitType.Star);
+                //xPdfCol.Width = new GridLength(ActualWidth / 2, GridUnitType.Star);
             }
             _botPdf.Bind(binding, bindingNotes);
             _topPdf.Bind(binding, bindingNotes);
@@ -449,11 +451,19 @@ namespace Dash
             _topPdf.Visibility = Visibility.Collapsed;
             xFirstPanelRow.Height = new GridLength(0);
         }
-        
+
         private void xSiderbarSplitter_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xPdfNotesCol.Width = new GridLength(1, GridUnitType.Star);
-            xPdfCol.Width = xPdfCol.ActualWidth == ActualWidth - 10 ? new GridLength(ActualWidth / 2) : new GridLength(ActualWidth - 10);
+            ToggleSidebar();
+        }
+        private void ToggleSidebar()
+        {
+            var collapsed = xPdfNotesCol.Width.Value == 0;
+            xPdfNotesCol.Width = !collapsed ? new GridLength(0, GridUnitType.Star) : new GridLength(ActualWidth/2, GridUnitType.Star);
+            xPdfCol.Width = collapsed ? new GridLength(ActualWidth / 2, GridUnitType.Star) : new GridLength(ActualWidth - 10, GridUnitType.Star);
+            _botPdf.SetMargin(collapsed ? 200 : 0);
+            _topPdf.SetMargin(collapsed ? 200 : 0);
+            PdfMaxWidth = _botPdf.PdfMaxWidth;
         }
         private void xSiderbarSplitter_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {

@@ -119,7 +119,6 @@ namespace Dash
         {
             //Debug.WriteLine("FINALIZING PdfAnnotationView");
         }
-
         public void GoToPage(double pageNum)
         {
             var sizes = Pages.PageSizes;
@@ -130,12 +129,10 @@ namespace Dash
             {
                 if (page++ >= pageNum)
                     break;
-                var scale = xPdfCol.ActualWidth / size.Width;
-                currOffset += (size.Height + 10) * scale;
+                currOffset += (size.Height + 10) * pageScaling(size.Width);
             }
 
             ScrollViewer.ChangeView(null, currOffset, 1);
-
         }
 
         public void ScrollToPosition(double pos)
@@ -157,6 +154,15 @@ namespace Dash
             ScrollViewer.ChangeView(null, botOffset, null);
         }
         
+        public double Margin { get; set; }
+        public void SetMargin(double margin)
+        {
+            xPdfGrid.Padding = new Thickness(0);
+            PdfMaxWidth -= Margin;
+            xPdfGrid.Padding = new Thickness(0, 0, margin, 0);
+            PdfMaxWidth += margin;
+            Margin = margin;
+        }
 
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
         {
@@ -593,14 +599,17 @@ namespace Dash
         {
             PopForwardStack(_ForwardStack, _BackStack, ScrollViewer);
         }
-
+        private double pageScaling(double width)
+        {
+            return xPdfCol.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
+        }
         private void PagePrev()
         {
             var sizes = Pages.PageSizes;
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = xPdfCol.ActualWidth / size.Width;
+                var scale = pageScaling(size.Width);
                 if (currOffset + (size.Height + 10) * scale - ScrollViewer.VerticalOffset >= -1)
                 {
                     break;
@@ -618,7 +627,7 @@ namespace Dash
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = xPdfCol.ActualWidth / size.Width;
+                var scale = pageScaling(size.Width);
                 currOffset += (size.Height + 10) * scale;
                 if (currOffset - ScrollViewer.VerticalOffset > 1)
                 {
@@ -689,6 +698,11 @@ namespace Dash
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+        }
+
+        public async void OnDrop(object sender, DragEventArgs e)
+        {
+            AnnotationOverlay.OnDrop(sender, e);
         }
     }
 }

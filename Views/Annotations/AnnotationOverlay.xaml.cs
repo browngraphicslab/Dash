@@ -70,7 +70,7 @@ namespace Dash
             GetRegion = getRegion;
 
             AnnotationManager = new AnnotationManager(this);
-            AnnotationOverlayEmbeddings = new AnnotationOverlayEmbeddings(viewDocument);
+            AnnotationOverlayEmbeddings = new AnnotationOverlayEmbeddings(this);
 
             if (MainPage.Instance.xSettingsView.UseInkCanvas)
             {
@@ -824,7 +824,7 @@ namespace Dash
             if (e.DataView.HasDataOfType(Internal) && !this.IsAltPressed())
             {
                 var dm = e.DataView.GetDragModel() as DragDocumentModel;
-                if (!this.IsShiftPressed() &&  dm?.DraggingLinkButton == false)
+                if (!this.IsShiftPressed() && dm?.DraggingLinkButton == false)
                 {
                     if (dm == null)
                         return;
@@ -853,7 +853,8 @@ namespace Dash
                                 {
                                     overlayEmbeddings?.EmbeddedDocsList.Remove(dm.DraggedDocuments[i]);
                                 }
-                            } else
+                            }
+                            else
                             {
                                 dm.DraggedDocCollectionViews[i].RemoveDocument(dm.DraggedDocuments[i]);
                             }
@@ -909,9 +910,8 @@ namespace Dash
                     Debug.WriteLine(exception);
                 }
             }
-
         }
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (XPreviewRect.GetBoundingRect(this).Contains(e.GetCurrentPoint(this).Position))
             {
@@ -921,7 +921,7 @@ namespace Dash
 
         private CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
-        private void LayoutRoot_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        public void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
             {

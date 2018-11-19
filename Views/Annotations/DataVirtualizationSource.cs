@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
+using System.Linq;
 
 namespace Dash
 {
@@ -34,7 +35,7 @@ namespace Dash
         {
             //Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
-
+        
         public double ScrollViewerContentWidth = 1;
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Dash
         public int GetIndex(double verticalOffset)
         {
             var index = 0;
-            var scale = ScrollViewerContentWidth / _view.PdfMaxWidth;
+            var scale = ScrollViewerContentWidth/_view.PdfMaxWidth;
             var currOffset = verticalOffset - PageSizes[index].Height * scale;
             while (currOffset > 0)
             {
@@ -55,7 +56,6 @@ namespace Dash
 
             return index;
         }
-        public double Scaling = 1;
         public void Initialize()
         {
             _visibleElements.Clear();
@@ -88,7 +88,7 @@ namespace Dash
             _verticalOffset = scrollOffset;
             if (_scrollViewer.ActualHeight != 0)
             {
-                var endIndex   = GetIndex(_scrollViewer.ActualHeight/Scaling + _verticalOffset) + 1;
+                var endIndex   = GetIndex(_scrollViewer.ActualHeight + _verticalOffset) + 1;
                 var startIndex = GetIndex(Math.Min(_verticalOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight)) - 1;
                 var pageBuffer = (endIndex - startIndex) / 2;
                 startIndex = Math.Max(startIndex - pageBuffer, 0);
