@@ -97,7 +97,7 @@ namespace Dash
 
         public Timer LowPriorityTimer = new Timer(3600000);     // every hour
         public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
-        public Timer HighPriorityTimer = new Timer(15000);      // every 15 seconds
+        public Timer HighPriorityTimer = new Timer(5000);      // every 15 seconds
 
         public ListController<DocumentController> LowPriorityOps;
         public ListController<DocumentController> ModeratePriorityOps;
@@ -244,10 +244,11 @@ namespace Dash
             if (toolbar == null)
             {
                 toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                await InitToolbar(toolbar);
                 MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
             }
 
-            //MenuToolbar.Instance.SetCollection(toolbar);
+            MenuToolbar.Instance.SetCollection(toolbar);
 
             SetupMapView(lastWorkspace);
 
@@ -289,7 +290,8 @@ namespace Dash
             // mainPageCollectionView.ViewModel.AddDocument(docC);
         }
 
-        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e, ListController<DocumentController> opList)
+        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,
+            ListController<DocumentController> opList)
         {
             if (opList.Any())
             {
@@ -300,7 +302,7 @@ namespace Dash
                     {
                         var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
                         var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
-                        var task = OperatorScript.Run(op, new List<FieldControllerBase>() { layoutDoc }, new Scope());
+                        var task = OperatorScript.Run(op, new List<FieldControllerBase>() {layoutDoc}, new DictionaryScope());
                         if (!task.IsFaulted) tasks.Add(task);
                         else Debug.WriteLine("TASK FAULTED!");
                     }
@@ -315,6 +317,55 @@ namespace Dash
             }
 
             return false;
+        }
+
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler)
+        {
+            var op = await new DSL().Run(tappedHandler, true) as OperatorController;
+            if (op == null)
+            {
+                return null;
+            }
+            var doc = new DocumentController();
+            doc.SetField<TextController>(KeyStore.XamlKey,
+                @"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+      xmlns:dash='using:Dash'
+      xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center' />
+</Grid>" , true);
+            doc.SetField<TextController>(KeyStore.DataKey, icon, true);
+            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> {op}, true);
+
+            return doc;
+        }
+
+        private async Task InitToolbar(DocumentController toolbar)
+        {
+            toolbar.SetBackgroundColor(Colors.SkyBlue);
+            var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+
+            data.Add(await GetButton("\uE107", @"
+function(d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.remove(doc.Document);
+    }
+}
+"));
+            data.Add(await GetButton("\uE10E", @"
+function(d) {
+    undo();
+}
+"));
+            data.Add(await GetButton("\uE10D", @"
+function(d) {
+    redo();
+}
+"));
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -471,7 +522,7 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
-            xToolbar.SwitchTheme(nightModeOn);
+            //xToolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)

@@ -127,6 +127,43 @@ public sealed class ToStringOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.main_document)]
+public sealed class MainDocumentOperator : OperatorController
+{
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public MainDocumentOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public MainDocumentOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("MainDocumentOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new MainDocumentOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.Document,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var output0 = Dash.UtilFunctions.MainDocument();
+        outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
 [OperatorType(Op.Name.undo)]
 public sealed class UndoOperator : OperatorController
 {
@@ -188,6 +225,47 @@ public sealed class RedoOperator : OperatorController
     public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
                                  DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
         Dash.UtilFunctions.Redo();
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.global_export)]
+public sealed class GlobalExportOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController NameKey = KeyController.Get("Name");
+    public static readonly KeyController FieldKey = KeyController.Get("Field");
+
+
+    public GlobalExportOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public GlobalExportOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("GlobalExportOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new GlobalExportOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(NameKey, new IOInfo(DashShared.TypeInfo.Text, true)),
+        new KeyValuePair<KeyController, IOInfo>(FieldKey, new IOInfo(DashShared.TypeInfo.Any, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var name = (TextController)inputs[NameKey];
+        var field = (FieldControllerBase)inputs[FieldKey];
+        Dash.UtilFunctions.GlobalExport(name, field);
         return Task.CompletedTask;
     }
 

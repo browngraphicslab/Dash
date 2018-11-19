@@ -17,7 +17,7 @@ namespace Dash
             _scope = scope;
         }
 
-        public DSL(OuterReplScope scope)
+        public DSL(DocumentScope scope)
         {
             _scope = scope;
         }

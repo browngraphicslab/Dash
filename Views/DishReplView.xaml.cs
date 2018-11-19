@@ -50,7 +50,7 @@ namespace Dash
         private readonly ListController<FieldControllerBase> _valueList;
         private readonly ListController<NumberController> _indents;
 
-        private OuterReplScope _scope;
+        private DocumentScope _scope;
 
         private static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         private readonly List<char> _takenLetters = new List<char>();
@@ -108,7 +108,7 @@ namespace Dash
             SetupTextBox();
         }
 
-        public DishReplView(OuterReplScope scope)
+        public DishReplView(DocumentScope scope)
         {
             _scope = scope;
         }
@@ -122,7 +122,9 @@ namespace Dash
         // ReSharper disable once InconsistentNaming
         private void NewBlankScopeAndDSL()
         {
-            _scope = new OuterReplScope(_dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey));
+            var globalScope = new DocumentScope(MainPage.Instance.MainDocument.GetDataDocument()
+                .GetFieldOrCreateDefault<DocumentController>(KeyStore.GlobalDefinitionsKey), null);
+            _scope = new DocumentScope(_dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey), globalScope);
             _dsl = new DSL(_scope);
         }
         #endregion
