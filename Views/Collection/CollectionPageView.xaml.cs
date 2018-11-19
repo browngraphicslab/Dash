@@ -24,9 +24,8 @@ namespace Dash
     {
         public CollectionViewType ViewType => CollectionViewType.Page;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
-
-        private bool _templateMode;
-        private DocumentController _templateDocument;
+        private DocumentController _templateDocument =>
+            ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.CollectionItemLayoutPrototypeKey, null);
 
         public CollectionPageView()
         {
@@ -37,12 +36,18 @@ namespace Dash
 
             Loaded += (sender, args) =>
             {
+                if (_templateDocument != null)
+                {
+                    templateButton.Content = "Remove  Template";
+                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { IsDimensionless = true };
+                }
                 if (ViewModel?.DocumentViewModels.Count > 0)
                 {
                     xThumbs.SelectedIndex = 0;
                 }
             };
         }
+
         public void OnDocumentSelected(bool selected)
         {
         }
@@ -109,7 +114,7 @@ namespace Dash
                 return;
             }
 
-            if (_templateMode)
+            if (_templateDocument != null)
             {
                 _templateDocument.SetField(KeyStore.DocumentContextKey, page.DataDocument, true);
             }
@@ -220,20 +225,17 @@ namespace Dash
             _flyout.Hide();
             // prevents CommitEdit() from being called when esc is pressed
             _renameBox.LostFocus -= XRenameBox_OnLostFocus;
-
         }
-
+        
         private async void TemplateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (!_templateMode && CurrentPage !=null)
+            if (_templateDocument == null && CurrentPage !=null)
             {
-                _templateMode = true;
-                templateButton.Content = "Remove Template";
+                templateButton.Content = "Remove  Template";
                 CreateTemplate();
             }
             else
             {
-                _templateMode = false;
                 templateButton.Content = "Generate Template";
                 await RemoveTemplate();
             }
@@ -243,6 +245,7 @@ namespace Dash
         {
             if (ViewModel.DocumentViewModels.Count > 0)
             {
+                ViewModel.ContainerDocument.RemoveField(KeyStore.CollectionItemLayoutPrototypeKey);
                 await UpdateContentFromScript(true);
             }
         }
@@ -250,7 +253,7 @@ namespace Dash
         private void CreateTemplate()
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            var parentCollection = docView.ParentCollection;
+            var parentCollection = docView.ParentCollection; 
             if (parentCollection != null)
             {
                 var viewModel = docView.ViewModel;
@@ -258,15 +261,14 @@ namespace Dash
                 var point = new Point(where, viewModel.Position.Y);
                 parentCollection.ViewModel.AddDocument(CurrentPage.DocumentController.GetKeyValueAlias(point));
             }
-            _templateDocument = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.CollectionItemLayoutPrototypeKey, null);
             if (_templateDocument == null)
             {
                 var cnote = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN);
-                _templateDocument = cnote.Document;
-                _templateDocument.SetFitToParent(true);
+                cnote.Document.SetField<BoolController>(KeyStore.IsTemplateKey, true, true);
+                ViewModel.ContainerDocument.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, cnote.Document, true);
+                cnote.Document.SetFitToParent(true);
             }
             XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { IsDimensionless = true };
-
         }
 
         private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
