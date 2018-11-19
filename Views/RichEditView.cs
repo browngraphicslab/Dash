@@ -49,8 +49,8 @@ namespace Dash
 
             var text = getRtfText();
             var readable = getReadableText();
-            if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
-                Document.GetText(TextGetOptions.FormatRtf, out text);
+            //if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
+            //    Document.GetText(TextGetOptions.FormatRtf, out text);
             if (text != _lastSizeRTFText || _lastDesiredSize == new Size() || _lastSizeAvailableSize != availableSize)
             {
                 var rtb = MainPage.Instance.RTBHackBox;
@@ -360,26 +360,7 @@ namespace Dash
 
         private async void this_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
-            {
-                if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(Document.Selection.Text))
-                {
-                    e.Handled = false;
-                    return;
-                }
-
-                var dropRegion = dragDoc;
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dropRegion = await KeyStore.RegionCreator[dragDoc.DocumentType](view);
-                linkDocumentToSelection(dropRegion, true);
-
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
-            }
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
-            }
-            e.Handled = true;
+            e.Handled = false;
         }
 
         private void CreateActionMenu(RichEditBox sender)

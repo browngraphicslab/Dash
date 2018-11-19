@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Shapes;
 using NewControls.Geometry;
 using static Dash.DataTransferTypeInfo;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -27,15 +28,16 @@ namespace Dash
     public sealed partial class AnnotationOverlayEmbeddings : UserControl
     {
         public readonly DocumentController MainDocument;
+        public AnnotationOverlay AnnotationOverlay;
         public ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
         public ObservableCollection<DocumentViewModel> EmbeddedViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public AnnotationOverlayEmbeddings([NotNull] DocumentController viewDocument)
+        public AnnotationOverlayEmbeddings([NotNull] AnnotationOverlay annotationOverlay)
         {
+            AnnotationOverlay = annotationOverlay;
             InitializeComponent();
-
-            MainDocument = viewDocument;
-            EmbeddedDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
-            MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.EmbeddedDocumentsKey, (view, controller, arge) => view.embeddedDocsListOnFieldModelUpdated(controller, arge));
+            
+            EmbeddedDocsList = AnnotationOverlay.MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.EmbeddedDocumentsKey);
+            AnnotationOverlay.MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.EmbeddedDocumentsKey, (view, controller, arge) => view.embeddedDocsListOnFieldModelUpdated(controller, arge));
             embeddedDocsListOnFieldModelUpdated(null,
                 new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Update, null,
                new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.ToList(), new List<DocumentController>(), 0), false));

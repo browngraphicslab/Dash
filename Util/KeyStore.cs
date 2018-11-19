@@ -145,7 +145,6 @@ namespace Dash
 	    public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible");
         public static KeyController ImageStretchKey                      = KeyController.Get("ImageStretch");
-
         public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
         public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
         public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
@@ -160,8 +159,13 @@ namespace Dash
         public static KeyController EventDisplay1Key                     = KeyController.Get("_EventDisplay1Key");
         public static KeyController EventDisplay2Key                     = KeyController.Get("_EventDisplay2Key");
         public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
+	    public static KeyController IsAnnotationKey                      = KeyController.Get("IsAnnotation");
+        public static KeyController IsTemplateKey                        = KeyController.Get("IsTemplate");
+        public static KeyController InitialSizeKey                       = KeyController.Get("_InitialSize");
+	    public static KeyController PdfHeightKey                         = KeyController.Get("_PdfHeight");
+        public static KeyController YouTubeUrlKey                        = KeyController.Get("_YouTubeUrl");
 
-        public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
+	    public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
 			TypeRenderer[type] = makeViewFunc;
 			RegionCreator[type] = makeRegionFunc;

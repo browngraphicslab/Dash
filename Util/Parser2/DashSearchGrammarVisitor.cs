@@ -35,25 +35,63 @@ namespace Dash
 
         public override SearchPredicate VisitFunction([NotNull] SearchGrammarParser.FunctionContext context)
         {
-            var dsl = new DSL();
             var func = context.GetText();
             var funcName = context.WORD().GetText();
-            var field = dsl.Run("return " + func, true).Result;//TODO This probably shouldn't access Result
-            if (field is ListController<DocumentController> list)
+            var exp = TypescriptToOperatorParser.ParseToExpression(func);
+            try
             {
-                return document =>
+                var field = exp.Execute(new Scope()).GetAwaiter().GetResult().Item1; //TODO This probably shouldn't access Result
+
+                if (field is ListController<DocumentController> list)
                 {
-                    if (list.Contains(document))
+                    return document =>
                     {
-                        return new Result()
+                        if (list.Contains(document))
                         {
+                            return new Result()
+                            {
                             new SearchPair(KeyController.Get(funcName),
                                 new StringSearchModel("Was contained in " + func))
-                        };
+                            };
+                        }
+
+                        return new Result();
+                    };
+                }
+            }
+            catch (ScriptExecutionException e)
+            {
+                if (e.Error is VariableNotFoundExecutionErrorModel varErr && varErr.VariableName == "doc")
+                {
+                    bool failed = false;
+
+                    Result SearchPredicate(DocumentController document)
+                    {
+                        if (failed)
+                        {
+                            return new Result();
+                        }
+
+                        var scope = new Scope();
+                        scope.DeclareVariable("doc", document);
+                        var result = exp.Execute(scope).GetAwaiter().GetResult().Item1;
+                        if (result is BoolController b && b.Data)
+                        {
+                            return new Result()
+                            {
+                            new SearchPair(KeyController.Get(funcName),
+                                new StringSearchModel("Matched predicate " + func))
+                            };
+                        }
+                        else
+                        {
+                            failed = true;
+                            return new Result();
+                        }
                     }
 
-                    return new Result();
-                };
+                    return SearchPredicate;
+                }
             }
 
             return doc => new Result();
@@ -93,7 +131,7 @@ namespace Dash
                         }
                     }
                 }
-                
+
                 return result;
             };
         }

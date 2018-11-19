@@ -35,14 +35,7 @@ namespace Dash
 
                 for (var i = 0; i < posList.Count; ++i)
                 {
-                    var r = new Rectangle
-                    {
-                        Width = sizeList[i].Data.X,
-                        Height = sizeList[i].Data.Y,
-                        DataContext = selectionViewModel,
-                        IsDoubleTapEnabled = false
-                    };
-                    RenderSubRegion(posList[i].Data, PlacementMode.Top, r, selectionViewModel);
+                    RenderSubRegion(posList[i].Data, new Size(sizeList[i].Data.X, sizeList[i].Data.Y),PlacementMode.Top, selectionViewModel);
                 }
             }
         }
@@ -63,15 +56,53 @@ namespace Dash
             return false;
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
+        private void RenderSubRegion(Point pos, Size size, PlacementMode mode, Selection vm)
         {
-            r.Stroke = new SolidColorBrush(Colors.Black);
-            r.StrokeThickness = 0.5;
-            r.StrokeDashArray = new DoubleCollection {2};
-            r.HorizontalAlignment = HorizontalAlignment.Left;
-            r.VerticalAlignment = VerticalAlignment.Top;
-            InitializeAnnotationObject(r, pos, mode);
-            LayoutRoot.Children.Add(r);
+           
+            if (size.Width < 50)
+            {
+                var y = new Path();
+            y.StrokeThickness = 0.2;
+            y.SetBinding(Path.StrokeProperty, ViewModel.GetFillBinding());
+            y.Stroke = new SolidColorBrush(Colors.Black);
+            var pf = new PathFigure() { StartPoint = new Point() };
+            var fc = new PathFigureCollection();
+            fc.Add(pf);
+                y.Data = new PathGeometry() { Figures = fc };
+                var bs = new BezierSegment();
+                bs.Point1 = new Point(size.Width, 0);
+                bs.Point2 = new Point(0, size.Height / 2);
+                bs.Point3 = new Point(size.Width, size.Height / 2);
+                pf.Segments.Add(bs);
+                var bs2 = new BezierSegment();
+                bs2.Point1 = new Point(0, size.Height / 2);
+                bs2.Point2 = new Point(size.Width, size.Height);
+                bs2.Point3 = new Point(0, size.Height);
+                pf.Segments.Add(bs2);
+                pf.IsClosed = false;
+                InitializeAnnotationObject(y, pos, mode);
+                LayoutRoot.Children.Add(y);
+                y.HorizontalAlignment = HorizontalAlignment.Left;
+                y.VerticalAlignment = VerticalAlignment.Top;
+                y.Fill = new SolidColorBrush(Colors.Transparent);
+            }
+            else
+            {
+                var r = new Rectangle
+                {
+                    Width = size.Width,
+                    Height = size.Height,
+                    DataContext = vm,
+                    IsDoubleTapEnabled = false
+                };
+                r.Stroke = new SolidColorBrush(Colors.Black);
+                r.StrokeThickness = 0.5;
+                r.StrokeDashArray = new DoubleCollection { 2 };
+                r.HorizontalAlignment = HorizontalAlignment.Left;
+                r.VerticalAlignment = VerticalAlignment.Top;
+                InitializeAnnotationObject(r, pos, mode);
+                LayoutRoot.Children.Add(r);
+            }
         }
 
         public override void StartAnnotation(Point p)

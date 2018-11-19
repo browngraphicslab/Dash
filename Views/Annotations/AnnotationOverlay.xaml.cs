@@ -72,7 +72,7 @@ namespace Dash
             GetRegion = getRegion;
 
             AnnotationManager = new AnnotationManager(this);
-            AnnotationOverlayEmbeddings = new AnnotationOverlayEmbeddings(viewDocument);
+            AnnotationOverlayEmbeddings = new AnnotationOverlayEmbeddings(this);
 
             if (MainPage.Instance.xSettingsView.UseInkCanvas)
             {
@@ -497,7 +497,7 @@ namespace Dash
             XSelectionCanvas.Children.Clear();
             XPreviewRect.Width = XPreviewRect.Height = 0;
             _clipRectSelections.Clear();
-            var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is AnchorableAnnotation.Selection) && i != XPreviewRect).ToList();
+            var removeItems = XAnnotationCanvas.Children.Where(i => !((i as FrameworkElement)?.DataContext is AnchorableAnnotation.Selection)).ToList();
             if (XAnnotationCanvas.Children.Any())
             {
                 var lastAdded = XAnnotationCanvas.Children.Last();
@@ -506,7 +506,7 @@ namespace Dash
                     removeItems.Add(lastAdded);
                 }
             }
-            foreach (var item in removeItems)
+            foreach (var item in removeItems.Where((i) => i != XPreviewRect))
             {
                 XAnnotationCanvas.Children.Remove(item);
             }
@@ -996,9 +996,8 @@ namespace Dash
                     Debug.WriteLine(exception);
                 }
             }
-
         }
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (XPreviewRect.IsInVisualTree() && XPreviewRect.GetBoundingRect(this).Contains(e.GetCurrentPoint(this).Position))
             {
@@ -1008,7 +1007,7 @@ namespace Dash
 
         private CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
-        private void LayoutRoot_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        public void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
             {

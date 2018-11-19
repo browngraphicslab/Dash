@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
+using System.Linq;
+using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
@@ -34,7 +39,7 @@ namespace Dash
         {
             Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
-
+        
         public double ScrollViewerContentWidth = 1;
 
         /// <summary>
@@ -43,7 +48,7 @@ namespace Dash
         public int GetIndex(double verticalOffset)
         {
             var index = 0;
-            var scale = ScrollViewerContentWidth / _view.PdfMaxWidth;
+            var scale = ScrollViewerContentWidth/_view.PdfMaxWidth;
             var currOffset = verticalOffset - PageSizes[index].Height * scale;
             while (currOffset > 0)
             {
@@ -55,7 +60,6 @@ namespace Dash
 
             return index;
         }
-        public double Scaling = 1;
         public void Initialize()
         {
             _visibleElements.Clear();
@@ -88,7 +92,7 @@ namespace Dash
             _verticalOffset = scrollOffset;
             if (_scrollViewer.ActualHeight != 0)
             {
-                var endIndex   = GetIndex(_scrollViewer.ActualHeight/Scaling + _verticalOffset) + 1;
+                var endIndex   = GetIndex(_scrollViewer.ActualHeight + _verticalOffset) + 1;
                 var startIndex = GetIndex(Math.Min(_verticalOffset, _scrollViewer.ExtentHeight - _scrollViewer.ActualHeight)) - 1;
                 var pageBuffer = (endIndex - startIndex) / 2;
                 startIndex = Math.Max(startIndex - pageBuffer, 0);
@@ -136,5 +140,55 @@ namespace Dash
                 _visibleElementsIsRendering[pageNum] = false;
             }
         }
-    }
+
+	    public static async Task<WriteableBitmap> GetImageFromPdf(WPdf.PdfDocument pdf, uint pageNum)
+	    {
+		    WriteableBitmap wb;
+		    using (var page = pdf.GetPage(pageNum))
+		    {
+			    //todo get a way to write out to disk as opposed to memory
+			    var stream = new InMemoryRandomAccessStream();
+			    await page.RenderToStreamAsync(stream, new WPdf.PdfPageRenderOptions() { DestinationHeight = (uint)page.Size.Height, DestinationWidth = (uint)page.Size.Width });
+
+			    wb = new WriteableBitmap((int)page.Size.Width, (int)page.Size.Height);
+			    await wb.SetSourceAsync(stream);
+		    }
+
+		    return wb;
+	    }
+
+	    public static async Task<Size> RenderPageToFile(WPdf.PdfDocument pdf, uint pageNum, StorageFile file)
+	    {
+		    using (var page = pdf.GetPage(pageNum))
+		    {
+			    var randomStream = await file.OpenAsync(FileAccessMode.ReadWrite);
+			    await page.RenderToStreamAsync(randomStream, new WPdf.PdfPageRenderOptions { DestinationWidth = (uint)page.Size.Width, BitmapEncoderId = BitmapEncoder.JpegEncoderId });
+			    await randomStream.FlushAsync();
+			    randomStream.Dispose();
+			    return page.Size;
+		    }
+	    }
+
+	    public static async Task<WPdf.PdfDocument> GetPdf(DocumentController pdf)
+	    {
+		    var pdfUri = new Uri(pdf.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey).Data);
+		    StorageFile file;
+		    try
+		    {
+			    file = await StorageFile.GetFileFromApplicationUriAsync(pdfUri);
+		    }
+		    catch (ArgumentException)
+		    {
+			    try
+			    {
+				    file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
+			    }
+			    catch (ArgumentException)
+			    {
+				    return null;
+			    }
+		    }
+		    return await WPdf.PdfDocument.LoadFromFileAsync(file);
+	    }
+	}
 }

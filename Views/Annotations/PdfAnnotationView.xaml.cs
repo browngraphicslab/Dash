@@ -119,7 +119,6 @@ namespace Dash
         {
             Debug.WriteLine("FINALIZING PdfAnnotationView");
         }
-
         public void GoToPage(double pageNum)
         {
             var sizes = Pages.PageSizes;
@@ -130,22 +129,19 @@ namespace Dash
             {
                 if (page++ >= pageNum)
                     break;
-                var scale = xPdfCol.ActualWidth / size.Width;
-                currOffset += (size.Height + 10) * scale;
+                currOffset += (size.Height + 10) * pageScaling(size.Width);
             }
 
             ScrollViewer.ChangeView(null, currOffset, 1);
-
         }
 
         public void ScrollToPosition(double pos)
         {
             var sizes = Pages.PageSizes;
             var botOffset = 0.0;
-            var annoWidth = xCollectionView.ActualWidth;
             foreach (var size in sizes)
             {
-                var scale = (ScrollViewer.ViewportWidth - annoWidth) / size.Width;
+                var scale = ScrollViewer.ViewportWidth / size.Width;
                 if (botOffset + (size.Height * scale) - pos > 1)
                 {
                     break;
@@ -157,6 +153,26 @@ namespace Dash
             ScrollViewer.ChangeView(null, botOffset, null);
         }
         
+        public double RightMargin { get; set; }
+        public double LeftMargin { get; set; }
+        public void SetRightMargin(double margin)
+        {
+            xPdfGrid.Padding = new Thickness(0);
+            PdfMaxWidth -= RightMargin;
+            RightMargin = margin;
+            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+            PdfMaxWidth += RightMargin;
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+        }
+        public void SetLeftMargin(double margin)
+        {
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin/pageScaling(Pages.PageSizes[0].Width) };
+            xPdfGrid.Padding = new Thickness(0);
+            PdfMaxWidth -= LeftMargin;
+            LeftMargin = margin;
+            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+            PdfMaxWidth += LeftMargin;
+        }
 
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
         {
@@ -395,10 +411,6 @@ namespace Dash
                 }
             }
         }
-        private void viewTypeChanged(DocumentController doc, DocumentController.DocumentFieldUpdatedEventArgs args)
-        {
-            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
-        }
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
@@ -413,45 +425,15 @@ namespace Dash
             }
             var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
             cvm.DocumentAdded += Cvm_DocumentAdded;
-            xCollectionView.DataContext = cvm;
-            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
-            DataDocument.AddWeakFieldUpdatedListener(this, KeyStore.CollectionViewTypeKey, (model, controller, arg3) => model.viewTypeChanged(controller, arg3));
             if (Pages.PageSizes.Count != 0)
             {
                 Pages.Initialize();
             }
         }
 
-        public void Bind(Binding pdfColBinding, Binding pdfNotesColBinding)
+        public void Bind()
         {
             Pages.Initialize();
-            BindingOperations.SetBinding(xPdfCol, ColumnDefinition.WidthProperty, pdfColBinding);
-            BindingOperations.SetBinding(xPdfNotesCol, ColumnDefinition.WidthProperty, pdfNotesColBinding);
-            var xfBinding = new Binding()
-            {
-                Source = xPdfCol,
-                Path = new PropertyPath("Width"),
-                Converter = new WidthToScaleXFConverter(PdfMaxWidth)
-            };
-            xCollectionView.SetBinding(RenderTransformProperty, xfBinding);
-        }
-
-        public class WidthToScaleXFConverter : SafeDataToXamlConverter<GridLength, Transform>
-        {
-            private double _pdfMaxWidth;
-            public WidthToScaleXFConverter(double pdfMaxWidth)
-            {
-                _pdfMaxWidth = pdfMaxWidth;
-            }
-            public override Transform ConvertDataToXaml(GridLength xaml, object parameter = null)
-            {
-                var ratio = xaml.Value / _pdfMaxWidth;
-                return new ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
-            }
-            public override GridLength ConvertXamlToData(Transform data, object parameter = null)
-            {
-                throw new NotImplementedException();
-            }
         }
 
 
@@ -479,7 +461,7 @@ namespace Dash
         {
             if (PdfMaxWidth > 0)
             {
-                Pages.ScrollViewerContentWidth = xPdfCol.ActualWidth;
+                Pages.ScrollViewerContentWidth = ScrollViewer.ActualWidth;
             }
         }
 
@@ -573,11 +555,13 @@ namespace Dash
         private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PageNext();
+            e.Handled = true;
         }
 
         private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             PagePrev();
+            e.Handled = true;
         }
 
         private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -589,14 +573,18 @@ namespace Dash
         {
             PopForwardStack(_ForwardStack, _BackStack, ScrollViewer);
         }
-
+        private double pageScaling(double width)
+        {
+            //return xPdfCol.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
+            return  ScrollViewer.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
+        }
         private void PagePrev()
         {
             var sizes = Pages.PageSizes;
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = xPdfCol.ActualWidth / size.Width;
+                var scale = pageScaling(size.Width);
                 if (currOffset + (size.Height + 10) * scale - ScrollViewer.VerticalOffset >= -1)
                 {
                     break;
@@ -614,7 +602,7 @@ namespace Dash
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = xPdfCol.ActualWidth / size.Width;
+                var scale = pageScaling(size.Width);
                 currOffset += (size.Height + 10) * scale;
                 if (currOffset - ScrollViewer.VerticalOffset > 1)
                 {
@@ -677,14 +665,28 @@ namespace Dash
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
                 tip.IsOpen = true;
+            }
         }
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
+        }
+
+        public void OnDragEnter(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = e.DataView.HasDragModel() ? e.AcceptedOperation | DataPackageOperation.Copy : DataPackageOperation.None;
+        }
+        public void OnDrop(object sender, DragEventArgs e)
+        {
+            AnnotationOverlay.OnDrop(sender, e);
         }
     }
 }

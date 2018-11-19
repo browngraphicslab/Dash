@@ -1201,7 +1201,7 @@ namespace Dash
 
         private void XExport_OnClick(object sender, RoutedEventArgs e)
         {
-           MainPage.Instance.xMainTreeView.MakePdf_OnTapped(sender, null);
+            MainPage.Instance.Publish_OnTapped(sender, null);
         }
 
         private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
