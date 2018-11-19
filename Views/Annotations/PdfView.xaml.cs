@@ -150,6 +150,7 @@ namespace Dash
             if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
             {
                 var uri = PdfUri;
+                string textToSet = null;
                 await Task.Run(async () =>
                 {
                     bool hasPdf;
@@ -179,9 +180,32 @@ namespace Dash
                     }
                     else
                     {
-                        Debug.Fail("pdf doesn't have text elements in database");
+                        var reader = new PdfReader(await _file.OpenStreamForReadAsync());
+                        var pdfDocument = new PdfDocument(reader);
+                        var newstrategy = new BoundsExtractionStrategy();
+                        var pdfTotalHeight = 0.0;
+                        for (var i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
+                        {
+                            //if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
+                            var page = pdfDocument.GetPage(i);
+                            newstrategy.SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
+                            new PdfCanvasProcessor(newstrategy).ProcessPageContent(page);
+                            pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
+                        }
+
+                        var (selectableElements, text, pages, vagueSections) =
+                            newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                        _botPdf.AnnotationOverlay.TextSelectableElements =
+                            new List<SelectableElement>(selectableElements);
+                        _botPdf.AnnotationOverlay.PageEndIndices = pages;
+                        textToSet = text;
+                        await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
                     }
                 });
+                if (textToSet != null)
+                {
+                    _botPdf.DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
+                }
             }
             else if (_botPdf.AnnotationOverlay.TextSelectableElements?.Any() ?? false)
             {
@@ -420,21 +444,6 @@ namespace Dash
                 {
                     try
                     {
-                        var newstrategy = new BoundsExtractionStrategy();
-                        for (var i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
-                        {
-                            //if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
-                            var page = pdfDocument.GetPage(i);
-                            newstrategy.SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
-                            new PdfCanvasProcessor(newstrategy).ProcessPageContent(page);
-                        }
-
-                        var (selectableElements, text, pages, vagueSections) =
-                                newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-                        /*_botPdf.AnnotationOverlay.TextSelectableElements =
-                            new List<SelectableElement>(selectableElements);
-                        _botPdf.AnnotationOverlay.PageEndIndices = pages;*/
-                        await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -442,8 +451,11 @@ namespace Dash
                     }
                 }
 
-                _botPdf.AnnotationOverlay.TextSelectableElements = new List<SelectableElement>();
-                _botPdf.AnnotationOverlay.PageEndIndices = new List<int>();
+                if (_botPdf.AnnotationOverlay != null)
+                {
+                    _botPdf.AnnotationOverlay.TextSelectableElements = new List<SelectableElement>();
+                    _botPdf.AnnotationOverlay.PageEndIndices = new List<int>();
+                }
             });
 
             //try

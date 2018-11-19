@@ -634,9 +634,9 @@ namespace Dash
 
             (int[] clusters, double[] spaceMeans) = KMeansCluster.Cluster(spacingData, 2);
             lines.Sort((l1, l2) => Math.Sign(l1.First().Bounds.Y - l2.First().Bounds.Y));
-            double lineSpacing = GetLineSpacing(lines);
+            double lineSpacing = Math.Max(0, GetLineSpacing(lines));
             double charSpacing = spaceMeans.Min();
-            double wordSpacing = spaceMeans.Max();
+            double wordSpacing = Math.Max(0, spaceMeans.Max());
 
             var sections = SplitIntoSections(charSpacing, wordSpacing, lineSpacing, lines);
 

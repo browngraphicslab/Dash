@@ -217,9 +217,6 @@ namespace Dash
                                 <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
                                     Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
                                     VerticalAlignment=""Top"" />
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Top"" />
                             </StackPanel>
                             </Grid>";
                     EventManager.EventOccured(eventDoc, displayXaml);
@@ -245,46 +242,42 @@ namespace Dash
                 annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
             }
 
-            var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
-            var text = "Created a pin annotation using pdf: " + pdfview.ViewModel.DocumentController.Title;
+            //var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
+            //var text = "Created a pin annotation using pdf: " + pdfview.ViewModel.DocumentController.Title;
 
-            if (linkedDoc != null)
-            {
-                text += "\n " + linkedDoc.GetField<TextController>(KeyStore.DataKey)?.Data;
-            }
+            //if (linkedDoc != null)
+            //{
+            //    text += "\n " + linkedDoc.GetField<TextController>(KeyStore.DataKey)?.Data;
+            //}
 
-            var eventdoc = new RichTextNote(text).Document;
-            var tags = "pdf, annotation, pin, " + pdfview.ViewModel.DocumentController.Title;
-            eventdoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
-            eventdoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                pdfview.ParentCollection.ViewModel.ContainerDocument, true);
-            eventdoc.Link(annotation, LinkBehavior.Overlay);
-            eventdoc.SetField(KeyStore.EventDisplay1Key, annotation, true);
-            eventdoc.SetField(KeyStore.EventDisplay1Key, linkedDoc, true);
-            var displayXaml =
-                @"<Grid
-                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-                            xmlns:dash=""using:Dash""
-                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height=""Auto""></RowDefinition>
-                                <RowDefinition Height=""*""></RowDefinition>
-                                <RowDefinition Height=""*""></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
-                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
-                            </Border>
-                            <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Top"" />
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Top"" />
-                            </StackPanel>
-                            </Grid>";
-            EventManager.EventOccured(eventdoc);
+            //var eventdoc = new RichTextNote(text).Document;
+            //var tags = "pdf, annotation, pin, " + pdfview.ViewModel.DocumentController.Title;
+            //eventdoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+            //eventdoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+            //    pdfview.ParentCollection.ViewModel.ContainerDocument, true);
+            //eventdoc.Link(annotation, LinkBehavior.Overlay);
+            //eventdoc.SetField(KeyStore.EventDisplay1Key, annotation, true);
+            //var displayXaml =
+            //    @"<Grid
+            //                xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+            //                xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+            //                xmlns:dash=""using:Dash""
+            //                xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+            //                <Grid.RowDefinitions>
+            //                    <RowDefinition Height=""Auto""></RowDefinition>
+            //                    <RowDefinition Height=""*""></RowDefinition>
+            //                    <RowDefinition Height=""*""></RowDefinition>
+            //                </Grid.RowDefinitions>
+            //                <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+            //                    <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+            //                </Border>
+            //                <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+            //                    <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+            //                        Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+            //                        VerticalAlignment=""Top"" />
+            //                </StackPanel>
+            //                </Grid>";
+            //EventManager.EventOccured(eventdoc, displayXaml);
 
             RegionDocsList.Add(annotation);
             return annotation;

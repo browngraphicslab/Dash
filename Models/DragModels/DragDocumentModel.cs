@@ -152,9 +152,46 @@ namespace Dash
                 {
                     // if RegionCreator exists, then dragDoc becomes the region document
                     dragDoc = await KeyStore.RegionCreator[dragDoc.DocumentType](view);
+
+                    var region = (dragDoc.GetRegionDefinition() ?? dragDoc);
+                    var text = region.GetDataDocument().GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
+                               " | Created a region using: " + region.Title;
+                    var eventDoc = new RichTextNote(text).Document;
+                    var tags = "annotation, pdf, link, " + region.Title;
+                    eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+                    eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                        view.ParentCollection.ViewModel.ContainerDocument, true);
+                    eventDoc.Link(dragDoc, LinkBehavior.Overlay);
+                    eventDoc.SetField(KeyStore.EventDisplay1Key, dragDoc, true);
+                    eventDoc.SetField(KeyStore.EventDisplay2Key, anno, true);
+                    var displayXaml =
+                        @"<Grid
+                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                            xmlns:dash=""using:Dash""
+                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                            </Border>
+                            <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                    VerticalAlignment=""Top"" />
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
+                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                    VerticalAlignment=""Top"" />
+                            </StackPanel>
+                            </Grid>";
+                    EventManager.EventOccured(eventDoc, displayXaml);
                 }
 
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
+
             }
             return new List<DocumentController> { anno };
         }
