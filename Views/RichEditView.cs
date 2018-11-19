@@ -360,6 +360,7 @@ namespace Dash
 
         private async void this_Drop(object sender, DragEventArgs e)
         {
+            return;
             if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
             {
                 if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(Document.Selection.Text))
