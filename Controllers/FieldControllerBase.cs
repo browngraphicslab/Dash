@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Microsoft.Office.Interop.Word;
+using Task = System.Threading.Tasks.Task;
 
 namespace Dash
 {
@@ -10,7 +14,7 @@ namespace Dash
     /// abstract controller from which "Controller<T>" should inherit.
     /// This class should hold all the abstract contracts that every Controller must inherit
     /// </summary>
-    public abstract class FieldControllerBase : IController<FieldModel>, IDisposable
+    public abstract class FieldControllerBase : Controller<FieldModel>
     {
         public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
@@ -31,6 +35,11 @@ namespace Dash
         {
         }
 
+        public virtual Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Wrapper for the event called when a field model's data is updated
         /// </summary>
@@ -38,11 +47,7 @@ namespace Dash
         /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            //UpdateOnServer();
-
             FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update), context);
-
-            //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }
 
         public virtual FieldControllerBase Dereference(Context context)
@@ -72,11 +77,6 @@ namespace Dash
         public abstract object GetValue(Context context);
 
 
-        public virtual IEnumerable<DocumentController> GetReferences()
-        {
-            return new List<DocumentController>();
-        }
-
         public virtual bool CheckType(FieldControllerBase fmc)
         {
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
@@ -94,21 +94,6 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public abstract FieldControllerBase GetDefaultController();
-
-        /// <summary>
-        ///     Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
-        /// </summary>
-        /// <returns></returns>
-        public virtual FrameworkElement GetTableCellView(Context context)
-        {
-            var tb = new TextingBox(this);
-            tb.Document.SetField<NumberController>(TextingBox.TextAlignmentKey, (int)TextAlignment.Left, true);
-            tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
-            tb.Document.SetHeight(double.NaN);
-            tb.Document.SetWidth(double.NaN);
-            return TextingBox.MakeView(tb.Document, context);
-        }
 
         public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, DocumentController doc)
         {
@@ -134,86 +119,116 @@ namespace Dash
         public abstract StringSearchModel SearchForString(string searchString);
 
         /// <summary>
-        ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
-        ///     displaying the number of items stored in collection/list
+        /// Convert a field to a script that will evaluate to that field
         /// </summary>
-        protected Grid GetTableCellViewForCollectionAndLists(string icon, Action<TextBlock> bindTextOrSetOnce)
+        /// <returns>A string that is a script that will evaluate to this field</returns>
+        public abstract string ToScriptString(DocumentController thisDoc = null);
+
+        private bool _fromServer;
+
+        public void MarkFromServer()
         {
-            var grid = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
-            };
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            var symbol = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center,
-                FontSize = 40,
-                Text = icon
-            };
-            grid.Children.Add(symbol);
-
-            var textBlock = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center,
-                TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap
-            };
-            bindTextOrSetOnce(textBlock);
-            grid.Children.Add(textBlock);
-            Grid.SetRow(textBlock, 1);
-
-            return grid;
+            _fromServer = true;
         }
 
-        public virtual void DisposeField()
+        protected sealed override void SaveOnServer()
         {
-            //DeleteOnServer();
-            Disposed?.Invoke(this);
+            base.SaveOnServer();
         }
 
-        public delegate void FieldControllerDisposedHandler(FieldControllerBase field);
-        public event FieldControllerDisposedHandler Disposed;
-
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        protected sealed override void UpdateOnServer(UndoCommand command)
         {
-            if (!disposedValue)
+            if (IsReferenced)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+                base.UpdateOnServer(command);
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~FieldControllerBase() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
+        protected sealed override void DeleteOnServer()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            base.DeleteOnServer();
         }
+
+        #region Reference Counting
+
+        private int _refCount = 0;
+        /// <summary>
+        /// This should only be used for debugging purposes
+        /// </summary>
+        public int RefCount => _refCount;
+
+        private void AddReference()
+        {
+            ++_refCount;
+            if (_refCount == 1)
+            {
+                RefInit();
+                if (!_fromServer)
+                {
+                    SaveOnServer();
+                }
+                //else
+                //{
+                //    //TODO tfs: This shouldn't technically be necessary
+                //    UpdateOnServer(null);
+                //}
+                _fromServer = false;
+            }
+        }
+
+        private void ReleaseReference()
+        {
+            if (_refCount == 1)
+            {
+                DeleteOnServer();
+                RefDestroy();
+            }
+
+            --_refCount;
+            Debug.Assert(_refCount >= 0);
+        }
+
+        protected void ReferenceField(FieldControllerBase field)
+        {
+            //TODO RefCount: This assert is probably really slow
+            //Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            if (IsReferenced && field != null)
+            {
+                field.AddReference();
+            }
+        }
+
+        protected virtual void ReleaseField(FieldControllerBase field)
+        {
+            //TODO RefCount: This assert is probably really slow
+            //Debug.Assert(field == null || GetReferencedFields().Contains(field));
+            if (IsReferenced && field != null)
+            {
+                field.ReleaseReference();
+            }
+        }
+
+        protected virtual IEnumerable<FieldControllerBase> GetReferencedFields()
+        {
+            yield break;
+        }
+
+        protected bool IsReferenced => _refCount > 0;
+
+        protected virtual void RefInit()
+        {
+        }
+
+        protected virtual void RefDestroy()
+        {
+        }
+
+        public static void MakeRoot(FieldControllerBase field)
+        {
+            field.AddReference();
+        }
+
         #endregion
+
     }
 }

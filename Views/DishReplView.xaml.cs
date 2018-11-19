@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -118,6 +119,7 @@ namespace Dash
             ViewModel.Items.Clear();
             if (!clearData) return;
 
+            _currentHistoryIndex = 0;
             _dataDoc.SetField(KeyStore.ReplScopeKey, new DocumentController(), true);
             NewBlankScopeAndDSL();
             _lineTextList?.Clear();
@@ -230,7 +232,7 @@ namespace Dash
             var selectLength = 0;
             if (text.TrimStart().Length >= "for ".Length && text.Substring(text.Length - "for ".Length).Equals("for "))
             {
-                while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
+                while (_scope.TryGetVariable(Alphabet[_forIndex].ToString(), out var _) || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
 
                 stringLength = 4;
 
@@ -244,7 +246,7 @@ namespace Dash
             {
                 stringLength = 6;
 
-                var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
+                var varExp = _scope.TryGetVariable("item", out var _) ? "" : "var ";
                 newText = text.Substring(0, text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
                 selectOffset = 12;
 
@@ -252,7 +254,7 @@ namespace Dash
             else if (text.TrimStart().Length >= "forin? ".Length && text.Substring(text.Length - "forin? ".Length).Equals("forin? "))
             {
                 stringLength = 7;
-                var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
+                var varExp = _scope.TryGetVariable("res", out var _) ? "" : "var ";
                 newText = text.Substring(0, text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
                 selectOffset = 12;
                 selectLength = 0;
@@ -260,7 +262,7 @@ namespace Dash
             else if (text.TrimStart().Length >= "forin+ ".Length && text.Substring(text.Length - "forin+ ".Length).Equals("forin+ "))
             {
                 var ret = text.TrimStart().Length == 7 ? "" : "\r";
-                while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
+                while (_scope.TryGetVariable("var myList" + _forInIndex, out var _) || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
 
                 var newList = "myList" + _forInIndex;
                 _takenNumbers.Add(_forInIndex);
@@ -383,7 +385,7 @@ namespace Dash
             return false;
         }
 
-        private void InputBoxSubmit(ReplLineViewModel data, string currentText, int? index = null)
+        private async void InputBoxSubmit(ReplLineViewModel data, string currentText, int? index = null)
         {
             if (data.EditTextValue)
             {
@@ -407,12 +409,12 @@ namespace Dash
                 data.LineText = text;
 
                 //undo old variable declarations 
-                _dsl.Run(oldText, true, true);
+                await _dsl.Run(oldText, true, true);
 
                 FieldControllerBase result;
                 try
                 {
-                    result = _dsl.Run(text, true);
+                    result = await _dsl.Run(text, true);
                 }
                 catch (Exception ex)
                 {
@@ -467,7 +469,7 @@ namespace Dash
             }
         }
 
-        private void ReRunLine(ReplLineViewModel data, string text)
+        private async Task ReRunLine(ReplLineViewModel data, string text)
         {
             DisableAllTextBoxes();
 
@@ -484,12 +486,12 @@ namespace Dash
             }
 
             //undo old variable declarations 
-            _dsl.Run(text, true, true);
+            await _dsl.Run(text, true, true);
 
             FieldControllerBase result;
             try
             {
-                result = _dsl.Run(text, true);
+                result = await _dsl.Run(text, true);
             }
             catch (Exception ex)
             {
@@ -514,21 +516,21 @@ namespace Dash
             }
         }
 
-        private void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //tap arrow to revaluate line
             var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             var text = data?.LineText;
 
-            ReRunLine(data, text);
+            await ReRunLine(data, text);
         }
 
-        private void XInputBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void XInputBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             var text = data?.LineText;
 
-            ReRunLine(data, text);
+            await ReRunLine(data, text);
         }
 
         #endregion
@@ -542,7 +544,7 @@ namespace Dash
 
         private void SetupTextBox()
         {
-            void EnterPressed(KeyRoutedEventArgs e)
+            async void EnterPressed(KeyRoutedEventArgs e)
             {
                 if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
@@ -563,13 +565,13 @@ namespace Dash
                 FieldControllerBase retVal;
                 try
                 {
-                    retVal = _dsl.Run(command, true);
+                    retVal = await _dsl.Run(command, true);
                 }
                 catch (Exception ex)
                 {
                     retVal = new TextController("There was an error: " + ex.Message);
                 }
-                if (retVal == null) retVal = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded a null return. Enter <help()> for a complete catalog of valid functions.");
+                if (retVal == null) retVal = new TextController("null");
 
                 string indentOffset = ReplLineNode.IsBaseCase(retVal) ? "   " : "";
                 var head = new ReplLineViewModel
@@ -858,4 +860,119 @@ namespace Dash
                 docView.DeleteDocument();
         }
     }
+    /*
+function grid(col, spacing) {
+  var w = 0;
+  var h = 0;
+  for (var doc in col.Data) {
+    w = max(w, doc.ActualSize.x());
+    h = max(h, doc.ActualSize.y());
+  }
+  var startX = -col._PanPosition.x() + spacing;
+  var startY = -col._PanPosition.y() + spacing;
+  var endX = startX + col.ActualSize.x() - 2 * spacing;
+  var x = startX;
+  var y = startY;
+  for (var doc in col.Data) {
+    if (x + doc.ActualSize.x() > endX) {
+      x = startX;
+      y = y + h + spacing;
+    }
+    doc.Position = point(x, y);
+    x = x + w + spacing;
+  }
+}
+ 
+function grid2(docs, numCols, spacing, startPos) {
+  var w = 0;
+  var h = 0;
+  for (var doc in docs) {
+    w = max(w, doc.ActualSize.x());
+    h = max(h, doc.ActualSize.y());
+  }
+  var startX = startPos.x();
+  var startY = startPos.y();
+  var x = startX;
+  var y = startY;
+  var currentCol = 0;
+  for (var doc in docs) {
+    if (currentCol == numCols) {
+      x = startX;
+      y = y + h + spacing;
+      currentCol = 0;
+    }
+    currentCol++;
+    doc.Position = point(x, y);
+    x = x + w + spacing;
+  }
+  return w * numCols + spacing * (numCols - 1);
+}
+
+function group(docs, groupingField, numCols, spacing, startPos) {
+  var map = {};
+  for (var doc in docs) {
+    var compField = doc.get_field(groupingField).to_string();
+    var l = map.get_field(compField);
+    if (l == null) {
+      l = [doc];
+    } else {
+      l = l + doc;
+    }
+    map.set_field(compField, l);
+  }
+
+  var x = startPos.x();
+  var y = startPos.y();
+  for (var key in map.keys()) {
+    var l = map.get_field(key);
+    var width = grid(l, numCols, spacing, point(x, y));
+    x = x + width + spacing * 2;
+  }
+}
+
+function spiral(col) {
+  count = col.Data.count();
+  var angle = 0;
+  for (i = 0; i < count; i++) {
+    var doc = col.Data[i];
+    var r = 100 + 40 * i;
+    var x = cos(angle) * r - doc.ActualSize.x() / 2;
+    var y = sin(angle) * r - doc.ActualSize.y() / 2;
+    angle = angle + 200 / r;
+    doc.Position = point(x, y);
+  }
+}
+
+
+Flashcard code:
+Previous:
+var card = doc.Doc.data_doc();
+var coll = card.Collection;
+var c = coll.Data.len();
+card.CurrentIndex--;
+card.CurrentIndex = (card.CurrentIndex + c) % c;
+card.Card = coll.Data[card.CurrentIndex];
+card.Card.Xaml = card.NameTemplate;
+card.ShowingName = true;
+
+Next:
+var card = doc.Doc.data_doc();
+var coll = card.Collection;
+var c = coll.Data.len();
+card.CurrentIndex++;
+card.CurrentIndex = card.CurrentIndex % c;
+card.Card = coll.Data[card.CurrentIndex];
+card.Card.Xaml = card.NameTemplate;
+card.ShowingName = true;
+
+Flip:
+if(doc.Doc.ShowingName){
+  doc.Doc.data_doc().ShowingName = false;
+  doc.Doc.Xaml = doc.Doc.data_doc().YearTemplate;
+} else {
+  doc.Doc.data_doc().ShowingName = true;
+  doc.Doc.Xaml = doc.Doc.data_doc().NameTemplate;
+}
+
+     */
 }

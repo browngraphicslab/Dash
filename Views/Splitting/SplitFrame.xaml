@@ -1,0 +1,57 @@
+﻿<UserControl
+    x:Class="Dash.SplitFrame"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    AllowDrop="True"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    DataContextChanged="SplitFrame_OnDataContextChanged">
+
+    <Grid x:Name="Grid">
+        <local:DocumentView x:Name="XDocView" />
+        <Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                 Canvas.ZIndex="2"
+                 ManipulationMode="TranslateX,TranslateY"
+                 ManipulationStarted="TopRightOnManipulationStarted"
+                 ManipulationCompleted="OnManipulationCompleted"/>
+        <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                 Canvas.ZIndex="2"
+                 ManipulationMode="TranslateX,TranslateY"
+                 ManipulationStarted="BottomLeftOnManipulationStarted"
+                 ManipulationCompleted="OnManipulationCompleted"/>
+        <Rectangle x:Name="XRightDropTarget" Width="15" Canvas.ZIndex="1" Fill="#10101010" HorizontalAlignment="Right"
+                   Visibility="Collapsed"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XRightDropTarget_OnDrop" AllowDrop="True"/>
+        <Rectangle x:Name="XLeftDropTarget" Width="15" Canvas.ZIndex="1" Fill="#10101010" HorizontalAlignment="Left"
+                   Visibility="Collapsed"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XLeftDropTarget_OnDrop" AllowDrop="True"/>
+        <Rectangle x:Name="XTopDropTarget" Height="15" Canvas.ZIndex="1" Fill="#10101010" VerticalAlignment="Top"
+                   Visibility="Collapsed"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XTopDropTarget_OnDrop" AllowDrop="True"/>
+        <Rectangle x:Name="XBottomDropTarget" Height="15" Canvas.ZIndex="1" Fill="#10101010" VerticalAlignment="Bottom"
+                   Visibility="Collapsed"
+                   DragEnter="DropTarget_OnDragEnter"
+                   DragLeave="DropTarget_OnDragLeave"
+                   Drop="XBottomDropTarget_OnDrop" AllowDrop="True"/>
+        <Ellipse x:Name="XCenterDropTarget" Height="40" Width="40"
+                 Visibility="Collapsed"
+                 Canvas.ZIndex="1" Fill="#10101010"
+                 VerticalAlignment="Top" HorizontalAlignment="Center"
+                 DragEnter="DropTarget_OnDragEnter"
+                 DragLeave="DropTarget_OnDragLeave"
+                 Drop="XCenterDropTarget_OnDrop" AllowDrop="True"
+                 Margin="0 30 0 0"/>
+        <local:DocumentPathView x:Name="XPathView" Canvas.ZIndex="2" Margin="15 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom"></local:DocumentPathView>
+    </Grid>
+
+</UserControl>

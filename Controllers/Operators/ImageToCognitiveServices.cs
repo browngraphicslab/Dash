@@ -19,14 +19,13 @@ namespace Dash.Controllers.Operators
 
         public ImageToCognitiveServices() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Image Cog Services");
+        private static readonly KeyController TypeKey = KeyController.Get("Image Cog Services");
 
-        public static readonly KeyController ImageKey = new KeyController("Image");
-        public static readonly KeyController DescriptorKey = new KeyController("Descriptor");
+        public static readonly KeyController ImageKey = KeyController.Get("Image");
+        public static readonly KeyController DescriptorKey = KeyController.Get("Descriptor");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -45,8 +44,9 @@ namespace Dash.Controllers.Operators
         /// <param name="inputs"></param>
         /// <param name="outputs"></param>
         /// <param name="args"></param>
+        /// <param name="scope"></param>
         /// <param name="state"></param>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -58,14 +58,13 @@ namespace Dash.Controllers.Operators
                 AnalysisResult result = null;
                 try
                 {
-                    result = Task
-                        .Run(() => ComputerVision.UploadAndAnalyzeImage(controller.ImageFieldModel.Data.LocalPath))
-                        .Result;
+                    result = await ComputerVision.UploadAndAnalyzeImage(controller.ImageFieldModel.Data.LocalPath);
                 }
                 catch
                 {
-                    result = Task.Run(() => ComputerVision.AnalyzeUrl(controller.ImageFieldModel.Data.AbsoluteUri)).Result;
+                    result = await ComputerVision.AnalyzeUrl(controller.ImageFieldModel.Data.AbsoluteUri);
                 }
+
                 if (result == null)
                     return;
                 var allTags = result.Tags.Select(tag => tag.Name);

@@ -62,6 +62,18 @@
                     </StackPanel>
                 </StackPanel>
                 <Slider x:Name="xBackgroundOpacitySlider" Margin="10, 10, 0, 0" Header="Background Opacity" Maximum="1" Minimum="0" HorizontalAlignment="Left" Width="150" StepFrequency="0.05"></Slider>
+                <TextBlock Text="Use PDF Text Selection"></TextBlock>
+                <ToggleSwitch IsOn="{x:Bind UsePdfTextSelection, Mode=TwoWay}"></ToggleSwitch>
+                <TextBlock Text="Use Ink"></TextBlock>
+                <ToggleSwitch IsOn="{x:Bind UseInkCanvas, Mode=TwoWay}"></ToggleSwitch>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="User: "></TextBlock>
+                    <TextBox x:Name="XAuthorBox" Grid.Column="1"/>
+                </Grid>
             </StackPanel>
 
             <!--Controls-->
@@ -139,6 +151,7 @@
                     SnapsTo="StepValues"/>
                 </StackPanel>
         </StackPanel>
+        <TextBlock x:Name="XVersionTextBlock" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
     </Grid>
 </Page>
 

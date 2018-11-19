@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -73,19 +74,17 @@ namespace Dash
             e.Handled = true;
         }
 
-        private bool SetExpression(string text)
+        private async Task SetExpression(string text)
         {
             TextBoxLoaded = false;
             try
             {
-                var field = DSL.InterpretUserInput(text, scope: Scope.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                var field = await DSL.InterpretUserInput(text, scope: Scope.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)
             {
-                return false;
             }
-            return true;
         }
 
         private async void UserControl_Drop(object sender, DragEventArgs e)
@@ -132,6 +131,11 @@ namespace Dash
             XTextBox.Focus(FocusState.Programmatic);
             XTextBox.Text = GetExpression() ?? XTextBlock.Text;
             XTextBox.SelectAll();
+            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            {
+                MainPage.Instance.ClearForceFocus();
+                MakeEditable();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -151,7 +155,7 @@ namespace Dash
             }
 
             _oldViewModel = ViewModel;
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),
                 Key = ViewModel.Reference.FieldKey,

@@ -6,6 +6,7 @@
 
         public Context Context { get; }
 
+        public DocumentController Document => Reference.GetDocumentController(null);
         public KeyController Key => Reference.FieldKey;
         public FieldControllerBase Value => Reference.Dereference(Context);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using DashShared;
 using System.Diagnostics;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -12,24 +13,18 @@ namespace Dash
         // == CONSTRUCTORS ==
         public ImageController() : base(new ImageModel())
         {
-            SaveOnServer();
         }
 
         public ImageController(Uri path, string data = null) : base(new ImageModel(path, data))
         {
-            SaveOnServer();
         }
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
         {
-			
-		}
+
+        }
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageController" />,
@@ -47,22 +42,14 @@ namespace Dash
             {
                 if (ImageFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Uri data = ImageFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    ImageFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Uri val, bool withUndo = true)
-        {
-            Uri data = ImageFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            ImageFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public Uri Data
@@ -85,6 +72,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<ImageOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()
@@ -112,7 +104,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return ImageFieldModel.Data.AbsolutePath;
+            return ImageFieldModel.Data.AbsoluteUri;
         }
 
         public override FieldControllerBase Copy()
@@ -120,6 +112,6 @@ namespace Dash
             return new ImageController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }
 
-        
+
     }
 }

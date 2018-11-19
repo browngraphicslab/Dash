@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Annotations;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,209 +22,114 @@ namespace Dash
 {
     public sealed partial class CollectionPageView : ICollectionView
     {
-        public UserControl UserControl => this;
-        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
-        public CollectionViewModel OldViewModel = null;
-        public ObservableCollection<DocumentViewModel> PageDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        private DSL _dsl;
-        private OuterReplScope _scope;
+        public CollectionViewType ViewType => CollectionViewType.Page;
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+        private DocumentController _templateDocument =>
+            ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<DocumentController>(KeyStore.CollectionItemLayoutPrototypeKey, null);
 
         public CollectionPageView()
         {
             this.InitializeComponent();
             xTextBox.AddKeyHandler(VirtualKey.Enter, EnterPressed);
-            xThumbs.Loaded += (sender, e) =>
+
+            KeyDown += SelectionElement_KeyDown;
+
+            Loaded += (sender, args) =>
             {
-                DataContextChanged -= CollectionPageView_DataContextChanged;
-                DataContextChanged += CollectionPageView_DataContextChanged;
-                if (ViewModel != null)
-                    CollectionPageView_DataContextChanged(null, null);
-                if (xThumbs.Items.Count > 0)
+                if (_templateDocument != null)
+                {
+                    templateButton.Content = "Remove  Template";
+                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { IsDimensionless = true };
+                }
+                if (ViewModel?.DocumentViewModels.Count > 0)
+                {
                     xThumbs.SelectedIndex = 0;
-            };
-            xThumbs.SizeChanged += (sender, e) =>
-            {
-                if (CurPage?.Content is CollectionView cview)
-                {
-                    cview.ViewModel.ContainerDocument.SetActualSize(new Windows.Foundation.Point(xDocContainer.ActualWidth, xDocContainer.ActualHeight));
                 }
             };
-            Unloaded += (sender, e) =>
-            {
-                if (ViewModel != null)
-                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-                if (OldViewModel != null)
-                    OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-                OldViewModel = null;
-            };
-
-            AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
-            xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
-            LosingFocus += CollectionPageView_LosingFocus;
         }
 
-        private void EnterPressed(KeyRoutedEventArgs obj)
+        public void OnDocumentSelected(bool selected)
         {
-            if (!MainPage.Instance.IsShiftPressed())
-            {
-                var keyString = xTextBox.Text;
-                if (keyString?.StartsWith("=") ?? false)
-                {
-                    try
-                    {
-                        var result = _dsl.Run(keyString.Substring(1));
-                        SetHackCaptionText(result == null
-                            ? new TextController(
-                                "Field not found, make sure the key name is correct and that you're accessing the right document!")
-                            : result);
-                    }
-                    catch (DSLException)
-                    {
-                        SetHackCaptionText(new TextController(keyString));
-                    }
-                }
-                //_scope = new OuterReplScope();
-                //_scope.DeclareVariable("this", CurPage.DocumentController);
-                //var reference = DSL.InterpretUserInput(keyString, true, _scope);
-                //SetHackCaptionText(reference);
-
-                if (obj != null)
-                    obj.Handled = true;
-            }
         }
 
-        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private async void EnterPressed(KeyRoutedEventArgs obj)
         {
-            PageDocumentViewModels = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels.Select((vm) => new DocumentViewModel(vm.DocumentController) { Undecorated = true, IsDimensionless = true }));
-            CurPage = PageDocumentViewModels.LastOrDefault();
+            obj.Handled = await UpdateContentFromScript(true);
         }
 
-        private void CollectionPageView_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+        private async Task<bool> UpdateContentFromScript(bool catchErrors)
         {
-            if (args.FocusState == FocusState.Pointer)
-            {
-                if (this.GetFirstDescendantOfType<ScrollViewer>() == args.OldFocusedElement)
-                    args.Handled = args.Cancel = true;
-                if (this.GetFirstDescendantOfType<Microsoft.Toolkit.Uwp.UI.Controls.GridSplitter>() == args.OldFocusedElement)
-                {
-                    var xx = this.GetFirstDescendantOfType<Microsoft.Toolkit.Uwp.UI.Controls.GridSplitter>();
-                    args.Handled = args.Cancel = true;
-                }
-            }
-            else if (args.FocusState == FocusState.Keyboard)
-            {
-                //if (this.GetDescendantsOfType<RichEditBox>().Contains(args.OldFocusedElement))
-                    args.Handled = args.Cancel = true;
-            }
-        }
-        
+            var text = xTextBox.Text;
+            var field = await DSL.InterpretUserInput(text, catchErrors, Scope.CreateStateWithThisDocument(CurrentPage.LayoutDocument));
+            if(field == null) { return false; }
 
-        private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (args != null)
-                args.Handled = true;
-            if (ViewModel != null && ViewModel != OldViewModel)
-            {
-                ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
-                DocumentViewModels_CollectionChanged(null, null);
-                OldViewModel = ViewModel;
-            }
+            XDocDisplay.DataContext =
+                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){IsDimensionless = true};
+            return true;
         }
 
-        private void xThumbs_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        public DocumentViewModel CurrentPage
         {
-            if (xThumbs.Items.Count > 0)
-                xThumbs.SelectedIndex = 0;
-        }
-        private void xThumbs_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (xThumbs.Items.Count > 0)
-                xThumbs.SelectedIndex = 0;
-        }
-
-        public void SetHackCaptionText(FieldControllerBase caption)
-        {
-            var textBox = xTextBox;
-            xDocContainer.Children.Clear();
-            xDocContainer.Children.Add(textBox);
-            var dataBox = new DataBox(caption);
-            var docView = dataBox.Document.MakeViewUI(null);
-            Grid.SetRow(docView, 0);
-            xDocContainer.Children.Add(docView);
-        }
-        public DocumentViewModel CurPage
-        {
-            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : PageDocumentViewModels.FirstOrDefault(); }
+            get => (DocumentViewModel)xThumbs.SelectedItem;
             set
             {
-                _scope = new OuterReplScope();
-                _scope.DeclareVariable("this", value?.DocumentController);
-                _dsl = new DSL(_scope);
-                
-                EnterPressed(null);
+                value.IsDimensionless = true;
+                xThumbs.SelectedItem = value;
             }
         }
-        
+
+        #region ICollectionView Implementation
 
         public void SetDropIndicationFill(Brush fill)
         {
         }
+        public UserControl UserControl => this;
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+        }
+
+        #endregion
 
         private void PrevButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CurPage != null)
+            if (xThumbs.Items != null && xThumbs.Items.Count > 0)
             {
-                var ind = PageDocumentViewModels.IndexOf(CurPage);
-                xThumbs.SelectedIndex = Math.Max(0, ind - 1);
+                xThumbs.SelectedIndex = Math.Max(xThumbs.SelectedIndex - 1, 0);
             }
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CurPage != null)
+            if (xThumbs.Items != null && xThumbs.Items.Count > 0)
             {
-                var ind = PageDocumentViewModels.IndexOf(CurPage);
-                xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
+                xThumbs.SelectedIndex = Math.Min(xThumbs.SelectedIndex + 1, xThumbs.Items.Count - 1);
             }
         }
-        
-        private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var ind = xThumbs.SelectedIndex;
-            if (PageDocumentViewModels.Count > 0)
-            {
-                CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
-                _scope = new OuterReplScope();
-                _scope.DeclareVariable("this", CurPage.DocumentController);
-                _dsl = new DSL(_scope);
-            }
-            if (xThumbs.ItemsPanelRoot != null &&  ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
-            {
-                var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();
-                if (x != null)
-                {
-                    try
-                    {
-                        x.Focus(FocusState.Keyboard);
-                        x.Focus(FocusState.Pointer);
-                    } catch (Exception)
-                    {
 
-                    }
+        private async void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var page = CurrentPage;
+            if (page == null)
+            {
+                return;
+            }
+
+            if (_templateDocument != null)
+            {
+                _templateDocument.SetField(KeyStore.DocumentContextKey, page.DataDocument, true);
+            }
+            else
+            {
+                var element = await UpdateContentFromScript(false);
+                if (!element)
+                {
+                    XDocDisplay.DataContext = page;
                 }
             }
         }
 
-        private void XDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Handled = true;
-            e.Complete();
-        }
-
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Handled)
-                return;
             if (e.Key == Windows.System.VirtualKey.PageDown || e.Key == Windows.System.VirtualKey.Down)
             {
                 NextButton_Click(sender, e);
@@ -231,146 +142,161 @@ namespace Dash
             }
         }
 
-        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            try
-            {
-                args.Cancel = true;
-            } catch (Exception)
-            {
-
-            }
-        }
-
-        private void xThumbs_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            try { 
-                xThumbs.Focus(FocusState.Pointer);
-            }
-            catch (Exception)
-            {
-
-            }
-        }
-        private void xDocContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (!(FocusManager.GetFocusedElement() is FrameworkElement focus) || 
-                focus.GetFirstAncestorOfType<CollectionPageView>() != this || 
-                xThumbs.GetDescendants().Contains(focus))
-            {
-                xThumbs.Focus(FocusState.Pointer);
-                e.Handled = true;
-            }
-        }
-
         private void xThumbs_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            var collectionField = ViewModel.ContainerDocument.GetDataDocument().GetField(ViewModel.CollectionKey);
-            if (collectionField is ListController<DocumentController> && args.DropResult == DataPackageOperation.Move)
+            if (xThumbs.IsPointerOver() && args.DropResult == DataPackageOperation.Move)
             {
-                var docList = ViewModel.DocumentViewModels.Select((dvm) => dvm.DocumentController).ToList();
-                if (xThumbs.IsPointerOver())
-                {
-                    ViewModel.ContainerDocument.GetDataDocument().SetField(ViewModel.CollectionKey, new ListController<DocumentController>(docList), true);
-                }
-                else if (args.Items.FirstOrDefault() is DocumentViewModel draggedDoc)
-                {
-                    docList.Remove(draggedDoc.DocumentController);
-                    ViewModel.ContainerDocument.GetDataDocument().SetField(ViewModel.CollectionKey, new ListController<DocumentController>(docList), true);
-                }
+                var ind = ViewModel.DocumentViewModels.IndexOf(_dragDoc);
+                ViewModel.RemoveDocument(_dragDoc.DocumentController);
+                ViewModel.InsertDocument(_dragDoc.DocumentController, ind);
             }
         }
+
+        private DocumentViewModel _dragDoc;
         private void XThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+            //TODO This is not correct if there are multiple items, as there can only be one drag model
             foreach (object m in e.Items)
             {
-                int ind = ViewModel.DocumentViewModels.IndexOf(m as DocumentViewModel);
-                e.Data.AddDragModel(new DragDocumentModel(PageDocumentViewModels[ind].DocumentController));
-            }
-        }
-
-        private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
-        }
-
-
-        /// <summary>
-        /// When left-dragging, we need to "handle" the manipulation since the splitter doesn't do that and the manipulation will 
-        /// propagate to the ManipulationControls which will start moving the parent document.
-        /// When right-dragging, we want to terminate the manipulation and let the parent document use its ManipulationControlHelper to drag the document.
-        /// The helper is setup in the CollectionView's PointerPressed handler;
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void xSplitter_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            if (!this.IsRightBtnPressed())
-                e.Handled = true;
-            else e.Complete();
-         }
-
-        /// <summary>
-        /// when we're left-dragging the splitter, we don't want to let events fall through to the ManipulationControls which would cancel the manipulation.
-        /// Since the splitter doesn't handle it's own drag events, we do it here.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void xSplitter_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Handled = true; 
-        }
-
-        private void xSplitter_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void XTextBox_OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.TryGetLoneDragModel(out DragModelBase dragModel) && dragModel is DragFieldModel field)
-            {
-                KeyController fieldKey = field.DraggedRefs.First().FieldKey;
-
-                if (xTextBox.Text.Length == 0) xTextBox.Text = "=this";
-
-                xTextBox.Text += "." + fieldKey.Name.RemoveWhitespace();
-
-                e.Handled = true;
-            }
-        }
-
-        private void ApplyScript_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            var docs = new List<DocumentController>();
-            int i = 0;
-            foreach (var docViewModel in ViewModel.DocumentViewModels)
-            {
-                var doc = docViewModel.DocumentController;
-                _scope = new OuterReplScope();
-                _scope.DeclareVariable("this", doc);
-                _dsl = new DSL(_scope);
-                var keyString = xTextBox.Text;
-                if (keyString?.StartsWith("=") ?? false)
+                _dragDoc = (DocumentViewModel) m;
+                var dm = new DragDocumentModel(_dragDoc.DocumentController)
                 {
-                    try
-                    {
-                        var result = _dsl.Run(keyString.Substring(1));
-                        var db = new DataBox(result, i * 50, i * 50);
-                        docs.Add(db.Document);
-                    }
-                    catch (DSLException)
-                    {
-                        continue;
-                    }
-                }
-
-                i++;
+                    DraggedDocCollectionViews = new List<CollectionViewModel>(new CollectionViewModel[] {ViewModel})
+                };
+                e.Data.SetDragModel(dm);
             }
-            args.Data.AddDragModel(new DragDocumentModel(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 500, 300, docs).Document));
-            // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void Delete_OnClicked(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RemoveDocument(CurrentPage.DocumentController);
+        }
+
+        private TextBox _renameBox;
+        private Flyout _flyout;
+
+        private void Rename_OnClicked(object sender, RoutedEventArgs e)
+        {
+            _flyout = new Flyout();
+            _renameBox = new TextBox();
+            _renameBox.GotFocus += XRenameBox_OnGotFocus;
+            _renameBox.LostFocus += XRenameBox_OnLostFocus;
+            _renameBox.KeyDown += XRenameBox_OnKeyDown;
+            _flyout.Content = _renameBox;
+            _flyout.ShowAt(sender as FrameworkElement);
+        }
+
+        private void CommitEdit()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (CurrentPage.DocumentController.GetField<TextController>(KeyStore.TitleKey) != null)
+                    CurrentPage.DocumentController.SetTitle(_renameBox.Text);
+                else CurrentPage.DataDocument.SetTitle(_renameBox.Text);
+            }
+            _flyout.Hide();
+        }
+
+        private void XRenameBox_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            _renameBox.Text = CurrentPage.DocumentController.Title ?? CurrentPage.DataDocument.Title;
+            _renameBox.SelectAll();
+        }
+
+        private void XRenameBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            CommitEdit();
+        }
+
+        private void XRenameBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                CommitEdit();
+            }
+            else if (e.Key == VirtualKey.Escape)
+            {
+                CancelEdit();
+            }
+        }
+
+        private void CancelEdit()
+        {
+            _flyout.Hide();
+            // prevents CommitEdit() from being called when esc is pressed
+            _renameBox.LostFocus -= XRenameBox_OnLostFocus;
+        }
+        
+        private async void TemplateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_templateDocument == null && CurrentPage !=null)
+            {
+                templateButton.Content = "Remove  Template";
+                CreateTemplate();
+            }
+            else
+            {
+                templateButton.Content = "Generate Template";
+                await RemoveTemplate();
+            }
+        }
+
+        private async Task RemoveTemplate()
+        {
+            if (ViewModel.DocumentViewModels.Count > 0)
+            {
+                ViewModel.ContainerDocument.RemoveField(KeyStore.CollectionItemLayoutPrototypeKey);
+                await UpdateContentFromScript(true);
+            }
+        }
+
+        private void CreateTemplate()
+        {
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            var parentCollection = docView.ParentCollection; 
+            if (parentCollection != null)
+            {
+                var viewModel = docView.ViewModel;
+                var where = viewModel.Position.X + viewModel.Width + 70;
+                var point = new Point(where, viewModel.Position.Y);
+                parentCollection.ViewModel.AddDocument(CurrentPage.DocumentController.GetKeyValueAlias(point));
+            }
+            if (_templateDocument == null)
+            {
+                var cnote = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN);
+                cnote.Document.SetField<BoolController>(KeyStore.IsTemplateKey, true, true);
+                ViewModel.ContainerDocument.GetDataDocument().SetField(KeyStore.CollectionItemLayoutPrototypeKey, cnote.Document, true);
+                cnote.Document.SetFitToParent(true);
+            }
+            XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { IsDimensionless = true };
+        }
+
+        private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (args.NewValue is DocumentViewModel dvm)
+            {
+                var binding = new FieldBinding<TextController>
+                {
+                    Mode = BindingMode.OneWay,
+                    Document = dvm.DocumentController.GetDataDocument(),
+                    Key = KeyStore.TitleKey,
+                };
+                sender.AddFieldBinding(TextBlock.TextProperty, binding);
+            }
+        }
+
+        private void ScriptToggle_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (xTextBox.Visibility == Visibility.Collapsed)
+            {
+                ScriptToggle.Content = "Hide Script";
+                xTextBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ScriptToggle.Content = "Show Script";
+                xTextBox.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

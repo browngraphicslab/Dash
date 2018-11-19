@@ -15,21 +15,20 @@ namespace Dash
     public class InkController : FieldModelController<InkModel>
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
-        private Image _icon = new Image();
 
         public InkController() : base(new InkModel())
         {
-            SaveOnServer();
-            UpdateStrokesFromList(new List<InkStroke>(), false);
+            UpdateStrokesFromList(new List<InkStroke>());
+        }
+
+        public InkController(string inkData) : base(new InkModel(inkData))
+        {
+            UpdateStrokesFromData(inkData);
         }
 
         public InkController(InkModel inkFieldModel) : base(inkFieldModel)
         {
             UpdateStrokesFromData(inkFieldModel.Data);
-        }
-        public override void Init()
-        {
-
         }
 
         /// <summary>
@@ -40,11 +39,6 @@ namespace Dash
 
 
         public string InkData => InkFieldModel.Data;
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return new Grid();
-        }
 
         public override object GetValue(Context context)
         {
@@ -64,7 +58,7 @@ namespace Dash
 
         public override FieldControllerBase Copy()
         {
-            return new InkController(new InkModel(InkData));
+            return new InkController(InkData);
         }
 
         public override FieldControllerBase GetDefaultController()
@@ -75,7 +69,7 @@ namespace Dash
         /// <summary>
         /// Method to allow InkCanvasControls to change data of InkFieldModelController when ink input is registered.
         /// </summary>
-        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes, bool withUndo = true)
+        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes)
         {
             IEnumerable<InkStroke> oldStrokes = _strokeContainer.GetStrokes();
             _strokeContainer.Clear();
@@ -92,10 +86,10 @@ namespace Dash
             }
             string data = JsonConvert.SerializeObject(stream.ToArray());
             stream.Dispose();
-            var newEvent = new UndoCommand(() => UpdateStrokesFromList(inkStrokes, false), () => UpdateStrokesFromList(oldStrokes, false));
+            var newEvent = new UndoCommand(() => UpdateStrokesFromList(inkStrokes), () => UpdateStrokesFromList(oldStrokes));
 
             InkFieldModel.Data = data;
-            UpdateOnServer(withUndo ? newEvent : null);
+            UpdateOnServer(newEvent);
             OnFieldModelUpdated(null);
         }
 
@@ -117,6 +111,11 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "InkController";
         }
 
         public IReadOnlyList<InkStroke> GetStrokes()

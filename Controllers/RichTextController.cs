@@ -6,26 +6,19 @@ using DashShared;
 
 namespace Dash
 {
-    public class RichTextController: FieldModelController<RichTextModel>
+    public class RichTextController : FieldModelController<RichTextModel>
     {
         public RichTextController() : base(new RichTextModel())
         {
-            SaveOnServer();
         }
 
         public RichTextController(RichTextModel.RTD data) : base(new RichTextModel(data))
         {
-            SaveOnServer();
         }
 
         public RichTextController(RichTextModel richTextFieldModel) : base(richTextFieldModel)
         {
 
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>
@@ -40,23 +33,16 @@ namespace Dash
             {
                 if (RichTextFieldModel.Data != value)
                 {
-                    SetData(value);
+                    RichTextModel.RTD data = RichTextFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    RichTextFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
         }
 
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(RichTextModel.RTD val, bool withUndo = true)
-        {
-            RichTextModel.RTD data = RichTextFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            RichTextFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
         public override object GetValue(Context context)
         {
             return Data;
@@ -74,22 +60,6 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.RichText;
 
-        public override IEnumerable<DocumentController> GetReferences()
-        {
-            yield return null;
-            //var links = Data.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
-            //foreach (var link in links)
-            //{
-            //    var split = link.Split('\"');
-            //    if (split.Count() > 1)
-            //    {
-            //        var doc = ContentController<FieldModel>.GetController<DocumentController>(split[1]);
-            //        if (doc != null)
-            //            yield return doc;
-            //    }
-            //}
-        }
-
         public override StringSearchModel SearchForString(string searchString)
         {
             var richEditBox = new RichEditBox();
@@ -97,6 +67,11 @@ namespace Dash
             richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
             readableText = readableText.Replace("\r", "\n");
             return readableText.Contains(searchString) ? new StringSearchModel(readableText) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "RichTextController";
         }
 
         public StringSearchModel SearchForStringInRichText(string searchString)

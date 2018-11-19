@@ -53,7 +53,7 @@ namespace Dash
         /// <summary>
         /// Update the text in the autosuggestbox when the input text changes
         /// </summary>
-        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
             if (xAutoSuggestBox.Text != tfmc.Data)
@@ -78,7 +78,7 @@ namespace Dash
             // or the handler for SuggestionChosen.
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                var searchCollection = _operatorDoc.GetDereferencedField<ListController<DocumentController>>(SearchOperatorController.InputCollection, null)?.TypedData;
+                var searchCollection = _operatorDoc.GetDereferencedField<ListController<DocumentController>>(SearchOperatorController.InputCollection, null);
                 var searchText = sender.Text;
                 _searchResultViewModels.Clear();
                 //foreach (var searchResultViewModel in MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection))

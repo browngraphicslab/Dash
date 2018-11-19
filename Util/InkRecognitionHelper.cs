@@ -236,7 +236,7 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             //Construct the new collection
-            var cnote  = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
+            var cnote  = new CollectionNote(position, CollectionViewType.Freeform);
             cnote.SetDocuments(recognizedDocuments);
             var documentController = cnote.Document;
             documentController.SetLayoutDimensions(region.BoundingRect.Width,
@@ -290,7 +290,8 @@ namespace Dash
                         TryGetText(containedLine, out string text, out KeyController key,
                             intersectionEnumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                         var relativePosition = new Point(containedRect.X - topLeft.X, containedRect.Y - topLeft.Y);
-                        doc.ParseDocField(key, "="+text);
+                        //TODO
+                        //doc.ParseDocField(key, "="+text);
                         var field = doc.GetField(key);
                         if (field != null)
                         {
@@ -309,9 +310,10 @@ namespace Dash
             {
                 doc.SetField(KeyStore.ParsedFieldsKey, list, true);
             }
-            var layout = new FreeFormDocument(layoutDocs,
-                position, size).Document;
-            doc.SetActiveLayout(layout, true, true);
+            var layout = new FreeFormDocument(layoutDocs, position, size).Document;
+
+            throw new Exception("ActiveLayout code has not been updated yet");
+            // doc.SetActiveLayout(layout, true, true);
             if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc);
             return doc;
         }
@@ -478,12 +480,12 @@ namespace Dash
                 var splitstring = str.Split(':');
                 value = splitstring[1].TrimEnd(' ').TrimStart(' ');
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                key = new KeyController(keystring, Guid.NewGuid().ToString());
+                key = KeyController.Get(keystring);
             }
             else
             {
                 value = str;
-                key = new KeyController($"Document Field {suffix}", Guid.NewGuid().ToString());
+                key = KeyController.Get($"Document Field {suffix}");
             }
 
         }

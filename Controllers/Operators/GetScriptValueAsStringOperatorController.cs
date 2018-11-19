@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -10,15 +11,14 @@ namespace Dash
     public class GetScriptValueAsStringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("Script");
+        public static readonly KeyController ScriptKey = KeyController.Get("Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
 
         public GetScriptValueAsStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public GetScriptValueAsStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -40,9 +40,9 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Exec to string", "99E9328B-7341-403F-819B-26CDAB2F9A51");
+        private static readonly KeyController TypeKey = KeyController.Get("Exec to string");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -52,7 +52,7 @@ namespace Dash
                 var script = inputs[ScriptKey] as TextController;
                 var dsl = new DSL(new Scope());
                 var scriptToRun = (script)?.Data ?? "";
-                var controller = dsl.Run(scriptToRun, true);
+                var controller = await dsl.Run(scriptToRun, true);
                 if (controller != null)
                 {
                     if (controller is ReferenceController)
@@ -63,9 +63,9 @@ namespace Dash
                     else
                     {
 
-                        result = controller is BaseListController
-                            ? string.Join("      ", (controller as BaseListController)?.Data?.Select(i => i?.ToString()))
-                            : controller?.GetValue(null)?.ToString();
+                        result = controller is IEnumerable<FieldControllerBase>
+                            ? string.Join("      ", (controller as IEnumerable<FieldControllerBase>).Select(i => i?.ToString()))
+                            : controller.GetValue(null)?.ToString();
                     }
 
                 }

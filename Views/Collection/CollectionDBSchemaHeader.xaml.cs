@@ -51,7 +51,7 @@ namespace Dash
             var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
             if (collection != null)
             {
-                viewModel.SchemaView.Sort(viewModel);
+                //viewModel.SchemaView.Sort(viewModel);
             }
         }
 
@@ -65,7 +65,8 @@ namespace Dash
             if (ParentCollection != null)
             {
                 ViewModel.SchemaDocument.SetField(CollectionDBView.FilterFieldKey, ViewModel.FieldKey, true);
-                ParentCollection.SetView(CollectionView.CollectionViewType.DB);
+                ParentCollection.ViewModel.ViewType = CollectionViewType.DB;
+                //ParentCollection.SetView(CollectionView.CollectionViewType.DB);
             }
         }
 
@@ -87,14 +88,14 @@ namespace Dash
         }
         private void ResizeHandle_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
-            ViewModel.SchemaView.xHeaderView.CanDragItems = false;
+            //ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
+            //ViewModel.SchemaView.xHeaderView.CanDragItems = false;
         }
 
         private void ResizeHandle_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            ViewModel.SchemaView.xHeaderView.CanReorderItems = true;
-            ViewModel.SchemaView.xHeaderView.CanDragItems = true;
+            //ViewModel.SchemaView.xHeaderView.CanReorderItems = true;
+            //ViewModel.SchemaView.xHeaderView.CanDragItems = true;
         }
 
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)

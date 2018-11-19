@@ -15,7 +15,7 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     x:Name="Control"
     >
-    <Grid x:Name="xOuterGrid" Background="Transparent" ManipulationMode="All" PointerMoved="xOuterGrid_PointerMoved">
+    <Grid x:Name="xOuterGrid" Background="Transparent" ManipulationMode="All" PointerMoved="xOuterGrid_PointerMoved" KeyUp="XOuterGrid_OnKeyUp">
         <Grid.Clip>
             <RectangleGeometry />
         </Grid.Clip>
@@ -26,23 +26,19 @@
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
                       RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" />
 
-        <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas RenderTransform="{Binding TransformGroup, 
-                            Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <local:DocumentView BindRenderTransform="True" BindVisibility="True" Loaded="DocumentViewOnLoaded" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <AutoSuggestBox x:Name="TagKeyBox" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top"
-                        TextChanged="TagKeyBox_OnTextChanged" SuggestionChosen="TagKeyBox_OnSuggestionChosen"
-                        QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"/>
-
+        <Canvas x:Name="xTransformedCanvas" RenderTransform="{Binding TransformGroup,  Converter={StaticResource TransformGroupDataToGroupTransformConverter}}">
+            <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding DocumentViewModels}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas  />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <local:DocumentView BindRenderTransform="True" BindVisibility="True" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Canvas>
     </Grid>
 </local:CollectionFreeformBase>

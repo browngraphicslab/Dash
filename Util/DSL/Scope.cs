@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Flurl.Util;
 
 namespace Dash
 {
@@ -30,8 +32,7 @@ namespace Dash
 
         public virtual void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
-            var value = GetVariable(variableName);
-            if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, value));
+            if (_dictionary.TryGetValue(variableName, out var value)) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, value));
             _dictionary[variableName] = valueToSet;
 
             //add varible to autosuggest option
@@ -48,9 +49,28 @@ namespace Dash
 
         public FieldControllerBase GetVariable(string variableName)
         {
+            return TryGetVariable(variableName, out var field) ? field : null;
+        }
+
+        public bool TryGetVariable(string variableName, out FieldControllerBase value)
+        {
             Scope child = this;
             while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
-            return child?._dictionary[variableName];
+
+            if (child == null)
+            {
+                value = null;
+                return false;
+            }
+
+            value = child._dictionary[variableName];
+            return true;
+
+        }
+
+        public bool CanDeclareVariable(string variableName)
+        {
+            return !_dictionary.ContainsKey(variableName);
         }
 
         public void DeleteVariable(string variableName)
@@ -58,8 +78,28 @@ namespace Dash
             _dictionary.Remove(variableName);
         }
 
-        public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }
-        public virtual void SetReturn(FieldControllerBase ret) { Parent.SetReturn(ret); }
-        public virtual FieldControllerBase GetReturn => Parent.GetReturn;
+        public Scope Merge(Scope scope)
+        {
+            var outScope = new Scope(this);
+
+            foreach (var kv in scope.CollectVariables()) { outScope._dictionary.Add(kv.Key, kv.Value); }
+
+            return outScope;
+        }
+
+        public Dictionary<string, FieldControllerBase> CollectVariables()
+        {
+            var collector = new Dictionary<string, FieldControllerBase>();
+
+            var child = this;
+            while (child != null)
+            {
+                var items = child._dictionary.ToKeyValuePairs().ToList();
+                items.ForEach(kv => collector.Add(kv.Key, (FieldControllerBase) kv.Value));
+                child = child.Parent;
+            }
+
+            return collector;
+        }
     }
 }

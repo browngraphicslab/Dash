@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
@@ -6,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -137,6 +139,9 @@ namespace Dash
             _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
 	        xToggleAnnotations.IsChecked = _currentImage?.AreAnnotationsVisible();
+            var modes = new Stretch[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill };
+            var fillMode = _currentDocController.GetField<TextController>(KeyStore.ImageStretchKey)?.Data ?? "Uniform";
+            xScaleOptionsDropdown.SelectedIndex = modes.Select((m) => m.ToString()).ToList().IndexOf(fillMode);
         }
 
         private async void Rotate_Click(object sender, RoutedEventArgs e)
@@ -167,7 +172,8 @@ namespace Dash
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
-	    {			_currentImage?.HideRegions();
+	    {
+            _currentImage?.HideRegions();
 		    xToggleAnnotations.Label = "Hidden";
 	    }
 
@@ -253,5 +259,10 @@ namespace Dash
             else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
 
+        private void xScaleOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var modes = new Stretch[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill };
+            _currentDocController?.SetField<TextController>(KeyStore.ImageStretchKey, modes[xScaleOptionsDropdown.SelectedIndex >= 0 ? xScaleOptionsDropdown.SelectedIndex : 0].ToString(), true);
+        }
     }
 }

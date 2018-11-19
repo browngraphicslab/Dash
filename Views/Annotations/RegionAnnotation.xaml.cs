@@ -35,32 +35,84 @@ namespace Dash
 
                 for (var i = 0; i < posList.Count; ++i)
                 {
-                    var r = new Rectangle
-                    {
-                        Width = sizeList[i].Data.X,
-                        Height = sizeList[i].Data.Y,
-                        DataContext = selectionViewModel,
-                        IsDoubleTapEnabled = false
-                    };
-                    RenderSubRegion(posList[i].Data, PlacementMode.Top, r, selectionViewModel);
+                    RenderSubRegion(posList[i].Data, new Size(sizeList[i].Data.X, sizeList[i].Data.Y),PlacementMode.Top, selectionViewModel);
                 }
             }
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
+        public override bool IsInView(Rect bounds)
         {
-            r.Stroke = new SolidColorBrush(Colors.Black);
-            r.StrokeThickness = 2;
-            r.StrokeDashArray = new DoubleCollection {2};
-            InitializeAnnotationObject(r, pos, mode);
-            LayoutRoot.Children.Add(r);
+            foreach (var r in LayoutRoot.Children)
+            {
+                if (r is Rectangle annotationRect)
+                {
+                    var annotationBounds = annotationRect.GetBoundingRect(this);
+                    annotationBounds.Intersect(bounds);
+                    if (!annotationBounds.IsEmpty)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void RenderSubRegion(Point pos, Size size, PlacementMode mode, Selection vm)
+        {
+           
+            if (size.Width < 50)
+            {
+                var y = new Path();
+            y.StrokeThickness = 0.2;
+            y.SetBinding(Path.StrokeProperty, ViewModel.GetFillBinding());
+            y.Stroke = new SolidColorBrush(Colors.Black);
+            var pf = new PathFigure() { StartPoint = new Point() };
+            var fc = new PathFigureCollection();
+            fc.Add(pf);
+                y.Data = new PathGeometry() { Figures = fc };
+                var bs = new BezierSegment();
+                bs.Point1 = new Point(size.Width, 0);
+                bs.Point2 = new Point(0, size.Height / 2);
+                bs.Point3 = new Point(size.Width, size.Height / 2);
+                pf.Segments.Add(bs);
+                var bs2 = new BezierSegment();
+                bs2.Point1 = new Point(0, size.Height / 2);
+                bs2.Point2 = new Point(size.Width, size.Height);
+                bs2.Point3 = new Point(0, size.Height);
+                pf.Segments.Add(bs2);
+                pf.IsClosed = false;
+                InitializeAnnotationObject(y, pos, mode);
+                LayoutRoot.Children.Add(y);
+                y.HorizontalAlignment = HorizontalAlignment.Left;
+                y.VerticalAlignment = VerticalAlignment.Top;
+                y.Fill = new SolidColorBrush(Colors.Transparent);
+            }
+            else
+            {
+                var r = new Rectangle
+                {
+                    Width = size.Width,
+                    Height = size.Height,
+                    DataContext = vm,
+                    IsDoubleTapEnabled = false
+                };
+                r.Stroke = new SolidColorBrush(Colors.Black);
+                r.StrokeThickness = 0.5;
+                r.StrokeDashArray = new DoubleCollection { 2 };
+                r.HorizontalAlignment = HorizontalAlignment.Left;
+                r.VerticalAlignment = VerticalAlignment.Top;
+                InitializeAnnotationObject(r, pos, mode);
+                LayoutRoot.Children.Add(r);
+            }
         }
 
         public override void StartAnnotation(Point p)
         {
             _previewStartPoint = p;
-            Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
-            Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
+            ParentOverlay.XPreviewRect.RenderTransform = new TranslateTransform
+            {
+                X = p.X,
+                Y = p.Y
+            };
             Debug.WriteLine("start" + p.X + " " + p.Y);
             XPos = p.X;
             YPos = p.Y;
@@ -78,7 +130,7 @@ namespace Dash
             if (p.X < _previewStartPoint.X)
             {
                 ParentOverlay.XPreviewRect.Width = _previewStartPoint.X - p.X;
-                Canvas.SetLeft(ParentOverlay.XPreviewRect, p.X);
+                (ParentOverlay.XPreviewRect.RenderTransform as TranslateTransform).X = p.X;
             }
             else
             {
@@ -88,7 +140,7 @@ namespace Dash
             if (p.Y < _previewStartPoint.Y)
             {
                 ParentOverlay.XPreviewRect.Height = _previewStartPoint.Y - p.Y;
-                Canvas.SetTop(ParentOverlay.XPreviewRect, p.Y);
+                (ParentOverlay.XPreviewRect.RenderTransform as TranslateTransform).Y = p.Y;
             }
             else
             {
@@ -101,17 +153,19 @@ namespace Dash
 
         public override void EndAnnotation(Point p)
         {
-            XRegionRect = new Rectangle();
-            XRegionRect.StrokeThickness = 2;
-            XRegionRect.StrokeDashArray = new DoubleCollection();
-            XRegionRect.StrokeDashArray.Add(2);
-            XRegionRect.Fill = ParentOverlay.XPreviewRect.Fill;
-            XRegionRect.Opacity = ParentOverlay.XPreviewRect.Opacity;
-            XRegionRect.Stroke = new SolidColorBrush(Colors.Black);
-            XRegionRect.Width = ParentOverlay.XPreviewRect.Width;
-            XRegionRect.Height = ParentOverlay.XPreviewRect.Height;
-            Canvas.SetLeft(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Left);
-            Canvas.SetTop(XRegionRect, ParentOverlay.XPreviewRect.GetBoundingRect(ParentOverlay).Top);
+            XRegionRect = new Rectangle
+            {
+                StrokeThickness = 0.5,
+                StrokeDashArray = new DoubleCollection { 2 },
+                Fill = ParentOverlay.XPreviewRect.Fill,
+                Opacity = ParentOverlay.XPreviewRect.Opacity,
+                Stroke = new SolidColorBrush(Colors.Black),
+                Width = ParentOverlay.XPreviewRect.Width,
+                Height = ParentOverlay.XPreviewRect.Height,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                RenderTransform = ParentOverlay.XPreviewRect.RenderTransform
+            };
 
             if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
             {
@@ -121,7 +175,7 @@ namespace Dash
         }
         public override double AddToRegion(DocumentController region)
         {
-            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(Canvas.GetLeft(XRegionRect), Canvas.GetTop(XRegionRect)));
+            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController((XRegionRect.RenderTransform as TranslateTransform).X, (XRegionRect.RenderTransform as TranslateTransform).Y));
             region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));
 
             return YPos;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -18,11 +19,11 @@ namespace Dash
             _expression = expression;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            var val = _value.Execute(scope);
+            var (val, flags) = await _value.Execute(scope);
             scope.SetVariable(_variableName, val);
-            return _expression.Execute(scope);
+            return await _expression.Execute(scope);
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

@@ -10,16 +10,10 @@ namespace Dash
 
         public HtmlController(string data) : base(new HtmlModel(data))
         {
-            SaveOnServer();
         }
 
         public HtmlController(HtmlModel htmlFieldModel) : base(htmlFieldModel)
         {
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>
@@ -48,22 +42,14 @@ namespace Dash
             {
                 if (HtmlFieldModel.Data != value)
                 {
-                    SetData(value);
+                    string data = HtmlFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    HtmlFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-        * Sets the data property and gives UpdateOnServer an UndoCommand 
-        */
-        private void SetData(string val, bool withUndo = true)
-        {
-            string data = HtmlFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            HtmlFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Html;
@@ -81,6 +67,11 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "HtmlController";
         }
 
         public override FieldControllerBase Copy()

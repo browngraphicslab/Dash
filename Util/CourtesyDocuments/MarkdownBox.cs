@@ -17,7 +17,7 @@ namespace Dash
         }
         protected static void SetupTextBinding(EditableMarkdownBlock element, DocumentController docController, Context context)
         {
-            var binding = new FieldBinding<FieldControllerBase>()
+            var binding = new FieldBinding<TextController>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
@@ -31,8 +31,6 @@ namespace Dash
 
         protected static void SetupBindings(EditableMarkdownBlock element, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(element, docController, context);
-            
             SetupTextBinding(element, docController, context);
         }
 

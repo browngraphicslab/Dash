@@ -1,5 +1,5 @@
-﻿ using System;
- using DashShared;
+﻿using System;
+using DashShared;
 
 namespace Dash
 {
@@ -12,16 +12,10 @@ namespace Dash
 
         public TextController(string data) : base(new TextModel(data))
         {
-            SaveOnServer();
         }
 
         public TextController(TextModel textFieldModel) : base(textFieldModel)
         {
-        }
-
-        public override void Init()
-        {
-            
         }
 
         /// <summary>
@@ -50,23 +44,15 @@ namespace Dash
             {
                 if (TextFieldModel.Data != value)
                 {
-                    SetData(value);
+                    string data = TextFieldModel.Data;
+                    var newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    _lowerData = value.ToLower();
+                    TextFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-        * Sets the data property and gives UpdateOnServer an UndoCommand 
-        */
-        private void SetData(string val, bool withUndo = true)
-        {
-            string data = TextFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            _lowerData = val.ToLower();
-            TextFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
@@ -99,15 +85,20 @@ namespace Dash
                 {
                     if (index < 0)
                     {
-                        return new StringSearchModel(Data, true);
+                        return new StringSearchModel(Data);
                     }
                     index = Math.Max(0, index - textDecrementForContext);
                     var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
-                    return new StringSearchModel(substring, true);
+                    return new StringSearchModel(substring);
                 }
-                
+
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc = null)
+        {
+            return "\"" + Data + "\"";
         }
 
         public override FieldControllerBase Copy()

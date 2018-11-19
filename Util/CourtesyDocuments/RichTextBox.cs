@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -16,85 +17,78 @@ namespace Dash
 
         public RichTextBox(FieldControllerBase refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
-            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToRichText);
             SetupDocument(DocumentType, PrototypeId, "RichTextBox Prototype Layout", fields);
         }
-        public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<System.Collections.Generic.List<object>, Windows.UI.Xaml.TextWrapping>
+        public class TextWrappingConverter : SafeDataToXamlConverter<double, TextWrapping>
         {
-            public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
+            public override TextWrapping ConvertDataToXaml(double wrapping, object parameter = null)
             {
-                if (data[0] != null && data[0] is double)
-                {
-                    switch ((int)(double)data[0])
-                    {
-                        case (int)Windows.UI.Xaml.TextWrapping.Wrap:
-                            return Windows.UI.Xaml.TextWrapping.Wrap;
-                        case (int)Windows.UI.Xaml.TextWrapping.NoWrap:
-                            return Windows.UI.Xaml.TextWrapping.NoWrap;
-                    }
-                }
-                double width = (double)data[1];
-                return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
+                return (TextWrapping)(int)wrapping;
             }
 
-            public override List<object> ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
+            public override double ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
             {
                 throw new NotImplementedException();
             }
         }
-        protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
+        public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key, Context context)
         {
-            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
-            if (data != null)
+            element.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Black);
+            element.DataFieldKey = key;
+            var binding = new FieldBinding<RichTextController>()
             {
-                var binding = new FieldBinding<RichTextController>()
-                {
-                    Document = docController,
-                    Key = KeyStore.DataKey,
-                    Mode = BindingMode.TwoWay,
-                    Context = context,
-                    Tag = "Rich Text Box Text Binding"
-                };
-                element.AddFieldBinding(RichTextView.TextProperty, binding);
-
-                var textWrapRef = new DocumentFieldReference(docController, KeyStore.TextWrappingKey);
-                var widthRef = new DocumentFieldReference(docController, KeyStore.WidthFieldKey);
-                var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
-                {
-                    Mode = BindingMode.OneWay,
-                    Converter = new AutomatedTextWrappingBinding(),
-                    Context = context,
-                    Tag = "Rich Text Box Text Wrapping Binding",
-                    CanBeNull = true
-                };
-                element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
-            }
+                Document = docController,
+                Key = key,
+                Mode = BindingMode.TwoWay,
+                Context = context,
+                Tag = "Rich Text Box Text Binding",
+                FallbackValue = new RichTextModel.RTD() {RtfFormatString="" }
+            };
+            element.AddFieldBinding(RichEditView.TextProperty, binding);
+            SetupTextWrapBinding(element, docController);
         }
+
+        public static void SetupTextWrapBinding(RichEditView element, DocumentController docController)
+        {
+            var twrapBinding = new FieldBinding<NumberController>
+            {
+                Document = docController,
+                Key = KeyStore.TextWrappingKey,
+                Mode = BindingMode.OneWay,
+                Converter = new TextWrappingConverter(),
+                Tag = "Rich Text Box Text Wrapping Binding",
+                FallbackValue = TextWrapping.Wrap
+            };
+            element.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
+        }
+
         public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
-            var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
-            return rtv.GetRegionDocument();
+            var rtv = richTextBox.GetFirstDescendantOfType<RichEditView>();
+            return rtv?.GetRegionDocument();
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
-            RichTextView rtv = null;
-            var dataField = docController.GetField(KeyStore.DataKey);
+            RichEditView rtv = null;
+            var dataField = docController.GetField(key);
             var refToRichText = dataField as ReferenceController;
-                rtv = new RichTextView()
-                {
-                    LayoutDocument = docController.GetActiveLayout() ?? docController,
-                    DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
-                };
-                rtv.ManipulationMode = ManipulationModes.All;
-                rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-                rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-                rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
-                //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
-                rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
-                rtv.VerticalAlignment = VerticalAlignment.Stretch;
-                SetupTextBinding(rtv, docController, context);
-                SetupBindings(rtv, docController, context);
-			
+            rtv = new RichEditView();
+            rtv.FontSize = 10;
+            //{
+            //    LayoutDocument = docController,
+            //    // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument
+            //    DataDocument = refToRichText?.GetDocumentController(context).GetDataDocument() ?? docController.GetDataDocument()
+            //};
+            rtv.ManipulationMode = ManipulationModes.All;
+            rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+            rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+            rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
+            //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
+            rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
+            rtv.VerticalAlignment = VerticalAlignment.Stretch;
+            SetupBindings(rtv, docController, key, context);
             return rtv;
         }
 

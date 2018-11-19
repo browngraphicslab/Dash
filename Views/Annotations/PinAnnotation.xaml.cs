@@ -39,7 +39,12 @@ namespace Dash
                 RegionDocumentController.SetPosition(new Point(curPos.X + p.X, curPos.Y + p.Y));
                 e.Handled = true;
             };
-        } 
+        }
+
+        public override bool IsInView(Rect bounds)
+        {
+            return bounds.Contains(new Point());
+         }
 
         CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
 

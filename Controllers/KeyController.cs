@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Dash.Controllers.Operators;
 using DashShared;
 
 namespace Dash
@@ -10,7 +11,29 @@ namespace Dash
     public class KeyController : FieldModelController<KeyModel>
     {
 
-        private static Dictionary<string, string> _nameDictionary = new Dictionary<string, string>();
+        private static Dictionary<string, KeyController> _nameDictionary = new Dictionary<string, KeyController>();
+
+        public static KeyController Get(string name)
+        {
+            if (_nameDictionary.TryGetValue(name, out var key))
+            {
+                return key;
+            }
+
+            var id = UtilShared.GetDeterministicGuid(name);
+            var idString = id.ToString().ToUpper();
+            key = RESTClient.Instance.Fields.GetController<KeyController>(idString);
+            if (key != null)
+            {
+                _nameDictionary[name] = key;
+                return key;
+            }
+
+
+            key = new KeyController(name, id);
+            _nameDictionary[name] = key;
+            return key;
+        }
 
         public string Name
         {
@@ -19,84 +42,39 @@ namespace Dash
             {
                 if (KeyModel.Name != value)
                 {
-                    SetName(value);
+                    string data = KeyModel.Name;
+                    UndoCommand newEvent = new UndoCommand(() => Name = value, () => Name = data);
+
+                    KeyModel.Name = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetName(string val, bool withUndo = true)
-        {
-            string data = KeyModel.Name;
-            UndoCommand newEvent = new UndoCommand(() => SetName(val, false), () => SetName(data, false));
-
-            KeyModel.Name = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
-
-        private static string GetId(string name)
-        {
-            if (_nameDictionary.ContainsKey(name))
-            {
-                return _nameDictionary[name];
-            }
-
-            var id = Guid.NewGuid().ToString();
-            _nameDictionary[name] = id;
-            return id;
         }
 
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string name) : base(new KeyModel(name, GetId(name)))
-        {
-            IsOnServer(delegate (bool onServer)
-            {
-                if (!onServer)
-                {
-                    SaveOnServer();
-                }
-            });
-        }
 
         /// <summary>
         /// Use this contructor only if you really need to give this key a specific ID, otherwise use the constructor where you just pass in a name
         /// </summary>
         /// <param name="name"></param>
         /// <param name="guid"></param>
-        public KeyController(string name, string guid) : base(new KeyModel(name, guid))
+        private KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
-            IsOnServer(delegate (bool onServer)
-            {
-                if (!onServer)
-                {
-                    SaveOnServer();
-                }
-            });
-            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == guid);
-            _nameDictionary[name] = guid;
-        }
-
-        public KeyController() : this(Guid.NewGuid().ToString())
-        {
+            HashCode = Id.GetHashCode();
         }
 
         public KeyController(KeyModel model) : base(model)
         {
             Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
-            _nameDictionary[model.Name] = model.Id;
-        }
+            _nameDictionary[model.Name] = this;
 
-        public override void Init()
-        {
-
+            HashCode = Id.GetHashCode();
         }
 
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
 
         public override bool Equals(object obj)
@@ -105,13 +83,10 @@ namespace Dash
             return k != null && k.Id.Equals(Id);
         }
 
-        public static bool IsPresent(string key) => _nameDictionary.ContainsKey(key);
-
+        private int HashCode { get; } 
         public override int GetHashCode()
         {
-
-            return Id.GetHashCode();
-
+            return HashCode;
         }
 
         public override FieldControllerBase Copy()
@@ -125,7 +100,6 @@ namespace Dash
             //return Equals(KeyStore.DelegatesKey) ||
             //       Equals(KeyStore.PrototypeKey) ||
             //       Equals(KeyStore.LayoutListKey) ||
-            //       Equals(KeyStore.ActiveLayoutKey) ||
             //       Equals(KeyStore.IconTypeFieldKey);
         }
 
@@ -151,6 +125,11 @@ namespace Dash
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return searchString == null || (Name.ToLower().Contains(searchString.ToLower()) ||
                reg.IsMatch(Name)) ? new StringSearchModel(Name) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<KeyOperator>() + $"(\"{Name}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

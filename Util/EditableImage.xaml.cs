@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
 using Windows.Storage.FileProperties;
+using Windows.UI.Xaml.Media;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -25,12 +26,12 @@ namespace Dash
 
     public partial class EditableImage : INotifyPropertyChanged
     {
-        private readonly Context _context;
-        private readonly DocumentController LayoutDocument;
         private StateCropControl _cropControl;
         private ImageController _imgctrl;
         public bool IsCropping;
         private DocumentView _docview;
+        public DocumentController DataDocument => (DataContext as DocumentViewModel).DataDocument;
+        public DocumentController LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
 
         // interface-required event to communicate with the AnnotationManager about when it's okay to start annotating
 
@@ -40,25 +41,29 @@ namespace Dash
 
         private AnnotationOverlay _annotationOverlay;
 
-        public EditableImage(DocumentController document, Context context)
+        public Stretch Stretch
+        {
+            get => xImage.Stretch;
+            set => xImage.Stretch = value;
+        }
+
+        public KeyController DataFieldKey { get; set; }
+
+        public EditableImage()
         {
             InitializeComponent();
-            LayoutDocument = document.GetActiveLayout() ?? document;
-            _context = context;
             Image.Loaded += Image_Loaded;
-            Image.Unloaded += Image_Unloaded;
             Image.ImageOpened += (sender, args) =>
             {
                 var source = Image.Source as BitmapSource;
                 XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
-            };
-            // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
-            _imgctrl = document.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
-            _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-            _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
-            XAnnotationGrid.Children.Add(_annotationOverlay);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+                XAnnotationGrid.Children.Add(_annotationOverlay);
+                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
+            };
 
             Loaded += EditableImage_Loaded;
             // existing annotated regions are loaded with the VisualAnnotationManager
@@ -66,12 +71,9 @@ namespace Dash
 
         private void EditableImage_Loaded(object sender, RoutedEventArgs e)
         {
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
-        }
-
-        private void Image_Unloaded(object sender, RoutedEventArgs e)
-        {
-            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.GoToRegionKey, GoToUpdated);
+            LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdated(controller, arg3));
+            
+            _imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
         }
 
         private DocumentController RegionGetter(AnnotationType type)
@@ -82,7 +84,7 @@ namespace Dash
 
         public async Task ReplaceImage()
         {
-            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, new Context());
 
             // get the file from the current image controller
             var file = await GetImageFile();
@@ -90,27 +92,16 @@ namespace Dash
 
             // set image source to the new file path and fix the width
             Image.Source = new BitmapImage(new Uri(file.Path));
-            Image.Width = fileProperties.Width;
 
             // on replace image, change the original image value for revert
-            var origImgCtrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-            LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+            var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, new Context());
+            LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+            LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
+            LayoutDocument.SetHeight(double.NaN);
         }
 
-        private async Task<StorageFile> GetImageFile(bool originalImage = false)
+        private async Task<StorageFile> GetImageFile()
         {
-            // finds local uri path of image controller's image source
-            StorageFile file;
-            Uri src;
-            if (originalImage)
-            {
-                src = LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
-            }
-            else
-            {
-                src = _imgctrl.ImageSource;
-            }
-
             /*
 			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
 			 * try catch is literally the only way we can deal with regular
@@ -119,15 +110,13 @@ namespace Dash
             try
             {
                 // method of getting file from local uri
-                file = await StorageFile.GetFileFromPathAsync(src.LocalPath);
+                return await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
             }
             catch (Exception)
             {
                 // method of getting file from absolute uri
-                file = await StorageFile.GetFileFromApplicationUriAsync(src);
+                return await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
             }
-
-            return file;
         }
 
 
@@ -136,16 +125,13 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 // make sure if we have an original image stored (which we always should)
-                if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
+                if (LayoutDocument.GetDataDocument().GetField(KeyStore.OriginalImageKey) is ImageController originalImage)
                 {
-                    // get the storagefile of the original image so we can revert
-                    var file = await GetImageFile(true);
-                    var fileProperties = await file.Properties.GetImagePropertiesAsync();
-                    Image.Width = fileProperties.Width;
+                    _imgctrl = originalImage;
 
-                    LayoutDocument.SetField<ImageController>(KeyStore.DataKey,
-                        LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
-                    _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                    LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, originalImage.ImageSource, true);
+                    LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
+                    LayoutDocument.SetHeight(double.NaN);
                 }
             }
         }
@@ -158,7 +144,7 @@ namespace Dash
             _cropControl = new StateCropControl(LayoutDocument, this);
         }
 
-        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             if (args.NewValue != null)
             {
@@ -195,7 +181,6 @@ namespace Dash
             if (xGrid.Children.Contains(_cropControl)) return;
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
-            _docview.ViewModel.DecorationState = false;
             IsCropping = true;
         }
 
@@ -207,7 +192,7 @@ namespace Dash
 
         public async Task Crop(Rect rectangleGeometry)
         {
-            transformImage(rectangleGeometry, BitmapRotation.None, BitmapFlip.None);
+            await transformImage(rectangleGeometry, BitmapRotation.None, BitmapFlip.None);
         }
         /// <summary>
         ///     crops the image with respect to the values of the rectangle passed in
@@ -270,10 +255,10 @@ namespace Dash
                 break;
             }
 
-            if (LayoutDocument.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
+            if (LayoutDocument.GetDataDocument().GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
-                var origImgCtrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-                LayoutDocument.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+                var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, new Context());
+                LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl.Copy(), true);
             }
 
             // opens the uri path and reads it
@@ -333,10 +318,10 @@ namespace Dash
                 }
                 
                 var uri = new Uri(newFile.Path);
-                LayoutDocument.SetField<ImageController>(KeyStore.DataKey, uri, true);
+                LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, uri, true);
 
                 // store new image information so that multiple crops can be made
-                _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
+                _imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey,null);
 
                 var oldpoint = LayoutDocument.GetPosition() ?? new Point();
                 var scale = LayoutDocument.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
@@ -371,7 +356,6 @@ namespace Dash
                     IsCropping = false;
                     xGrid.Children.Remove(_cropControl);
                     await Crop(_cropControl.GetBounds());
-                    _docview.ViewModel.DecorationState = false;
 
                     break;
                 case VirtualKey.Left:
@@ -391,7 +375,6 @@ namespace Dash
         {
             if (!IsCropping) return;
             IsCropping = false;
-            _docview.ViewModel.DecorationState = true;
             xGrid.Children.Remove(_cropControl);
         }
 
@@ -408,7 +391,7 @@ namespace Dash
                     _annotationOverlay.EndAnnotation(point.Position);
                     e.Handled = true;
                 }
-                else if(point.Properties.IsLeftButtonPressed)
+                else if(point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
                 {
                     _annotationOverlay.UpdateAnnotation(point.Position);
                     e.Handled = true;
@@ -440,12 +423,12 @@ namespace Dash
         {
             if (IsCropping) e.Handled = true;
             var point = e.GetCurrentPoint(_annotationOverlay);
-
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
             }
             _downPt = e.GetCurrentPoint(this).Position;
+            e.Handled = true;
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

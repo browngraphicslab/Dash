@@ -235,7 +235,7 @@ namespace Dash
 			var html = new List<string>();
 			var numPages = _pdfNumbers[dc];
 			//var regions = regionsToRender ?? dc.GetRegions()?.TypedData;
-			var regions = regionsToRender ?? dc.GetRegions()?.TypedData;
+			var regions = regionsToRender ?? dc.GetRegions().ToList();
 			var pageSize = _pdfPageSize[dc];
 			var pageNums = new List<int>();
 
@@ -251,7 +251,7 @@ namespace Dash
 						case AnnotationType.Region:
 							// something about a single selection/region doc being able to contain both types of annotations
 							var selectionRegions = region
-								.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null)?.TypedData;
+								.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null);
 							if (selectionRegions != null)
 							{
 								foreach (var point in selectionRegions)
@@ -262,7 +262,7 @@ namespace Dash
 							}
 
 							var selectionIndices = region
-								.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionIndicesListKey, null)?.TypedData;
+								.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionIndicesListKey, null);
 							break;
 						case AnnotationType.Ink:
 							break;
@@ -333,8 +333,8 @@ namespace Dash
 							}
 							break;
 						case AnnotationType.Region:
-							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data;
-							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).TypedData.First().Data;
+							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).First().Data;
+							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).First().Data;
 							var offset = GetPercentileOffsets(point.X + 20, point.Y + 20);
 							var oneTarget = GetOppositeLinkTarget(region);
 							if (oneTarget != null)
@@ -345,8 +345,11 @@ namespace Dash
 									Debug.WriteLine("UH OH");
 									continue;
 								}
-
-								var rect = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\"><svg class=\"pdfOverlay\" height=\"" + size.Y / pageSize.Height * 100 + "%\" width=\"" + size.X / pageSize.Width * 100 + "%\" style=\"position:absolute; top:" + 
+                                if (!_fileNames.ContainsKey(oneTarget.GetDataDocument()))
+                                      _fileNames.Add(oneTarget.GetDataDocument(), GetFileName(oneTarget.GetDataDocument()));
+                                if (!_colorPairs.ContainsKey(oneTarget.GetDataDocument()))
+                                    _colorPairs.Add(oneTarget.GetDataDocument(), _regionColors[0]);
+                                var rect = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\"><svg class=\"pdfOverlay\" height=\"" + size.Y / pageSize.Height * 100 + "%\" width=\"" + size.X / pageSize.Width * 100 + "%\" style=\"position:absolute; top:" + 
 								           offset.Y + "%; left:" + offset.X + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget.GetDataDocument()] + "\"></rect></svg></a>";
 								html.Insert(index + 1, rect);
 							}
@@ -422,7 +425,7 @@ namespace Dash
 			// TODO: replace URLs linked to actual websites as well
 			
 			// do the regioning
-			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions()?.TypedData;
+			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions()?.ToList();
 			var stringsToInsert = new SortedDictionary<int, string>();
 			if (regions != null)
 			{
@@ -441,7 +444,7 @@ namespace Dash
 						// insert the appropriate color pair.
 						htmlToInsert = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\" class=\"inlineLink\"><b style=\"color:" + _colorPairs[oneTarget.GetDataDocument()] + "\">";
 					}
-					var regionText = region.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+					var regionText = region.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
 
 					var startIndex = plainText.IndexOf(regionText, StringComparison.Ordinal);
 					stringsToInsert.Add(startIndex, htmlToInsert);
@@ -555,7 +558,7 @@ namespace Dash
 
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
-			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions().TypedData;
+			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions()?.ToList();
 			var imgTitle = "img_" + _fileNames[dc.GetDataDocument()] + ".jpg";
 			var path = "Media\\" + imgTitle;
 			var html = "<div class=\"imgNote\"><img src=\"" + path + "\">";
@@ -569,8 +572,8 @@ namespace Dash
 						case AnnotationType.Region:
 							// currently the only supported one for images?
 							var oneTarget = GetOppositeLinkTarget(region);
-							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).TypedData.First().Data;
-							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).TypedData.First().Data;
+							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).First().Data;
+							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).First().Data;
 							var imgSize = region.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null)
 								.GetDereferencedField<PointController>(KeyStore.InitialSizeKey, null).Data;
 							if (oneTarget != null)
@@ -622,7 +625,7 @@ namespace Dash
 			var html = new List<string> {RenderImmediateLinksToHtml(dc)};
 
 			// then add in its regions
-		    var regions = dc.GetDataDocument().GetRegions()?.TypedData;
+		    var regions = dc.GetDataDocument().GetRegions();
 			if (regions != null)
 			{
 				html.AddRange(regions.Select(RenderImmediateLinksToHtml));
@@ -916,8 +919,14 @@ namespace Dash
 		{
 			var parts = rawUri.Split('/');
 			var url = parts[parts.Length - 1];
-			var file = await ApplicationData.Current.LocalFolder.GetFileAsync(url);
-			await CopyMedia(file, newName);
+            try
+            {
+                var file = await ApplicationData.Current.LocalFolder.GetFileAsync(url);
+                await CopyMedia(file, newName);
+            } catch (Exception)
+            {
+
+            }
 		}
 
 		/// <summary>

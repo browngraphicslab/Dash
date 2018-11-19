@@ -11,24 +11,15 @@ namespace Dash
 
         public AudioController() : base(new AudioModel())
         {
-            SaveOnServer();
         }
 
         public AudioController(Uri path) : base(new AudioModel(path))
         {
-            SaveOnServer();
         }
 
         public AudioController(AudioModel audFieldModel) : base(audFieldModel)
         {
-            SaveOnServer();
         }
-
-        public override void Init()
-        {
-
-        }
-
 
         public AudioModel AudioFieldModel => Model as AudioModel;
 
@@ -40,19 +31,14 @@ namespace Dash
             {
                 if (AudioFieldModel.Data != value)
                 {
-                    SetData(value);
+                    System.Uri data = AudioFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    AudioFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        private void SetData(Uri val, bool withUndo = true)
-        {
-            System.Uri data = AudioFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            AudioFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override StringSearchModel SearchForString(string searchString)
@@ -64,6 +50,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<AudioOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

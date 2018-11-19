@@ -1,0 +1,67 @@
+﻿<UserControl
+    x:Class="Dash.NewTemplatePopup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Popups"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened">
+                <Border x:Name="xBorder"
+                        BorderBrush="{StaticResource DashDarkBlueBrush}"
+                        Background="White"
+                        BorderThickness="2 40 2 2" Width="400" Height="300">
+                    <Grid>
+
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Padding="30">
+                            <TextBlock FontSize="18" HorizontalAlignment="Center" FontWeight="Bold">New Template Settings</TextBlock>
+                            <Grid BorderThickness="0" Width="300" Margin="0 10 0 0" RowSpacing="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition Height="50"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    Template Name:
+                                </TextBlock>
+                                <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    Description:
+                                </TextBlock>
+                                <TextBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="xName">
+                                </TextBox>
+                                <TextBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="xDesc">
+                                </TextBox>
+                                <Button x:Name="xCancelButton" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="40" Width="100" Background="IndianRed" Grid.Row="2" Grid.Column="0">
+                                    <TextBlock FontSize="14" Foreground="White">Cancel</TextBlock>
+                                </Button>
+                                <Button x:Name="xConfirmButton" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="40" Width="150" Background="{StaticResource DashDarkBlueBrush}" Grid.Row="2" Grid.Column="1">
+                                    <TextBlock FontSize="14" Foreground="White" >Add Template</TextBlock>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="300">
+                        </StackPanel>
+
+
+                        <StackPanel  Margin="0 220 0 0" Orientation="Horizontal" HorizontalAlignment="Center" >
+                            <TextBlock x:Name="xErrorMessageIcon" Visibility="Collapsed" FontSize="14" Foreground="DarkRed"
+                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ErrorIcon}"/>
+                            <TextBlock x:Name="xErrorMessageText" Visibility="Collapsed" FontSize="12" Foreground="DarkRed" Margin="-10 0 0 0">ERROR: Please select a format</TextBlock>
+
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Popup>
+        </Grid>
+    </Grid>
+</UserControl>

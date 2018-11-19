@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -8,15 +9,12 @@ namespace Dash
     {
         protected BinaryOperatorControllerBase(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
-        public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("6FDEC187-64E7-4926-923E-8E383AB5A72B", "Binary Base");
-
         //Input keys
-        public static readonly KeyController LeftKey = new KeyController("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "Left");
-        public static readonly KeyController RightKey = new KeyController("F9B2192D-3DFD-41B8-9A37-56D818153B59", "Right");
+        public static readonly KeyController LeftKey = KeyController.Get("Left");
+        public static readonly KeyController RightKey = KeyController.Get("Right");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Computed Result");
+        public static readonly KeyController ComputedResultKey = KeyController.Get("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -26,9 +24,12 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo> { [ComputedResultKey] = TypeInfo.Number };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             outputs[ComputedResultKey] = Compute((T)inputs[LeftKey], (U)inputs[RightKey]);
+            return Task.CompletedTask;
         }
 
         public abstract FieldControllerBase Compute(T left, U right);

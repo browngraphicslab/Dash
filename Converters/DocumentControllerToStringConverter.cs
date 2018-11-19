@@ -78,7 +78,7 @@ namespace Dash.Converters
         public override DocumentController ConvertXamlToData(string xaml, object parameter = null)
         {
             var values = xaml.TrimStart('<').TrimEnd('>').Trim();
-            return ContentController<FieldModel>.GetController<DocumentController>(values);
+            return RESTClient.Instance.Fields.GetController<DocumentController>(values);
         }
     }
 }

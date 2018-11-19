@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -13,20 +15,19 @@ namespace Dash
         }
         public CollectionTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Collection Title", "775EE4CC-D2A8-4A11-AC3F-EC36C91355DE");
+        private static readonly KeyController TypeKey = KeyController.Get("Collection Title");
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 
         //Input keys
         public static readonly KeyController CollectionDocsKey = KeyStore.DataKey;
-       // public static readonly KeyController CollectionDocsKey = new KeyController("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2", "Collection Docs");
+        // public static readonly KeyController CollectionDocsKey = new KeyController(new Guid("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2"), "Collection Docs");
 
         //Output keys
-        public static readonly KeyController ComputedTitle = new KeyController("Computed Title");
+        public static readonly KeyController ComputedTitle = KeyStore.TitleKey;
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -37,7 +38,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -46,7 +47,7 @@ namespace Dash
             DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                firstDoc = collDocs.TypedData.Where(dc => !dc.GetHidden()).OrderBy(dc => dc.GetPositionField()?.Data.Y)
+                firstDoc = collDocs.Where(dc => !dc.GetHidden()).OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
                 // bcz: this is a hack to avoid infinite recursion when the first document in a collection
@@ -54,7 +55,8 @@ namespace Dash
                 // mechanism of identifying and halting an evaluation cycle
                 if (firstDoc?.DocumentType.Equals(DataBox.DocumentType) == true)
                     output = new TextController(firstDoc.GetDereferencedField(KeyStore.DataKey, null)?.ToString() ?? "");
-                else output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                else
+                    output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
             // bcz: this would be useful if we knew what was changed about the list item document.  If the title is changed, we only care about the first document;
@@ -65,6 +67,7 @@ namespace Dash
             //    return;
 
             outputs[ComputedTitle] = new TextController(output?.Data ?? "Untitled") { ReadOnly = true };
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

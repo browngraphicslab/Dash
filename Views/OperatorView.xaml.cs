@@ -79,7 +79,7 @@ namespace Dash
             _lastDataContext = DataContext;
 
             // get the operator field model controller form the data context
-            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<ListController<OperatorController>>(null).TypedData[0];
+            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<ListController<OperatorController>>(null)[0];
 
             // bind the input and output lists (the things we link to)
             var inputsBinding = new Binding
@@ -108,7 +108,7 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             var el = sender as FrameworkElement;
             var docRef = DataContext as DocumentFieldReference;
-            args.Data.AddDragModel(new DragFieldModel(new DocumentFieldReference(docRef.GetDocumentController(null), ((DictionaryEntry?)el?.DataContext)?.Key as KeyController)));
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(docRef.GetDocumentController(null), ((DictionaryEntry?)el?.DataContext)?.Key as KeyController)));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -17,7 +18,7 @@ namespace Dash
             throw new System.NotImplementedException();
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
              var typeInfo = TypeInfo.None;
             //  execute each element in list if it isn't null
@@ -26,7 +27,7 @@ namespace Dash
             {
                 if (elem != null)
                 {
-                    var field = elem.Execute(scope);
+                    var (field, _) = await elem.Execute(scope);
                     outputList.Add(field);
 
                     if (typeInfo == TypeInfo.None && field.TypeInfo != TypeInfo.None)
@@ -41,14 +42,14 @@ namespace Dash
 
             typeInfo = typeInfo == TypeInfo.None ? TypeInfo.Any : typeInfo;
 
-            var lc = (BaseListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
+            var lc = (IListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
             foreach (var item in outputList)
             {
                 lc.AddBase(item);
             }
             //lc.AddRange(outputList);
 
-            return lc;
+            return (lc.AsField(), ControlFlowFlag.None);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.UI.Xaml.Controls;
 
@@ -16,14 +17,14 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController HtmlInputKey =
-            new KeyController("Html Input");
+            KeyController.Get("Html Input");
 
         public static readonly KeyController ScriptKey =
-            new KeyController("Script");
+            KeyController.Get("Script");
 
         // Output Keys
         public static readonly KeyController OutputDocumentKey =
-            new KeyController("Output Document");
+            KeyController.Get("Output Document");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
 
@@ -52,14 +53,14 @@ namespace Dash
             execOp.SetField(OutputDocumentKey, new TextController(""), true);
 
             var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp, KeyStore.OperatorKey)).Document;
-            execOp.SetActiveLayout(layoutDoc, true, true);
+            //execOp.SetActiveLayout(layoutDoc, true, true);
+            throw new Exception("Active layout code has not been updated for this class");
             return execOp;
         }
         
 
         public ExecuteHtmlJavaScriptController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
 
@@ -68,9 +69,9 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Execute html javascript", "D0286E73-D9F6-4341-B901-5ECC27AC76BC");
+        private static readonly KeyController TypeKey = KeyController.Get("Execute html javascript");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -81,13 +82,14 @@ namespace Dash
                 var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
                 var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
 
-                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema);
+                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Schema);
 
                 MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, new Windows.UI.Core.DispatchedHandler(
                     async () => new execClass(correctedHtml, script, doc)));
 
                 outputs[OutputDocumentKey] = doc.Document;
             }
+            return Task.CompletedTask;
         }
 
         class execClass
@@ -124,8 +126,8 @@ namespace Dash
                     var children = Cnote.Document.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
-                            foreach (var d in (f.Value as ListController<DocumentController>).TypedData)
-                                if (!children.GetElements().Contains(d))
+                            foreach (var d in (f.Value as ListController<DocumentController>))
+                                if (!children.Contains(d))
                                 {
                                     foreach (var field in d.EnumDisplayableFields().ToArray())
                                     {

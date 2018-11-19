@@ -1,4 +1,6 @@
-﻿namespace Dash
+﻿using System.Threading.Tasks;
+
+namespace Dash
 {
     /// <summary>
     /// Class used to execute DSL (Dish Scripting Language).  
@@ -10,24 +12,35 @@
     {
         private readonly Scope _scope;
 
-        public DSL(Scope scope = null) => _scope = new ReturnScope(scope);
+        public DSL(Scope scope = null)
+        {
+            _scope = scope;
+        }
 
         public DSL(OuterReplScope scope)
         {
             _scope = scope;
         }
 
-        public FieldControllerBase Run(string script, bool catchErrors =  false, bool undoVar = false)
+        /// <summary>
+        /// Method to call to execute a string as a Dish Script and return the FieldController return value.
+        /// This method should throw exceptions if the string is not a valid script.
+        /// If an InvalidDishScriptException is throw, the exception.ScriptErrorModel SHOULD be a helpful error message.
+        /// 
+        /// if catchErrors is true, you will get all errors back as a helpful string wrapped in a textController
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="catchErrors"></param>
+        /// <returns></returns>
+        public async Task<FieldControllerBase> Run(string script, bool catchErrors =  false, bool undoVar = false)
         {
             try
             {
-                var interpreted = TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
-
-                return interpreted;
+                return await TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
             }
             catch (DSLException e)
             {
-                if (!catchErrors) throw e;
+                if (!catchErrors) return null;
 
                 if (e is ScriptExecutionException exception) return exception.Error.GetErrorDoc(); 
                 return new TextController(e.GetHelpfulString());
@@ -43,11 +56,7 @@
             }
             catch (DSLException e)
             {
-                if (catchErrors)
-                {
-                    return new TextController(e.GetHelpfulString());
-                }
-                throw e;
+                return catchErrors ? new TextController(e.GetHelpfulString()) : null;
             }
         }
 
@@ -89,33 +98,6 @@
         public static bool FuncNameExists(string funcName) => Op.TryParse(funcName, out var funcEnum) && OperatorScript.FuncNameExists(funcEnum);
 
         /// <summary>
-        /// Method to call to execute a string as a Dish Script and return the FieldController return value.
-        /// This method should throw exceptions if the string is not a valid script.
-        /// If an InvalidDishScriptException is throw, the exception.ScriptErrorModel SHOULD be a helpful error message.
-        /// 
-        /// if catchErrors is true, you will get all errors back as a helpful string wrapped in a textController
-        /// </summary>
-        /// <param name="script"></param>
-        /// <param name="catchErrors"></param>
-        /// <returns></returns>
-        public static FieldControllerBase Interpret(string script, bool catchErrors = false)
-        {
-            try
-            {
-                return TypescriptToOperatorParser.Interpret(script);
-            }
-            catch (DSLException e)
-            {
-                if (catchErrors)
-                {
-                    return new TextController(e.GetHelpfulString());
-                }
-                throw e;
-            }
-        }
-
-
-        /// <summary>
         /// Method to call to get an operator controller that represents the script called
         /// 
         /// if catchErrors is true, you will get all errors back as a helpful string wrapped in a textController
@@ -149,7 +131,7 @@
         /// <param name="input"></param>
         /// <param name="catchErrors"></param>
         /// <returns></returns>
-        public static FieldControllerBase InterpretUserInput(string input, bool catchErrors = false, Scope scope = null)
+        public static Task<FieldControllerBase> InterpretUserInput(string input, bool catchErrors = false, Scope scope = null)
         {
             var newInput = input?.Trim() ?? "";
 
@@ -157,7 +139,7 @@
             if (newInput.StartsWith("=="))
             {
                 var dsl = new DSL(scope);
-                return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);//TODO we might need to prepend "return " to the input but maybe not?
+                return Task.FromResult(dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors));//TODO we might need to prepend "return " to the input but maybe not?
             }
 
             if (newInput.StartsWith("="))
@@ -167,7 +149,7 @@
             }
 
 
-            return new TextController(newInput);
+            return Task.FromResult<FieldControllerBase>(new TextController(newInput));
         }
 
 
@@ -201,14 +183,22 @@
         /// <summary>
         /// Returns the string script of the given operator tree. 
         /// </summary>
-        /// <param name="fieldController"></param>
-        /// <param name="context"></param>
+        /// <param name="field"></param>
+        /// <param name="thisDoc"></param>
         /// <returns></returns>
-        public static string GetScriptForOperatorTree(FieldControllerBase fieldController, Context context = null)
+        public static string GetScriptForField(FieldControllerBase field, DocumentController thisDoc = null)
         {
-            return (fieldController is TextController) ? 
-                '"' + fieldController.GetValue(context).ToString() +'"' : 
-                fieldController.GetValue(context).ToString();
+            if (field == null)
+            {
+                return "";
+            }
+
+            if (field is TextController text)
+            {
+                return text.Data;
+            }
+
+            return "=" + field.ToScriptString(thisDoc);
         }
     }
 }

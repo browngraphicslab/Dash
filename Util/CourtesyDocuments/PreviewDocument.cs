@@ -48,7 +48,7 @@ namespace Dash
                 Content = innerContent       
             };
 
-            docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args, c) =>
+            docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args) =>
             {
                 //var fargs =
                 //    ((DocumentController.DocumentFieldUpdatedEventArgs) args).FieldArgs as
@@ -58,10 +58,10 @@ namespace Dash
                 //    return;
                 //}
                 layout = layout ?? docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
-                var innerLayout = args.NewValue.DereferenceToRoot<DocumentController>(c);
+                var innerLayout = args.NewValue.DereferenceToRoot<DocumentController>(null);
                 foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
-                var innerCont = innerLayout.MakeViewUI(c);
+                var innerCont = innerLayout.MakeViewUI(null);
                 returnContent.Content = innerCont;
             });
 

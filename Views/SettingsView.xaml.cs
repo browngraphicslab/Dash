@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -183,6 +185,13 @@ namespace Dash
             set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, value, true);
         }
 
+        public string UserName
+        {
+            //This gets called before the settings are initialized, so _settingsDoc is null
+            get => _settingsDoc?.GetField<TextController>(KeyStore.AuthorKey)?.Data;
+            set => _settingsDoc?.SetField<TextController>(KeyStore.AuthorKey, value, true);
+        }
+
         #endregion
 
         #region CONSTRUCTOR
@@ -201,6 +210,9 @@ namespace Dash
             _clearConfidence = BackupClearSafetyConfidence.Unconfident;
             _eraseConfidence = DbEraseSafetyConfidence.Unconfident;
             _endpoint = App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>();
+
+            var version = Package.Current.Id.Version;
+            XVersionTextBlock.Text = $"Version: {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
 
             _mainPanels = new List<StackPanel>
             {
@@ -242,7 +254,7 @@ namespace Dash
         #region SETTINGS AND BINDING PROCESSING
 
         //TODO Maybe handler should be removed in favor of having SettingsView have events for when the settings are changed.
-        private void AddSettingsBinding<T>(FrameworkElement element, DependencyProperty prop, KeyController key, IValueConverter converter = null, string tag = null, DependencyPropertyChangedCallback handler = null, BindingMode mode = BindingMode.TwoWay) where T : FieldControllerBase
+        private void AddSettingsBinding<T>(FrameworkElement element, DependencyProperty prop, KeyController key, IValueConverter converter = null, string tag = null, DependencyPropertyChangedCallback handler = null, BindingMode mode = BindingMode.TwoWay) where T : FieldControllerBase, new()
         {
             var binding = new FieldBinding<T>
             {
@@ -300,6 +312,8 @@ namespace Dash
             AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: (sender, dp) => UpdateNumBackups(), mode: BindingMode.OneWay);
             AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) => UpdateInterval());
             AddSettingsBinding<NumberController>(xBackgroundOpacitySlider, RangeBase.ValueProperty, KeyStore.BackgroundImageOpacityKey, handler: (sender, dp) => CollectionFreeformView.BackgroundOpacity = BackgroundImageOpacity);
+
+            AddSettingsBinding<TextController>(XAuthorBox, TextBox.TextProperty, KeyStore.AuthorKey);
         }
 
         private void ProcessEnumsAndImage(BackgroundImageState thisState)
@@ -475,7 +489,7 @@ namespace Dash
             //CONFIRM ERASE DATABASE
             else if (_eraseConfidence == DbEraseSafetyConfidence.Confident)
             {
-                _endpoint.DeleteAllDocuments(null, null);
+                await _endpoint.DeleteAllDocuments();
                 ResetEraseButton();
 
                 await CoreApplication.RequestRestartAsync("");
@@ -525,6 +539,31 @@ namespace Dash
         }
 
         #endregion
+
+
+        private bool _usePdfTextSelection = false;
+        public bool UsePdfTextSelection
+        {
+            get => _usePdfTextSelection;
+            set
+            {
+                if (value == _usePdfTextSelection) return;
+                _usePdfTextSelection = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _useInkCanvas = false;
+        public bool UseInkCanvas
+        {
+            get => _useInkCanvas;
+            set
+            {
+                if (value == _useInkCanvas) return;
+                _useInkCanvas = value;
+                OnPropertyChanged();
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -16,7 +16,7 @@ namespace Dash
     {
         private static string PrototypeId = "C512FC2E-CDD1-4E94-A98F-35A65E821C08";
         public static DocumentType DocumentType = new DocumentType("3E5C2739-A511-40FF-9B2E-A875901B296D", "ListView Layout");
-        public static KeyController SpacingKey = new KeyController("Spacing Key", "E89037A5-B7CC-4DD7-A89B-E15EDC69AF7C");
+        public static KeyController SpacingKey = new KeyController("Spacing Key", new Guid("E89037A5-B7CC-4DD7-A89B-E15EDC69AF7C"));
         public static double DefaultSpacing = 30;
 
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
@@ -79,8 +79,7 @@ namespace Dash
 
             var grid = new Grid();
 	        grid.Background = new SolidColorBrush(Colors.Blue);
-
-            SetupBindings(grid, docController, context);
+            
             var listView = new ListView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,

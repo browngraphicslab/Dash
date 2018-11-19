@@ -27,7 +27,7 @@ namespace Dash
 		/// <summary>
 		///   Creates a MediaPlayerElement that will be binded to video reference.
 		/// </summary>
-		public static FrameworkElement MakeView(DocumentController docController, Context context)
+		public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
 		{
 			//create the media player element 
 			
@@ -53,50 +53,32 @@ namespace Dash
 			video.PointerEntered += (s, e) => video.TransportControls.Show();
 			video.PointerExited += (s, e) => video.TransportControls.Hide();
             video.Unloaded += (s, e) => video.MediaPlayer.Pause();
+            video.PointerPressed += (s, e) => e.Handled = true;
 
 			// setup bindings on the video
-			SetupBindings(video, docController, context);
-			SetupVideoBinding(video, docController, context);
+			SetupVideoBinding(video, docController, key, context);
 			
 			return video;
 		}
 
-		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller,
+		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key, 
 			Context context)
 		{
-			var data = controller.GetField(KeyStore.DataKey);
-			if (data is ReferenceController reference)
-			{
-				//add fieldUpdatedListener to the doc controller of the reference
-				var dataDoc = reference.GetDocumentController(context);
-				dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-					delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
-					{
-						var doc = sender;
-						var dargs = args;
-						if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
-							return;
-						//bind the MediaPlayerElement source to the new video
-						BindVideoSource(video, doc, c, reference.FieldKey);
-					});
-			}
-			BindVideoSource(video, controller, context, KeyStore.DataKey);
+			BindVideoSource(video, controller, key);
 		}
 
 		/// <summary>
 		///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the video.
 		/// </summary>
-		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, Context context,
-			KeyController key)
+		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, KeyController key)
 		{
-			var data = docController.GetDereferencedField(key, context) as VideoController;
+			var data = docController.GetDereferencedField(key, null) as VideoController;
 			Debug.Assert(data != null);
 			var binding = new FieldBinding<VideoController>
 			{
 				Document = docController,
-				Key = KeyStore.DataKey,
+				Key = key,
 				Mode = BindingMode.OneWay,
-				Context = context,
 				//converts uri to source data of the MediaPlayerElement
 				Converter = UriToIMediaPlayBackSourceConverter.Instance
 			};

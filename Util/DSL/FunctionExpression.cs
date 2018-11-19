@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -21,42 +22,53 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             OperatorController op = null;
             var opName = Op.Name.invalid;
-            try
+            if (_funcName is VariableExpression variable)
             {
-                op = _funcName.Execute(scope) as FunctionOperatorController;
-            }
-            catch (ScriptExecutionException)
-            {
-                if (!(_funcName is VariableExpression variable))
+                var varName = variable.GetVariableName();
+                op = scope[varName] as OperatorController;
+                if (op == null)
                 {
-                    throw;
-                }
-
-                var variableName = variable.GetVariableName();
-                opName = Op.Parse(variableName);
-                if (opName == Op.Name.invalid)
-                {
-                    throw;
+                    opName = Op.Parse(varName);
+                    if (opName == Op.Name.invalid)
+                    {
+                        throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(varName));
+                    }
                 }
             }
+            else
+            {
+                var (field, _) = await _funcName.Execute(scope);
+                op = field as FunctionOperatorController;
+                if (op == null)
+                {
+                    throw new ScriptExecutionException(new TextErrorModel("Tried to invoke a non-function"));
+                }
+            }
 
-            var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
+            var inputs = new List<FieldControllerBase>();
+            foreach (var scriptExpression in _parameters)
+            {
+                if (scriptExpression == null)
+                {
+                    inputs.Add(null);
+                }
+                else
+                {
+                    var (field2, _) = await scriptExpression.Execute(scope);
+                    inputs.Add(field2);
+                }
+            }
 
             try
             {
-                scope = new ReturnScope();
+                scope = new Scope();
 
-                var output = op != null ? OperatorScript.Run(op, inputs, scope) : OperatorScript.Run(opName, inputs, scope);
-                return output;
-            }
-            catch (ReturnException)
-            {
-                return scope.GetReturn;
+                var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
+                return (output, ControlFlowFlag.None);
             }
             catch (ScriptExecutionException)
             {
@@ -67,8 +79,6 @@ namespace Dash
                 if (e.Message.Contains("Invalid group name:")) throw new ScriptExecutionException(new TextErrorModel($"Invalid Regex group name encountered: {e.Message.Substring(e.Message.IndexOf("Invalid group name:") + 20).ToLower()}"));
                 throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
             }
-
-            return new TextController("");
         }
 
         //TDDO This should be fixed
@@ -79,10 +89,19 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            //TODO
-            throw new NotImplementedException();
-            //return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)),
-            //    Op.Parse(_funcName)); //recursive linq
+            var func = _funcName.CreateReference(scope);
+            if (func is OperatorController op)
+            {
+                //TODO
+                return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
+            }
+            else if (_funcName is VariableExpression variable)
+            {
+                op = OperatorScript.GetOperatorWithName(Op.Parse(variable.GetVariableName()));
+                return OperatorScript.CreateDocumentForOperator(_parameters.Select(p => p.CreateReference(scope)), op);
+            }
+
+            return null;
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? ""));
@@ -94,12 +113,12 @@ namespace Dash
             {
                 switch (param)
                 {
-                    case VariableExpression varExp:
-                        concat += varExp.GetVariableName() + " ";
-                        break;
-                    case LiteralExpression litExp:
-                        concat += litExp.GetField() + " ";
-                        break;
+                case VariableExpression varExp:
+                    concat += varExp.GetVariableName() + " ";
+                    break;
+                case LiteralExpression litExp:
+                    concat += litExp.GetField() + " ";
+                    break;
                 }
             }
 

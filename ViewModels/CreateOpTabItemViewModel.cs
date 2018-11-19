@@ -21,7 +21,7 @@ namespace Dash
                 var opController = _function?.Invoke();
                 if (opController != null)
                 {
-                    (opController.GetActiveLayout() ?? opController).SetPosition(TabMenu.Instance.GetRelativePoint());
+                    opController.SetPosition(TabMenu.Instance.GetRelativePoint());
                     TabMenu.Instance.AddToFreeform(opController);
                 }
             }

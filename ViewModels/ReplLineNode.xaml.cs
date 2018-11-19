@@ -54,7 +54,7 @@ namespace Dash
                     foreach (var field in fields)
                     {
                         if (field.Key.Name.ToLower().Equals("width") || field.Key.Name.ToLower().Equals("height") || (isError || isFieldNote) && field.Key.Name.ToLower().Equals("title")) continue;
-                        string indentOffset = field.Value is BaseListController list && list.Count == 0 ? "   " : "";
+                        string indentOffset = field.Value is IListController list && list.Count == 0 ? "   " : "";
                         xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel
                         {
                             ResultText = indentOffset + Format(field, isError),
@@ -64,12 +64,11 @@ namespace Dash
                         } });
                     }
                     break;
-                case BaseListController list:
+                case IListController list:
                     var i = 0;
-                    bool indexed = list.Indexed;
-                    foreach (FieldControllerBase element in list.Data)
+                    foreach (FieldControllerBase element in list.AsEnumerable())
                     {
-                        string index = indexed ? $"[{i}] : " : "";
+                        string index = $"[{i}] : ";
                         xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel
                         {
                             ResultText = $"{IndentOffset(element)}{index}" + element,
@@ -113,7 +112,7 @@ namespace Dash
             string value = kv.Value.ToString();
 
             if (!isError) value = value.Replace(")", "").Replace("(", "").Replace(",", ", ");
-            if (kv.Value is BaseListController list && isError) value = "[...]";
+            if (kv.Value is IListController list && isError) value = "[...]";
 
             return $"{IndentOffset(kv.Value)}{kv.Key} : {value}";
         }
@@ -140,7 +139,7 @@ namespace Dash
             xChildren.Visibility = _arrowState == ArrowState.Open ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController list && !list.ToString().Equals("[<empty>]")) && !(value is ReferenceController);
+        public static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is IListController list && !list.ToString().Equals("[<empty>]")) && !(value is ReferenceController);
 
         private void XSnapshotArrowBlock_OnRightTapped(object sender, RightTappedRoutedEventArgs e) => CollapseAllChildren();
 
@@ -176,7 +175,7 @@ namespace Dash
             ReplLineViewModel vm = ViewModel;
             bool baseCase = IsBaseCase(vm.Value);
             xArrowBlock.Visibility = baseCase ? Visibility.Collapsed : Visibility.Visible;
-            if (vm.Value is BaseListController list && list.Count == 0) xArrowBlock.Visibility = Visibility.Collapsed;
+            if (vm.Value is IListController list && list.Count == 0) xArrowBlock.Visibility = Visibility.Collapsed;
             xArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
 
             Thickness m = xChildren.Margin;
@@ -204,7 +203,7 @@ namespace Dash
             }
             DocumentController dataBox = new DataBox(outputData).Document;
             dataBox.SetWidth(80.0);
-            args.Data.AddDragModel(new DragDocumentModel(dataBox));
+            args.Data.SetDragModel(new DragDocumentModel(dataBox));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

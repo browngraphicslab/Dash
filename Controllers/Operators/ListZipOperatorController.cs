@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -9,13 +11,13 @@ namespace Dash
     public sealed class ListZipOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListAKey = new KeyController("List A");
-        public static readonly KeyController ListBKey = new KeyController("List B");
+        public static readonly KeyController ListAKey = KeyController.Get("List A");
+        public static readonly KeyController ListBKey = KeyController.Get("List B");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ListZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ListZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ListZipOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -34,11 +36,14 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("List zip", "B4F07219-AA26-4E71-965E-CBDF6D44708E");
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        private static readonly KeyController TypeKey = KeyController.Get("List zip");
+
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var listA = (BaseListController) inputs[ListAKey];
-            var listB = (BaseListController) inputs[ListBKey];
+            var listA = (IListController) inputs[ListAKey];
+            var listB = (IListController) inputs[ListBKey];
 
             var typeA = listA.ListSubTypeInfo;
             var typeB = listB.ListSubTypeInfo;
@@ -48,10 +53,8 @@ namespace Dash
             var countB = listB.Count;
             if (countA != countB) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeA, typeB, InvalidListOperationErrorModel.OpError.ZipLength, countA, countB));
 
-            var actualA = listA?.Data;
-            var actualB = listB?.Data;
-            var type = listA?.ListSubTypeInfo;
-            var count = actualA?.Count;
+            var type = listA.ListSubTypeInfo;
+            var count = listA.Count;
 
             var zipped = new ListController<FieldControllerBase>();
             for (var i = 0; i < count; i++)
@@ -60,15 +63,15 @@ namespace Dash
                 {
                     case TypeInfo.Text:
                     {
-                        var elA = ((TextController)actualA[i]).Data;
-                        var elB = ((TextController)actualB[i]).Data;
+                        var elA = ((TextController)listA.GetValue(i)).Data;
+                        var elB = ((TextController)listB.GetValue(i)).Data;
                         zipped.Add(new TextController(elA + elB));
                             break;
                     }
                     case TypeInfo.Number:
                     {
-                        var elA = ((NumberController)actualA[i]).Data;
-                        var elB = ((NumberController)actualB[i]).Data;
+                        var elA = ((NumberController)listA.GetValue(i)).Data;
+                        var elB = ((NumberController)listB.GetValue(i)).Data;
                         zipped.Add(new NumberController(elA + elB));
                         break;
                     }
@@ -76,6 +79,7 @@ namespace Dash
             }
 
             outputs[ResultsKey] = zipped;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ListAppendOperatorController();

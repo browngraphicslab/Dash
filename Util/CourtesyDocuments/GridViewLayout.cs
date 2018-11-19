@@ -13,7 +13,7 @@ namespace Dash
     {
         private static string PrototypeId = "C2EB5E08-1C04-44BF-970A-DB213949EE48";
         public static DocumentType DocumentType = new DocumentType("B7A022D4-B667-469C-B47E-3A84C0AA78A0", "Grid View Layout");
-        public static KeyController GridViewKey = new KeyController("Grid View Key", "C4336303-8FD8-4ED6-8F03-540E95EE3CC8");
+        public static KeyController GridViewKey = new KeyController("Grid View Key", new Guid("C4336303-8FD8-4ED6-8F03-540E95EE3CC8"));
         public static double DefaultSpacing = 10;
 
         public GridViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
@@ -69,7 +69,6 @@ namespace Dash
 
         protected new static void SetupBindings(GridView gridView, DocumentController docController, Context context)
         {
-            CourtesyDocument.SetupBindings(gridView, docController, context);
             AddBinding(gridView, docController, GridViewKey, context, BindSpacing);
         }
 

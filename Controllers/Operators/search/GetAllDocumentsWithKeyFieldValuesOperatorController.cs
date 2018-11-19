@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -13,13 +15,13 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController KeyQueryKey = new KeyController("KeyQuery");
-        public static readonly KeyController ValueQueryKey = new KeyController("ValueQuery");
+        public static readonly KeyController KeyQueryKey = KeyController.Get("KeyQuery");
+        public static readonly KeyController ValueQueryKey = KeyController.Get("ValueQuery");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public GetAllDocumentsWithKeyFieldValuesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -38,9 +40,11 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Key Field Query", "DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9");
+        private static readonly KeyController TypeKey = KeyController.Get("Key Field Query");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyQuery = (inputs[KeyQueryKey] as TextController)?.Data;
             var toReturn = new ListController<DocumentController>();
@@ -51,13 +55,14 @@ namespace Dash
                 keyQuery = keyQuery.TrimStart('!');
 
                 var valueQuery = (inputs[ValueQueryKey] as TextController)?.Data?.ToLower() ?? "";
-                var finalResults = Search.SearchByKeyValuePair(new KeyController(keyQuery), valueQuery, negateCategory).Select(res => res.ViewDocument).ToList();
+                var finalResults = Search.SearchByKeyValuePair(keyQuery, valueQuery, negateCategory).Select(res => res.ViewDocument).ToList();
 
                 //TODO FURTHER modify the helpful text of these docs so the text is more helpful
 
                 toReturn.AddRange(finalResults);
             }
             outputs[ResultsKey] = toReturn;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new GetAllDocumentsWithKeyFieldValuesOperatorController();

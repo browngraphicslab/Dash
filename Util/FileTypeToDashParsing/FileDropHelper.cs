@@ -87,7 +87,6 @@ namespace Dash
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
                 {
-                    documentController.SetTitle(files[0].Name);
                     documentController.GetDataDocument().SetTitle(files[0].Name);
                     documentController.GetPositionField().Data = where;
                     var uri = fileType.FileUri?.AbsoluteUri ?? (dataView.AvailableFormats.Contains("UniformResourceLocator") ? (await dataView.GetWebLinkAsync())?.AbsoluteUri : null);
@@ -134,7 +133,7 @@ namespace Dash
                         Debug.WriteLine(e);
                     }
                 }
-                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
+                var cnote = new CollectionNote(where, CollectionViewType.Schema, 200, 200, outputCollection);
                 return cnote.Document;
             }
             else
@@ -192,7 +191,7 @@ namespace Dash
 	                }
 	                else
 					{
-						return new HtmlNote(link.AbsoluteUri, where: where).Document;
+						return new HtmlNote(link.AbsoluteUri, where: where, size: new Size(double.NaN, double.NaN)).Document;
 					}
 
 				case FileType.Pdf:

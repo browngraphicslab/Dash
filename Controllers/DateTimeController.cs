@@ -1,7 +1,8 @@
 ﻿using DashShared;
 using System;
+using Dash.Controllers.Operators;
 
-namespace Dash.Controllers
+namespace Dash
 {
     /// <summary>
     /// An implementation of FieldModelController, DateTimeController models a controller that stores Data of type DateTime
@@ -24,7 +25,7 @@ namespace Dash.Controllers
         /*
          * Primary constructor recieves data of type DateTime and uses it to construct a new DateTimeModel. Default value is set to 1/1/0001 0:00:00.
          */
-        public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data)) => SaveOnServer();
+        public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data)) { }
 
         /*
          * Constructor that receives only an instance of DateTimeModel
@@ -32,11 +33,6 @@ namespace Dash.Controllers
         public DateTimeController(DateTimeModel dateTimeFieldModel) : base(dateTimeFieldModel) { }
         
         //END CONSTRUCTORS
-
-        /*
-         * Initialization method
-         */
-        public override void Init() { }
 
         /*
          * Effectively a conditional mutator for the instance's Data field, where 'value' must be of type DateTime 
@@ -87,25 +83,17 @@ namespace Dash.Controllers
             {
                 if (DateTimeFieldModel.Data != value)
                 {
-                    SetData(value);
+            DateTime data = DateTimeFieldModel.Data;
+            var newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+            DateTimeFieldModel.Data = value;
+            UpdateOnServer(newEvent);
+            OnFieldModelUpdated(null);
                 }
             }
         }
 
         public override string ToString() => DateTimeFieldModel.Data.ToString("G");
-
-        /*
-         * Sets the data property and gives UpdateOnServer an UndoCommand 
-         */
-        private void SetData(DateTime val, bool withUndo = true)
-        {
-            DateTime data = DateTimeFieldModel.Data;
-            var newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            DateTimeFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
 
         /*
          * Returns a StringSearchModel based on the text query submitted and the contents of this instance's Data (DateTime)
@@ -116,6 +104,11 @@ namespace Dash.Controllers
                 return new StringSearchModel(Data.ToString("G"));
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return Data.ToString("G").Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString("G")) ? new StringSearchModel(Data.ToString("G")) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<DateOperator>() + $"(\"{Data}\")";
         }
     }
 }

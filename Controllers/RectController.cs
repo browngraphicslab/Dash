@@ -7,14 +7,12 @@ namespace Dash
     {
         public RectController(Rect data) : base(new RectModel(data))
         {
-            SaveOnServer();
 
         }
 
         public RectController(double x, double y, double width, double height) : base(
             new RectModel(x, y, width, height))
         {
-            SaveOnServer();
 
         }
 
@@ -22,12 +20,6 @@ namespace Dash
         {
 
         }
-
-        public override void Init()
-        {
-
-        }
-
 
         /// <summary>
         ///     The <see cref="Dash.PointModel" /> associated with this <see cref="PointController" />,
@@ -55,28 +47,21 @@ namespace Dash
         }
         public Rect Data
         {
-            get { return RectModel.Data; }
+            get => RectModel.Data;
             set
             {
                 if (RectModel.Data != value)
                 {
-                    SetData(value);
+                    Rect data = RectModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    RectModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
         }
 
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Rect val, bool withUndo = true)
-        {
-            Rect data = RectModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            RectModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
         public override TypeInfo TypeInfo => TypeInfo.Point;
 
         public override string ToString()
@@ -92,6 +77,11 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return "RectController";
         }
     }
 }

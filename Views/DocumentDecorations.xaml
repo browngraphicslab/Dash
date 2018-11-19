@@ -5,10 +5,13 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:dash="using:Dash"
+    xmlns:dashViews="using:Dash.Views"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
+    AllowDrop="True"
+    DragOver="UserControl_DragOver"
+    Drop="UserControl_Drop"
     PointerEntered="DocumentDecorations_OnPointerEntered"
     PointerExited="DocumentDecorations_OnPointerExited"
     d:DesignHeight="300"
@@ -17,12 +20,13 @@
 
     <Grid >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="ContentColumn" />
+            <ColumnDefinition x:Name="ContentColumn" x:FieldModifier="public" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="ContentRow"/>
+            <RowDefinition x:Name="ContentRow" x:FieldModifier="public"/>
             <RowDefinition x:Name="XSuggestRow" Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.Resources>
             <Storyboard x:Name="xFadeAnimationIn">
@@ -41,8 +45,9 @@
                 />
             </Storyboard>
         </Grid.Resources>
+        <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
 
-            <Grid x:Name="xResizeFrame" Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
+        <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
                 <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
                                    Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
                 <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="10" Margin="-10 0 0 0" 
@@ -59,13 +64,25 @@
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
                 <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
-                <TextBlock x:Name="xURISource" Margin="0 0 0 -40" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                <Canvas Margin="-20 0 0 -8"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
+                    <TextBlock x:Name="xURISource" FontSize="9"/>
+                </Canvas>
+                <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="25"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
+                        <Ellipse CanDrag="True" DragStarting="Ellipse_DragStarting" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
+                </Grid>
+                </Canvas>
             </Grid>
 
-            <Border VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
+            <Border Grid.RowSpan="2"  VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
                 HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
 
-            <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
+        <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
                 <Grid x:Name="xAnnotationButtonsStack" Padding="5 0 0 0" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -73,7 +90,7 @@
                     </Grid.RowDefinitions>
                     <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
                             PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
-                            DragStarting="XAnnotateEllipseBorder_OnDragStarting" RightTapped="XAnnotateEllipseBorder_OnRightTapped">
+                            DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                         <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
                         <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
                         <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -82,25 +99,7 @@
                         </ToolTipService.ToolTip>
                     </Grid>
                     <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
-                    <Grid x:Name="TEMPORARILY_disableTemplateEditor" Visibility="Collapsed">
-                        <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{x:Bind VisibilityState, Mode=OneWay}" 
-                            PointerPressed="XTemplateEditorEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"
-                        HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0">
-                            <Grid HorizontalAlignment="Left">
-                                <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight" />
-                                <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"
-                             Visibility="Collapsed"/>
-                                <TextBlock x:Name="xTemplateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE14E;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
-
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Open Template Editor" Placement="Right" HorizontalOffset="30" VerticalOffset="0"
-                               />
-                                </ToolTipService.ToolTip>
-
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </Grid>
+                 </Grid>
             </Canvas>
 
         <Grid BorderBrush="{StaticResource DashDarkBlueBrush}" Background="White" BorderThickness="0 0 0 0" Grid.Row="2" Grid.Column="0" x:Name="SuggestGrid" HorizontalAlignment="Stretch" Margin="2,-2,2,0" Visibility="Collapsed">
@@ -150,7 +149,7 @@
 
                 </Grid>
                 <ComboBox x:Name="xLinkTypeBox" SelectionChanged="XLinkTypeBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10" DropDownOpened="XLinkTypeBox_OnDropDownOpened">
-                    <ComboBoxItem x:Name="xTypeZoom">Zoom</ComboBoxItem>
+                    <ComboBoxItem x:Name="xTypeZoom">Follow</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeAnnotation">Annotation</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>

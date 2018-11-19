@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash.Controllers.Operators
@@ -14,20 +15,18 @@ namespace Dash.Controllers.Operators
         {
         }
 
-        public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-
-        new KeyController("Text To Image", "5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1");
+        private static readonly KeyController TypeKey = KeyController.Get("Text To Image");
 
 
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("Text");
+        public static readonly KeyController TextKey = KeyController.Get("Text");
 
         //Output keys
-        public static readonly KeyController ImageKey = new KeyController("Image");
+        public static readonly KeyController ImageKey = KeyController.Get("Image");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
@@ -41,7 +40,7 @@ namespace Dash.Controllers.Operators
                 [ImageKey] = TypeInfo.Image,
             };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -56,6 +55,7 @@ namespace Dash.Controllers.Operators
             {
                 throw new ScriptExecutionException(new ImageCreationFailureErrorModel(uri));
             }   
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new TextToImageOperator();

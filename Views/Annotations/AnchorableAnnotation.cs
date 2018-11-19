@@ -44,6 +44,7 @@ namespace Dash
             ParentOverlay = parentOverlay;
             RegionDocumentController = regionDocumentController;
         }
+        public abstract bool IsInView(Rect bounds);
         public abstract void StartAnnotation(Point p);
         public abstract void UpdateAnnotation(Point p);
         public abstract void EndAnnotation(Point p);
@@ -143,26 +144,19 @@ namespace Dash
 
             if (pos != null)
             {
-                shape.RenderTransform = new TranslateTransform() { X = pos.Value.X, Y = pos.Value.Y };
+
+                shape.RenderTransform = new TranslateTransform { X = pos.Value.X, Y = pos.Value.Y };
             }
             else
             {
-                var bindingX = new FieldBinding<PointController>()
+                var bindingXf = new FieldBinding<PointController>()
                 {
                     Mode = BindingMode.OneWay,
                     Document = RegionDocumentController,
                     Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(false)
+                    Converter = new PointToTranslateTransformConverter()
                 };
-                this.AddFieldBinding(Canvas.LeftProperty, bindingX);
-                var bindingY = new FieldBinding<PointController>()
-                {
-                    Mode = BindingMode.OneWay,
-                    Document = RegionDocumentController,
-                    Key = KeyStore.PositionFieldKey,
-                    Converter = new PointToCoordinateConverter(true)
-                };
-                this.AddFieldBinding(Canvas.TopProperty, bindingY);
+                this.AddFieldBinding(RenderTransformProperty, bindingXf);
             }
 
             if (RegionDocumentController != null)
@@ -195,7 +189,7 @@ namespace Dash
             {
                 return new Binding
                 {
-                    Path = new PropertyPath(nameof(ViewModel.IsSelected)),
+                    Path = new PropertyPath(nameof(IsSelected)),
                     Mode = BindingMode.OneWay,
                     Converter = new BoolToBrushConverter(_selectedBrush, _unselectedBrush)
                 };

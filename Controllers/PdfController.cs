@@ -7,17 +7,15 @@ namespace Dash
     /// <summary>
     /// Controls data represeting an pdf in a Document.
     /// </summary>
-    class PdfController : FieldModelController<PdfModel>
+    public class PdfController : FieldModelController<PdfModel>
     {
         // == CONSTRUCTORS ==
         public PdfController() : base(new PdfModel())
         {
-            SaveOnServer();
         }
 
         public PdfController(Uri path, string data = null) : base(new PdfModel(path, data))
         {
-            SaveOnServer();
         }
 
         public PdfController(PdfModel pdfFieldModel) : base(pdfFieldModel)
@@ -26,10 +24,6 @@ namespace Dash
         }
 
         // == METHODS ==
-        public override void Init()
-        {
-            // TODO: put init code here
-        }
 
         /// <summary>
         ///     The <see cref="PdfFieldModel" /> associated with this <see cref="PdfController" />,
@@ -47,22 +41,14 @@ namespace Dash
             {
                 if (PdfFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Uri data = PdfFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    PdfFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Uri val, bool withUndo = true)
-        {
-            Uri data = PdfFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            PdfFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public Uri Data
@@ -85,6 +71,11 @@ namespace Dash
                 return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<PdfOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

@@ -1,53 +1,100 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Animation;
+using Dash.Annotations;
 
 namespace Dash
 {
     public class PresentationViewModel : ViewModelBase
     {
-        public ObservableCollection<DocumentController> PinnedNodes
+
+        public ObservableCollection<PresentationItemViewModel> PinnedNodes
         {
             get => _pinnedNodes;
             set => SetProperty(ref _pinnedNodes, value);
         }
 
-        public ObservableCollection<PresentationNumberViewModel> PinNumbers
+        //Current presentation that the user has selected
+        public DocumentController CurrPres
         {
-            get => _pinNumbers;
-            set => SetProperty(ref _pinNumbers, value);
+            get => _currPres;
+            set
+            {
+                _currPres = value;
+                //update Pinned nodes
+                _pinnedNodes.Clear();
+                var field = _currPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                for (var index = 0; index < field.Count; index++)
+                {
+                    var node = field[index];
+                    _pinnedNodes.Add(new PresentationItemViewModel(node, index + 1));
+                }
+
+                //update ComboBox selection accordingly
+                MainPage.Instance.xPresentationView.xPresentations.SelectedItem = value;
+            }
         }
 
-        private ListController<DocumentController> _listController = null;
-        private ObservableCollection<DocumentController> _pinnedNodes = new ObservableCollection<DocumentController>();
-        private ObservableCollection<PresentationNumberViewModel> _pinNumbers = new ObservableCollection<PresentationNumberViewModel>();
+        public ObservableCollection<DocumentController> Presentations
+        {
+            get => _presentations;
+            set => SetProperty(ref _presentations, value);
+        }
+
+        private ListController<DocumentController> _listController;
+        private ObservableDictionary<DocumentController, ObservableCollection<DocumentController>> _presToPinnedNodes = new ObservableDictionary<DocumentController, ObservableCollection<DocumentController>>();
+        private ObservableDictionary<DocumentController, ObservableCollection<PresentationItemViewModel>> _presToPinNumbers = new ObservableDictionary<DocumentController, ObservableCollection<PresentationItemViewModel>>();
+        private ObservableCollection<DocumentController> _presentations = new ObservableCollection<DocumentController>();
+        private ObservableCollection<PresentationItemViewModel> _pinnedNodes = new ObservableCollection<PresentationItemViewModel>();
         private readonly List<EventHandler<object>> _onCompleted = new List<EventHandler<object>>();
+        private DocumentController _currPres;
 
-        public PresentationViewModel() { }
-        
-        public PresentationViewModel(ListController<DocumentController> lc)
+
+        /// <summary>
+        /// Passed in a list of presentations
+        /// </summary>
+        /// <param name="lc"></param>
+        public PresentationViewModel(ListController<DocumentController> lc = null)
         {
-            _listController = lc;
-            PinnedNodes = new ObservableCollection<DocumentController>(_listController.TypedData);
-            for (var i = 1; i <= PinnedNodes.Count; i++)
+            if (lc == null)
             {
-                PinNumbers.Add(new PresentationNumberViewModel(i));
+                //list of presentations
+                _listController = new ListController<DocumentController>();
+                MainPage.Instance.MainDocument.GetDataDocument().SetField(KeyStore.PresentationItemsKey, _listController, true);
+
+                //make default presentation
+                SetCurrentPresentation(MakeNewPres());
+            }
+            else
+            {
+                _listController = lc;
+
+                //check if there's a pres & make default pres if not
+                if (_listController[0] == null)
+                {
+                    SetCurrentPresentation(this.MakeNewPres());
+                }
+                else  //default presentation is first one
+                {
+                    SetCurrentPresentation(_listController[0]);
+                }
+            }
+
+            //make list of presentations
+            foreach (DocumentController pres in _listController)
+            {
+                if (!Presentations.Contains(pres)) Presentations.Add(pres);
             }
         }
 
-        public void AddToPinnedNodesCollection(DocumentController dc)
+        //Add passed-in document controller to the current presentation
+        public void AddToPinnedNodesCollection(DocumentController dc, DocumentController parentPres = null)
         {
-            if (_listController == null)
-            {
-                _listController = new ListController<DocumentController>();
-                MainPage.Instance.MainDocument.SetField(KeyStore.PresentationItemsKey, _listController, true);
-            }
-
-            //if (PinnedNodes.Contains(dc)) return;
-
             if (PinnedNodes.Count == 0)
             {
                 Storyboard helpOut = MainPage.Instance.xPresentationView.xHelpOut;
@@ -60,22 +107,25 @@ namespace Dash
             }
             else
             {
-                PinnedNodes.Add(dc);
-                PinNumbers.Add(new PresentationNumberViewModel(PinnedNodes.Count));
-                _listController.Add(dc);
+                var pres = parentPres ?? CurrPres;
+                pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(dc);
+                if (pres == CurrPres)
+                {
+                    PinnedNodes.Add(new PresentationItemViewModel(dc, PinnedNodes.Count));
+                }
             }
 
             MainPage.Instance.xPresentationView.TryPlayStopClick();
         }
 
+        //deals with the first document controller added to the presentation
         private void HelpOutOnCompleted(object sender, object o, DocumentController dc = null)
         {
             PresentationView presView = MainPage.Instance.xPresentationView;
             presView.xHelpPrompt.Visibility = Visibility.Collapsed;
 
-            PinnedNodes.Add(dc);
-            PinNumbers.Add(new PresentationNumberViewModel(PinnedNodes.Count));
-            _listController.Add(dc);
+            CurrPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(dc);
+            PinnedNodes.Add(new PresentationItemViewModel(dc, PinnedNodes.Count));
 
             foreach (var handler in _onCompleted)
             {
@@ -84,15 +134,14 @@ namespace Dash
             _onCompleted.Clear();
         }
 
-        public async void RemovePinFromPinnedNodesCollection(DocumentController dc)
+        public void RemoveNode(PresentationItemViewModel item)
         {
             MainPage.Instance.xPresentationView.TryPlayStopClick();
+            CurrPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Remove(item.Document);
+            PinnedNodes.Remove(item);
+            item.Document.SetField(KeyStore.PresentationTitleKey, null, true);
 
-            PinNumbers.RemoveAt(PinnedNodes.Count - 1);
-            PinnedNodes.Remove(dc);
-            _listController.Remove(dc);
-            dc.SetField(KeyStore.PresentationTitleKey, null, true);
-
+            //TODO: MIGHT HAVE TO CHANGE BECAUSE FOLLOWING CODE ASSUMES PRESENTATION IS CURRPRES
             if (PinnedNodes.Count > 0) return;
 
             PresentationView presView = MainPage.Instance.xPresentationView;
@@ -100,8 +149,74 @@ namespace Dash
 
             if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
 
-            await Task.Delay(550);
             presView.xHelpIn.Begin();
+        }
+
+        public bool RemovePinFromPinnedNodesCollection(DocumentController dc, DocumentController parentPres = null)
+        {
+            MainPage.Instance.xPresentationView.TryPlayStopClick();
+
+            var pres = parentPres ?? CurrPres;
+            var docs = pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            bool removed = false;
+            // ReSharper disable once AssignmentInConditionalExpression
+            while (removed |= docs.Remove(dc)) ;//TODO This should be RemoveAll
+            if (dc == CurrPres)
+            {
+                PinnedNodes.Remove(PinnedNodes.First(vm => vm.Document == dc));
+            }
+            dc.SetField(KeyStore.PresentationTitleKey, null, true);
+
+            //TODO: MIGHT HAVE TO CHANGE BECAUSE FOLLOWING CODE ASSUMES PRESENTATION IS CURRPRES
+            if (PinnedNodes.Count > 0) return removed;
+
+            PresentationView presView = MainPage.Instance.xPresentationView;
+            presView.xHelpPrompt.Visibility = Visibility.Visible;
+
+            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return removed;
+
+            presView.xHelpIn.Begin();
+
+            return removed;
+        }
+
+        //change the current working presentation
+        public void SetCurrentPresentation(DocumentController pres)
+        {
+            if (!_listController.Contains(pres))
+            {
+                _listController.Add(pres);
+            }
+            CurrPres = pres;
+        }
+
+        public void DeletePresentation(DocumentController pres)
+        {
+            if (_listController.Remove(pres))
+            {
+                SetCurrentPresentation(_listController.Any() ? _listController.First() : MakeNewPres());
+                Presentations.Remove(pres);
+            }
+        }
+
+        /// <summary>
+        /// Makes and returns a new presentation
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public DocumentController MakeNewPres(string title = "New Presentation")
+        {
+            var pres = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
+            pres.GetDataDocument().SetTitle(title);
+            _listController.Add(pres);
+            _presentations.Add(pres);
+
+            return pres;
+        }
+
+        public void RenamePres(DocumentController pres, string newName)
+        {
+            pres.SetTitle(newName);
         }
     }
 }

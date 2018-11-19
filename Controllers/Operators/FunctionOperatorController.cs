@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -18,10 +20,11 @@ namespace Dash
             InitFunc(model.Parameters, TypescriptToOperatorParser.ParseToExpression(model.FunctionCode), model.ReturnType);
         }
 
-        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) => SaveOnServer();
+        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) { }
 
-        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
+        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, Scope scope = null) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
         {
+            _funcScope = scope;
             InitFunc(paramss, block, returnType);
         }
 
@@ -32,23 +35,23 @@ namespace Dash
 
             foreach (var param in paramss)
             {
-                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(new KeyController(param.Key), new IOInfo(param.Value, true)));
+                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(KeyController.Get(param.Key), new IOInfo(param.Value, true)));
                 _inputNames.Add(param.Key);
             }
 
-            SaveOnServer();
         }
 
         private readonly List<string> _inputNames = new List<string>();
         private ScriptExpression _block;
         private TypeInfo _returnType;
+        private Scope _funcScope;
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Function", "1573E918-19E0-47A9-BB9D-0531233277C9");
+        private static readonly KeyController TypeKey = KeyController.Get("Function");
 
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("Result");
+        public static readonly KeyController ResultKey = KeyController.Get("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -59,8 +62,11 @@ namespace Dash
             [ResultKey] = TypeInfo.Any,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override async Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
+            scope = new Scope(scope);
             for (var i = 0; i < _inputNames.Count; i++)
             {
                 FieldControllerBase value = inputs[Inputs[i].Key];
@@ -72,10 +78,15 @@ namespace Dash
                 {
                     throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType + ". Potentially other mismatched parameters."));
                 }
-                scope?.DeclareVariable(_inputNames[i], value);
+                scope.DeclareVariable(_inputNames[i], value);
             }
 
-            FieldControllerBase result = _block.Execute(scope);
+            if (_funcScope != null)
+            {
+                scope = scope.Merge(_funcScope);
+            }
+
+            var (result, _) = await _block.Execute(scope);
 
             outputs[ResultKey] = result;
         }

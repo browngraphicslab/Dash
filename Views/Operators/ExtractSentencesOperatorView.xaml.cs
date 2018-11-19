@@ -49,18 +49,18 @@ namespace Dash
                 ?.GetDereferencedField<TextController>(ExtractSentencesOperatorController.TextField, null)?.Data;
             if (keyId != null)
             {
-                XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(keyId)?.Name ?? string.Empty;
+                XTextFieldBox.Text = RESTClient.Instance.Fields.GetController<KeyController>(keyId)?.Name ?? string.Empty;
             }
         }
 
-        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
-            XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
+            XTextFieldBox.Text = RESTClient.Instance.Fields.GetController<KeyController>(tfmc.Data).Name;
 
         }
 
-        private void OnInputCollectionChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnInputCollectionChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             InputCollection = args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
             _allHeaders = Util.GetDisplayableTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!

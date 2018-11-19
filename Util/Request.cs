@@ -37,6 +37,8 @@ namespace Dash
             Message = new HttpRequestMessage(method, apiUri);
             ApiUri = apiUri;
             RequestType = method;
+            Message.Headers.UserAgent.TryParseAdd("Dash");
+            
         }
 
         public Request SetAuthUri(Uri uri)
@@ -57,10 +59,7 @@ namespace Dash
             {
                 
                 // add custom header properties to request
-                if (!Message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value))
-                    return null;
-                    // TODO: have some error happen here
-                    //TODO check for spaces in key or value text?
+                Message.Headers.Add(entry);
             }
             return this;
         }
@@ -109,9 +108,10 @@ namespace Dash
             {
                 Message.Content = MessageBody;
             }
-            if (
-                !(string.IsNullOrWhiteSpace(ApiUri.AbsolutePath) || string.IsNullOrWhiteSpace(Key) ||
-                  string.IsNullOrWhiteSpace(Secret)))
+            if (AuthUri != null &&
+                !string.IsNullOrWhiteSpace(AuthUri.AbsolutePath) &&
+                !string.IsNullOrWhiteSpace(Key) &&
+                !string.IsNullOrWhiteSpace(Secret))
             {
                 TokenMsg = new HttpRequestMessage(AuthRequestType, AuthUri);
                 //var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
@@ -158,7 +158,7 @@ namespace Dash
                 var dcfm = documentController.EnumFields()
                     .FirstOrDefault(keyFieldPair => keyFieldPair.Value is ListController<DocumentController>).Value as
                 ListController<DocumentController>;
-                if (dcfm != null) return new List<DocumentController>(dcfm.GetElements());
+                if (dcfm != null) return dcfm.ToList();
             }
             catch (Exception)
             {

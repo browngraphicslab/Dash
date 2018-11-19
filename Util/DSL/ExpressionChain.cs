@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
@@ -15,31 +17,23 @@ namespace Dash
             _newScope = newScope;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             var newScope = _newScope ? new Scope(scope) : scope;
 
             var exps = _expressions.ToArray();
             var length = exps.Count();
             FieldControllerBase retVal = null;
-            for(var i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
-                var ret = exps[i].Execute(newScope);
-                if (ret != null)
+                var (ret, flags) = await exps[i].Execute(newScope);
+                if (flags != ControlFlowFlag.None)
                 {
-                    retVal = ret;
-                } else
-                {
-                    break;
+                    return (ret, flags);
                 }
-                if (exps[i] is BreakLoopExpression)
-                {
-                    break;
-                }
-                
-
+                retVal = ret;
             }
-            return retVal;
+            return (retVal, ControlFlowFlag.None);
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

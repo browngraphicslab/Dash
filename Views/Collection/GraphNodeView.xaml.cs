@@ -228,7 +228,7 @@ namespace Dash
             CreateLinks();
             xTitleBlock.SizeChanged += Title_OnSizeChanged;
 
-            DocumentController_TitleUpdated(null, null, null);
+            DocumentController_TitleUpdated(null, null);
 
             // listen for title updates and link updates
             ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
@@ -267,7 +267,7 @@ namespace Dash
             if (fromConnections > 1) CreateLink(dataDoc, KeyStore.LinkFromKey);
         }
 
-        private void LinkFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void LinkFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args)
         {
             // get the list of changed documents from args
             var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
@@ -298,10 +298,8 @@ namespace Dash
             foreach (var link in newLinks)
             {
                 // get the from and to document stored in the link
-                var fromDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)
-                    .TypedData[0];
-                var toDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkToKey)
-                    .TypedData[0];
+                var fromDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)[0];
+                var toDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkToKey)[0];
                 // get the matching from and to documents from the parent graph's collection documents
                 var matchingFromDoc =
                     ParentGraph.CollectionDocuments.FirstOrDefault(cdc =>
@@ -349,16 +347,14 @@ namespace Dash
         {
             // gets all the links that come either from or out of the data doc, respective to startKey
             var incidentLinks =
-                dataDoc.GetDereferencedField<ListController<DocumentController>>(startKey, null)
-                    ?.TypedData ??
-                new List<DocumentController>(); // or an empty list if neither
+                dataDoc.GetDereferencedField<ListController<DocumentController>>(startKey, null) ?? (IList<DocumentController>)new List<DocumentController>(); // or an empty list if neither
 
             foreach (var link in incidentLinks)
             {
                 // gets all the docs that are at the other endpoint of each incident link
                 var endDocs = link.GetDataDocument()
-                                  .GetField<ListController<DocumentController>>(startKey)?.TypedData ??
-                              new List<DocumentController>();
+                                  .GetField<ListController<DocumentController>>(startKey) ??
+                              (IList<DocumentController>)new List<DocumentController>();
                 foreach (var endDoc in endDocs)
                 {
                     // gets the viewmodel for the documents in endDocs
@@ -415,8 +411,7 @@ namespace Dash
             }
         }
 
-        private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args,
-            Context context)
+        private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args)
         {
             UpdateTitleBlock();
             AppendToTitle();

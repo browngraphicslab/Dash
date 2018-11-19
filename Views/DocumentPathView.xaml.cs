@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -92,9 +93,17 @@ namespace Dash
 
                 TextBlock tb = new TextBlock
                 {
-                    Text = documentController.Title,
-                    DataContext = documentController
+                    DataContext = documentController,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    MaxWidth = 200,
+                    MaxLines = 1
                 };
+                tb.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>
+                {
+                    Document = documentController,
+                    Key = KeyStore.TitleKey,
+                    Mode = BindingMode.OneWay
+                });
                 tb.Tapped += TbOnTapped;
                 panel.Children.Add(tb);
             }
@@ -107,7 +116,7 @@ namespace Dash
             var doc = (DocumentController) tb.DataContext;
             Debug.Assert(doc != null);
 
-            SplitFrame.ActiveFrame.OpenDocument(doc);
+            this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(doc);
         }
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)

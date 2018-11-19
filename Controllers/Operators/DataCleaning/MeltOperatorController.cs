@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -15,32 +17,32 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController InputCollection =
-            new KeyController("Input Collection");
+            KeyController.Get("Input Collection");
 
         /// <summary>
         /// This key contains a list of key ids which correspond to the keys which are
         /// going to be used as columns in the output
         /// </summary>
         public static readonly KeyController ColumnVariables =
-            new KeyController("Column Variables");
+            KeyController.Get("Column Variables");
 
         /// <summary>
         /// The key contains a text field model controller which is the name
         /// of variables column in the output
         /// </summary>
         public static readonly KeyController VariableName =
-            new KeyController("Variable Name");
+            KeyController.Get("Variable Name");
 
         /// <summary>
         /// This key contaisn a text field model controller which is the name
         /// of the values column in the output
         /// </summary>
         public static readonly KeyController ValueName =
-            new KeyController("Value Name");
+            KeyController.Get("Value Name");
 
         // Output Keys
         public static readonly KeyController OutputCollection =
-            new KeyController("Output Collection");
+            KeyController.Get("Output Collection");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
@@ -62,7 +64,6 @@ namespace Dash
 
         public MeltOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public MeltOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -70,29 +71,29 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Melt", "871A8ADC-5D15-4B31-9BE7-6256D9C961EE");
+        private static readonly KeyController TypeKey = KeyController.Get("Melt");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var collection = inputs[InputCollection] as ListController<DocumentController>;;
-            var variableName = inputs[VariableName] as TextController;
-            var valueName = inputs[ValueName] as TextController;
-            var columnVariables = inputs[ColumnVariables] as ListController<KeyController>;
+            var collection = (ListController<DocumentController>) inputs[InputCollection];;
+            var variableName = (TextController) inputs[VariableName];
+            var valueName = (TextController) inputs[ValueName];
+            var columnVariables = (ListController<KeyController>) inputs[ColumnVariables];
             Debug.Assert(columnVariables != null);
-            var columnKeys = columnVariables.TypedData;
+            var columnKeys = columnVariables;
             var allHeaderKeys = Util.GetDisplayableTypedHeaders(collection);
-            var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
+            var dataKeys = allHeaderKeys.Keys.Except(columnKeys).ToList();
 
             var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
-            var variableKey = new KeyController(variableName.Data, DashShared.UtilShared.GenerateNewId());
-            var valueKey = new KeyController(valueName.Data, DashShared.UtilShared.GenerateNewId());
+            var variableKey = KeyController.Get(variableName.Data);
+            var valueKey = KeyController.Get(valueName.Data);
 
             var outputDocs = new List<DocumentController>();
 
             // iterate over all the original documents
-            foreach (var originalDoc in collection.TypedData)
+            foreach (var originalDoc in collection)
             {
                 // for each data key, create a new document
                 // containing references for each column variable
@@ -120,6 +121,7 @@ namespace Dash
             }
 
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

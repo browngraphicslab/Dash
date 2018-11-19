@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -13,13 +15,13 @@ namespace Dash
         public ToListOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Create a list from a single number", "65BA31AB-16AF-44A8-AA8E-4D760D204E52");
+        private static readonly KeyController TypeKey = KeyController.Get("Create a list from a single number");
 
         //Input keys
-        public static readonly KeyController SourceKey = new KeyController("Source content");
+        public static readonly KeyController SourceKey = KeyController.Get("Source content");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
+        public static readonly KeyController ComputedResultKey = KeyController.Get("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -28,10 +30,12 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo> { [ComputedResultKey] = TypeInfo.Number };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var source = inputs[SourceKey];
-            BaseListController newList = null;
+            IListController newList = null;
 
             //TODO Use operator overloading instead of typeswitching
             switch (source.TypeInfo)
@@ -52,7 +56,8 @@ namespace Dash
                     break;
             }
 
-            outputs[ComputedResultKey] = newList ?? throw new ScriptExecutionException(new InvalidListCreationErrorModel(source.TypeInfo));
+            outputs[ComputedResultKey] = newList?.AsField() ?? throw new ScriptExecutionException(new InvalidListCreationErrorModel(source.TypeInfo));
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ToListOperatorController();

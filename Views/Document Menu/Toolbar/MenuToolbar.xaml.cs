@@ -150,6 +150,7 @@ namespace Dash
             Loaded += (sender, args) =>
             {
                 xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -158,6 +159,7 @@ namespace Dash
                 xCopy,
                 xDelete,
                 xMakeInstance,
+                xAreContentsHitTestVisible,
                 xFitWidth,
                 xFitHeight
             };
@@ -170,6 +172,7 @@ namespace Dash
                 xCopy,
                 xDelete,
                 xMakeInstance,
+                xAreContentsHitTestVisible,
                 xFitWidth,
                 xFitHeight,
                 xAddGroup,
@@ -196,6 +199,15 @@ namespace Dash
             allSeparators = tempSeparators;
 
             AddSecondaryButtonEventHandlers();
+        }
+
+        private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            xAreContentsHitTestVisibleIcon.Text = ((char)0xE840).ToString();
+            foreach (var d in args.SelectedViews)
+            {
+                xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+            }
         }
 
         /// <summary>
@@ -320,7 +332,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(reb);
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(reb);
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -354,7 +366,7 @@ namespace Dash
                         }
                         else if (data is ListController<DocumentController>)
                         {
-                            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                            if (MainPage.Instance.IsCtrlPressed())
                             {
                                 if (!containsInternalContent)
                                 {
@@ -382,7 +394,7 @@ namespace Dash
                             xRichTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<RichEditBox>());
                             //give toolbar access to the most recently selected text box for editing purposes
                             xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-                            xRichTextToolbar.SetDocs(selection);
+                            xRichTextToolbar.SetSelectedDocumentView(selection);
                             subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
@@ -390,9 +402,9 @@ namespace Dash
                         {
                             containsInternalContent = true;
                             baseLevelContentToolbar = xPlainTextToolbar;
-                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetMenuToolBarBinding(selection.GetFirstDescendantOfType<EditableTextBlock>());
                             //give toolbar access to the most recently selected text box for editing purposes
-                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<EditableTextBlock>());
                             xPlainTextToolbar.SetDocs(selection);
                             subtoolbarElement = xPlainTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
@@ -512,53 +524,82 @@ namespace Dash
                 //xFloating.Floating_SizeChanged(null, null);
             }
         }
-
-        // copy btn
-        private void Copy(object sender, RoutedEventArgs e)
-        {
-            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
-            {
-                d.CopyDocument();
-            }
-        }
-        // copy btn
+        
         private void FitWidth(object sender, RoutedEventArgs e)
         {
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
+                {
+                    d.ViewModel.LayoutDocument.SetWidth(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
+                        (!double.IsNaN(d.ViewModel.LayoutDocument.GetWidth()) ? d.ViewModel.LayoutDocument.GetWidth() :
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.X));
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
-                else d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents(null);
+                }
+                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView))
+                {
+                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, d.ViewModel.LayoutDocument.GetWidth(), true);
+                    d.ViewModel.LayoutDocument.SetWidth(double.NaN);
+                    d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                }
             }
         }
-        // copy btn
         private void FitHeight(object sender, RoutedEventArgs e)
         {
             foreach (var d in SelectionManager.GetSelectedDocs())
             {
                 if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
+                {
+                    d.ViewModel.LayoutDocument.SetHeight(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
+                        (!double.IsNaN(d.ViewModel.LayoutDocument.GetHeight()) ? d.ViewModel.LayoutDocument.GetHeight() :
+                           d.ViewModel.LayoutDocument.GetActualSize().Value.Y));
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
-                else d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
-                d.GetFirstAncestorOfType<CollectionView>().ViewModel.FitContents(null);
+                }
+                else if(!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView))
+                {
+                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, d.ViewModel.LayoutDocument.GetHeight(), true);
+                    d.ViewModel.LayoutDocument.SetHeight(double.NaN);
+                    d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
+                }
             }
         }
-        // copy btn
+        private void FreezeContents(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var d in SelectionManager.GetSelectedDocs())
+                {
+                    d.AreContentsHitTestVisible = !d.AreContentsHitTestVisible;
+                    xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+                }
+            }
+        }
+        private void Copy(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                SelectionManager.GetSelectedDocs().ForEach((d) => d.CopyDocument());
+            }
+        }
         private void MakeInstance(object sender, RoutedEventArgs e)
         {
-            foreach (var d in SelectionManager.GetSelectedDocs())
+            using (UndoManager.GetBatchHandle())
             {
-                d.MakeInstance();
+                foreach (var d in SelectionManager.GetSelectedDocs())
+                {
+                    d.MakeInstance();
+                }
             }
         }
-
-        // delete btn
+        
         private void Delete(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
-            foreach (DocumentView d in SelectionManager.GetSelectedDocs())
             {
-                d.DeleteDocument();
+                foreach (DocumentView d in SelectionManager.GetSelectedDocs())
+                {
+                    d.DeleteDocument();
+                }
             }
         }
         
@@ -969,6 +1010,7 @@ namespace Dash
         private ToolTip _addAudio;
         private ToolTip _copy;
         private ToolTip _instance;
+        private ToolTip _freeze;
         private ToolTip _fitWidth;
         private ToolTip _fitHeight;
         private ToolTip _delete;
@@ -1062,7 +1104,15 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xMakeInstance, _instance);
 
-            _fitWidth = new ToolTip()
+            _freeze = new ToolTip()
+            {
+                Content = "Freeze Contents",
+                Placement = placementMode,
+                VerticalOffset = offset
+            };
+            ToolTipService.SetToolTip(xAreContentsHitTestVisibleIcon, _freeze); 
+
+             _fitWidth = new ToolTip()
             {
                 Content = "Fit Width",
                 Placement = placementMode,
@@ -1151,22 +1201,22 @@ namespace Dash
 
         private void XExport_OnClick(object sender, RoutedEventArgs e)
         {
-           MainPage.Instance.xMainTreeView.MakePdf_OnTapped(sender, null);
+            MainPage.Instance.Publish_OnTapped(sender, null);
         }
 
         private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
         {
-           MainPage.Instance.xMainTreeView.TogglePresentationMode(sender, null);
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
         }
 
         private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
         {
-            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Left, SplitFrame.ActiveFrame.DocumentController, true);
+            SplitFrame.ActiveFrame.Split(SplitDirection.Right, autosize: true);
         }
 
         private void XSplitHorizontal_OnClick(object sender, RoutedEventArgs e)
         {
-            SplitFrame.ActiveFrame.TrySplit(SplitFrame.SplitDirection.Down, SplitFrame.ActiveFrame.DocumentController, true);
+            SplitFrame.ActiveFrame.Split(SplitDirection.Down, autosize: true);
         }
 
         private void XCloseSplit_OnClick(object sender, RoutedEventArgs e)
@@ -1182,6 +1232,16 @@ namespace Dash
         private void XGoForward_OnClick(object sender, RoutedEventArgs e)
         {
             SplitFrame.ActiveFrame.GoForward();
+        }
+        
+        private void XEnableInk_OnChecked(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.InkManager.ShowToolbar();
+        }
+
+        private void XEnableInk_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.InkManager.HideToolbar();
         }
     }
 }

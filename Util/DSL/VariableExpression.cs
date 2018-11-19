@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -29,11 +31,11 @@ namespace Dash
             _variableName = variableName;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            if (scope[_variableName] != null)
+            if (scope.TryGetVariable(_variableName, out var value))
             {
-                return scope[_variableName];
+                return Task.FromResult((value, ControlFlowFlag.None));
             }
 
             throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
@@ -41,7 +43,12 @@ namespace Dash
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            return Execute(scope);
+            if (scope.TryGetVariable(_variableName, out var value))
+            {
+                return value;
+            }
+
+            return null;
         }
 
         public override DashShared.TypeInfo Type => DashShared.TypeInfo.Any;

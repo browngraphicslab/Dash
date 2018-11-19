@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DashShared;
 using Newtonsoft.Json;
 
@@ -24,7 +28,7 @@ namespace Dash
 
             foreach (var kvp in dict)
             {
-                var newKey = new KeyController(kvp.Key, kvp.Key + "__from__" + typeIdentifierId);
+                var newKey = new KeyController(kvp.Key, new Guid(kvp.Key + "__from__" + typeIdentifierId));
                 FieldControllerBase newField;
                 try
                 {

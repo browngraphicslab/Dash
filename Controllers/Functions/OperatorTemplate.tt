@@ -1,0 +1,461 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ include file="Manager.ttinclude" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.IO" #>
+<#@ assembly name="System.Runtime" #>
+<#@ assembly name="System.Text.Encoding" #>
+<#@ assembly name="System.Threading.Tasks" #>
+<#@ assembly name="Microsoft.CodeAnalysis.dll" #>
+<#@ assembly name="Microsoft.CodeAnalysis.CSharp.dll" #>
+<#@ assembly name="System.Collections.Immutable.dll" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="Microsoft.CodeAnalysis" #>
+<#@ import namespace="Microsoft.CodeAnalysis.CSharp" #>
+<#@ import namespace="Microsoft.CodeAnalysis.CSharp.Syntax" #>
+<#@ import namespace="System.Globalization" #>
+<# Process(); #>
+<# /* This block should probably go in a different file at some point, an be included in this one */ #>
+<#+ 
+        private void EmitFunction((string functionName, string scriptName, bool isAsync, string methodNamespace,
+                    List<(string name, string type, bool required)>,
+                    List<(string name, string type)>, List<string> attribs) args) {
+            var (functionName, scriptName, isAsync, methodNamespace, inputs, outputs, attribs) = args;
+            var className = $"{functionName}Operator";
+            if(attribs == null) {
+            #>
+[OperatorType(Op.Name.<#= ToSnakeCase(scriptName) #>)]
+<#+
+            } else {
+#>
+[OperatorType(<#= string.Join(", ", attribs.Select(s => "Op.Name." + s)) #>)]
+<#+
+            }
+#>
+public sealed class <#= className #> : OperatorController
+{
+<#+
+    if(inputs.Any()) {
+#>
+    //Input Keys
+<#+
+        foreach(var (name, type, required) in inputs) {
+            var keyName = ToPascalCase(name);
+#>
+    public static readonly KeyController <#= keyName #>Key = KeyController.Get("<#= keyName #>");
+<#+
+
+        }
+        WriteLine("");
+    }
+#>
+<#+
+    if(outputs.Any()) {
+#>
+    //Output Keys
+<#+
+        foreach(var (name, type) in outputs) {
+            var keyName = ToPascalCase(name);
+#>
+    public static readonly KeyController <#= keyName #>Key = KeyController.Get("<#= keyName #>");
+<#+
+
+        }
+    }
+#>
+
+    public <#= className #>() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public <#= className #>(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("<#= className #>");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new <#= className #>();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+<#+
+    if(inputs.Any()) {
+        foreach(var (name, type, required) in inputs) {
+            var keyName = ToPascalCase(name);
+            var typeName = "None";
+            if(type == "FieldControllerBase") {
+                typeName = "Any";
+            } else if(type == "IListController") {
+                typeName = "List";
+            } else if(type.EndsWith("Controller")) {
+                typeName = type.Substring(0, type.Length - "Controller".Length);
+            } else if(type.StartsWith("List")) {
+                typeName = "List";
+            }
+#>
+        new KeyValuePair<KeyController, IOInfo>(<#= keyName #>Key, new IOInfo(DashShared.TypeInfo.<#= typeName #>, <#= required ? "true" : "false" #>)),
+<#+
+
+        }
+    }
+#>
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+<#+
+    if(outputs.Any()) {
+        foreach(var (name, type) in outputs) {
+            var keyName = ToPascalCase(name);
+            var typeName = "None";
+            if(type == "FieldControllerBase") {
+                typeName = "Any";
+            } else if(type.EndsWith("Controller")) {
+                typeName = type.Substring(0, type.Length - "Controller".Length);
+            } else if(type.StartsWith("List")) {
+                typeName = "List";
+            }
+#>
+        [<#= keyName #>Key] = DashShared.TypeInfo.<#= typeName #>,
+<#+
+
+        }
+    }
+#>
+    };
+
+    public override <#= isAsync ? "async " : "" #>Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+<#+
+        var inputNames = new List<string>();
+        var outputNames = new List<(string, string)>();
+        foreach(var (name, type, required) in inputs) {
+            var keyName = ToPascalCase(name);
+            inputNames.Add(name);
+            if(required) {
+#>
+        var <#= ToCamelCase(name) #> = (<#= type #>)inputs[<#= keyName #>Key];
+<#+
+            } else {
+#>
+        var <#= ToCamelCase(name) #> = inputs[<#= keyName #>Key] as <#= type #>;
+<#+
+            }
+        }
+
+        var vars = new List<string>();
+        foreach(var (name, type) in outputs) {
+            var varName = ToCamelCase(name);
+            var keyName = ToPascalCase(name);
+            outputNames.Add((keyName, varName));
+            vars.Add(varName);
+        }
+        string resultsString;
+        if(vars.Count == 0){
+            resultsString = "";
+        } else if(vars.Count == 1) {
+            resultsString = $"var {vars[0]} = ";
+        } else {
+            resultsString = $"var ({string.Join(", ", vars)} = )";
+        }
+#>
+        <#= resultsString + (isAsync ? "await " : "") + methodNamespace + functionName #>(<#= string.Join(", ", inputNames) #>);
+<#+
+        foreach(var (keyName, varName) in outputNames) {
+#>
+        outputs[<#= keyName #>Key] = <#= varName #>;
+<#+
+        }
+
+        if(!isAsync) {
+#>
+        return Task.CompletedTask;
+<#+
+        }
+#>
+    }
+
+}
+
+<#+
+        }
+
+        private void Indent(){
+            PushIndent("    ");
+        }
+
+        private string ToPascalCase(string s){
+            var sb = new StringBuilder();
+            foreach(char c in s) {
+                if(char.IsUpper(c)){
+                    sb.Append(" ");
+                }
+                sb.Append(c);
+            }
+            s = sb.ToString();
+            s = s.Replace("_", " ");
+            TextInfo info = CultureInfo.CurrentCulture.TextInfo;
+            s = info.ToTitleCase(s).Replace(" ", string.Empty);
+            return s;
+        }
+
+        private string ToCamelCase(string s){
+            if(string.IsNullOrEmpty(s)){
+                return "";
+            }
+            s = ToPascalCase(s);
+            return char.ToLower(s[0]) + s.Substring(1);
+        }
+
+        private string ToSnakeCase(string s) {
+            s = ToCamelCase(s);
+            return string.Concat(s.Select((x,i) => i > 0 && char.IsUpper(x) ? "_" + char.ToLower(x).ToString() : x.ToString()));
+        }
+
+        public void Process()
+        {
+            var manager = Manager.Create(Host, GenerationEnvironment);
+            manager.StartHeader();
+#>
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Dash
+{
+<#+
+            manager.EndBlock();
+            manager.StartFooter();
+#>
+}
+<#+
+            manager.EndBlock();
+            var fileTrees = Directory.EnumerateFiles(Path.Combine(Path.GetDirectoryName(Host.TemplateFile), "Operators"))
+                .Where(f => Path.GetExtension(f) == ".cs" && !f.EndsWith(".Operator.cs"))
+                .Select(f => (Path.GetFileNameWithoutExtension(f), (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(File.ReadAllText(f))));
+            foreach (var (filename, tree) in fileTrees)
+            {
+                var root = (CompilationUnitSyntax)tree.GetRoot();
+                var funcs = new List<(string functionName, string scriptName, bool isAsync,
+                    List<(string name, string type, bool required)>,
+                    List<(string name, string type)>)>();
+                manager.StartNewFile($"{filename}.Operator.cs");
+                foreach (var methodDeclarationSyntax in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+                {
+                    var attribs = methodDeclarationSyntax.AttributeLists;
+                    var (skip, parsedAttribs) = ParseAttribs(attribs);
+                    if(skip){
+                        continue;
+                    }
+                    string methodNamespace = "";
+                    SyntaxNode node = methodDeclarationSyntax.Parent;
+                    while (node != null)
+                    {
+                        if (node is ClassDeclarationSyntax classSyntax)
+                        {
+                            methodNamespace = classSyntax.Identifier.ValueText + "." + methodNamespace;
+                        } else if (node is NamespaceDeclarationSyntax ns)
+                        {
+                            if (ns.Name is IdentifierNameSyntax ident)
+                            {
+                                methodNamespace = ident.Identifier.ValueText + "." + methodNamespace;
+                            } else if(ns.Name is QualifiedNameSyntax qualified){
+                                methodNamespace = qualified.ToString() + "." + methodNamespace;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        node = node.Parent;
+                    }
+                    var name = methodDeclarationSyntax.Identifier.ValueText;
+                    var retType = methodDeclarationSyntax.ReturnType;
+                    var paramList = methodDeclarationSyntax.ParameterList;
+                    var inputs = ParseInputs(paramList);
+                    var (outputs, isAsync) = ParseOutputs(retType, attribs);
+
+                    EmitFunction((name, name, isAsync, methodNamespace, inputs, outputs, parsedAttribs));
+                }
+
+                manager.EndBlock();
+            }
+
+            manager.Process(true);
+        }
+
+        private (bool skip, List<string> operatorNames) ParseAttribs(SyntaxList<AttributeListSyntax> attribs) {
+            bool skip = false;
+            List<string> attributes = null;
+            foreach (var attributeListSyntax in attribs)
+            {
+                foreach (var attributeSyntax in attributeListSyntax.Attributes)
+                {
+                    var attName = attributeSyntax.Name;
+                    if (attName is IdentifierNameSyntax ident)
+                    {
+                        var identName = ident.Identifier.ValueText;
+                        switch (identName)
+                        {
+                        case "OperatorFunctionName":
+                        case "OperatorFunctionNameAttribute":
+                            var args = attributeSyntax.ArgumentList.Arguments;
+                            attributes = new List<String>();
+                            foreach(var arg in args) {
+                                if (arg.Expression is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.StringLiteralExpression)
+                                {
+                                    var token = literal.Token.ValueText;
+                                    attributes.Add(token);
+                                }
+                            }
+                            break;
+                        case "GeneratorIgnore":
+                        case "GeneratorIgnoreAttribute":
+                            skip = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return (skip, attributes);
+        }
+
+        private List<(string name, string type, bool required)> ParseInputs(ParameterListSyntax parameterList)
+        {
+            var inputs = new List<(string name, string type, bool required)>();
+            foreach (var parameter in parameterList.Parameters)
+            {
+                var t = parameter.Type;
+                if (!(t is IdentifierNameSyntax ident))
+                {
+                    return null;
+                }
+
+                var name = parameter.Identifier.ValueText;
+                inputs.Add((name, ident.Identifier.ValueText, parameter.Default == null));
+            }
+
+            return inputs;
+        }
+
+        private (List<(string name, string type)> outputs, bool isAsync) ParseOutputs(TypeSyntax retType, SyntaxList<AttributeListSyntax> attribs)
+        {
+            var outputs = new List<(string name, string type)>();
+
+            switch (retType)
+            {
+            case PredefinedTypeSyntax predefined:
+                if (predefined.Keyword.ValueText == "void")
+                {
+                    return (outputs, false);
+                }
+                else
+                {
+                    return (null, false);
+                }
+            case IdentifierNameSyntax ident:
+                {
+                    var type = ident.Identifier.ValueText;
+                    if (type == "Task")
+                    {
+                        return (outputs, true);
+                    }
+
+                    outputs.Add((GetName(attribs, 1)[0], type));
+                    break;
+                }
+            case TupleTypeSyntax tuple:
+                {
+                    foreach (var tupleElementSyntax in tuple.Elements)
+                    {
+                        var name = tupleElementSyntax.Identifier.ValueText;
+                        var (list, _) = ParseOutputs(tupleElementSyntax.Type, attribs);
+                        if (list.Count != 1)
+                        {
+                            return (null, false);
+                        }
+                        outputs.Add((name, list[0].type));
+                    }
+
+                    break;
+                }
+            case GenericNameSyntax generic:
+                {
+                    var name = generic.Identifier.ValueText;
+                    if (name == "Task")
+                    {
+                        if (generic.TypeArgumentList.Arguments.Count == 1)
+                        {
+                            var (list, _) = ParseOutputs(generic.TypeArgumentList.Arguments[0], attribs);
+                            return (list, true);
+                        }
+                        else
+                        {
+                            return (null, false);
+                        }
+                    }
+                    else
+                    {
+                        outputs.Add((GetName(attribs, 1)[0], generic.ToString()));
+                    }
+
+                        break;
+                }
+            default:
+                return (null, false);
+            }
+            return (outputs, false);
+        }
+
+        private string[] GetName(SyntaxList<AttributeListSyntax> attribs, int numParams)
+        {
+            var a = new string[numParams];
+            int current = 0;
+            foreach (var attributeListSyntax in attribs)
+            {
+                foreach (var attributeSyntax in attributeListSyntax.Attributes)
+                {
+                    var attName = attributeSyntax.Name;
+                    if (attName is IdentifierNameSyntax ident)
+                    {
+                        var identName = ident.Identifier.ValueText;
+                        if (identName == "OperatorReturnName")
+                        {
+                            var args = attributeSyntax.ArgumentList.Arguments;
+                            if (args.Count == 1)
+                            {
+                                var arg = args[0];
+                                if (arg.Expression is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.StringLiteralExpression)
+                                {
+                                    var token = literal.Token.ValueText;
+                                    a[current++] = token;
+                                    if (current == numParams)
+                                    {
+                                        return a;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+                
+            }
+
+            for (; current < numParams; ++current)
+            {
+                a[current] = $"output{current}";
+            }
+
+            return a;
+        }
+
+#>

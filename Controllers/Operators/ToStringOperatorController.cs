@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -10,13 +11,13 @@ namespace Dash
     public sealed class ToStringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController InputKey = new KeyController("Input");
+        public static readonly KeyController InputKey = KeyController.Get("Input");
 
         //Output keys
-        public static readonly KeyController ResultStringKey = new KeyController("String");
+        public static readonly KeyController ResultStringKey = KeyController.Get("String");
 
 
-        public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ToStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -35,14 +36,15 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("To String", "C9A561E8-D4A1-4C38-A0BD-D9EE3531DACE");
+        private static readonly KeyController TypeKey = KeyController.Get("To String");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var input = inputs[InputKey];
             if (input != null) outputs[ResultStringKey] = new TextController(input.GetValue(null).ToString());
+            return Task.CompletedTask;
         }
     }
 }

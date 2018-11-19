@@ -11,7 +11,7 @@ namespace Dash
     /// A Field Model which holds pdf data
     /// </summary>
     [FieldModelType(TypeInfo.Pdf)]
-    class PdfModel : FieldModel
+    public class PdfModel : FieldModel
     {
         private Uri _uriCache;
 

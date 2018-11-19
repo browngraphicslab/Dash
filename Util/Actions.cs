@@ -6,37 +6,18 @@ namespace Dash
 {
     public static class Actions
     {
-        public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
-        {
-            MainPage.Instance.AddOperatorsFilter(collection, e);
-        }
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
                 e.GetPosition(MainPage.Instance));
-
-
-            //var newDocProto = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-            //newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
-            //var newDoc = newDocProto.MakeDelegate();
-            //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
-            //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
-
-            //collection.ViewModel.AddDocument(newDoc, null);
             collection.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Elliptical, where));
-
-            //DBTest.DBDoc.AddChild(newDoc);
         }
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
                 e.GetPosition(MainPage.Instance));
-
-            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
-            var newDoc = cnote.Document;
             
-            collection.ViewModel.AddDocument(newDoc);
-            //DBTest.DBDoc.AddChild(newDoc);
+            collection.ViewModel.AddDocument(new CollectionNote(where, CollectionViewType.Freeform).Document);
         }
         public static void HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
@@ -45,7 +26,7 @@ namespace Dash
 
         public static bool UnHideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
-            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null).TypedData)
+            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null))
                 if (vm.GetDataDocument().Equals(docController.GetDataDocument()) && vm.GetHidden())
                 {
                     vm.SetHidden(false);

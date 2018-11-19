@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 using Gma.CodeCloud.Controls.TextAnalyses.Blacklist;
 using Gma.CodeCloud.Controls.TextAnalyses.Extractors;
@@ -14,21 +16,21 @@ namespace Dash
     {
 
         // Input Keys
-        public static readonly KeyController InputCollection = new KeyController("Input Collection");
-        public static readonly KeyController TextField = new KeyController("Text Field");
+        public static readonly KeyController InputCollection = KeyController.Get("Input Collection");
+        public static readonly KeyController TextField = KeyController.Get("Text Field");
 
         // Output Keys
-        public static readonly KeyController OutputCollection = new KeyController("Output");
+        public static readonly KeyController OutputCollection = KeyController.Get("Output");
 
         // Helper Key
-        public static readonly KeyController KeyWords = new KeyController("KeyWords");
+        public static readonly KeyController KeyWords = KeyController.Get("KeyWords");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
             {
                 new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
-                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Text, true)),
+                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Key, true)),
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
@@ -43,24 +45,22 @@ namespace Dash
 
         public ExtractKeywordsOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Keywords", "8EA60017-CF8E-4885-B712-7C38906C299F");
+        private static readonly KeyController TypeKey = KeyController.Get("Keyword Operator");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
-            var textFieldKeyId = (inputs[TextField] as TextController).Data;
-            var textFieldKey = ContentController<FieldModel>.GetController<KeyController>(textFieldKeyId);
+            var textFieldKey = inputs[TextField] as KeyController;
 
             // get all the text from the input documents
             var allText = "";
             // for each doc in the input collection
-            foreach (var inputDoc in collection.TypedData)
+            foreach (var inputDoc in collection)
             {
                 // get the data from it if it exists
                 var dataDoc = inputDoc.GetDataDocument();
@@ -81,7 +81,7 @@ namespace Dash
             var keyWords = words.GroupByStem(stemmer).SortByOccurences().Cast<IWord>().ToList();
 
             var outputDocs = new List<DocumentController>();
-            foreach (var inputDoc in collection.TypedData)
+            foreach (var inputDoc in collection)
             {
                 var dataDoc = inputDoc.GetDataDocument();
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
@@ -97,6 +97,7 @@ namespace Dash
             }
 
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

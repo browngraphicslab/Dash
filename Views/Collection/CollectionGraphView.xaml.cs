@@ -73,9 +73,9 @@ namespace Dash
     {
         private DocumentController _parentDocument;
 
-
         private GraphNodeView _selectedNode;
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.Graph;
 
         public CollectionGraphView()
         {
@@ -91,6 +91,10 @@ namespace Dash
             Loaded += CollectionGraphView_Loaded;
             Unloaded += CollectionGraphView_Unloaded;
         }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
+        }
 
         public DocumentController ParentDocument
         {
@@ -98,10 +102,10 @@ namespace Dash
             set
             {
                 _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
             }
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         public ObservableCollection<GraphConnection> Links { get; set; }
@@ -285,16 +289,11 @@ namespace Dash
 
             // find the largest possible node to prevent any from initializing out of bounds
             double maxNodeDiam = 0;
-            if (ViewModel.DocumentViewModels.Count != 0)
-                maxNodeDiam = (ViewModel.DocumentViewModels.Max(dvm =>
-                                   dvm.DataDocument
-                                       .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey,
-                                           null)?.TypedData.Count + 1 ?? 1) + ViewModel.DocumentViewModels.Max(dvm =>
-                                   dvm.DataDocument
-                                       .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey,
-                                           null)
-                                       ?.TypedData.Count + 1 ?? 1)) * ConstantRadiusWidth +
-                              50; // account for title height
+            var dvms = ViewModel.DocumentViewModels;
+            if (dvms.Count != 0)
+                maxNodeDiam = (dvms.Max(dvm => dvm.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null)?.Count + 1 ?? 1) +
+                               dvms.Max(dvm => dvm.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.Count + 1 ?? 1)) *
+                              ConstantRadiusWidth + 50; // account for title height
 
             // logically divides the space into n by n grid where n is the amount of nodes
             var gridX = xScrollViewCanvas.Width / sortedX.Count();

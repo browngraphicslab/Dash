@@ -1,44 +1,52 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Dash
 {
     public class ForInExpression : ScriptExpression
     {
-        private readonly Op.Name _opName;
-
         private readonly string _subVarName;
         private readonly ScriptExpression _listToExecute;
         private readonly ExpressionChain _bodyToExecute;
 
-        public ForInExpression(Op.Name opName, string subVarName, ScriptExpression listToExecute, ExpressionChain bodyToExecute)
+        public ForInExpression(string subVarName, ScriptExpression listToExecute, ExpressionChain bodyToExecute)
         {
-            _opName = opName;
-
             _subVarName = subVarName;
             _listToExecute = listToExecute;
             _bodyToExecute = bodyToExecute;
         }
 
-        public override FieldControllerBase Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             scope = new Scope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
-            var list = _listToExecute.Execute(scope) as BaseListController;
-
-            for (var i = 0; i < list?.Count; i++)
+            var (field, _) = await _listToExecute.Execute(scope);
+            if (!(field is IListController list))
             {
-                scope.SetVariable(_subVarName, list.GetValue(i));
-                _bodyToExecute.Execute(scope);
-                list.SetValue(i, scope.GetVariable(_subVarName));
+                return (null, ControlFlowFlag.None);
             }
 
-            return list;
+            for (var i = 0; i < list.Count; i++)
+            {
+                scope.SetVariable(_subVarName, list.GetValue(i));
+                var (field2, flags) = await _bodyToExecute.Execute(scope);
+                switch (flags)
+                {
+                case ControlFlowFlag.Return:
+                    return (field2, flags);
+                case ControlFlowFlag.Break:
+                    break;
+                }
+                //list.SetValue(i, scope.GetVariable(_subVarName));
+            }
+
+            return (null, ControlFlowFlag.None);
         }
 
-        public Op.Name GetOperatorName() => _opName;
+        public Op.Name GetOperatorName() => Op.Name.invalid;
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();
 
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Name.invalid);
     }
 }

@@ -26,6 +26,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
+using Windows.System;
 
 namespace Dash
 {
@@ -80,7 +81,7 @@ namespace Dash
 
             if (r == null) return new Point(0, 0);
             var m = r.Matrix;
-            return new MatrixTransform {Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0)}.TransformPoint(p);
+            return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
         }
 
         /// <summary>
@@ -122,7 +123,7 @@ namespace Dash
         {
             if (freeform == null) return absolutePosition;
 
-            GeneralTransform r = MainPage.Instance.xCanvas.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
+            GeneralTransform r = MainPage.Instance.xOuterGrid.TransformToVisual(freeform.GetItemsControl().ItemsPanelRoot);
             Debug.Assert(r != null);
             return r.TransformPoint(absolutePosition);
         }
@@ -152,70 +153,78 @@ namespace Dash
             ListController<DocumentController> setB)
         {
             var result = new HashSet<DocumentController>();
-            foreach (var contA in setA.GetElements())
-            foreach (var contB in setB.GetElements())
+            foreach (var contA in setA)
             {
-                if (result.Contains(contB)) continue;
+                foreach (var contB in setB)
+                {
+                    if (result.Contains(contB)) continue;
 
-                var enumFieldsA = contA.EnumFields().ToList();
-                var enumFieldsB = contB.EnumFields().ToList();
-                if (enumFieldsA.Count != enumFieldsB.Count) continue;
+                    var enumFieldsA = contA.EnumFields().ToList();
+                    var enumFieldsB = contB.EnumFields().ToList();
+                    if (enumFieldsA.Count != enumFieldsB.Count) continue;
 
-                var equal = true;
-                foreach (var pair in enumFieldsA)
-                    if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
-                        if (pair.Value is TextController)
+                    var equal = true;
+                    foreach (var pair in enumFieldsA)
+                    {
+                        if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
                         {
-                            var fmContA = pair.Value as TextController;
-                            var fmContB =
+                            if (pair.Value is TextController)
+                            {
+                                var fmContA = pair.Value as TextController;
+                                var fmContB =
                                 enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as TextController;
-                            if (!fmContA.Data.Equals(fmContB?.Data))
-                            {
-                                equal = false;
-                                break;
+                                if (!fmContA.Data.Equals(fmContB?.Data))
+                                {
+                                    equal = false;
+                                    break;
+                                }
                             }
-                        }
-                        else if (pair.Value is NumberController)
-                        {
-                            var fmContA = pair.Value as NumberController;
-                            var fmContB =
+                            else if (pair.Value is NumberController)
+                            {
+                                var fmContA = pair.Value as NumberController;
+                                var fmContB =
                                 enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as NumberController;
-                            if (!fmContA.Data.Equals(fmContB?.Data))
-                            {
-                                equal = false;
-                                break;
+                                if (!fmContA.Data.Equals(fmContB?.Data))
+                                {
+                                    equal = false;
+                                    break;
+                                }
                             }
-                        }
-                        else if (pair.Value is ImageController)
-                        {
-                            var fmContA = pair.Value as ImageController;
-                            var fmContB =
+                            else if (pair.Value is ImageController)
+                            {
+                                var fmContA = pair.Value as ImageController;
+                                var fmContB =
                                 enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageController;
-                            if (!fmContA.ImageFieldModel.Data.AbsoluteUri.Equals(fmContB.ImageFieldModel.Data
-                                .AbsoluteUri))
-                            {
-                                equal = false;
-                                break;
+                                if (!fmContA.ImageFieldModel.Data.AbsoluteUri.Equals(fmContB.ImageFieldModel.Data
+                                    .AbsoluteUri))
+                                {
+                                    equal = false;
+                                    break;
+                                }
+                                throw new NotImplementedException();
                             }
-                            throw new NotImplementedException();
-                        }
-                        else if (pair.Value is PointController)
-                        {
-                            var fmContA = pair.Value as PointController;
-                            var fmContB =
+                            else if (pair.Value is PointController)
+                            {
+                                var fmContA = pair.Value as PointController;
+                                var fmContB =
                                 enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as PointController;
-                            if (!fmContA.Data.Equals(fmContB.Data))
+                                if (!fmContA.Data.Equals(fmContB.Data))
+                                {
+                                    equal = false;
+                                    break;
+                                }
+                            }
+                            else
                             {
-                                equal = false;
-                                break;
+                                throw new NotImplementedException();
                             }
                         }
-                        else
-                        {
-                            throw new NotImplementedException();
-                        }
-                if (equal) result.Add(contB);
+                    }
+
+                    if (equal) result.Add(contB);
+                }
             }
+
             return result;
         }
 
@@ -236,7 +245,8 @@ namespace Dash
                 try
                 {
                     await encoder.FlushAsync();
-                } catch (Exception err)
+                }
+                catch (Exception err)
                 {
                     const int WINCODEC_ERR_UNSUPPORTEDOPERATION = unchecked((int)0x88982F81);
                     switch (err.HResult)
@@ -295,7 +305,7 @@ namespace Dash
                 {
                     var collectionList = new List<Dictionary<string, object>>();
                     var collectionCont = pair.Value as ListController<DocumentController>;
-                    foreach (var cont in collectionCont.GetElements())
+                    foreach (var cont in collectionCont)
                         collectionList.Add(JsonSerializeHelper(cont.EnumFields()));
                     jsonDict[pair.Key.Name] = collectionList;
                     continue;
@@ -391,8 +401,8 @@ namespace Dash
                     encoder.SetPixelData(
                         BitmapPixelFormat.Bgra8,
                         BitmapAlphaMode.Ignore,
-                        (uint) bitmap.PixelWidth,
-                        (uint) bitmap.PixelHeight,
+                        (uint)bitmap.PixelWidth,
+                        (uint)bitmap.PixelHeight,
                         displayInformation.RawDpiX,
                         displayInformation.RawDpiY,
                         pixels.ToArray());
@@ -539,9 +549,17 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController AdornmentWithPosition(BackgroundShape.AdornmentShape shape, Point pos, double width=200, double height=200)
+        public static DocumentController AdornmentWithPosition(BackgroundShape.AdornmentShape shape, Point pos, double width = 200, double height = 200)
         {
-            return new BackgroundNote(shape, pos,new Size(width, height)).Document;
+            return new BackgroundNote(shape, pos, new Size(width, height)).Document;
+        }
+
+        public static DocumentController AdornmentWithPosandColor(Color color, BackgroundShape.AdornmentShape shape, Point pos,
+            double width = 200, double height = 200)
+        {
+            var note = new BackgroundNote(shape, pos, new Size(width, height));
+            note.SetAdornmentColor(color);
+            return note.Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
@@ -551,15 +569,9 @@ namespace Dash
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
-        public static DocumentController BlankCollectionWithPosition(Point where = new Point())
-        {
-            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
-        }
-        // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            return BlankCollectionWithPosition(new Point());
+            return new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
@@ -590,14 +602,14 @@ namespace Dash
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static Dictionary<KeyController, HashSet<TypeInfo>> GetDisplayableTypedHeaders(ListController<DocumentController> collection)
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetDisplayableTypedHeaders(IEnumerable<DocumentController> collection)
         {
             // create the new list of headers
             var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
 
             // iterate over all the documents in the input collection and get their key's
             // and associated types
-            foreach (var docController in collection.TypedData)
+            foreach (var docController in collection)
             {
                 var actualDoc = docController.GetDataDocument();
 
@@ -654,6 +666,91 @@ namespace Dash
 
 
             return point;
+        }
+
+
+
+        public static string KeyCodeToUnicode(VirtualKey key, bool shiftState, bool capState)
+        {
+            var virtualKeyCode = (uint)key;
+
+            string character = null;
+
+            // take care of symbols
+            if (key == VirtualKey.Space)
+            {
+                character = " ";
+            }
+            if (key == VirtualKey.Multiply)
+            {
+                character = "*";
+            }
+            // TODO take care of more symbols
+
+            //Take care of letters
+            if (virtualKeyCode >= 65 && virtualKeyCode <= 90)
+            {
+                if ((!shiftState && !capState) || (shiftState && capState))
+                {
+                    character = key.ToString().ToLower();
+                }
+                else
+                {
+                    character = key.ToString();
+                }
+            }
+
+            //Take care of numbers
+            if (virtualKeyCode >= 48 && virtualKeyCode <= 57)
+            {
+                character = (virtualKeyCode - 48).ToString();
+                if ((shiftState != false || capState != false) &&
+                    (!shiftState || !capState))
+                {
+                    switch ((virtualKeyCode - 48))
+                    {
+                    case 1: character = "!"; break;
+                    case 2: character = "@"; break;
+                    case 3: character = "#"; break;
+                    case 4: character = "$"; break;
+                    case 5: character = "%"; break;
+                    case 6: character = "^"; break;
+                    case 7: character = "&"; break;
+                    case 8: character = "*"; break;
+                    case 9: character = "("; break;
+                    case 0: character = ")"; break;
+                    default: break;
+                    }
+                }
+            }
+
+            if (virtualKeyCode >= 186 && virtualKeyCode <= 222)
+            {
+                var shifted = ((shiftState != false || capState != false) &&
+                    (!shiftState || !capState));
+                switch (virtualKeyCode)
+                {
+                case 186: character = shifted ? ":" : ";"; break;
+                case 187: character = shifted ? "=" : "+"; break;
+                case 188: character = shifted ? "<" : ","; break;
+                case 189: character = shifted ? "_" : "-"; break;
+                case 190: character = shifted ? ">" : "."; break;
+                case 191: character = shifted ? "?" : "/"; break;
+                case 192: character = shifted ? "~" : "`"; break;
+                case 219: character = shifted ? "{" : "["; break;
+                case 220: character = shifted ? "|" : "\\"; break;
+                case 221: character = shifted ? "}" : "]"; break;
+                case 222: character = shifted ? "\"" : "'"; break;
+                }
+
+            }
+            //Take care of numpad numbers
+            if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
+            {
+                character = (virtualKeyCode - 96).ToString();
+            }
+
+            return character;
         }
     }
 }

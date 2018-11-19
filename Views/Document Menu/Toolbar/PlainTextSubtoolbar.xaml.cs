@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -22,7 +23,7 @@ namespace Dash
             set { SetValue(OrientationProperty, value); }
         }
 
-        private TextBox _currBox;
+        private EditableTextBlock _currBox;
         private FormattingMenuView _menuView = null;
         private DocumentView _docs;
         private Dictionary<string, Button> _buttons;
@@ -41,14 +42,14 @@ namespace Dash
         /**
 		 * Binds the text toolbar with the most recently selected text box for editing purposes.
 		 */
-        public void SetMenuToolBarBinding(TextBox selection)
+        public void SetMenuToolBarBinding(EditableTextBlock selection)
         {
         }
 
         /**
 		 *  Sets the current text box used for editing
 		 */
-        public void SetCurrTextBox(TextBox box)
+        public void SetCurrTextBox(EditableTextBlock box)
         {
             _currBox = box;
         }
@@ -95,12 +96,11 @@ namespace Dash
             //restore other menu
         }
 
-        private void XBackgroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Windows.UI.Color e)
         {
-            _currentColor = xBackgroundColorPicker.SelectedColor;
+            _currentColor = e;
             UpdateColor();
         }
-
         /*
          * Ensures current color reflects desired opacity and then updates the appropriate bindings for...
          */
@@ -116,17 +116,9 @@ namespace Dash
         {
             if (_currentColor == null)
                 return Windows.UI.Color.FromArgb(0x80, 0x00, 0x00, 0x00); //A fallback during startup (edge case) where current color string is null
-            var alpha = (byte)(xOpacitySlider.Value / xOpacitySlider.Maximum * 255); //Ratio of current value to maximum determines the relative desired opacity
-            return Windows.UI.Color.FromArgb(alpha, _currentColor.R, _currentColor.G, _currentColor.B);
+            return _currentColor;
         }
-
-        private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e) => UpdateColor();
-
-        private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            xOpacitySlider.Value = 128;
-            UpdateColor();
-        }
+    
 
         private void XFontWeightOptionsDropdown_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -155,6 +147,11 @@ namespace Dash
 
             _currBox.FontSize = (sender as Slider).Value;
             _currentDocController.SetField(KeyStore.FontSizeKey, new NumberController((sender as Slider).Value), true);
+        }
+
+        private void xOpacitySlider_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+
         }
     }
 }

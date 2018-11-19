@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -12,10 +14,10 @@ namespace Dash
     public class GetAllDocsByAlias : OperatorController
     {
         //Input keys
-        public static readonly KeyController IdKey = new KeyController("Id");
+        public static readonly KeyController IdKey = KeyController.Get("Id");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
         public GetAllDocsByAlias() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -36,13 +38,15 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Alias", "DB543B75-15D3-467A-A9DE-9F262F496C25");
+        private static readonly KeyController TypeKey = KeyController.Get("Alias");
 
         /// <inheritdoc />
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
             var id = (inputs[IdKey] as TextController)?.Data;
@@ -53,6 +57,7 @@ namespace Dash
             }
 
             outputs[ResultsKey] = toReturn;
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new GetAllDocsByAlias();

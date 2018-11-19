@@ -96,6 +96,21 @@ namespace Dash
             return start.GetAncestorsOfType<T>().FirstOrDefault();
         }
 
+        public static T GetFirstAncestorOfTypeFast<T>(this DependencyObject start) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(start);
+            while (parent != null)
+            {
+                if (parent is T tParent)
+                {
+                    return tParent;
+                }
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            return default(T);
+        }
+
         public static IEnumerable<T> GetAncestorsOfType<T>(this DependencyObject start)
         {
             return start.GetAncestors().OfType<T>();
@@ -171,7 +186,11 @@ namespace Dash
 
             if (!ancestors.Contains(relativeTo))
             {
-                throw new InvalidOperationException("Element not in visual tree.");
+                var descendants = dob.GetDescendants().ToArray();
+                if (!descendants.Contains(relativeTo))
+                {
+                    throw new InvalidOperationException("Element not in visual tree.");
+                }
             }
 
             var pos =

@@ -1,8 +1,18 @@
-﻿namespace Dash
+﻿using System.Threading.Tasks;
+
+namespace Dash
 {
     public abstract class ScriptExpression
     {
-        public abstract FieldControllerBase Execute(Scope scope);
+        public enum ControlFlowFlag
+        {
+            None,
+            Return,
+            Break,
+            Continue
+        } 
+
+        public abstract Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope);
 
         public abstract FieldControllerBase CreateReference(Scope scope);
 

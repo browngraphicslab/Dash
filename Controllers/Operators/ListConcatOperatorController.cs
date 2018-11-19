@@ -1,21 +1,24 @@
-﻿using System.Collections.Generic;
+﻿﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.concat, Op.Name.operator_add)]
+    [OperatorType(Op.Name.append, Op.Name.operator_add)]
     public sealed class ListConcatOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListAKey = new KeyController("List A");
-        public static readonly KeyController ListBKey = new KeyController("List B");
+        public static readonly KeyController ListAKey = KeyController.Get("List A");
+        public static readonly KeyController ListBKey = KeyController.Get("List B");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("Results");
+        public static readonly KeyController ResultsKey = KeyController.Get("Results");
 
-        public ListConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+        public ListConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ListConcatOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -34,20 +37,24 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("List concatenation", "679ADBE0-AD2C-4776-9672-9AF9759FE37D");
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+
+        private static readonly KeyController TypeKey = KeyController.Get("List concatenation");
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var listA = (BaseListController) inputs[ListAKey];
-            var listB = (BaseListController) inputs[ListBKey];
+            var listA = (IListController) inputs[ListAKey];
+            var listB = (IListController) inputs[ListBKey];
 
             var typeA = listA.ListSubTypeInfo;
             var typeB = listB.ListSubTypeInfo;
 
             if (typeA != typeB) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeA, typeB, InvalidListOperationErrorModel.OpError.ConcatType));
 
-            var l = (BaseListController) listA.Copy();
-            l.AddRange(listB.Data);
-            outputs[ResultsKey] = l;
+            var l = (IListController) listA.AsField().Copy();
+            l.AddRange(listB.AsEnumerable());
+            outputs[ResultsKey] = l.AsField();
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController() => new ListConcatOperatorController();

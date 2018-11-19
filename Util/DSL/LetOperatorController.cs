@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -14,26 +15,20 @@ namespace Dash
     {
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-            new KeyController("Let", "ED03AF63-0A70-4EC5-BB3B-3F9DF621C1A1");
+        private static readonly KeyController TypeKey = KeyController.Get("Let");
 
         //Input keys
-        public static readonly KeyController VariableNameKey =
-            new KeyController("Variable");
+        public static readonly KeyController VariableNameKey = KeyController.Get("Variable");
 
-        public static readonly KeyController VariableValueKey =
-            new KeyController("Value");
+        public static readonly KeyController VariableValueKey = KeyController.Get("Value");
 
-        public static readonly KeyController ContinuedExpressionKey =
-            new KeyController("Expression");
+        public static readonly KeyController ContinuedExpressionKey = KeyController.Get("Expression");
 
         //Output keys
-        public static readonly KeyController ReturnValueKey =
-            new KeyController("ReturnValue");
+        public static readonly KeyController ReturnValueKey = KeyController.Get("ReturnValue");
 
         public LetOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
         }
 
         public LetOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -60,7 +55,7 @@ namespace Dash
                 [ReturnValueKey] = DashShared.TypeInfo.Any
             };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args,
             Scope scope = null)

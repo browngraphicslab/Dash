@@ -10,22 +10,10 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="LayoutRoot" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
+    <Grid x:Name="LayoutRoot" PointerPressed="OnPointerPressed"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
         <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public">
-            <ItemsControl x:Name="xItemsControl" ItemsSource="{Binding EmbeddedViewModels}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <local:DocumentView BindRenderTransform="True" BindVisibility="True" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
             <Rectangle x:Name="XPreviewRect" IsHitTestVisible="False" Fill="#33FFFF00" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed"
-                       x:FieldModifier="public"/>
+                       x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />

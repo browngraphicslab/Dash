@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -25,7 +26,7 @@ namespace Dash
             DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
-                if (this.xFieldValue.ViewModel.DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
+                if (((EditableScriptViewModel) xFieldValue.DataContext).Reference.DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
                 {
                     xFlyoutItem.Text = XTextBox.Text;
                     Flyout.ShowAt(xFieldValue);
@@ -37,14 +38,14 @@ namespace Dash
                         this.XTextBox.Text = "==" + this.XTextBox.Text;
                     xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
                     xValueColumn.Width = new GridLength(0);
-                    Focus(FocusState.Programmatic);
+                    XTextBox.Focus(FocusState.Programmatic);
                 }
             };
-            KeyDown += (s, e) =>
+            KeyDown += async (s, e) =>
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
-                    SetExpression(XTextBox.Text);
+                    await SetExpression(XTextBox.Text);
                     MainPage.Instance.Focus(FocusState.Programmatic);
                 }
 
@@ -52,33 +53,29 @@ namespace Dash
                     MainPage.Instance.Focus(FocusState.Programmatic);
             };
             KeyUp += (s, e) => e.Handled = true;
-            LostFocus += (s, e) =>
+            XTextBox.LostFocus += (s, e) =>
             {
                 CollapseBox();
             };
         }
-        private bool SetExpression(string text)
+        private async Task SetExpression(string text)
         {
-            try
+            using (UndoManager.GetBatchHandle())
             {
-                UndoManager.StartBatch();
-                var field = DSL.InterpretUserInput(text,
-                    scope: Scope.CreateStateWithThisDocument(
-                        ViewModel.Reference.GetDocumentController(ViewModel.Context)));
-                ViewModel?.Reference.SetField(field, ViewModel.Context);
+                try
+                {
+                    var field = await DSL.InterpretUserInput(text,
+                        scope: Scope.CreateStateWithThisDocument(
+                            ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                    ViewModel?.Reference.SetField(field, ViewModel.Context);
+                }
+                catch (DSLException ex)
+                {
+                }
             }
-            catch (DSLException)
-            {
-                return false;
-            }
-            finally
-            {
-                UndoManager.EndBatch();
-            }
-            return true;
         }
 
-        async void UserControl_Drop(object sender, DragEventArgs e)
+        private async void UserControl_Drop(object sender, DragEventArgs e)
         {
             //if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             //{
@@ -117,8 +114,6 @@ namespace Dash
         {
             xBackground.Height = 120;
             xBackground.VerticalAlignment = VerticalAlignment.Top;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Expand_Value(this);
         }
 
         public void CollapseBox()
@@ -127,9 +122,6 @@ namespace Dash
             xValueColumn.Width = new GridLength(1, GridUnitType.Star);
             xBackground.Height = 50;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Collapse_Value(this);
-            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -142,7 +134,7 @@ namespace Dash
         
         private EditableScriptViewModel _oldViewModel;
         private DocumentController _oldDataBox = null;
-        private FieldBinding<FieldControllerBase> _oldBinding = null;
+        private FieldBinding<FieldControllerBase, TextController> _oldBinding = null;
         private void EditableScriptView_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (ViewModel == null || ViewModel == _oldViewModel)
@@ -150,7 +142,7 @@ namespace Dash
                 return;
             }
 
-            void fieldChanged(DocumentController ss, DocumentController.DocumentFieldUpdatedEventArgs ee, Context c)
+            void fieldChanged(DocumentController ss, DocumentController.DocumentFieldUpdatedEventArgs ee)
             {
                 if (ee.Action == DocumentController.FieldUpdatedAction.Replace)
                 {
@@ -162,7 +154,7 @@ namespace Dash
                 _oldBinding.Document.RemoveFieldUpdatedListener(_oldBinding.Key, fieldChanged);
             }
             _oldViewModel = ViewModel;
-            _oldBinding = new FieldBinding<FieldControllerBase>
+            _oldBinding = new FieldBinding<FieldControllerBase, TextController>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),
                 Key = ViewModel.Reference.FieldKey,
@@ -172,7 +164,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
-            _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
+            _oldDataBox = new TableBox(new DocumentReferenceController(_oldBinding.Document, _oldBinding.Key)).Document;
             xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
             _oldBinding.Document.AddFieldUpdatedListener(_oldBinding.Key, fieldChanged);
         }

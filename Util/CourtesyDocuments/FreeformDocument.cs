@@ -24,7 +24,6 @@ namespace Dash
         {
 
             var grid = new Grid();
-            SetupBindings(grid, docController, context);
             LayoutDocuments(docController, context, grid);
 
             grid.Clip = new RectangleGeometry();
@@ -35,7 +34,7 @@ namespace Dash
 
             var c = new Context(context);
 
-            void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c2)
+            void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 var collFieldArgs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
@@ -62,12 +61,12 @@ namespace Dash
 
         private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
         {
-            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
+            var layoutDocuments = GetLayoutDocumentCollection(docController, context);
             grid.Children.Clear();
             AddDocuments(layoutDocuments, context, grid);
         }
 
-        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid)
+        private static void AddDocuments(IList<DocumentController> docs, Context context, Grid grid)
         {
             foreach (var layoutDocument in docs)
             {

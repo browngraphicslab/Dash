@@ -72,7 +72,7 @@ namespace Dash
         ///     Called whenever the input collection to the melt operator is changed
         /// </summary>
         private void OnInputCollectionChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+            DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             // get all the headers from a collection
             var collection = args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
@@ -130,7 +130,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnNewValueNameChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+            DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue as TextController;
             Debug.Assert(tfmc != null);
@@ -146,7 +146,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnNewVariableNameChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+            DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue as TextController;
             Debug.Assert(tfmc != null);
@@ -161,13 +161,13 @@ namespace Dash
         private void xHeaderListOnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             // Set the content of the DataPackage to the models of the key controllers
-            var items = e.Items.Select(item => (item as KeyController)?.Model).ToList();
-            var serializedItems = JsonConvert.SerializeObject(items);
-            e.Data.SetText(serializedItems);
-            // we want to move items between lists
-            e.Data.RequestedOperation = DataPackageOperation.Move;
-            e.Data.Properties[_headerDragKey] = true;
-            _dragSourceHeaderList = sender;
+            //var items = e.Items.Select(item => (item as KeyController)?.Model).ToList();
+            //var serializedItems = JsonConvert.SerializeObject(items);
+            //e.Data.SetText(serializedItems);
+            //// we want to move items between lists
+            //e.Data.RequestedOperation = DataPackageOperation.Move;
+            //e.Data.Properties[_headerDragKey] = true;
+            //_dragSourceHeaderList = sender;
         }
 
         private void xHeaderListOnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
@@ -205,16 +205,16 @@ namespace Dash
         private void xHeaderListOnDragOver(object sender, DragEventArgs e)
         {
             // if it was dragged from another list view in this importer
-            if (e.DataView.Properties.ContainsKey(_headerDragKey))
-            {
-                _dragTargetHeaderList = sender;
-                if (!ReferenceEquals(_dragTargetHeaderList, _dragSourceHeaderList))
-                {
-                    e.AcceptedOperation = DataPackageOperation.Move;
-                    return;
-                }
-            }
-            e.AcceptedOperation = DataPackageOperation.None;
+            //if (e.DataView.Properties.ContainsKey(_headerDragKey))
+            //{
+            //    _dragTargetHeaderList = sender;
+            //    if (!ReferenceEquals(_dragTargetHeaderList, _dragSourceHeaderList))
+            //    {
+            //        e.AcceptedOperation = DataPackageOperation.Move;
+            //        return;
+            //    }
+            //}
+            //e.AcceptedOperation = DataPackageOperation.None;
         }
 
         private void xHeaderListManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)

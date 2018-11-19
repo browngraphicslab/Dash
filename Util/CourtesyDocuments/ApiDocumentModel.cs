@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -16,22 +18,22 @@ namespace Dash
         private static string PrototypeId = "683EA5CB-A2FE-4B34-A461-7BCC7BDC7754";
 
 
-        public static readonly KeyController BaseUrlKey = new KeyController("Base URL", "C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A");
-        public static readonly KeyController HttpMethodKey = new KeyController("Http Method", "1CE4047D-1813-410B-804E-BA929D8CB4A4");
-        public static readonly KeyController HeadersKey = new KeyController("Headers", "6E9D9F12-E978-4E61-85C7-707A0C13EFA7");
-        public static readonly KeyController ParametersKey = new KeyController("Parameter", "654A4BDF-1AE0-432A-9C90-CCE9B4809870");
+        public static readonly KeyController BaseUrlKey        = new KeyController("Base URL", new Guid("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A"));
+        public static readonly KeyController HttpMethodKey     = new KeyController("Http Method", new Guid("1CE4047D-1813-410B-804E-BA929D8CB4A4"));
+        public static readonly KeyController HeadersKey        = new KeyController("Headers", new Guid("6E9D9F12-E978-4E61-85C7-707A0C13EFA7"));
+        public static readonly KeyController ParametersKey     = new KeyController("Parameter", new Guid("654A4BDF-1AE0-432A-9C90-CCE9B4809870"));
 
-        public static readonly KeyController AuthHttpMethodKey = new KeyController("Auth Method", "D37CCAC0-ABBC-4861-BEB4-8C079049DCF8");
-        public static readonly KeyController AuthBaseUrlKey = new KeyController("Auth URL", "7F8709B6-2C9B-43D0-A86C-37F3A1517884");
-        public static readonly KeyController AuthKey = new KeyController("Auth Key", "1E5B5398-9349-4585-A420-EDBFD92502DE");
-        public static readonly KeyController AuthSecretKey = new KeyController("Auth Secret", "A690EFD0-FF35-45FF-9795-372D0D12711E");
-        public static readonly KeyController AuthHeadersKey = new KeyController("Auth Header", "E1773B06-F54C-4052-B888-AE85278A7F88");
-        public static readonly KeyController AuthParametersKey = new KeyController("Auth Parameter", "CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E");
+        public static readonly KeyController AuthHttpMethodKey = new KeyController("Auth Method", new Guid("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8"));
+        public static readonly KeyController AuthBaseUrlKey    = new KeyController("Auth URL", new Guid("7F8709B6-2C9B-43D0-A86C-37F3A1517884"));
+        public static readonly KeyController AuthKey           = new KeyController("Auth Key", new Guid("1E5B5398-9349-4585-A420-EDBFD92502DE"));
+        public static readonly KeyController AuthSecretKey     = new KeyController("Auth Secret", new Guid("A690EFD0-FF35-45FF-9795-372D0D12711E"));
+        public static readonly KeyController AuthHeadersKey    = new KeyController("Auth Header", new Guid("E1773B06-F54C-4052-B888-AE85278A7F88"));
+        public static readonly KeyController AuthParametersKey = new KeyController("Auth Parameter", new Guid("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E"));
 
-        public static readonly KeyController KeyTextKey = new KeyController("Key", "388F7E20-4424-4AC0-8BB7-E8CCF2279E60");
-        public static readonly KeyController ValueTextKey = new KeyController("Value", "F89CAD72-271F-48E6-B233-B6BA766E613F");
-        public static readonly KeyController RequiredKey = new KeyController("Required", "D4FCBA25-B540-4E17-A17A-FCDE775B97F9");
-        public static readonly KeyController DisplayKey = new KeyController("Display", "2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463");
+        public static readonly KeyController KeyTextKey        = new KeyController("Key", new Guid("388F7E20-4424-4AC0-8BB7-E8CCF2279E60"));
+        public static readonly KeyController ValueTextKey      = new KeyController("Value", new Guid("F89CAD72-271F-48E6-B233-B6BA766E613F"));
+        public static readonly KeyController RequiredKey       = new KeyController("Required", new Guid("D4FCBA25-B540-4E17-A17A-FCDE775B97F9"));
+        public static readonly KeyController DisplayKey        = new KeyController("Display", new Guid("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463"));
 
 
         public ApiDocumentModel()

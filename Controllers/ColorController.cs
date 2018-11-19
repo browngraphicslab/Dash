@@ -1,4 +1,5 @@
-﻿using Windows.UI;
+﻿using System;
+using Windows.UI;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -8,11 +9,12 @@ namespace Dash
     {
         public ColorController() : this(Colors.White) { }
 
-        public ColorController(Color data) : base(new ColorModel(data)) => SaveOnServer();
+        public ColorController(Color data) : base(new ColorModel(data))
+        {
+
+        }
 
         public ColorController(ColorModel colorFieldModel) : base(colorFieldModel) { }
-
-        public override void Init() { }
 
         public ColorModel ColorFieldModel => Model as ColorModel;
 
@@ -37,22 +39,14 @@ namespace Dash
             {
                 if (ColorFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Color data = ColorFieldModel.Data;
+                    var newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    ColorFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Color val, bool withUndo = true)
-        {
-            Color data = ColorFieldModel.Data;
-            var newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            ColorFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Color;
@@ -63,6 +57,11 @@ namespace Dash
         {
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            return DSL.GetFuncName<ColorOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase Copy() => new ColorController(Data);

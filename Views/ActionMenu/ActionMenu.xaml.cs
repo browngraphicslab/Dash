@@ -2,10 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
+using iText.Kernel.Events;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,10 +27,16 @@ namespace Dash
         {
             GroupTitle = groupTitle;
             Actions = new ObservableCollection<ActionViewModel>(actions);
+            Actions.CollectionChanged += Actions_CollectionChanged;
             foreach (var actionViewModel in actions)
             {
                 Add(actionViewModel);
             }
+        }
+
+        private void Actions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            UpdateFilter();
         }
 
         private Predicate<ActionViewModel> _predicate;
@@ -110,6 +122,8 @@ namespace Dash
             }
         }
 
+        private Point _targetPoint;
+
         private string _filterString;
         public string FilterString
         {
@@ -125,14 +139,19 @@ namespace Dash
             }
         }
 
-        public ActionMenu()
+        public ActionMenu(Point targetPoint)
         {
             InitializeComponent();
+            _targetPoint = targetPoint;
+
+
             GroupCVS.Source = Groups;
         }
 
         private Predicate<object> GetFilterPredicate(string filterText)
         {
+            if (filterText.Contains(":"))
+                filterText = filterText.Substring(0, filterText.IndexOf(":"));
             Predicate<object> predicate;
             if (string.IsNullOrWhiteSpace(filterText))
             {
@@ -169,9 +188,10 @@ namespace Dash
         public void AddAction(string groupName, ActionViewModel action)
         {
             var existingGroup = Groups.FirstOrDefault(group => group.GroupTitle == groupName);
+
             if (existingGroup == null)
             {
-                throw new ArgumentException("No group with given name exists", nameof(groupName));
+                Groups.Add(existingGroup = new ActionGroupViewModel(groupName, new List<ActionViewModel>()));
             }
 
             existingGroup.Actions.Add(action);
@@ -185,9 +205,30 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
+        public async void InvokeAction(string actionName, Point point)
         {
-            (e.ClickedItem as ActionViewModel)?.Action?.Invoke();
+            var action = Groups.Select((g) => g.FirstOrDefault()).Where((a) => a != null).FirstOrDefault();
+            if (action != null)
+            {
+                var actionParams = actionName.Split(":").Where((s, i) => i > 0);
+                OnActionCommitted(await action.Action.Invoke(new ActionFuncParams() { Where = point, Params = actionParams }));
+            }
+        }
+
+        public event Action<bool> ActionCommitted;
+
+        private async void ListViewBase_OnItemClick(object sender, ItemClickEventArgs e)
+        {
+            var action = ((ActionViewModel)e.ClickedItem).Action;
+            if (action != null) {
+                OnActionCommitted(await action.Invoke(new ActionFuncParams() { Where = _targetPoint, Params=null }));
+            }
+        }
+
+        private void OnActionCommitted(bool obj)
+        {
+            ActionCommitted?.Invoke(obj);
+            MainPage.Instance.xCanvas.Children.Remove(this);
         }
     }
 }

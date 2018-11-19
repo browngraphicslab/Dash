@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -18,14 +19,13 @@ namespace Dash
 
         public override KeyController OperatorType { get; } = TypeKey;
 
-        private static readonly KeyController TypeKey =
-    new KeyController("Id to Document", "8B10EEF4-9B0A-4015-A8A6-4DE189D9F70B");
+        private static readonly KeyController TypeKey = KeyController.Get("Id to Document");
 
         //Input keys
-        public static readonly KeyController IdKey = new KeyController("Text");
+        public static readonly KeyController IdKey = KeyController.Get("Text");
 
         //Output keys
-        public static readonly KeyController DocKey = new KeyController("Document");
+        public static readonly KeyController DocKey = KeyController.Get("Document");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
@@ -39,7 +39,7 @@ namespace Dash
                 [DocKey] = TypeInfo.Document,
             };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
@@ -53,10 +53,10 @@ namespace Dash
             {
                 outputs[DocKey] = Search.SearchIndividualById(id);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return;
             }
+            return Task.CompletedTask;
         }
 
         public override FieldControllerBase GetDefaultController()

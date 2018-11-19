@@ -4,12 +4,12 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using Dash.Controllers;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Syncfusion.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -85,6 +85,7 @@ namespace Dash
     public sealed partial class CollectionTimelineView : ICollectionView
     {
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.Timeline;
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
         private readonly double _maxGap = 300; // the maximum width between timeline elements
         private readonly double _minGap = 30; // the minimum width between timeline elements
@@ -116,6 +117,10 @@ namespace Dash
 
             Loaded += CollectionTimelineView_Loaded;
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
+        }
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
+
         }
 
         public TimelineMetadata Metadata { get; }
@@ -166,6 +171,9 @@ namespace Dash
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             SetTimelineFormatting();
+        }
+        public void OnDocumentSelected(bool selected)
+        {
         }
 
         #region Selection
@@ -224,8 +232,7 @@ namespace Dash
             // gets the value of the sort key (currently modified time) and turns it into ticks to order increasingly by
             // PositionElement only works when elements are passed in in an increasing order
             var sortedElements = _contextList.OrderBy(vm =>
-                vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context())
-                    .ToDateTime().Ticks).ToList();
+                vm.DocumentViewModel.DocumentController.GetDataDocument().GetDereferencedField<DateTimeController>(SortKey,null).Data.Ticks).ToList();
             foreach (var element in sortedElements)
             {
                 PositionElement(element);
@@ -297,8 +304,7 @@ namespace Dash
             if (totalTime == 0) totalTime = 10;
 
             var normOffset =
-                (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
-                              .GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
+                (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetDereferencedField<DateTimeController>(SortKey, null).Data.Ticks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
         }
@@ -347,8 +353,7 @@ namespace Dash
             {
                 // lambda f(x) that retrieves value of key from viewmodel
                 Func<TimelineElementViewModel, long> getValues = vm =>
-                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
-                        .GetValue(new Context()).ToDateTime().Ticks;
+                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetDereferencedField<DateTimeController>(SortKey, null).Data.Ticks;
                 // find the earliest and latest modified times in document
                 Metadata.MinTime = _contextList.Min(getValues);
                 Metadata.MaxTime = _contextList.Max(getValues);
@@ -472,7 +477,7 @@ namespace Dash
         }
 
         // Sort the modified key
-        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             UpdateTimeline();
         }

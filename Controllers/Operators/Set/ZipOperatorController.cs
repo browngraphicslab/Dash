@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
     public class ZipOperatorController : OperatorController
     {
-        public static readonly KeyController AKey = new KeyController("Input A");
-        public static readonly KeyController BKey = new KeyController("Input B");
+        public static readonly KeyController AKey = KeyController.Get("Input A");
+        public static readonly KeyController BKey = KeyController.Get("Input B");
 
-        public static readonly KeyController OutputKey = new KeyController("Output");
+        public static readonly KeyController OutputKey = KeyController.Get("Output");
 
         public ZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-            SaveOnServer();
 
         }
 
@@ -33,16 +33,16 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("Zip", "FA39D712-E1AA-4740-8CC9-C3201708A1F5");
+        private static readonly KeyController TypeKey = KeyController.Get("Zip");
 
-        private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
+        private static readonly List<KeyController> ExcludedKeys = new List<KeyController>();
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var aDocs = (inputs[AKey] as ListController<DocumentController>).GetElements();
-            var bDocs = (inputs[BKey] as ListController<DocumentController>).GetElements();
+            var aDocs = inputs[AKey] as ListController<DocumentController>;
+            var bDocs = inputs[BKey] as ListController<DocumentController>;
             int count = Math.Min(aDocs.Count, bDocs.Count);
             var newDocs = new List<DocumentController>(count);
 
@@ -58,6 +58,7 @@ namespace Dash
             }
 
             outputs[OutputKey] = new ListController<DocumentController>(newDocs);
+            return Task.CompletedTask;
         }
 
         private void AddFields(Dictionary<KeyController, FieldControllerBase> fields, DocumentController doc)
@@ -67,11 +68,6 @@ namespace Dash
                 if (ExcludedKeys.Contains(field.Key)) continue;
                 fields[field.Key] = field.Value;
             }
-        }
-
-        public override void Init()
-        {
-            throw new NotImplementedException();
         }
 
         public override FieldControllerBase GetDefaultController()

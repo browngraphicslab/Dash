@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using DashShared;
 using Zu.TypeScript.TsTypes;
 
@@ -49,7 +50,10 @@ namespace Dash
             _returnType = retur;
         }
 
-        public override FieldControllerBase Execute(Scope scope) => new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType);
+        public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
+        {
+            return Task.FromResult<(FieldControllerBase, ControlFlowFlag)>((new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType, scope), ControlFlowFlag.None));
+        }
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();
 

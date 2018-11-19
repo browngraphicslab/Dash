@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Text;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
     /// <summary>
-    /// This class contains helper functions used in the RichTextView and FormattingMenu classes
+    /// This class contains helper functions used in the RichEditBox and FormattingMenu classes
     /// </summary>
     public static class RichTextFormattingHelper
     {
@@ -15,14 +16,12 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void Bold(this RichTextView v, bool updateDocument)
+        public static void Bold(this RichEditBox v)
         {
-            Debug.WriteLine($"{v.xRichEditBox.Document.Selection.CharacterFormat.Bold}");
+            Debug.WriteLine($"{v.Document.Selection.CharacterFormat.Bold}");
 
             // on/off instead of toggle to know exactly what state it is in (to determine whether a selection is bold or not)
-            v.xRichEditBox.Document.Selection.CharacterFormat.Bold = v.xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
-            if (updateDocument)
-                v.UpdateDocumentFromXaml();
+            v.Document.Selection.CharacterFormat.Bold = v.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
         }
 
         /// <summary>
@@ -30,18 +29,17 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void Italicize(this RichTextView v, bool updateDocument)
+        public static void Italicize(this RichEditBox v)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.Italic == FormatEffect.On)
+            if (v.Document.Selection.CharacterFormat.Italic == FormatEffect.On)
             {
-                v.xRichEditBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Off;
+                v.Document.Selection.CharacterFormat.Italic = FormatEffect.Off;
             }
             else
             {
-                v.xRichEditBox.Document.Selection.CharacterFormat.Italic = FormatEffect.On;
+                v.Document.Selection.CharacterFormat.Italic = FormatEffect.On;
             }
-            //this.xRichEditBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Toggle;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+            //this.Document.Selection.CharacterFormat.Italic = FormatEffect.Toggle;
         }
 
         /// <summary>
@@ -49,10 +47,9 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void Underline(this RichTextView v, bool updateDocument)
+        public static void Underline(this RichEditBox v)
         {
-            v.xRichEditBox.Document.Selection.CharacterFormat.Underline = v.xRichEditBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None ? UnderlineType.Single : UnderlineType.None;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+            v.Document.Selection.CharacterFormat.Underline = v.Document.Selection.CharacterFormat.Underline == UnderlineType.None ? UnderlineType.Single : UnderlineType.None;
         }
 
         /// <summary>
@@ -60,13 +57,12 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void Strikethrough(this RichTextView v, bool updateDocument)
+        public static void Strikethrough(this RichEditBox v)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.Strikethrough == FormatEffect.On)
-                v.xRichEditBox.Document.Selection.CharacterFormat.Strikethrough = FormatEffect.Off;
+            if (v.Document.Selection.CharacterFormat.Strikethrough == FormatEffect.On)
+                v.Document.Selection.CharacterFormat.Strikethrough = FormatEffect.Off;
             else
-                v.xRichEditBox.Document.Selection.CharacterFormat.Strikethrough = FormatEffect.On;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.CharacterFormat.Strikethrough = FormatEffect.On;
         }
 
         /// <summary>
@@ -74,13 +70,12 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void Superscript(this RichTextView v, bool updateDocument)
+        public static void Superscript(this RichEditBox v)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.Superscript == FormatEffect.On)
-                v.xRichEditBox.Document.Selection.CharacterFormat.Superscript = FormatEffect.Off;
+            if (v.Document.Selection.CharacterFormat.Superscript == FormatEffect.On)
+                v.Document.Selection.CharacterFormat.Superscript = FormatEffect.Off;
             else
-                v.xRichEditBox.Document.Selection.CharacterFormat.Superscript = FormatEffect.On;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.CharacterFormat.Superscript = FormatEffect.On;
         }
 
         /// <summary>
@@ -88,13 +83,12 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void Subscript(this RichTextView v, bool updateDocument)
+        public static void Subscript(this RichEditBox v)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.Subscript == FormatEffect.On)
-                v.xRichEditBox.Document.Selection.CharacterFormat.Subscript = FormatEffect.Off;
+            if (v.Document.Selection.CharacterFormat.Subscript == FormatEffect.On)
+                v.Document.Selection.CharacterFormat.Subscript = FormatEffect.Off;
             else
-                v.xRichEditBox.Document.Selection.CharacterFormat.Subscript = FormatEffect.On;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.CharacterFormat.Subscript = FormatEffect.On;
         }
 
         /// <summary>
@@ -102,13 +96,12 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void SmallCaps(this RichTextView v, bool updateDocument)
+        public static void SmallCaps(this RichEditBox v)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.SmallCaps == FormatEffect.On)
-                v.xRichEditBox.Document.Selection.CharacterFormat.SmallCaps = FormatEffect.Off;
+            if (v.Document.Selection.CharacterFormat.SmallCaps == FormatEffect.On)
+                v.Document.Selection.CharacterFormat.SmallCaps = FormatEffect.Off;
             else
-                v.xRichEditBox.Document.Selection.CharacterFormat.SmallCaps = FormatEffect.On;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.CharacterFormat.SmallCaps = FormatEffect.On;
         }
 
         /// <summary>
@@ -116,13 +109,12 @@ namespace Dash
         /// Updates document if updateDocument is true
         /// </summary>
         /// <param name="updateDocument"></param>
-        public static void AllCaps(this RichTextView v, bool updateDocument)
+        public static void AllCaps(this RichEditBox v)
         {
-            if (v.xRichEditBox.Document.Selection.CharacterFormat.AllCaps == FormatEffect.On)
-                v.xRichEditBox.Document.Selection.CharacterFormat.AllCaps = FormatEffect.Off;
+            if (v.Document.Selection.CharacterFormat.AllCaps == FormatEffect.On)
+                v.Document.Selection.CharacterFormat.AllCaps = FormatEffect.Off;
             else
-                v.xRichEditBox.Document.Selection.CharacterFormat.AllCaps = FormatEffect.On;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.CharacterFormat.AllCaps = FormatEffect.On;
         }
 
         /// <summary>
@@ -131,13 +123,12 @@ namespace Dash
         /// </summary>
         /// <param name="background"></param>
         /// <param name="updateDocument"></param>
-        public static void Highlight(this RichTextView v, Color background, bool updateDocument)
+        public static void Highlight(this RichEditBox v, Color background)
         {
-            //if (v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor == background)
-            //    v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
+            //if (v.Document.Selection.CharacterFormat.BackgroundColor == background)
+            //    v.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             //else
-                v.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = background;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.CharacterFormat.BackgroundColor = background;
         }
 
         /// <summary>
@@ -146,10 +137,9 @@ namespace Dash
         /// </summary>
         /// <param name="color"></param>
         /// <param name="updateDocument"></param>
-        public static void Foreground(this RichTextView v, Color color, bool updateDocument)
+        public static void Foreground(this RichEditBox v, Color color)
         {
-	        v.xRichEditBox.Document.Selection.CharacterFormat.ForegroundColor = color;
-            if (updateDocument) v.UpdateDocumentFromXaml();
+	        v.Document.Selection.CharacterFormat.ForegroundColor = color;
         }
 
         /// <summary>
@@ -158,12 +148,11 @@ namespace Dash
         /// </summary>
         /// <param name="alignment"></param>
         /// <param name="updateDocument"></param>
-        public static void Alignment(this RichTextView v, object alignment, bool updateDocument)
+        public static void Alignment(this RichEditBox v, object alignment)
         {
             if (alignment != null && alignment.GetType() == typeof(ParagraphAlignment))
             {
-                v.xRichEditBox.Document.Selection.ParagraphFormat.Alignment = (ParagraphAlignment)alignment;
-                if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.ParagraphFormat.Alignment = (ParagraphAlignment)alignment;
             }
         }
 
@@ -173,12 +162,11 @@ namespace Dash
         /// </summary>
         /// <param name="type"></param>
         /// <param name="updateDocument"></param>
-        public static void Marker(this RichTextView v, object type, bool updateDocument)
+        public static void Marker(this RichEditBox v, object type)
         {
             if (type != null && type.GetType() == typeof(MarkerType))
             {
-                v.xRichEditBox.Document.Selection.ParagraphFormat.ListType = (MarkerType)type;
-                if (updateDocument) v.UpdateDocumentFromXaml();
+                v.Document.Selection.ParagraphFormat.ListType = (MarkerType)type;
             }
         }
     }
