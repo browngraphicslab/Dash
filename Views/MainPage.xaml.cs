@@ -544,7 +544,6 @@ namespace Dash
                 else
                 {
                     xUtilTabColumn.MinWidth = 300;
-                    xPresentationView.xTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
                 }
 
@@ -564,11 +563,10 @@ namespace Dash
                 else
                 {
                     xUtilTabColumn.MinWidth = 0;
-                    xPresentationView.xTransportControls.Height = 0;
                     xPresentationView.SimulateAnimation(false);
                 }
 
-                PresentationView presView = Instance.xPresentationView;
+                PresentationView presView = xPresentationView;
                 presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }

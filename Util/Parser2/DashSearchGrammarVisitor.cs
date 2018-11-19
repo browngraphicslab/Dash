@@ -38,22 +38,31 @@ namespace Dash
             var dsl = new DSL();
             var func = context.GetText();
             var funcName = context.WORD().GetText();
-            var field = dsl.Run("return " + func, true).Result;//TODO This probably shouldn't access Result
-            if (field is ListController<DocumentController> list)
+            var exp = TypescriptToOperatorParser.ParseToExpression(func);
+            try
             {
-                return document =>
+                var field = exp.Execute(new Scope()).Result.Item1; //TODO This probably shouldn't access Result
+
+                if (field is ListController<DocumentController> list)
                 {
-                    if (list.Contains(document))
+                    return document =>
                     {
-                        return new Result()
+                        if (list.Contains(document))
                         {
+                            return new Result()
+                            {
                             new SearchPair(KeyController.Get(funcName),
                                 new StringSearchModel("Was contained in " + func))
-                        };
-                    }
+                            };
+                        }
 
-                    return new Result();
-                };
+                        return new Result();
+                    };
+                }
+            }
+            catch (Exception)
+            {
+
             }
 
             return doc => new Result();
@@ -93,7 +102,7 @@ namespace Dash
                         }
                     }
                 }
-                
+
                 return result;
             };
         }

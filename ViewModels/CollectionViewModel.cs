@@ -354,8 +354,7 @@ namespace Dash
                 else
                 {
                     var pres = MainPage.Instance.xPresentationView;
-                    if (pres.ViewModel != null && pres.ViewModel.PinnedNodes.Contains(document))
-                        pres.FullPinDelete(document);
+                    pres.FullPinDelete(document);
                 }
             }
         }

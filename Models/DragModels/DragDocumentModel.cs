@@ -141,6 +141,7 @@ namespace Dash
         private List<DocumentController> GetLinkDocuments(Point where)
         {
             var anno = new RichTextNote(where: where).Document;
+            anno.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationKey, true, true);
 
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
