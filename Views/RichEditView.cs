@@ -49,8 +49,8 @@ namespace Dash
 
             var text = getRtfText();
             var readable = getReadableText();
-            if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
-                Document.GetText(TextGetOptions.FormatRtf, out text);
+            //if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
+            //    Document.GetText(TextGetOptions.FormatRtf, out text);
             if (text != _lastSizeRTFText || _lastDesiredSize == new Size() || _lastSizeAvailableSize != availableSize)
             {
                 var rtb = MainPage.Instance.RTBHackBox;

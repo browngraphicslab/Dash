@@ -690,17 +690,26 @@ namespace Dash
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
             if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
                 tip.IsOpen = true;
+            }
         }
 
         private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
             //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
         }
 
-        public async void OnDrop(object sender, DragEventArgs e)
+        public void OnDragEnter(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = e.DataView.HasDragModel() ? e.AcceptedOperation | DataPackageOperation.Copy : DataPackageOperation.None;
+        }
+        public void OnDrop(object sender, DragEventArgs e)
         {
             AnnotationOverlay.OnDrop(sender, e);
         }

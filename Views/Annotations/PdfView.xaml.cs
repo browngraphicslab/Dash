@@ -133,8 +133,6 @@ namespace Dash
                 }
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
-
-            //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
         ~PdfView()
         {
@@ -280,6 +278,10 @@ namespace Dash
             var pdfDocument = new PdfDocument(reader);
             _topPdf.PdfMaxWidth    = _botPdf.PdfMaxWidth = PdfMaxWidth = CalculateMaxPDFWidth(pdfDocument);
             _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = await LoadPdfFromFile(pdfDocument);
+            if (this.IsInVisualTree())  // bcz: super hack! --  shouldn't need to set the PdfHeight anyway, or at least not here (used for the export Publisher)
+            {
+                DataDocument.SetField<PointController>(KeyStore.PdfHeightKey, new Point(pdfDocument.GetPage(1).GetPageSize().GetWidth(), pdfDocument.GetPage(1).GetPageSize().GetHeight()), true);
+            }
             reader.Close();
             pdfDocument.Close();
 
@@ -298,8 +300,6 @@ namespace Dash
             if (ActualWidth > 1200)
             {
                 ToggleSidebar();
-                //xPdfNotesCol.Width = new GridLength(ActualWidth/2, GridUnitType.Star);
-                //xPdfCol.Width = new GridLength(ActualWidth / 2, GridUnitType.Star);
             }
             _botPdf.Bind(binding, bindingNotes);
             _topPdf.Bind(binding, bindingNotes);
@@ -349,7 +349,6 @@ namespace Dash
             {
                 Console.WriteLine(ex.ToString());
             }
-            DataDocument.SetField<PointController>(KeyStore.PdfHeightKey, new Point(pdfDocument.GetPage(1).GetPageSize().GetWidth(), pdfDocument.GetPage(1).GetPageSize().GetHeight()), true);
             return pdfTotalHeight-10;
         }
 
