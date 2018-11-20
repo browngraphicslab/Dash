@@ -28,6 +28,7 @@ using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -66,12 +67,20 @@ namespace Dash
         public PdfView()
         {
             InitializeComponent();
-            Loaded += (s, e) =>  LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
+            _topPdf.Visibility = Visibility.Collapsed;
+            Loaded += (s, e) => LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
             SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
                 {
                     xBar.Width = ActualWidth;
+                    if (ee.PreviousSize.Width > 0)
+                    {
+                        _botPdf.SetLeftMargin(_botPdf.LeftMargin * ee.NewSize.Width / ee.PreviousSize.Width);
+                        _botPdf.SetRightMargin(_botPdf.RightMargin * ee.NewSize.Width / ee.PreviousSize.Width);
+                        xRightMargin.Margin = new Thickness(0, 0, _botPdf.RightMargin, 0);
+                        xLeftMargin.Margin = new Thickness(_botPdf.LeftMargin, 0, 0, 0);
+                    }
                 }
             };
 
@@ -84,8 +93,6 @@ namespace Dash
                 }
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
-
-            //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
         ~PdfView()
         {
@@ -125,6 +132,11 @@ namespace Dash
         {
             _botPdf.GoToPage(pageNum);
         }
+
+        public void NextPage() { _botPdf.XNextPageButton_OnPointerPressed(); }
+        public void PrevPage() { _botPdf.XPreviousPageButton_OnPointerPressed(); }
+        public void ScrollBack() { _botPdf.XScrollBack_OnPointerPressed(); }
+        public void ScrollForward() { _botPdf.XScrollForward_OnPointerPressed(); }
         public void ShowRegions()
         {
             _topPdf.AnnotationOverlay.Visibility = Visibility.Visible;
@@ -135,6 +147,7 @@ namespace Dash
             _topPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
             _botPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
         }
+        public int PageNum() { return _botPdf.PageNum();  }
         public bool AreAnnotationsVisible()
         {
             //This makes the assumption that both overlays are kept in sync
@@ -146,7 +159,11 @@ namespace Dash
             var source = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
             if (activePdf.AnnotationOverlay.RegionDocsList.Contains(source))
             {
-                ScrollToRegion(source, activeView: activePdf);
+                var absoluteOffsets = source.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+                if (absoluteOffsets.Count > 1)
+                {
+                    ScrollToRegion(source, activeView: activePdf);
+                }
                 var src = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(source.GetDataDocument()));
                 if (src.Count() > 0)
                 {
@@ -155,10 +172,15 @@ namespace Dash
                 }
             }
             var target = linkDoc.GetLinkedDocument(direction); 
-            var tgt = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument())).FirstOrDefault();
-            if (tgt != null)
+            var tgts = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument()));
+            if (tgts.Count() > 0)
             {
-                tgt.ViewModel.LayoutDocument.ToggleHidden();
+                tgts.ToList().ForEach((tgt) =>
+                {
+                    tgt.ViewModel.LayoutDocument.SetHidden(false);
+
+                    tgt.ViewModel.ToggleHighlight();
+                });
                 return LinkHandledResult.HandledClose;
             }
             return LinkHandledResult.Unhandled;
@@ -220,11 +242,15 @@ namespace Dash
             var pdfDocument = new PdfDocument(reader);
             _topPdf.PdfMaxWidth    = _botPdf.PdfMaxWidth = PdfMaxWidth = CalculateMaxPDFWidth(pdfDocument);
             _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = await LoadPdfFromFile(pdfDocument);
+            if (this.IsInVisualTree())  // bcz: super hack! --  shouldn't need to set the PdfHeight anyway, or at least not here (used for the export Publisher)
+            {
+                DataDocument.SetField<PointController>(KeyStore.PdfHeightKey, new Point(pdfDocument.GetPage(1).GetPageSize().GetWidth(), pdfDocument.GetPage(1).GetPageSize().GetHeight()), true);
+            }
             reader.Close();
             pdfDocument.Close();
-
-            _botPdf.Pages.Initialize();
-            _topPdf.Pages.Initialize();
+            
+            _botPdf.Bind();
+            _topPdf.Bind();
 
             this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
         }
@@ -241,7 +267,7 @@ namespace Dash
             }
             return maxWidth;
         }
-
+        
         private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument)
         {
             var strategy       = new BoundsExtractionStrategy();
@@ -312,7 +338,7 @@ namespace Dash
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
             if (absoluteOffsets != null)
             {
-                var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xPdfCol.ActualWidth / PdfMaxWidth)).ToList();
+                var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xTBotPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
                 var maxOffset       = _botPdf.ScrollViewer.ViewportHeight;
                 var firstSplit      = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
 
@@ -328,6 +354,13 @@ namespace Dash
                 else
                 {
                     xFirstPanelRow.Height = activeView == null ? new GridLength(0, GridUnitType.Star) : xFirstPanelRow.Height;
+                }
+                if (xFirstPanelRow.Height.Value != 0)
+                {
+                    _topPdf.Visibility = Visibility.Visible;
+                } else
+                {
+                    _topPdf.Visibility = Visibility.Collapsed;
                 }
                 // bcz: Ugh need to update layout because the Scroll viewer may not end up in the right place if its viewport size has just changed
                 (activeView ?? _botPdf).UpdateLayout();
@@ -352,6 +385,7 @@ namespace Dash
 
         private void XPdfDivider_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            _topPdf.Visibility = Visibility.Visible;
             e.Handled = true;
         }
 
@@ -360,47 +394,47 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e) => xFirstPanelRow.Height = new GridLength(0);
-
-        private void xPdfColSizeChanged(object sender, SizeChangedEventArgs e)
+        private void xPdfDivider_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (xPdfCol.Width.GridUnitType == GridUnitType.Pixel)
-                xPdfNotesCol.Width = new GridLength(1, GridUnitType.Star);
-            _botPdf.xPdfCol.Width = new GridLength(xPdfCol.ActualWidth);
-            _topPdf.xPdfCol.Width = new GridLength(xPdfCol.ActualWidth);
-
+            _topPdf.Visibility = Visibility.Collapsed;
+            xFirstPanelRow.Height = new GridLength(0);
         }
-        private void xSiderbarSplitter_Tapped(object sender, TappedRoutedEventArgs e)
+        
+        private void xRightMarginPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            xPdfNotesCol.Width = new GridLength(1, GridUnitType.Star);
-            xPdfCol.Width = xPdfCol.ActualWidth == ActualWidth - 10 ? new GridLength(ActualWidth / 2) : new GridLength(ActualWidth - 10);
-            _botPdf.xPdfCol.Width = new GridLength(xPdfCol.Width.Value);
-            _topPdf.xPdfCol.Width = new GridLength(xPdfCol.Width.Value);
-        }
-        private void xSiderbarSplitter_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-
+            xRightMargin.PointerMoved += xRightMarginPointerMoved;
+            xRightMargin.CapturePointer(e.Pointer);
             e.Handled = true;
         }
 
-        private void xSiderbarSplitter_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (this.IsRightBtnPressed())
-            {
-                e.Complete();
-            }
-
-            e.Handled = true;
+            var margin = Math.Max(0,xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X);
+            xRightMargin.Margin = new Thickness(0, 0, margin-2.5, 0);
+            _botPdf.SetRightMargin(margin);
+        }
+        private void xRightMarginPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            xRightMargin.ReleasePointerCapture(e.Pointer);
+            xRightMargin.PointerMoved -= xRightMarginPointerMoved;
         }
 
-        private void xSiderbarSplitter_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void xLeftMarginPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            xLeftMargin.PointerMoved += xLeftMarginPointerMoved;
+            xLeftMargin.CapturePointer(e.Pointer);
             e.Handled = true;
         }
-
-        private void xSiderbarSplitter_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            e.Handled = true;
+            var margin = Math.Max(0,e.GetCurrentPoint(xPdfContainer).Position.X);
+            xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
+            _botPdf.SetLeftMargin(margin);
+        }
+        private void xLeftMarginPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            xLeftMargin.ReleasePointerCapture(e.Pointer);
+            xLeftMargin.PointerMoved -= xLeftMarginPointerMoved;
         }
     }
 }

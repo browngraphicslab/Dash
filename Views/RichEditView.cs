@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers.Operators;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -31,20 +32,43 @@ namespace Dash
         private ManipulationControlHelper _manipulator;
         private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
+        private Size                      _lastDesiredSize = new Size();
+        private string                    _lastSizeRTFText = "";
+        private Size                      _lastSizeAvailableSize = new Size();
+        private bool                      _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var panel = this.GetFirstAncestorOfType<Panel>();
-            var rtv = MainPage.Instance.RTBHack;
-            var rtb = new RichEditBox();
-            rtv.Children.Add(rtb);
-            rtb.Document.SetText(TextSetOptions.FormatRtf, getRtfText());
-            rtb.Measure(availableSize);
-            var desired = rtb.DesiredSize;
-            rtv.Children.Remove(rtb);
-            return desired;
+            if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
+                return _lastDesiredSize;
+            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
+            {
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
+                return base.MeasureOverride(availableSize);
+            }
+
+            var text = getRtfText();
+            var readable = getReadableText();
+            //if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
+            //    Document.GetText(TextGetOptions.FormatRtf, out text);
+            if (text != _lastSizeRTFText || _lastDesiredSize == new Size() || _lastSizeAvailableSize != availableSize)
+            {
+                var rtb = MainPage.Instance.RTBHackBox;
+                rtb.Width = double.IsInfinity(availableSize.Width) ? double.NaN : availableSize.Width;
+                rtb.Document.SetText(TextSetOptions.FormatRtf, text);
+                rtb.Measure(availableSize);
+                _lastSizeRTFText = text;
+                _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
+                _lastSizeAvailableSize = availableSize;
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
+            } 
+            return _lastDesiredSize;
         }
 
+         ~RichEditView()
+        {
+            // Debug.WriteLine("Disposing RichEditView");
+        }
         public RichEditView()
         {
             AllowDrop = true;
@@ -58,6 +82,7 @@ namespace Dash
             Background = new SolidColorBrush(Colors.Transparent);
             Loaded += OnLoaded;
             Unloaded += UnLoaded;
+            MinWidth = 1;
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
@@ -114,10 +139,6 @@ namespace Dash
 
             TextChanged += (s, e) =>
             {
-                if (double.IsNaN(Width))
-                {
-                    InvalidateMeasure();
-                }
                 var xamlRTF = getRtfText();
                 if (xamlRTF != _lastXamlRTFText)
                 {
@@ -270,6 +291,10 @@ namespace Dash
                     rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
                 }
             }
+            if (double.IsNaN(rtv.Width))
+            {
+                rtv.InvalidateMeasure();
+            }
         }
 
         // determines the document controller of the region and calls on annotationManager to handle the linking procedure
@@ -335,26 +360,7 @@ namespace Dash
 
         private async void this_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
-            {
-                if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(Document.Selection.Text))
-                {
-                    e.Handled = false;
-                    return;
-                }
-
-                var dropRegion = dragDoc;
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dropRegion = KeyStore.RegionCreator[dragDoc.DocumentType](view);
-                linkDocumentToSelection(dropRegion, true);
-
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
-            }
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
-            }
-            e.Handled = true;
+            e.Handled = false;
         }
 
         private void CreateActionMenu(RichEditBox sender)
@@ -490,6 +496,10 @@ namespace Dash
         /// <param name="e"></param>
         private void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (double.IsNaN(Width))
+            {
+                InvalidateMeasure();
+            }
             //handles batching for undo typing
             //TypeTimer.typeEvent();
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
@@ -581,7 +591,7 @@ namespace Dash
                 if (depth is double dep)
                 {
                     var rt = new RichTextNote("").Document;
-                    MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10));
+                    MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10)));
                     rt.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep, true);
                     var parent = getDocView().GetFirstAncestorOfType<DocumentView>();
                     var items = parent.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("DiscussionItems"), null);
@@ -589,94 +599,17 @@ namespace Dash
                     e.Handled = true;
                     return;
                 }
-                var xamlReplies =
-        @"<Grid
-            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-            xmlns:dash=""using:Dash""
-            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
-            Background=""Beige"">
-            <Grid.RowDefinitions>
-                <RowDefinition Height=""Auto""></RowDefinition>
-                <RowDefinition Height= ""Auto""></RowDefinition>
-            </Grid.RowDefinitions>
-            <dash:RichEditView Margin=""6 0 0 0"" x:Name=""xRichTextFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" VerticalAlignment =""Top"" />
-            <ToggleButton x:Name=""cb"" Grid.Column=""1"" Width =""18"" Height =""16"" IsChecked =""true"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" >
-                <ToggleButton.Template>
-                    <ControlTemplate TargetType=""ToggleButton"">
-                        <Grid x:Name=""RootGrid"">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name=""CommonStates"">
-                                    <VisualState x:Name=""PointerOver"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""Pressed"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""Normal"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""+""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""Checked"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""CheckedPressed"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                    <VisualState x:Name=""CheckedPointerOver"">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty=""Text"" Storyboard.TargetName=""txt"">
-                                                <DiscreteObjectKeyFrame KeyTime=""0"" Value=""-""/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
-                            <Viewbox>
-                                <TextBlock Text=""Hello"" FontWeight=""Bold"" FontSize=""12"" x:Name=""txt"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch""/>
-                            </Viewbox>
-                        </Grid>
-                    </ControlTemplate>
-                </ToggleButton.Template>
-            </ToggleButton>
-            <ListView Margin=""8 0 0 0""  Grid.Row=""1"" Visibility=""{Binding ElementName=cb,Path=IsChecked,Mode=OneWay}"" Padding=""0"" x:Name=""xDocumentListReplies"">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <dash:DocumentView />
-                    </DataTemplate>
-                </ListView.ItemTemplate><ListView.ItemContainerStyle>
-                    <Style TargetType=""ListViewItem"">
-                        <Setter Property=""HorizontalContentAlignment"" Value =""Left"" />
-                        <Setter Property=""VerticalContentAlignment"" Value = ""Top"" />
-                        <Setter Property=""MinHeight"" Value =""5"" />
-                        <Setter Property=""Padding"" Value =""0"" />
-                        <Setter Property=""Margin"" Value =""0"" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
-        </Grid>";
+                var xamlReplies = @"<Grid
+                                    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                    xmlns:dash=""using:Dash""
+                                    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+                                    Background=""Beige"">
+                                    <dash:HierarchicalText />
+                                </Grid>";
                 Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 Document.Selection.Delete(TextRangeUnit.Character, 1);
-                MainPage.Instance.ForceFocusPoint = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5));
+                MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5)));
                 var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
                 var rtn = new RichTextNote("").Document;
                 var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
@@ -847,6 +780,7 @@ namespace Dash
             }
             if (hashcount > 0 || extracount > 0)
             {
+                _hackToIgnoreMeasuringWhenProcessingMarkdown = true;
                 Document.Selection.SetRange(Document.Selection.StartPosition,
                                                          Document.Selection.StartPosition + hashcount + extracount);
                 if (Document.Selection.StartPosition == 0)
@@ -860,17 +794,21 @@ namespace Dash
             Document.Selection.SetRange(s1, s2);
             Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
             Document.Selection.CharacterFormat.Size = origFormat.Size;
+            _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)
         {
             Clipboard.ContentChanged -= Clipboard_ContentChanged;
-            var dataPackage = new DataPackage();
-            DataPackageView clipboardContent = Clipboard.GetContent();
-            dataPackage.SetText(await clipboardContent.GetTextAsync());
-            //set RichEditView property to this view
-            dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
-            Clipboard.SetContent(dataPackage);
+            var clipboardContent = Clipboard.GetContent();
+            if (clipboardContent.Properties[nameof(DocumentController)]?.Equals(LayoutDocument) != true)
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(await clipboardContent.GetTextAsync());
+                //set RichEditView property to this view
+                dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
+                Clipboard.SetContent(dataPackage);
+            }
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
 
@@ -890,10 +828,6 @@ namespace Dash
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         { 
-            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
-            {
-                CreateActionMenu(this);
-            }
             if (GetValue(TextProperty) is RichTextModel.RTD xamlText)
             {
                 Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -903,9 +837,14 @@ namespace Dash
             //DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
             if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
             {
+                MainPage.Instance.ClearForceFocus();
                 GotFocus += RichTextView_GotFocus;
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
+            }
+            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
+            {
+                CreateActionMenu(this);
             }
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
@@ -932,13 +871,11 @@ namespace Dash
         private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
         {
             GotFocus -= RichTextView_GotFocus;
-            var text = MainPage.Instance.TextPreviewer.Visibility == Visibility.Visible ?
-                    MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
+            var text = MainPage.Instance.TextPreviewer?.Visibility == Visibility.Visible ? MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
             Document.Selection.SetRange(0, 0);
             Document.SetText(TextSetOptions.None, text);
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
-            MainPage.Instance.ClearForceFocus();
             SelectionManager.Select(getDocView(), false);
         }
 

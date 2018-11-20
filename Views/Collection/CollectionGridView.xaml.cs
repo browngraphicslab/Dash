@@ -75,7 +75,7 @@ namespace Dash
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (this.IsCtrlPressed())
+            if (this.IsCtrlPressed() && false)
             {
                 var point = e.GetCurrentPoint(this);
 

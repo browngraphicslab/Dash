@@ -4,22 +4,38 @@ namespace Dash
 {
     public class DocumentScope : Scope
     {
-         private readonly DocumentController _variableDoc;
+        private readonly DocumentController _variableDoc;
 
         public DocumentController VariableDoc()
         {
             return _variableDoc;
         }
 
-        public DocumentScope(DocumentController doc, Scope parent)
+        public DocumentScope(DocumentController doc, Scope parent) : base(parent)
         {
             _variableDoc = doc;
-            Parent = parent;
         }
 
-        public DocumentScope()
+        private DocumentScope(DocumentController doc) : base(null, false)
+        {
+            _variableDoc = doc;
+        }
+
+        public DocumentScope() : base(null)
         {
             _variableDoc = new DocumentController();
+        }
+
+        private static DocumentScope _globalDocumentScope = null;
+        public static DocumentScope GetGlobalScope()
+        {
+            if (_globalDocumentScope == null)
+            {
+                _globalDocumentScope = new DocumentScope(MainPage.Instance.MainDocument.GetDataDocument()
+                    .GetFieldOrCreateDefault<DocumentController>(KeyStore.GlobalDefinitionsKey));
+            }
+
+            return _globalDocumentScope;
         }
 
         public override IEnumerator<KeyValuePair<string, FieldControllerBase>> GetEnumerator()

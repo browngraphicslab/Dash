@@ -190,6 +190,7 @@ namespace Dash
         }
         private bool ClampScale(double scaleFactor)
         {
+            return false;
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;

@@ -209,6 +209,7 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
+                return;
                 bool right = e.IsRightPressed();
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -370,7 +371,7 @@ namespace Dash
                           ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
-            if (!Double.IsNaN(Width))
+            if (!double.IsNaN(Width))
             {
                 extraOffsetX = ActualWidth - Width;
             }
@@ -378,7 +379,7 @@ namespace Dash
 
             double extraOffsetY = 0;
 
-            if (!Double.IsNaN(Height))
+            if (!double.IsNaN(Height))
             {
                 extraOffsetY = ActualHeight - Height;
             }
@@ -542,7 +543,7 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument()
         {
-            if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
+            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() != null)
             {
                 // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
                 //      but it would still be in the list of pinned annotations.  That means the document would reappear
@@ -675,10 +676,10 @@ namespace Dash
                     using (UndoManager.GetBatchHandle())
                     {
                         var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
-                        var tasks = new List<Task>(scripts.Count);
+                        var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
                         foreach (var operatorController in scripts)
                         {
-                            tasks.Add(OperatorScript.Run(operatorController, args, new DictionaryScope()));
+                            tasks.Add(ExecutionEnvironment.Run(operatorController, args, new DictionaryScope()));
                         }
 
                         if (tasks.Any())
@@ -983,10 +984,38 @@ namespace Dash
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         }
-
+        private void MenuFlyoutItemCaption_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (ViewModel.LayoutDocument != null)
+                {
+                    ViewModel.LayoutDocument.SetField<TextController>(KeyStore.XamlKey,
+                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                 xmlns:dash=""using:Dash""
+                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""*"" ></RowDefinition>
+                            </Grid.RowDefinitions>
+                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
+                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
+                                </Border>
+                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
+                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
+                                </Border>
+                        </Grid>",
+                        true);
+                }
+            }
+        }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (IsTopLevel()) return;
+            if (IsTopLevel())
+            {
+                return;
+            }
 
             using (UndoManager.GetBatchHandle())
             {
@@ -1122,6 +1151,12 @@ namespace Dash
 
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Add Caption",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.FileText }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCaption_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Add to Presentation",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
             });
@@ -1155,7 +1190,7 @@ namespace Dash
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
             {
-                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+                await ExecutionEnvironment.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
             };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {

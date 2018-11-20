@@ -6,11 +6,23 @@ using FontWeights = Windows.UI.Text.FontWeights;
 
 namespace Dash
 {
-    public class PresentationNumberViewModel : INotifyPropertyChanged
+    public class PresentationItemViewModel : INotifyPropertyChanged
     {
-        private FontWeight _fontWeight;
-        public int Num { get; }
+        private int _num;
+        public int Num
+        {
+            get => _num;
+            set
+            {
+                if (value == _num) return;
+                _num = value;
+                OnPropertyChanged();
+            }
+        }
 
+        public DocumentController Document { get; }
+
+        private FontWeight _fontWeight;
         public FontWeight FontWeight
         {
             get => _fontWeight;
@@ -21,10 +33,11 @@ namespace Dash
             }
         }
 
-        public PresentationNumberViewModel(int num)
+        public PresentationItemViewModel(DocumentController doc, int num)
         {
-            FontWeight = FontWeights.Normal;
-            Num = num;
+            Document = doc;
+            _fontWeight = FontWeights.Normal;
+            _num = num;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

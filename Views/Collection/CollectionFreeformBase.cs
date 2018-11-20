@@ -874,9 +874,24 @@ namespace Dash
                 var items = GetItemsControl().ItemsPanelRoot.Children;
                 foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
                 {
+                    if (dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType))
+                        continue;
                     if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
                     {
                         selectedDocs.Add(dv);
+                    }
+                }
+                if (selectedDocs.Count == 0)
+                {
+                    foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
+                    {
+                        if (!dv.ViewModel.AreContentsHitTestVisible && dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType))
+                        {
+                            if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
+                            {
+                                selectedDocs.Add(dv);
+                            }
+                        }
                     }
                 }
             }
@@ -1183,7 +1198,7 @@ namespace Dash
             PreviewTextBuffer = PreviewFormatString;
             if (previewTextbox != null)
             {
-                MainPage.Instance.ForceFocusPoint = null;
+                MainPage.Instance.ClearForceFocus();
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
                 previewTextbox.Visibility = Visibility.Visible;
@@ -1211,7 +1226,7 @@ namespace Dash
                 if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
                 {
                     e.Handled = true;
-                    convertPreviewToRealText(text);
+                    convertPreviewToRealText(this.IsCtrlPressed() && text == "v" ? null : text);
                 }
             }
         }
@@ -1221,35 +1236,45 @@ namespace Dash
             var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
             using (UndoManager.GetBatchHandle())
             {
-                if (this.IsCtrlPressed() && text == "v" && Clipboard.GetContent()?.HasClipboardData() == true)
+                if (text == null && Clipboard.GetContent()?.HasClipboardData() == true) // clipboard will have data if from outside of Dash, otherwise fall through to paste from within dash
                 {
                     foreach (var doc in Clipboard.GetContent().GetClipboardData().GetDocuments(where))
                     {
                         ViewModel.AddDocument(doc);
                     }
-                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
                     PreviewTextBuffer += text;
-                    if (text.Length > 0 && MainPage.Instance.ForceFocusPoint == null)
+                    if (MainPage.Instance.ForceFocusPoint == null)
                     {
                         LoadNewActiveTextBox(text, where);
                     }
+                }
+                if (text == null)
+                {
+                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
             }
         }
 
         public async void LoadNewActiveTextBox(string text, Point where)
         {
-            MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
             var postitNote  = text == null ? await ViewModel.Paste(Clipboard.GetContent(), where) : SettingsView.Instance.MarkdownEditOn ? new MarkdownNote(text: text).Document : new RichTextNote(text: text).Document;
             var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
             if (!string.IsNullOrEmpty(defaultXaml))
             {
                 postitNote.SetField<TextController>(KeyStore.XamlKey, defaultXaml, true);
             }
-            Actions.DisplayDocument(ViewModel, postitNote, where);
+            if (text != null)
+            {
+                MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
+
+                Actions.DisplayDocument(ViewModel, postitNote, where);
+            } else
+            {
+                MainPage.Instance.ClearForceFocus();
+            }
 
             ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, MainPage.Instance));
         }

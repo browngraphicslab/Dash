@@ -68,16 +68,17 @@ namespace Dash
             }
         }
 
-        public Point? ForceFocusPoint = null;
+        private Point? _forceFocusPoint;
+        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
         public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
-            ForceFocusPoint = where;
+            _forceFocusPoint = where;
             TextPreviewer = collection;
         }
         public void ClearForceFocus()
         {
-            MainPage.Instance.TextPreviewer.ClearPreview();
-            MainPage.Instance.ForceFocusPoint = null;
+            TextPreviewer?.ClearPreview();
+            _forceFocusPoint = null;
         }
 
         public CollectionFreeformBase TextPreviewer = null;
@@ -105,8 +106,6 @@ namespace Dash
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
-            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = false;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
 
             SetUpToolTips();
@@ -144,8 +143,29 @@ namespace Dash
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
+         
+
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
+
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
+            Window.Current.SetTitleBar(trickyTitleBar);
+        }
+        public DocumentController MiscellaneousFolder
+        {
+            get
+            {
+                var folders = MainDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                var misc = folders.Where((doc) => doc.Title == "Miscellaneous").FirstOrDefault();
+                if (misc == null)
+                {
+                    misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
+                    misc.SetTitle("Miscellaneous");
+                    MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
+                   // folders.Add(misc);
+                }
+                return misc;
+            }
         }
 
         public void Query(string search)
@@ -365,7 +385,6 @@ function(d) {
             if (this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
-                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
 
@@ -408,8 +427,10 @@ function(d) {
 
         public void CollapseSearch()
         {
-            xSearchBoxGrid.Visibility = Visibility.Collapsed;
-            xShowHideSearchIcon.Text = "\uE721"; //magnifying glass in segoe
+            if (FocusManager.GetFocusedElement() != xSearchButton)
+            {
+                xSearchBoxGrid.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -454,20 +475,18 @@ function(d) {
             //xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        private void xSearchButton_Clicked (object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
                 xFadeAnimationOut.Begin();
                 xSearchBoxGrid.Visibility = Visibility.Collapsed;
-                xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
-                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
@@ -527,7 +546,7 @@ function(d) {
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
         }
 
-        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
         }
@@ -574,7 +593,6 @@ function(d) {
                 else
                 {
                     xUtilTabColumn.MinWidth = 300;
-                    xPresentationView.xTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
                 }
 
@@ -594,11 +612,10 @@ function(d) {
                 else
                 {
                     xUtilTabColumn.MinWidth = 0;
-                    xPresentationView.xTransportControls.Height = 0;
                     xPresentationView.SimulateAnimation(false);
                 }
 
-                PresentationView presView = Instance.xPresentationView;
+                PresentationView presView = xPresentationView;
                 presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
@@ -639,7 +656,6 @@ function(d) {
 
             return mode;
         }
-
         public async Task<DocumentController> GetVideoFile()
         {
             var videoPopup = new ImportVideoPopup();
@@ -974,7 +990,7 @@ function(d) {
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
-
+        
         public async Task<(string, string)> PromptNewTemplate()
         {
             var templatePopup = new NewTemplatePopup();
@@ -984,6 +1000,17 @@ function(d) {
             UnsetPopup();
 
             return results;
+        }
+        
+	    public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
+	    {
+			// TODO: do the following eventually; for now it will just export everything you have
+		    // var documentList = await GetDocumentsToPublish();
+
+		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+		    allDocuments.Remove(MainDocument.GetDataDocument());
+			
+		    await new Publisher().StartPublication(allDocuments);
         }
 
         public async Task<(KeyController, List<KeyController>)> PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)

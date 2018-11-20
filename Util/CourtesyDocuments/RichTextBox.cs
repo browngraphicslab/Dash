@@ -34,6 +34,7 @@ namespace Dash
         }
         public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key, Context context)
         {
+            element.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Black);
             element.DataFieldKey = key;
             var binding = new FieldBinding<RichTextController>()
             {
@@ -74,6 +75,7 @@ namespace Dash
             var dataField = docController.GetField(key);
             var refToRichText = dataField as ReferenceController;
             rtv = new RichEditView();
+            rtv.FontSize = 14;
             //{
             //    LayoutDocument = docController,
             //    // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument

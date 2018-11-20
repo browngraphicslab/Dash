@@ -9,6 +9,11 @@ namespace Dash
     {
         public static string THIS_NAME = "this";
 
+        protected Scope(Scope parent, bool defaultToGlobal = true)
+        {
+            Parent = parent ?? (defaultToGlobal ? DocumentScope.GetGlobalScope() : null);
+        }
+
         public void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
             var value = GetLocalVariable(variableName);
@@ -155,9 +160,15 @@ namespace Dash
     {
         protected readonly Dictionary<string, FieldControllerBase> _dictionary;
 
-        public DictionaryScope(IDictionary<string, FieldControllerBase> existingScope = null) { _dictionary = existingScope != null ? new Dictionary<string, FieldControllerBase>(existingScope) : new Dictionary<string, FieldControllerBase>(); }
+        public DictionaryScope(IDictionary<string, FieldControllerBase> existingScope = null) : base(null)
+        {
+            _dictionary = existingScope != null ? new Dictionary<string, FieldControllerBase>(existingScope) : new Dictionary<string, FieldControllerBase>();
+        }
 
-        public DictionaryScope(Scope parentScope) { Parent = parentScope; _dictionary = new Dictionary<string, FieldControllerBase>(); }
+        public DictionaryScope(Scope parentScope) : base(parentScope)
+        {
+            _dictionary = new Dictionary<string, FieldControllerBase>();
+        }
 
         protected override void SetLocalVariable(string variableName, FieldControllerBase value)
         {

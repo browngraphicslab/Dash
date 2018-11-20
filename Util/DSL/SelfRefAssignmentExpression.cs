@@ -49,9 +49,9 @@ namespace Dash
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(e, _opName));
             }
             return (output, ControlFlowFlag.None);
         }

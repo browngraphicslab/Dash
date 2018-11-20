@@ -7,7 +7,11 @@ namespace Dash.Converters
     {
         public override TEnum ConvertDataToXaml(string data, object parameter = null)
         {
-            return (TEnum)Enum.Parse(typeof(TEnum), data);
+            if (Enum.TryParse(data, out TEnum result))
+            {
+                return result;
+            }
+            return new TEnum();
         }
 
         public override string ConvertXamlToData(TEnum xaml, object parameter = null)

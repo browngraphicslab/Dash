@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
@@ -34,6 +35,9 @@ namespace Dash
 
         public CollectionViewType ViewType { get; set; } = CollectionViewType.Freeform;
         public bool DraggingJoinButton { get; set; } = false;
+        public Action<DocumentController> CollectionCreationMethod { get; set; } = null;
+
+        public bool ForceCopy { get; set; } = false;
 
         public DragDocumentModel(DocumentController draggedDocument)
         {
@@ -55,11 +59,13 @@ namespace Dash
             Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType)
+        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null, bool forceCopy = false)
         {
             DraggedDocuments = draggedDocuments;
             ViewType = viewType;
             MakeCollection = true;
+            CollectionCreationMethod = collectionCreationMethod;
+            ForceCopy = forceCopy;
         }
 
         /*
@@ -101,7 +107,7 @@ namespace Dash
                 Debug.Assert(where.HasValue);
                 docs = GetLinkDocuments((Point)where);
             }
-            else if (MainPage.Instance.IsShiftPressed())
+            else if (ForceCopy || MainPage.Instance.IsShiftPressed())
             {
                 // ...otherwise, create a view copy
                 for (int i = 0; i < DraggedDocuments.Count; i++)
@@ -109,7 +115,7 @@ namespace Dash
                    docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
                 }
             }
-            else if (target?.GetFirstAncestorOfType<AnnotationOverlay>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
+            else if (target?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
@@ -132,7 +138,19 @@ namespace Dash
                 }
             }
 
-            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(),  ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
+            if (MakeCollection)
+            {
+                var collection = new CollectionNote(@where ?? new Point(), ViewType, double.NaN, double.NaN, docs).Document;
+                CollectionCreationMethod?.Invoke(collection);
+                return new List<DocumentController>
+                {
+                    collection
+                };
+            }
+            else
+            {
+                return docs;
+            }
         }
 
         //TODO do we want to create link here?
@@ -141,16 +159,20 @@ namespace Dash
         private List<DocumentController> GetLinkDocuments(Point where)
         {
             var anno = new RichTextNote(where: where).Document;
+            anno.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationKey, true, true);
 
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
                 var dragDoc = DraggedDocuments[i];
-                var view = DraggedDocumentViews[i];
-
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                if (DraggedDocumentViews != null)
                 {
-                    // if RegionCreator exists, then dragDoc becomes the region document
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                    var view = DraggedDocumentViews[i];
+
+                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    {
+                        // if RegionCreator exists, then dragDoc becomes the region document
+                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                    }
                 }
 
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);

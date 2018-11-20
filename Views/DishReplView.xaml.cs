@@ -107,8 +107,7 @@ namespace Dash
         // ReSharper disable once InconsistentNaming
         private void NewBlankScopeAndDSL()
         {
-            var globalScope = new DocumentScope(MainPage.Instance.MainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<DocumentController>(KeyStore.GlobalDefinitionsKey), null);
+            var globalScope = DocumentScope.GetGlobalScope();
             _scope = new DocumentScope(_dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey), globalScope);
             _dsl = new DSL(_scope);
         }
