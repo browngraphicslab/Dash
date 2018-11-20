@@ -55,7 +55,7 @@ namespace Dash
                         {
                             Undecorated = true,
                             ResizersVisible = true,
-                            DragWithinParentBounds = true
+                            DragWithinParentBounds = false
                         }));
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
