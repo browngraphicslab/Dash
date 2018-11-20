@@ -48,7 +48,7 @@ namespace Dash
         public int GetIndex(double verticalOffset)
         {
             var index = 0;
-            var scale = ScrollViewerContentWidth/_view.PdfMaxWidth;
+            var scale = _view.ActualWidth / _view.xPdfGrid.ActualWidth;
             var currOffset = verticalOffset - PageSizes[index].Height * scale;
             while (currOffset > 0)
             {
@@ -123,13 +123,14 @@ namespace Dash
                     var targetWidth = _visibleElementsTargetedWidth[pageNum];
                     if (targetWidth != 0)
                     {
+                        Debug.WriteLine("Rendering " + pageNum);
                         var options = new Windows.Data.Pdf.PdfPageRenderOptions();
                         var stream = new InMemoryRandomAccessStream();
                         var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
                         var widthRatio = (targetWidth / screenMap.X) / _view.PdfMaxWidth;
                         var box = page.Dimensions.MediaBox;
-                        options.DestinationWidth = (uint)Math.Min(widthRatio * box.Width, MaxPageWidth);
-                        options.DestinationHeight = (uint)Math.Min(widthRatio * box.Height, MaxPageWidth * box.Height / box.Width);
+                        options.DestinationWidth = (uint)Math.Max(600, Math.Min(widthRatio * box.Width, MaxPageWidth));
+                        options.DestinationHeight = (uint)Math.Max(600 * box.Height/box.Width, Math.Min(widthRatio * box.Height, MaxPageWidth * box.Height / box.Width));
                         await page.RenderToStreamAsync(stream, options);
                         source = new BitmapImage();
                         await source.SetSourceAsync(stream);

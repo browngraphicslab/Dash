@@ -316,14 +316,17 @@ namespace Dash
 
         public void SetPositionAndSize(bool rebuildMenu = true)
         {
-            var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
+            var topLeft  = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
             var parentIsFreeform = true;
+            var showPDFControls = false;
             try
             {
                 foreach (var doc in SelectedDocs)
                 {
+                    if (doc.GetFirstDescendantOfType<PdfView>() != null)
+                        showPDFControls = true;
                     if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
                         parentIsFreeform = false;
                     var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
@@ -346,7 +349,9 @@ namespace Dash
                 Debug.WriteLine("Got Exception:" + e);
             }
             xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            xScrollNavStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
+            xPageButtonStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && _selectedDocs.First().ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
 
@@ -647,6 +652,54 @@ namespace Dash
         //        doc.ToggleTemplateEditor();
         //    }
         //}
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
+        }
+
+        public void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.NextPage());
+            e.Handled = true;
+        }
+
+        public void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.PrevPage());
+            e.Handled = true;
+        }
+
+        public void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.ScrollBack());
+            e.Handled = true;
+        }
+
+        public void XScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.ScrollForward());
+            e.Handled = true;
+        }
 
         private void XTitleBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
