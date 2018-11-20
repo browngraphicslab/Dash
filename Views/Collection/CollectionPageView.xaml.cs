@@ -230,7 +230,7 @@ namespace Dash
             else
             {
                 _templateMode = false;
-                templateButton.Content = "Generate Template";
+                templateButton.Content = "Use Template";
                 await RemoveTemplate();
             }
         }

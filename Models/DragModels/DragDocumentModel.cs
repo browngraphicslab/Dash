@@ -147,15 +147,22 @@ namespace Dash
 
             if (MakeCollection)
             {
-                var cnote = new CollectionNote(where ?? new Point(), ViewType, double.NaN, double.NaN,
-                    collectedDocuments: docs).Document;
+                DocumentController cnote;
+                // (400,400) is arbitrary to prevent note from being to large
                 if (SearchCol)
                 {
+                    cnote = new CollectionNote(where ?? new Point(), ViewType, 400, 400,
+                       docs).Document;
                     cnote.GetDataDocument().SetField<TextController>(KeyController.Get("Search query"), SearchText, true);
                     SearchCol = false;
                 }
+                else
+                {
+                    cnote = new CollectionNote(where ?? new Point(), ViewType, double.NaN, double.NaN,
+                        docs).Document;
+                }
 
-                return new List<DocumentController> {cnote};
+                return new List<DocumentController> { cnote };
             }
             else
             {

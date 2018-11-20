@@ -17,6 +17,8 @@ namespace Dash
         private string _docIcon;
         public bool IsCopy = false;
         public int _copies = 1;
+        public string _DropVisibility = "Collapsed";
+        public string _BorderThickness = "0 0 0 0";
         public List<string> Titles { get; }
         public List<string> ContextualTexts { get; }
         public DocumentController ViewDocument { get; }
@@ -25,7 +27,25 @@ namespace Dash
         public int FieldCount { get; }
 
         public int Copies { get; set; }= 1;
-        public string Visibility { get; set; } = "Collapsed";
+
+        public string BorderThickness
+        {
+            get => _BorderThickness;
+            set
+            {
+                _BorderThickness = value;
+                OnPropertyChanged();
+            }
+        }
+        public string DropDownVisibility
+        {
+            get => _DropVisibility;
+            set
+            {
+                _DropVisibility = value;
+                OnPropertyChanged();
+            }
+        } 
         
         public List<SearchResultViewModel> svmCopies = new List<SearchResultViewModel>();
         private string _dropDownText = ">";

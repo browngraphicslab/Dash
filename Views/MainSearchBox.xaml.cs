@@ -526,7 +526,7 @@ namespace Dash
                 newVm.Copies = numOfCopies;
                 if (numOfCopies > 1)
                 {
-                    newVm.Visibility = "Visible";
+                    newVm.DropDownVisibility = "Visible";
                     foreach (var sr in resList.Value)
                     {
                         newVm.svmCopies.Add(DocumentSearchResultToViewModel(sr));
@@ -541,6 +541,8 @@ namespace Dash
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
+
+            Debug.WriteLine("First length: "+first.Length);
 
             foreach (var searchResultViewModel in first)
             {
@@ -665,23 +667,45 @@ namespace Dash
         {
             var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
             var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
+            var index = itemsSource.IndexOf(viewModel);
+            var count = itemsSource.Count;
+            var numCopies = viewModel.Copies;
+            Debug.WriteLine(numCopies);
+            //Debug.WriteLine(index);
             if (viewModel?.DropDownText == ">")
             {
                 viewModel.DropDownText = "v";
+                int counter = 0;
                 foreach (var svm in viewModel.svmCopies)
                 {
-                    itemsSource?.Add(svm);
+                    if (index == count)
+                    {
+                        itemsSource?.Add(svm);
+                    }
+                    else
+                    {
+                        itemsSource.Insert(index + 1, svm);
+                    }
+
+                    if (counter == 0)
+                    {
+                        svm.BorderThickness = "0 0 0 1";
+                    }
+                    if (counter == numCopies - 1)
+                    {
+                        svm.BorderThickness = "0 1 0 0";
+                    }
+
+                    counter++;
+                    //svm.BorderThickness = "0 0 0 1";
                 }
             }
-            else
+            else if (viewModel?.DropDownText == "v")
             {
-                if (viewModel != null)
+                viewModel.DropDownText = ">";
+                foreach (var svm in viewModel.svmCopies)
                 {
-                    viewModel.DropDownText = ">";
-                    foreach (var svm in viewModel.svmCopies)
-                    {
-                        itemsSource?.Remove(svm);
-                    }
+                    itemsSource?.Remove(svm);
                 }
             }
 
@@ -734,16 +758,8 @@ namespace Dash
                 SetFilterText();
             }
         }
-
-        private void XMenuFlyoutOnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
-        {
-            args.Cancel = true;
-            XMenuFlyout.Closing -= XMenuFlyoutOnClosing;
-        }
-
         private void Author_OnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            XMenuFlyout.Closing += XMenuFlyoutOnClosing;
             if (sender is MenuFlyoutItem mf)
             {
                 string author = mf.Text;
