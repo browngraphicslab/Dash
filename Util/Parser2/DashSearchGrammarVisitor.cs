@@ -14,6 +14,7 @@ namespace Dash
 
     public class DashSearchGrammarVisitor : SearchGrammarBaseVisitor<SearchPredicate>
     {
+        public DocumentController SearchRoot { get; private set; }
         public override SearchPredicate VisitAnd([NotNull] SearchGrammarParser.AndContext context)
         {
             var l = context.or().Select(c => c.Accept(this)).ToList();
@@ -102,6 +103,16 @@ namespace Dash
             var keys = new HashSet<KeyController>(context.keylist().Accept(new DashSearchGrammarKvVisitor()));
             var value = context.value().GetText().Trim('"');
             var negate = context.ChildCount == 4;
+
+            if (keys.Count == 1 && keys.First().Name == "SearchPath")
+            {
+                var doc = DocumentTree.GetDocumentAtPath(value);
+                if (doc != null)
+                {
+                    SearchRoot = doc;
+                    return document => new Result {new SearchPair(keys.First(), new StringSearchModel("In path"))};
+                }
+            }
             return doc =>
             {
                 var result = new Result();
