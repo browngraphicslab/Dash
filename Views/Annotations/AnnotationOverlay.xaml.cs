@@ -193,7 +193,7 @@ namespace Dash
                     }
                     RegionDocsList.Add(annotation); // this actually adds the region to the parent document's Regions list
 
-                    var text =
+                    /*var text =
                         DateTime.Now.ToString("g") + " | Created an annotation using pdf: " +
                         pdfview.ViewModel.DocumentController.Title;
                     var eventDoc = new RichTextNote(text).Document;
@@ -223,7 +223,7 @@ namespace Dash
                                     VerticalAlignment=""Top"" />
                             </StackPanel>
                             </Grid>";
-                    EventManager.EventOccured(eventDoc, displayXaml);
+                    EventManager.EventOccured(eventDoc, displayXaml);*/
                 }
                 ClearSelection(true);
             }
