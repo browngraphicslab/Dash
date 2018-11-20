@@ -264,6 +264,7 @@
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CourtesyDocuments\DiscussionBox.cs" />
+    <Compile Include="Util\DSL\ExecutionEnvironment.cs" />
     <Compile Include="Util\DSL\TernaryExpression.cs" />
     <Compile Include="Util\NoteDocuments\DiscussionNote.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />

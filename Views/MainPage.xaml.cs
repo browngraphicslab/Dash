@@ -106,8 +106,6 @@ namespace Dash
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
-            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = false;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
 
             SetUpToolTips();
@@ -149,8 +147,10 @@ namespace Dash
 
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
-        }
 
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
+            Window.Current.SetTitleBar(trickyTitleBar);
+        }
         public DocumentController MiscellaneousFolder
         {
             get
@@ -337,7 +337,6 @@ namespace Dash
             if (this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
-                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
 
@@ -380,8 +379,10 @@ namespace Dash
 
         public void CollapseSearch()
         {
-            xSearchBoxGrid.Visibility = Visibility.Collapsed;
-            xShowHideSearchIcon.Text = "\uE721"; //magnifying glass in segoe
+            if (FocusManager.GetFocusedElement() != xSearchButton)
+            {
+                xSearchBoxGrid.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -426,20 +427,18 @@ namespace Dash
             xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        private void xSearchButton_Clicked (object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
                 xFadeAnimationOut.Begin();
                 xSearchBoxGrid.Visibility = Visibility.Collapsed;
-                xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
-                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
@@ -499,7 +498,7 @@ namespace Dash
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
         }
 
-        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
         }

@@ -536,7 +536,7 @@ namespace Dash
                            d.ViewModel.LayoutDocument.GetActualSize().Value.X));
                     d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
                 }
-                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView))
+                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView) || d.ViewModel.LayoutDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
                     d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, d.ViewModel.LayoutDocument.GetWidth(), true);
                     d.ViewModel.LayoutDocument.SetWidth(double.NaN);
@@ -555,7 +555,7 @@ namespace Dash
                            d.ViewModel.LayoutDocument.GetActualSize().Value.Y));
                     d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 }
-                else if(!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView))
+                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView) || d.ViewModel.LayoutDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
                     d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, d.ViewModel.LayoutDocument.GetHeight(), true);
                     d.ViewModel.LayoutDocument.SetHeight(double.NaN);

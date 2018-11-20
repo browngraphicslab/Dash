@@ -103,8 +103,6 @@ namespace Dash
 
             ScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
-            Canvas.SetZIndex(xButtonPanel, 999);
-
             _scrollTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
             _scrollTimer.Tick += (s, e) =>
             {
@@ -133,6 +131,23 @@ namespace Dash
             }
 
             ScrollViewer.ChangeView(null, currOffset, 1);
+        }
+
+        public int PageNum()
+        {
+            var sizes = Pages.PageSizes;
+            var currOffset = 0.0;
+
+            int page = 1;
+            foreach (var size in sizes)
+            {
+                currOffset += size.Height * pageScaling(size.Width);
+                if (currOffset > ScrollViewer.VerticalOffset)
+                    break;
+                currOffset += 10 * pageScaling(size.Width);
+                page++;
+            }
+            return page;
         }
 
         public void ScrollToPosition(double pos)
@@ -415,7 +430,6 @@ namespace Dash
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
             KeyDown += PdfAnnotationView_KeyDown;
-            SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
             if (AnnotationOverlay == null)
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
@@ -448,20 +462,13 @@ namespace Dash
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
             _annotationOverlay.TextSelectableElements?.Clear();
-            SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
-        }
-
-        private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            xButtonPanel.Visibility = SelectionManager.IsSelected(docview) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (PdfMaxWidth > 0)
             {
-                Pages.ScrollViewerContentWidth = ScrollViewer.ActualWidth;
+                Pages.ScrollViewerContentWidth = ScrollViewer.ActualWidth - LeftMargin - RightMargin;
             }
         }
 
@@ -552,31 +559,28 @@ namespace Dash
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
         }
 
-        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XNextPageButton_OnPointerPressed()
         {
             PageNext();
-            e.Handled = true;
         }
 
-        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XPreviousPageButton_OnPointerPressed()
         {
             PagePrev();
-            e.Handled = true;
         }
 
-        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XScrollBack_OnPointerPressed()
         {
             PopBackStack(_BackStack, _ForwardStack, ScrollViewer);
         }
 
-        private void XScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XScrollForward_OnPointerPressed()
         {
             PopForwardStack(_ForwardStack, _BackStack, ScrollViewer);
         }
         private double pageScaling(double width)
         {
-            //return xPdfCol.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
-            return  ScrollViewer.ActualWidth / width * PageItemsControl.ActualWidth / xPdfGrid.ActualWidth;
+            return  ScrollViewer.ActualWidth  / xPdfGrid.ActualWidth;
         }
         private void PagePrev()
         {
@@ -657,26 +661,6 @@ namespace Dash
                 var pop = forwardstack.Pop();
                 viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
                 backstack.Push(pop);
-            }
-        }
-
-        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
-            {
-                tip.IsOpen = true;
-            }
-        }
-
-        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
-            {
-                tip.IsOpen = false;
             }
         }
 

@@ -445,14 +445,14 @@ namespace Dash
             // the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
             switch (parent.IsCtrlPressed() ? await MainPage.Instance.GetPushpinType() : PushpinType.Text)
             {
-            case PushpinType.Text:
-                {
-                    var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10), new Size(150, 75));
-                    richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-                    return richText.Document;
-                }
-            case PushpinType.Video: target = await MainPage.Instance.GetVideoFile(); break;
-            case PushpinType.Image: target = await MainPage.Instance.GetImageFile(); break;
+                case PushpinType.Text:
+                    {
+                        var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10));
+                        richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+                        return richText.Document;
+                    }
+                case PushpinType.Video: target = await MainPage.Instance.GetVideoFile(); break;
+                case PushpinType.Image: target = await MainPage.Instance.GetImageFile(); break;
             }
 
             target?.SetWidth(250);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,20 +15,20 @@ namespace Dash
         /// <summary>
         /// Flags whether documents or their link buttons are being dragged.
         /// </summary>
-        public bool                     DraggingLinkButton = false;
-        public string                   DraggedLinkType = null; // type of link to be created
+        public bool DraggingLinkButton = false;
+        public string DraggedLinkType = null; // type of link to be created
 
         /// <summary>
         /// When DraggingLinkButton is false, this stores the collection views that contained each of the documents
         /// at the start of the drag.  When the documents are dropped, this allows us to remove the documents
         /// from where they were (in the case of a Move operation)
         /// </summary>
-        public List<CollectionViewModel>     DraggedDocCollectionViews;
+        public List<CollectionViewModel> DraggedDocCollectionViews;
 
-        public List<DocumentView>       DraggedDocumentViews;   // The Document views being dragged
+        public List<DocumentView> DraggedDocumentViews;   // The Document views being dragged
         public List<DocumentController> DraggedDocuments; // The Documents being dragged (they correspond to the DraggedDocumentViews when specified)
-        public List<Point>              DocOffsets; // offsets of documents from set of dragged documents
-        public Point                    Offset; // offset of dragged document from pointer
+        public List<Point> DocOffsets; // offsets of documents from set of dragged documents
+        public Point Offset; // offset of dragged document from pointer
         /// <summary>
         /// Flags whether the dropped set of documents should be wrapped in a collection
         /// </summary>
@@ -35,6 +36,9 @@ namespace Dash
 
         public CollectionViewType ViewType { get; set; } = CollectionViewType.Freeform;
         public bool DraggingJoinButton { get; set; } = false;
+        public Action<DocumentController> CollectionCreationMethod { get; set; } = null;
+
+        public bool ForceCopy { get; set; } = false;
 
         public DragDocumentModel(DocumentController draggedDocument)
         {
@@ -56,11 +60,13 @@ namespace Dash
             Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType)
+        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null, bool forceCopy = false)
         {
             DraggedDocuments = draggedDocuments;
             ViewType = viewType;
             MakeCollection = true;
+            CollectionCreationMethod = collectionCreationMethod;
+            ForceCopy = forceCopy;
         }
 
         /*
@@ -84,12 +90,12 @@ namespace Dash
             double scaling = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
             Point? GetPosition(int i)
             {
-                return where == null ? where:
+                return where == null ? where :
                         new Point(where.Value.X - Offset.X / scaling - (DocOffsets?[i] ?? new Point()).X,
                                   where.Value.Y - Offset.Y / scaling - (DocOffsets?[i] ?? new Point()).Y);
             }
             // ...if CTRL pressed, create a key value pane
-            if ( MainPage.Instance.IsCtrlPressed())
+            if (MainPage.Instance.IsCtrlPressed())
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
@@ -102,12 +108,12 @@ namespace Dash
                 Debug.Assert(where.HasValue);
                 docs = await GetLinkDocuments((Point)where);
             }
-            else if (MainPage.Instance.IsShiftPressed())
+            else if (ForceCopy || MainPage.Instance.IsShiftPressed())
             {
                 // ...otherwise, create a view copy
                 for (int i = 0; i < DraggedDocuments.Count; i++)
                 {
-                   docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
+                    docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
                 }
             }
             else if (target?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
@@ -133,7 +139,19 @@ namespace Dash
                 }
             }
 
-            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(),  ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
+            if (MakeCollection)
+            {
+                var collection = new CollectionNote(@where ?? new Point(), ViewType, double.NaN, double.NaN, docs).Document;
+                CollectionCreationMethod?.Invoke(collection);
+                return new List<DocumentController>
+                {
+                    collection
+                };
+            }
+            else
+            {
+                return docs;
+            }
         }
 
         //TODO do we want to create link here?
@@ -146,27 +164,28 @@ namespace Dash
 
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
-                DocumentController dragDoc = DraggedDocuments[i];
-                var view = DraggedDocumentViews[i];
-
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                var dragDoc = DraggedDocuments[i];
+                if (DraggedDocumentViews != null)
                 {
-                    // if RegionCreator exists, then dragDoc becomes the region document
-                    dragDoc = await KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                    var view = DraggedDocumentViews[i];
 
-                    var region = (dragDoc.GetRegionDefinition() ?? dragDoc);
-                    var text = region.GetDataDocument().GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
-                               " | Created a region using: " + region.Title;
-                    var eventDoc = new RichTextNote(text).Document;
-                    var tags = "annotation, pdf, link, " + region.Title;
-                    eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
-                    eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                        view.ParentCollection.ViewModel.ContainerDocument, true);
-                    eventDoc.Link(dragDoc, LinkBehavior.Overlay);
-                    eventDoc.SetField(KeyStore.EventDisplay1Key, dragDoc, true);
-                    eventDoc.SetField(KeyStore.EventDisplay2Key, anno, true);
-                    var displayXaml =
-                        @"<Grid
+                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    {
+                        // if RegionCreator exists, then dragDoc becomes the region document
+                        dragDoc = await KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                        var region = (dragDoc.GetRegionDefinition() ?? dragDoc);
+                        var text = region.GetDataDocument().GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
+                                   " | Created a region using: " + region.Title;
+                        var eventDoc = new RichTextNote(text).Document;
+                        var tags = "annotation, pdf, link, " + region.Title;
+                        eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+                        eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                            view.ParentCollection.ViewModel.ContainerDocument, true);
+                        eventDoc.Link(dragDoc, LinkBehavior.Overlay);
+                        eventDoc.SetField(KeyStore.EventDisplay1Key, dragDoc, true);
+                        eventDoc.SetField(KeyStore.EventDisplay2Key, anno, true);
+                        var displayXaml =
+                            @"<Grid
                             xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
                             xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
                             xmlns:dash=""using:Dash""
@@ -188,7 +207,8 @@ namespace Dash
                                     VerticalAlignment=""Top"" />
                             </StackPanel>
                             </Grid>";
-                    EventManager.EventOccured(eventDoc, displayXaml);
+                        EventManager.EventOccured(eventDoc, displayXaml);
+                    }
                 }
 
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);

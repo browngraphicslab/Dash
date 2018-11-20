@@ -164,6 +164,8 @@ namespace Dash
         public static KeyController InitialSizeKey                       = KeyController.Get("_InitialSize");
 	    public static KeyController PdfHeightKey                         = KeyController.Get("_PdfHeight");
         public static KeyController YouTubeUrlKey                        = KeyController.Get("_YouTubeUrl");
+        public static KeyController SearchStringKey                      = KeyController.Get("SearchStringOrigin");
+        public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
 
 	    public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{

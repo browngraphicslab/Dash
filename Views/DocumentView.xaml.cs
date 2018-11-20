@@ -170,7 +170,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
-            Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+            //Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 10;
@@ -371,7 +371,7 @@ namespace Dash
                           ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
-            if (!Double.IsNaN(Width))
+            if (!double.IsNaN(Width))
             {
                 extraOffsetX = ActualWidth - Width;
             }
@@ -379,7 +379,7 @@ namespace Dash
 
             double extraOffsetY = 0;
 
-            if (!Double.IsNaN(Height))
+            if (!double.IsNaN(Height))
             {
                 extraOffsetY = ActualHeight - Height;
             }
@@ -670,10 +670,10 @@ namespace Dash
                     using (UndoManager.GetBatchHandle())
                     {
                         var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
-                        var tasks = new List<Task>(scripts.Count);
+                        var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
                         foreach (var operatorController in scripts)
                         {
-                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                            tasks.Add(ExecutionEnvironment.Run(operatorController, args, new Scope()));
                         }
 
                         if (tasks.Any())
@@ -1184,7 +1184,7 @@ namespace Dash
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
             {
-                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+                await ExecutionEnvironment.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
             };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {

@@ -13,41 +13,6 @@
     d:DesignWidth="400"
     SizeChanged="PdfAnnotationView_OnSizeChanged">
     <Grid x:Name="xPdfContainer" MinWidth="50" Background="white" VerticalAlignment="Top">
-        <Grid x:Name="xButtonPanel" Visibility="Collapsed">
-            <StackPanel x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                    <Ellipse />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="0" />
-                    </ToolTipService.ToolTip>
-                </Grid>
-                <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                    <Ellipse />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="0" />
-                    </ToolTipService.ToolTip>
-                </Grid>
-            </StackPanel>
-            <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                    <Ellipse />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="0"  />
-                    </ToolTipService.ToolTip>
-                </Grid>
-                <Grid x:Name="xScrollForward" PointerPressed="XScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                    <Ellipse />
-                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="0" />
-                    </ToolTipService.ToolTip>
-                </Grid>
-            </StackPanel>
-
-        </Grid>
         <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging">
             <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
                 <Grid AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
@@ -55,9 +20,7 @@
                         <!-- ItemsControl that stores the page images -->
                         <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
                     </Grid>
-                    <Canvas x:Name="xPdfGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" >
-                        
-                    </Canvas>
+                    <Canvas x:Name="xPdfGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
                 </Grid>
             </Viewbox>
         </ScrollViewer>

@@ -211,6 +211,11 @@ namespace Dash
         {
             _botPdf.GoToPage(pageNum);
         }
+
+        public void NextPage() { _botPdf.XNextPageButton_OnPointerPressed(); }
+        public void PrevPage() { _botPdf.XPreviousPageButton_OnPointerPressed(); }
+        public void ScrollBack() { _botPdf.XScrollBack_OnPointerPressed(); }
+        public void ScrollForward() { _botPdf.XScrollForward_OnPointerPressed(); }
         public void ShowRegions()
         {
             _topPdf.AnnotationOverlay.Visibility = Visibility.Visible;
@@ -221,6 +226,7 @@ namespace Dash
             _topPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
             _botPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
         }
+        public int PageNum() { return _botPdf.PageNum();  }
         public bool AreAnnotationsVisible()
         {
             //This makes the assumption that both overlays are kept in sync
@@ -250,9 +256,8 @@ namespace Dash
             {
                 tgts.ToList().ForEach((tgt) =>
                 {
-                    tgt.ViewModel.LayoutDocument.SetHidden(false);
-
-                    tgt.ViewModel.ToggleHighlight();
+                    tgt.ViewModel.LayoutDocument.ToggleHidden();
+                    tgt.ViewModel.SetHighlight(!tgt.ViewModel.LayoutDocument.GetHidden());
                 });
                 return LinkHandledResult.HandledClose;
             }
@@ -554,7 +559,7 @@ namespace Dash
 
         private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X;
+            var margin = Math.Max(0,xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X);
             xRightMargin.Margin = new Thickness(0, 0, margin-2.5, 0);
             _botPdf.SetRightMargin(margin);
         }
@@ -572,7 +577,7 @@ namespace Dash
         }
         private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = e.GetCurrentPoint(xPdfContainer).Position.X;
+            var margin = Math.Max(0,e.GetCurrentPoint(xPdfContainer).Position.X);
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
         }

@@ -822,13 +822,7 @@ namespace Dash
                 return;
             }
 
-            if (ddm.DraggedDocuments.Count != 1)
-            {
-                e.AcceptedOperation = DataPackageOperation.None;
-                return;
-            }
-
-            if (ddm.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) == null)
+            if (ddm.DraggedDocuments.Count == 0 || (ddm.DraggedDocuments.Count == 1 && ddm.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) == null))
             {
                 e.AcceptedOperation = DataPackageOperation.None;
                 return;
@@ -847,11 +841,20 @@ namespace Dash
         {
             XDropGrid.Visibility = Visibility.Collapsed;
             if (!(e.DataView.GetDragModel() is DragDocumentModel dragModel)) return;
-            if (dragModel.DraggedDocuments.Count != 1) return;
 
-            if (dragModel.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) is var list)
+            IEnumerable<DocumentController> docs = null;
+
+            if (dragModel.DraggedDocuments.Count == 1 && dragModel.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) is var list)
             {
-                foreach (var documentController in list)
+                docs = list;
+            } else if (dragModel.DraggedDocuments.Count > 1)
+            {
+                docs = dragModel.DraggedDocuments;
+            }
+
+            if (docs != null)
+            {
+                foreach (var documentController in docs)
                 {
                     ViewModel.AddToPinnedNodesCollection(documentController);
                 }
