@@ -37,6 +37,8 @@ namespace Dash
         public bool DraggingJoinButton { get; set; } = false;
         public Action<DocumentController> CollectionCreationMethod { get; set; } = null;
 
+        public bool ForceCopy { get; set; } = false;
+
         public DragDocumentModel(DocumentController draggedDocument)
         {
             DraggedDocuments = new List<DocumentController> { draggedDocument };
@@ -57,12 +59,13 @@ namespace Dash
             Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null)
+        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null, bool forceCopy = false)
         {
             DraggedDocuments = draggedDocuments;
             ViewType = viewType;
             MakeCollection = true;
             CollectionCreationMethod = collectionCreationMethod;
+            ForceCopy = forceCopy;
         }
 
         /*
@@ -104,7 +107,7 @@ namespace Dash
                 Debug.Assert(where.HasValue);
                 docs = GetLinkDocuments((Point)where);
             }
-            else if (MainPage.Instance.IsShiftPressed())
+            else if (ForceCopy || MainPage.Instance.IsShiftPressed())
             {
                 // ...otherwise, create a view copy
                 for (int i = 0; i < DraggedDocuments.Count; i++)
