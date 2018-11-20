@@ -832,7 +832,7 @@ namespace Dash
                 var text = ViewModel.DataDocument.GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
                            " | Created a text note:";
                 var eventDoc = new RichTextNote(text).Document;
-                var tags = "rich text, note, " + Document.Selection.Text;
+                var tags = "rich text, note, " + Document.Selection.Text.Substring(0, Document.Selection.Text.Length - 2);
                 eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
                 eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                     this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);

@@ -1232,7 +1232,7 @@ namespace Dash
             }
         }
 
-        private async void convertPreviewToRealText(string text)
+        private void convertPreviewToRealText(string text)
         {
             var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
             using (UndoManager.GetBatchHandle())

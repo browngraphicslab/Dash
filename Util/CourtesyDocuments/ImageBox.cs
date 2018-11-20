@@ -69,9 +69,9 @@ namespace Dash
             image.AddFieldBinding(Image.StretchProperty, binding2);
         }
 
-	    public static async Task<DocumentController> MakeRegionDocument(DocumentView image, Point? point)
+	    public static Task<DocumentController> MakeRegionDocument(DocumentView image, Point? point)
 	    {
-		    return await image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
+		    return image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
 	    }
 
 		

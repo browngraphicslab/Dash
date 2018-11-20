@@ -38,9 +38,9 @@ namespace Dash
             SetupPdfBinding(pdfView, docController, key, context);
             return pdfView;
         }
-        public static async Task<DocumentController> MakeRegionDocument(DocumentView documentView, Point? point = null)
+        public static Task<DocumentController> MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
-            return await documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
+            return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
 
         public static void SetupPdfBinding(PdfView pdf, DocumentController controller, KeyController key, Context context)

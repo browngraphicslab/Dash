@@ -37,7 +37,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"> Select Collections to Include</TextBlock>
                     <Border Grid.Column="0" Grid.Row="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="2" Width="Auto" Height="Auto" Margin="10">
-                        <ScrollViewer Height="Auto" MaxHeight="900" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer Height="Auto" MaxHeight="300" VerticalScrollBarVisibility="Auto">
                             <ItemsControl x:Name="xCollectionsList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="dash:DocumentController">
@@ -55,8 +55,9 @@
                     </Border>
 
                     <TextBlock Grid.Column="1" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center">  Select Tags to Include</TextBlock>
-                    <Border Grid.Column="1" Grid.Row="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="2" Width="Auto" Height="Auto" Margin="10">
-                        <ScrollViewer Height="Auto" MaxHeight="900" VerticalScrollBarVisibility="Auto">
+                    <Border Grid.Column="1" Grid.Row="1" BorderBrush="{StaticResource DashDarkBlueBrush}"
+                            BorderThickness="2" Width="Auto" Height="Auto" Margin="10">
+                        <ScrollViewer Height="Auto" MaxHeight="300" VerticalScrollBarVisibility="Auto">
                             <ItemsControl x:Name="xTagsList">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="system:String">
