@@ -43,7 +43,7 @@ namespace Dash
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
             {
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = DesiredSize.Height; });
                 return base.MeasureOverride(availableSize);
             }
 
@@ -60,7 +60,7 @@ namespace Dash
                 _lastSizeRTFText = text;
                 _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; fe.Height = rtb.DesiredSize.Height; });
             } 
             return _lastDesiredSize;
         }
@@ -176,13 +176,13 @@ namespace Dash
 
             SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
 
-            var sizeBinding = new Binding
-            {
-                Source = SettingsView.Instance,
-                Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
-                Mode = BindingMode.OneWay
-            };
-            SetBinding(FontSizeProperty, sizeBinding);
+            //var sizeBinding = new Binding
+            //{
+            //    Source = SettingsView.Instance,
+            //    Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
+            //    Mode = BindingMode.OneWay
+            //};
+            //SetBinding(FontSizeProperty, sizeBinding);
 
             _annotationManager = new AnnotationManager(this);
 
@@ -792,8 +792,7 @@ namespace Dash
                 Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
             }
             Document.Selection.SetRange(s1, s2);
-            Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
-            Document.Selection.CharacterFormat.Size = origFormat.Size;
+            Document.Selection.CharacterFormat = origFormat;
             _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
         }
 

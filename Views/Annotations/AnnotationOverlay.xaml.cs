@@ -361,7 +361,7 @@ namespace Dash
             {
                 case PushpinType.Text:
                     {
-                        var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10), new Size(150, 75));
+                        var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10));
                         richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
                         return richText.Document;
                     }

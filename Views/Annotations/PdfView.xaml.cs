@@ -177,9 +177,8 @@ namespace Dash
             {
                 tgts.ToList().ForEach((tgt) =>
                 {
-                    tgt.ViewModel.LayoutDocument.SetHidden(false);
-
-                    tgt.ViewModel.ToggleHighlight();
+                    tgt.ViewModel.LayoutDocument.ToggleHidden();
+                    tgt.ViewModel.SetHighlight(!tgt.ViewModel.LayoutDocument.GetHidden());
                 });
                 return LinkHandledResult.HandledClose;
             }

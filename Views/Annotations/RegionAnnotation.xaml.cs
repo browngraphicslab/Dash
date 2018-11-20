@@ -110,6 +110,9 @@ namespace Dash
                 _regionPreviewGeometry.RenderTransform = ParentOverlay.XPreviewRect.RenderTransform;
                 ParentOverlay.XAnnotationCanvas.Children.Add(_regionPreviewGeometry);
                 ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            } else
+            {
+                SelectionManager.DeselectAll();
             }
         }
         public override double AddToRegion(DocumentController region)
@@ -117,7 +120,7 @@ namespace Dash
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController((_regionPreviewGeometry.RenderTransform as TranslateTransform).X, (_regionPreviewGeometry.RenderTransform as TranslateTransform).Y));
             region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(_regionPreviewGeometry.Width * (_isRightToLeft ? -1 : 1), _regionPreviewGeometry.Height));
 
-            return YPos;
+            return _previewStartPoint.Y;
         }
 
         private FrameworkElement makeRegionPreview(bool flip, double width, double height)
@@ -163,8 +166,8 @@ namespace Dash
                 geometry = r;
             }
             geometry.IsHitTestVisible = false;
-            geometry.Width = ParentOverlay.XPreviewRect.Width;
-            geometry.Height = ParentOverlay.XPreviewRect.Height;
+            geometry.Width = width;
+            geometry.Height = height;
             geometry.HorizontalAlignment = HorizontalAlignment.Left;
             geometry.VerticalAlignment = VerticalAlignment.Top;
             return geometry;
