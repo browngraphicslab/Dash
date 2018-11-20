@@ -32,6 +32,7 @@ namespace Dash
                 var triggerModifierInd = (int)indices[1].Data;
 
                 var signature = triggerInd == 2 ? "function(layoutDoc, fieldName, updatedValue) {" : "function(layoutDoc) {";
+                var originalScript = script;
                 script = $"{signature}\n\t{script}\n}}";
             
                 OperatorController op;
@@ -41,8 +42,8 @@ namespace Dash
                 }
                 catch (Exception e)
                 {
-                    var warning = $"Warning - execution threw an exception!\n\n{e.Message}\n\n";
-                    bDoc.SetField<TextController>(KeyStore.ScriptTextKey, warning + script, true);
+                    var warning = $"Warning - creating function threw an exception!\n\n{e.Message}\n\n";
+                    bDoc.SetField<TextController>(KeyStore.ScriptTextKey, warning + originalScript, true);
                     Console.WriteLine(e);
                     throw;
                 }

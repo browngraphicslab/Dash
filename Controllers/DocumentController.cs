@@ -31,13 +31,16 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
-        private static List<KeyController> BehaviorKeys = new List<KeyController>
+        private static readonly List<KeyController> BehaviorKeys = new List<KeyController>
         {
             // tapped events
             KeyStore.LeftTappedOpsKey,
             KeyStore.RightTappedOpsKey,
             KeyStore.DoubleTappedOpsKey,
-            KeyStore.FieldUpdatedOpsKey
+            KeyStore.FieldUpdatedOpsKey,
+            KeyStore.LowPriorityOpsKey,
+            KeyStore.ModeratePriorityOpsKey,
+            KeyStore.HighPriorityOpsKey
         };
 
         public override string ToString()

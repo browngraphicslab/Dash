@@ -247,9 +247,9 @@ namespace Dash.Popups
             xAddNewBehaviorPanel.Visibility = Visibility.Visible;
             xCancelButton.Visibility = Visibility.Visible;
             xConfirmButton.Visibility = Visibility.Collapsed;
-            var valid = xTriggeringEvent.SelectedIndex > 0 && 
-                        xBehavior.SelectedIndex > 0 &&
-                        _modifierMapping[xTriggeringEvent.SelectedIndex].SelectedIndex > 0;
+            var valid = xTriggeringEvent.SelectedIndex > -1 && 
+                        xBehavior.SelectedIndex > -1 &&
+                        _modifierMapping[xTriggeringEvent.SelectedIndex].SelectedIndex > -1;
             xAddButton.Visibility = valid ? Visibility.Visible : Visibility.Collapsed;
             xScriptAddButton.Visibility = Visibility.Collapsed;
             XScriptEntry.Visibility = Visibility.Collapsed;
@@ -264,7 +264,7 @@ namespace Dash.Popups
             _modifierMapping[selectedIndex].Visibility = Visibility.Visible;
             HideRemaining(selectedIndex);
 
-            if (xBehavior.SelectedItem != null && _modifierMapping[xTriggeringEvent.SelectedIndex].SelectedIndex > 0)
+            if (xBehavior.SelectedItem != null && _modifierMapping[xTriggeringEvent.SelectedIndex].SelectedIndex > -1)
             {
                 xAddButton.Visibility = Visibility.Visible;
                 xAddNewBehaviorPanel.BorderBrush = ColorConverter.HexToBrush("#407BB1");
@@ -278,7 +278,7 @@ namespace Dash.Popups
             var selectedIndex = xBehavior.SelectedIndex;
             if (selectedIndex < 0) return;
 
-            if (xTriggeringEvent.SelectedItem != null && _modifierMapping[xTriggeringEvent.SelectedIndex].SelectedIndex > 0)
+            if (xTriggeringEvent.SelectedItem != null && _modifierMapping[xTriggeringEvent.SelectedIndex].SelectedIndex > -1)
             {
                 xAddButton.Visibility = Visibility.Visible;
                 xAddNewBehaviorPanel.BorderBrush = ColorConverter.HexToBrush("#407BB1");
@@ -298,7 +298,7 @@ namespace Dash.Popups
 
         private void ModifierChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is ComboBox modifier && xTriggeringEvent.SelectedIndex > 0 && xBehavior.SelectedIndex > 0)
+            if (sender is ComboBox modifier && modifier.Visibility == Visibility.Visible && xTriggeringEvent.SelectedIndex > -1 && xBehavior.SelectedIndex > -1)
             {
                 xAddButton.Visibility = Visibility.Visible;
                 xAddNewBehaviorPanel.BorderBrush = ColorConverter.HexToBrush("#407BB1");

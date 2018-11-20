@@ -336,9 +336,9 @@ namespace Dash
             hiddenField.Data = !hiddenField.Data;
         }
 
-        public static ListController<OperatorController> GetBehaviors(this DocumentController document, KeyController scriptKey)
+        public static ListController<OperatorController> GetBehaviors(this DocumentController document, KeyController behaviorKey)
         {
-            return document.GetField<ListController<OperatorController>>(scriptKey);
+            return document.GetDataDocument().GetField<ListController<OperatorController>>(behaviorKey);
         }
 
         public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
