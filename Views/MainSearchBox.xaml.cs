@@ -165,7 +165,16 @@ namespace Dash
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
 
             var searchString = xAutoSuggestBox.Text;
-            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection => collection.GetDataDocument().SetField<TextController>(KeyStore.SearchStringKey, searchString, true), true));
+            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection =>
+            {
+                collection.GetDataDocument().SetField<TextController>(KeyStore.SearchStringKey, searchString, true);
+                var fields = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                for (var index = 0; index < fields.Count; index++)
+                {
+                    var doc = fields[index];
+                    doc.SetField(KeyStore.SearchOriginKey, docs[index], true);
+                }
+            }, true));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;

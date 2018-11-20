@@ -164,12 +164,15 @@ namespace Dash
             for (var i = 0; i < DraggedDocuments.Count; i++)
             {
                 var dragDoc = DraggedDocuments[i];
-                var view = DraggedDocumentViews[i];
-
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                if (DraggedDocumentViews != null)
                 {
-                    // if RegionCreator exists, then dragDoc becomes the region document
-                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                    var view = DraggedDocumentViews[i];
+
+                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    {
+                        // if RegionCreator exists, then dragDoc becomes the region document
+                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                    }
                 }
 
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
