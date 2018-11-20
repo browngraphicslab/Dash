@@ -201,10 +201,11 @@ namespace Dash
                             <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
                                 <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
                                     Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Top"" />
+                                    VerticalAlignment=""Center"" />
+                                <TextBlock FontFamily=""{StaticResource FontAwesome}"" VerticalAlignment=""Center"" FontSize=""20"" Foreground=""White"" Text=""{StaticResource RightArrowIcon}""></TextBlock>
                                 <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
                                     Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Top"" />
+                                    VerticalAlignment=""Center"" />
                             </StackPanel>
                             </Grid>";
                         EventManager.EventOccured(eventDoc, displayXaml);
