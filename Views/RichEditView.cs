@@ -828,10 +828,6 @@ namespace Dash
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         { 
-            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
-            {
-                CreateActionMenu(this);
-            }
             if (GetValue(TextProperty) is RichTextModel.RTD xamlText)
             {
                 Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -845,6 +841,10 @@ namespace Dash
                 GotFocus += RichTextView_GotFocus;
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
+            }
+            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
+            {
+                CreateActionMenu(this);
             }
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)

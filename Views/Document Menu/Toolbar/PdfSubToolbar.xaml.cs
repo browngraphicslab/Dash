@@ -278,7 +278,12 @@ namespace Dash
 
             _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
 	    }
-	}
+
+        private void xToPageBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            xToPageBox.Text = _currentPdfView.PageNum().ToString();
+        }
+    }
 
 
 }
