@@ -701,6 +701,20 @@ namespace Dash
 
         #region Clean Filters
 
+        private void SetFilterText()
+        {
+            int numFilters = _authorFilters.Count + _documentFilters.Count;
+            if (numFilters == 0)
+            {
+                xFilterButton.Content = "Filter by:";
+            }
+            else
+            {
+                xFilterButton.Content = "Filter by: (" + numFilters + ")";
+            }
+
+        }
+
         private void Document_OnClick(object sender, TappedRoutedEventArgs e)
         {
 
@@ -717,6 +731,7 @@ namespace Dash
                     _documentFilters.Add(document);
                     mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
+                SetFilterText();
             }
         }
 
@@ -742,6 +757,7 @@ namespace Dash
                     _authorFilters.Add(author);
                     mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
                 }
+                SetFilterText();
             }
         }
 
@@ -800,6 +816,7 @@ namespace Dash
                 mfi.FontWeight = Windows.UI.Text.FontWeights.Normal;
             }
             _documentFilters.Clear();
+            SetFilterText();
         }
 
         private void Clear_Options()
@@ -843,7 +860,7 @@ namespace Dash
                 else
                 {
                     _options.Add(option);
-                    bt.BorderBrush = new SolidColorBrush(Colors.Black);
+                    bt.BorderBrush = new SolidColorBrush(Colors.DarkOrange);
                 }
             }
         }

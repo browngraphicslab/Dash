@@ -165,7 +165,7 @@
             </Grid.Resources>
         </Grid>
 
-        <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="2" 
+        <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="2" Height="25"
                 Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Left" >
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout x:Name="XMenuFlyout" Opening="FlyoutBase_OnOpen">
@@ -181,21 +181,21 @@
             </FlyoutBase.AttachedFlyout>
         </Button>
 
-        <Grid x:Name="XOptionsGrid" Grid.Row="2" Grid.Column="0" Visibility ="Collapsed" Grid.ColumnSpan="2">
+        <Grid x:Name="XOptionsGrid" Grid.Row="2" Grid.Column="0" Visibility ="Collapsed" Grid.ColumnSpan="2" Margin="0 5 0 0 ">
             <Grid.RowDefinitions>
+                <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="XCaseSensButton" Grid.Column="0" Grid.Row="0" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="2 2 2 2" Click="XOptionButton_OnClick"/>
-            <Button x:Name="XMatchWordButton" Grid.Column="1" Grid.Row="0" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="5 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="2 2 2 2" Click="XOptionButton_OnClick"/>
-            <Button x:Name="XRegexButton" Grid.Column="2" Grid.Row="0" Content=".*" Background="{StaticResource DashDarkBlueBrush}" Foreground="White" Margin="5 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" Width ="15" BorderBrush="Transparent" BorderThickness="2 2 2 2" />
-            <Button x:Name="XClearFiltersButton" Grid.Column="0" Grid.Row="1" Content="X" Background="{StaticResource DashDarkBlueBrush}" Foreground="Red" Margin="0 5 0 0" Width="20" Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
+            <Button x:Name="XCaseSensButton" Grid.Column="0" Grid.Row="0" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XMatchWordButton" Grid.Column="2" Grid.Row="0" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XRegexButton" Grid.Column="0" Grid.Row="1" Content=".*" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 5 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" BorderBrush="Transparent" BorderThickness="3 3 3 3" />
+            <Button x:Name="XClearFiltersButton" Grid.Column="2" Grid.Row="1" Content="X" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="Red" Margin="0 5 0 0"  Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
         </Grid>
 
         
