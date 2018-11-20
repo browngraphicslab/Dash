@@ -164,7 +164,8 @@ namespace Dash
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
             var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
 
-            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page));
+            var searchString = xAutoSuggestBox.Text;
+            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, (collection) => collection.GetDataDocument().SetField<TextController>(KeyStore.SearchStringKey, searchString, true)));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;

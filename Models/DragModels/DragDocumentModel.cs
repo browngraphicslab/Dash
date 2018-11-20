@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
@@ -34,6 +35,7 @@ namespace Dash
 
         public CollectionViewType ViewType { get; set; } = CollectionViewType.Freeform;
         public bool DraggingJoinButton { get; set; } = false;
+        public Action<DocumentController> CollectionCreationMethod { get; set; } = null;
 
         public DragDocumentModel(DocumentController draggedDocument)
         {
@@ -55,11 +57,12 @@ namespace Dash
             Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
         }
 
-        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType)
+        public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null)
         {
             DraggedDocuments = draggedDocuments;
             ViewType = viewType;
             MakeCollection = true;
+            CollectionCreationMethod = collectionCreationMethod;
         }
 
         /*
@@ -132,7 +135,19 @@ namespace Dash
                 }
             }
 
-            return MakeCollection ? new List<DocumentController> { new CollectionNote(where ?? new Point(),  ViewType, double.NaN, double.NaN, collectedDocuments: docs).Document } : docs;
+            if (MakeCollection)
+            {
+                var collection = new CollectionNote(@where ?? new Point(), ViewType, double.NaN, double.NaN, docs).Document;
+                CollectionCreationMethod?.Invoke(collection);
+                return new List<DocumentController>
+                {
+                    collection
+                };
+            }
+            else
+            {
+                return docs;
+            }
         }
 
         //TODO do we want to create link here?
