@@ -24,9 +24,9 @@ namespace Dash
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalSqliteEndpoint>();
+            serviceCollection.AddSingleton<LocalPDFEndpoint, LocalPDFEndpoint>();
             return serviceCollection.BuildServiceProvider();
         }
-
     }
 
     

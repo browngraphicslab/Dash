@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Windows.Foundation;
+using Windows.UI.Xaml;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Data;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using MyToolkit.Utilities;
+using NewControls.Geometry;
 using Point = Windows.Foundation.Point;
 
 namespace Dash
@@ -38,11 +42,11 @@ namespace Dash
                 return;
             }
 
-            var rotated    = _pageRotation != 0;
-            var mainData   = (TextRenderInfo)data;
+            var rotated = _pageRotation != 0;
+            var mainData = (TextRenderInfo)data;
             var pageHeight = _pageSize.GetHeight();
-            var pageWidth  = _pageSize.GetWidth();
-            var aspect     = rotated ? pageWidth / pageHeight : 1;
+            var pageWidth = _pageSize.GetWidth();
+            var aspect = rotated ? pageWidth / pageHeight : 1;
 
             foreach (var textData in mainData.GetCharacterRenderInfos())
             {
@@ -51,8 +55,8 @@ namespace Dash
                 // bottom right corner of the bounding box
                 var rawEndPt = textData.GetDescentLine().GetEndPoint();
 
-                var start = new Point(rawStartPt.Get(rotated ? 1 : 0) * aspect, (rotated ? pageHeight - rawStartPt.Get(0) / aspect : rawStartPt.Get(1)));
-                var end   = new Point(rawEndPt.Get(rotated   ? 1 : 0) * aspect, (rotated ? pageHeight - rawEndPt.Get(0)   / aspect : rawEndPt.Get(1)));
+                var start = new Point(rawStartPt.Get(rotated ? 1 : 0) * aspect, rotated ? pageHeight - rawStartPt.Get(0) / aspect : rawStartPt.Get(1));
+                var end = new Point(rawEndPt.Get(rotated ? 1 : 0) * aspect, rotated ? pageHeight - rawEndPt.Get(0) / aspect : rawEndPt.Get(1));
 
                 #region Commented Out Code
 
@@ -112,7 +116,7 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public (List<SelectableElement> elements, string text, List<int> pages) GetSelectableElements(int startPage, int endPage)
+        public (List<SelectableElement> elements, string, List<int> pages, List<List<PDFSection>> vagueSectionList) GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
@@ -122,12 +126,12 @@ namespace Dash
                 {
                     list.Add(0);
                 }
-                return (new List<SelectableElement>(), "", list);
+                return (new List<SelectableElement>(), "", list, new List<List<PDFSection>>());
             }
 
             var pageElements = new List<List<SelectableElement>>();
             // if the end and start page are the same, use just that one page, otherwise use the range between the two indices
-            var requestedPages = endPage == startPage ? new List<Rectangle>{_pages[startPage]} : _pages.GetRange(startPage, endPage - startPage);
+            var requestedPages = endPage == startPage ? new List<Rectangle> { _pages[startPage] } : _pages.GetRange(startPage, endPage - startPage);
             // loop through each requested page (pages are stored as rectangles)
             int index = startPage;
             foreach (var requestedPage in requestedPages)
@@ -157,19 +161,48 @@ namespace Dash
             var pages = new List<int>(requestedPages.Count);
             var lastIndex = 0;
             // sort and add the elements in each page to a list of elements
+            var vagueSectionSuperList = new List<List<PDFSection>>();
             foreach (var page in pageElements)
             {
-                var newElements = GetSortedSelectableElements(page, elements.Count);
+                var (newElements, vagueSectionList) = GetSortedSelectableElements(page, elements.Count);
+                vagueSectionSuperList.AddRange(vagueSectionList);
                 elements.AddRange(newElements);
                 // set the last index to the last index of the new elements, or the last index of the previous page if no new elements, or 0 if no previous pages.
                 lastIndex += newElements.Count;
                 pages.Add(lastIndex);
             }
 
-            StringBuilder sb = new StringBuilder(elements.Count);
-            elements.ForEach(se => sb.Append(se.Type == SelectableElement.ElementType.Text ? (string)se.Contents : ""));
 
-            return (elements, sb.ToString(), pages);
+            StringBuilder sb = new StringBuilder(elements.Count);
+            var elemIndex = 0;
+            var prevIndex = 0;
+            var prevElement = elements.First();
+            prevElement.Index = 0;
+            var elemClone = new List<SelectableElement>(elements);
+            foreach (var element in elemClone.Skip(1))
+            {
+                var nchar = ((string)element.Contents).First();
+                if (prevIndex > 0 && sb.Length > 0 &&
+                    (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height
+                     || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
+                     (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
+                      !char.IsLower(sb[sb.Length - 1]))) &&
+                    element.Bounds.Top >
+                    prevElement.Bounds.Bottom)
+                {
+                    elements.Insert(prevIndex,
+                        new SelectableElement(++prevIndex, "\n",
+                            new Rect(prevElement.Bounds.Right, prevElement.Bounds.Top, prevElement.Bounds.Width,
+                                prevElement.Bounds.Height), prevElement.FontFamily, prevElement.AvgWidth));
+                    sb.Append("\n");
+                }
+
+                sb.Append((string)element.Contents);
+                element.Index = ++prevIndex;
+                prevElement = element;
+            }
+
+            return (elements, sb.ToString(), pages, vagueSectionSuperList);
         }
 
         /// <summary>
@@ -186,8 +219,8 @@ namespace Dash
             foreach (var selectableElement in page.Skip(1))
             {
                 // if the element is deemed to be on a new line, create a new one and add it
-                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height * 2 / 3 ||
-                    Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height / 2)
+                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height ||
+                    Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height)
                 {
                     element = selectableElement;
                     lines.Add(new List<SelectableElement> { element });
@@ -209,7 +242,7 @@ namespace Dash
             public Rect Bounds;
             public bool Overlaps(SelectableElement sel)
             {
-                var selCenter = (sel.Bounds.Left + sel.Bounds.Right)/ 2;
+                var selCenter = (sel.Bounds.Left + sel.Bounds.Right) / 2;
                 return Bounds.Left < selCenter && selCenter < Bounds.Right;
             }
         }
@@ -221,7 +254,7 @@ namespace Dash
         /// </summary>
         private List<List<SelectableElement>> SortIntoColumns(List<List<SelectableElement>> lines)
         {
-            var columns = new List<PdfColumnDef> ();
+            var columns = new List<PdfColumnDef>();
             var strings = new List<string>();
             // loop through every line
             foreach (var line in lines)
@@ -251,7 +284,7 @@ namespace Dash
                     // while there's space to move the content to another column, based on what the previous line width is
                     while (firstEle.Bounds.Left > columns[col].Bounds.Right + currFontWidth)
 
-                    //!string.IsNullOrWhiteSpace(firstEle.Contents as string) && columns[col].SelectableElements.Any() && temp - lineWidth > columns[col].SelectableElements.Min(i => i.RawIndex == -1 ? int.MaxValue : i.Bounds.X) &&
+                    //!string.IsNullOrWhiteSpace(firstEle.Contents as string) && selectableElementsList[col].SelectableElements.Any() && temp - lineWidth > selectableElementsList[col].SelectableElements.Min(i => i.RawIndex == -1 ? int.MaxValue : i.Bounds.X) &&
                     //       lineWidth != 0.0)
                     {
                         columns[col].SelectableElements.Add(new SelectableElement(-1, "", new Rect()) { RawIndex = -1 }); // there's a gap
@@ -309,7 +342,7 @@ namespace Dash
                     {
                         // if the element is far enough away from the previous element (2.75 seems to be a nice constant?)
                         var nextColumn = selectableLeft > columns[col].Bounds.Right + currFontWidth ||
-                                         selectableLeft > lastX + currFontWidth*1.1;
+                                         selectableLeft > lastX + currFontWidth * 1.1;
                         if (nextColumn && !whiteSpace)
                         {
                             if (!string.IsNullOrWhiteSpace(strings[col]))
@@ -330,7 +363,7 @@ namespace Dash
                                 newCol = columns.Count - 1;
                             }
                             col = newCol;
-                            PdfColumnDef prev = columns[newCol-1];
+                            PdfColumnDef prev = columns[newCol - 1];
                             if (selectableLeft < prev.Bounds.Right) prev.Bounds = new Rect(prev.Bounds.Left, prev.Bounds.Top, Math.Max(1, lastX - prev.Bounds.Left), prev.Bounds.Height);
                         }
                         // add to whatever column we're indexed in
@@ -366,15 +399,15 @@ namespace Dash
         ///     Given a list of selectable elements, removes any duplicates in the list. This method doesn't
         ///     return a list, it only modifies the list passed in.
         /// </summary>
-        private void RemoveDuplicates(IReadOnlyCollection<List<SelectableElement>> columns)
+        private void RemoveDuplicates(List<List<SelectableElement>> selectableElementsList)
         {
-            // create a copy of the columns so we can loop through it and make changes in the original
-            var columnCopy = new List<List<SelectableElement>>(columns);
-            // loop through every column in the copy of columns
+            // create a copy of the selectableElementsList so we can loop through it and make changes in the original
+            var columnCopy = new List<List<SelectableElement>>(selectableElementsList);
+            // loop through every column in the copy of selectableElementsList
             foreach (var column in columnCopy)
             {
                 var prevElem = column.First();
-                var matchingColumn = columns.First(col => col.Equals(column));
+                var matchingColumn = selectableElementsList.First(col => col.Equals(column));
                 // this commented code is only necessary if we want to uncomment out the line break code
                 //var prevLineY = new Vector((float)prevElem.Bounds.Y,
                 //    (float)(prevElem.Bounds.Y + prevElem.Bounds.Height), 0);
@@ -425,54 +458,303 @@ namespace Dash
             }
         }
 
-        private List<SelectableElement> GetSortedSelectableElements(List<SelectableElement> page, int elementCount)
+        private double[] ProcessXSpacing(List<List<SelectableElement>> lines)
+        {
+            var spacings = new List<double>();
+            foreach (var line in lines)
+            {
+                line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
+                var lineSpacings = new List<double>();
+
+                var prevElem = line.First();
+                var charsToRemove = new List<SelectableElement>();
+                foreach (var elem in line.Skip(1))
+                {
+                    if ((elem.Contents as string).Any() && !char.IsWhiteSpace((elem.Contents as string)[0]))
+                    {
+                        if (elem.Bounds.Left - prevElem.Bounds.Right < elem.Bounds.Width * 4)
+                        {
+                            lineSpacings.Add(elem.Bounds.Left - prevElem.Bounds.Right);
+                        }
+                        prevElem = elem;
+                    }
+                }
+
+                foreach (var chr in charsToRemove)
+                {
+                    line.Remove(chr);
+                }
+
+                spacings.AddRange(lineSpacings);
+            }
+
+            spacings.Sort((s1, s2) => Math.Sign(s1 - s2));
+
+            return spacings.ToArray();
+        }
+
+        private double GetLineSpacing(List<List<SelectableElement>> lines)
+        {
+            var prevLine = lines.First();
+            var lineSpacings = new List<double>();
+            foreach (var line in lines.Skip(1))
+            {
+                lineSpacings.Add(line[0].Bounds.Top - prevLine[0].Bounds.Bottom);
+                prevLine = line;
+            }
+
+            return lineSpacings.Median();
+        }
+
+        private List<PDFSection> SplitIntoSections(double charSpacing, double wordSpacing, double lineSpacing, List<List<SelectableElement>> lines)
+        {
+            var sections = new List<PDFSection>();
+
+            foreach (var line in lines)
+            {
+                line.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
+                foreach (var elem in line)
+                {
+                    PDFSection shouldAddNewSection = null;
+                    var sectionsToRemove = new List<PDFSection>();
+                    if (elem != null && (string)elem.Contents == "F")
+                    {
+
+                    }
+
+                    foreach (var section in sections)
+                    {
+                        var rectToCheck = new Rect(section.Bounds.X - 4 * wordSpacing,
+                            section.Bounds.Y - 8 * lineSpacing,
+                            section.Bounds.Width + 8 * wordSpacing, section.Bounds.Height + 16 * lineSpacing);
+                        rectToCheck.Intersect(elem.Bounds);
+
+                        if (!rectToCheck.IsEmpty)
+                        {
+                            if (shouldAddNewSection != null)
+                            {
+                                shouldAddNewSection.Bounds = 
+                                    Union(section.Bounds, shouldAddNewSection.Bounds);
+                                shouldAddNewSection.SectionElements.AddRange(section.SectionElements);
+                                sectionsToRemove.Add(section);
+                                continue;
+                            }
+                            section.SectionElements.Add(elem);
+                            if ((elem.Contents as string).Any() && !(char.IsWhiteSpace((elem.Contents as string)[0]) || (elem.Contents as string)[0] == 0xa0))
+                            {
+                                section.Bounds = Union(section.Bounds, elem.Bounds);
+                                //section.Bounds.Union(elem.Bounds);
+                                shouldAddNewSection = section;
+                            }
+                            else
+                            {
+                                shouldAddNewSection = section;
+                                break;
+                            }
+                        }
+                    }
+
+                    foreach (var section in sectionsToRemove)
+                    {
+                        sections.Remove(section);
+                    }
+
+                    if (shouldAddNewSection == null)
+                    {
+                        sections.Add(new PDFSection(elem));
+                    }
+                }
+            }
+
+            return sections;
+        }
+
+        private Rect Union(Rect r1, Rect r2)
+        {
+            double left = Math.Min(r1.Left, r2.Left);
+            double right = Math.Max(r1.Right, r2.Right);
+            double top = Math.Min(r1.Top, r2.Top);
+            double bottom = Math.Max(r1.Bottom, r2.Bottom);
+            return new Rect(left, top, right - left, bottom - top);
+        }
+
+        private List<PDFSection> SplitIntoVagueSections(double wordSpacing, double lineSpacing, List<PDFSection> sections)
+        {
+            var vagueSections = new List<PDFSection>();
+            List<(double start, double end, PDFSection section)> sectionWidths = new List<(double, double, PDFSection)>();
+
+            sections.Sort((s1, s2) => Math.Sign(s1.Bounds.Y - s2.Bounds.Y));
+
+            foreach (var section in sections)
+            {
+                sectionWidths.Add((section.Bounds.Left, section.Bounds.Right, section));
+            }
+
+            foreach (var sectionWidth in sectionWidths)
+            {
+                bool shouldAddNewSection = true;
+                foreach (var vagueSection in vagueSections)
+                {
+                    bool validLeft = Math.Abs(sectionWidth.start - vagueSection.Bounds.Left) < wordSpacing * 2;
+                    bool validRight = Math.Abs(sectionWidth.end - vagueSection.Bounds.Right) < wordSpacing * 4 /*||
+                                      (sectionWidth.end < vagueSection.Bounds.Right &&
+                                       (sectionWidth.section.Bounds.Width < (vagueSection.Bounds.Width / 2) ||
+                                        vagueSection.Bounds.Width < sectionWidth.section.Bounds.Width / 2))*/;
+                    bool validY = Math.Abs(sectionWidth.section.Bounds.Top - vagueSection.Bounds.Bottom) <
+                                  lineSpacing * 8;
+                    bool inBetween = sectionWidth.start > vagueSection.Bounds.Left - wordSpacing * 4 &&
+                                     sectionWidth.end < vagueSection.Bounds.Right + wordSpacing * 4;
+
+                    if ((validLeft && validRight))
+                    {
+                        vagueSection.SectionElements.AddRange(sectionWidth.section.SectionElements);
+                        vagueSection.Bounds = Union(vagueSection.Bounds, sectionWidth.section.Bounds);
+                        shouldAddNewSection = false;
+                    }
+                }
+
+                if (shouldAddNewSection)
+                {
+                    vagueSections.Add(sectionWidth.section);
+                }
+            }
+
+            return vagueSections;
+        }
+
+        private (List<SelectableElement>, List<List<PDFSection>>) GetSortedSelectableElements(List<SelectableElement> page, int elementCount)
         {
             // sort the elements in a page vertically
             page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
             var elements = new List<SelectableElement>();
-            var lines = SortIntoLines(page);
-            var columns = SortIntoColumns(lines);
-            //RemoveDuplicates(columns);
 
-            var colIndexes = columns.Select((c) => 0).ToList();
-            // loop through each column in increasing order
-            while (true)
+            var lines = SortIntoLines(page);
+
+            double[] spacingData = ProcessXSpacing(lines);
+
+            (int[] clusters, double[] spaceMeans) = KMeansCluster.Cluster(spacingData, 2);
+            lines.Sort((l1, l2) => Math.Sign(l1.First().Bounds.Y - l2.First().Bounds.Y));
+            double lineSpacing = Math.Max(0, GetLineSpacing(lines));
+            double charSpacing = spaceMeans.Min();
+            double wordSpacing = Math.Max(0, spaceMeans.Max());
+
+            var sections = SplitIntoSections(charSpacing, wordSpacing, lineSpacing, lines);
+
+            var vagueSections = SplitIntoVagueSections(wordSpacing, lineSpacing, sections);
+
+            vagueSections.Sort((s1, s2) => Math.Sign(s1.Bounds.Y - s2.Bounds.Y));
+
+            var vagueSectionsSorted = new List<List<PDFSection>> { new List<PDFSection> { vagueSections.First() } };
+            foreach (var vagueSection in vagueSections.Skip(1))
             {
-                int whichCol = -1;
-                var lowIndex = int.MaxValue;
-                for (int i = 0; i < colIndexes.Count; i++)
-                    if (columns[i].Count > colIndexes[i] && columns[i][colIndexes[i]].RawIndex < lowIndex)
-                    {
-                        whichCol = i;
-                        lowIndex = columns[i][colIndexes[i]].RawIndex;
-                    }
-                // foreach (var column in columns)
-                if (whichCol == -1)
-                    break;
-                var column = columns[whichCol];
+                // Math.Abs(vagueSection.Bounds.Left - vagueSectionsSorted.Last().First().Bounds.Left) < wordSpacing * 4
+
+                bool foundSection = false;
+                foreach (var vaguerSection in vagueSectionsSorted)
                 {
-                    // loop through each element
-                    for (int idx = colIndexes[whichCol]; idx < column.Count; idx++)
+                    bool vagueBtwnVaguer =
+                        vagueSection.Bounds.Top > vaguerSection.First().Bounds.Top - 8 * lineSpacing &&
+                        vagueSection.Bounds.Bottom < vaguerSection.First().Bounds.Bottom + 8 * lineSpacing;
+                    bool vaguerBtwnVague =
+                        vaguerSection.First().Bounds.Top < vagueSection.Bounds.Top - 8 * lineSpacing &&
+                        vaguerSection.First().Bounds.Bottom < vagueSection.Bounds.Bottom + 8 * lineSpacing;
+
+                    if (vagueBtwnVaguer)
                     {
-                        var selectableElement = column[idx];
-                        if (selectableElement.RawIndex == -1)
+                        vaguerSection.Add(vagueSection);
+                        foundSection = true;
+                        break;
+                    }
+                }
+
+                if (!foundSection)
+                {
+                    vagueSectionsSorted.Add(new List<PDFSection> { vagueSection });
+                }
+            }
+
+            var vagueSectionsToRemove = new List<PDFSection>();
+            foreach (var vagueSectionList in vagueSectionsSorted)
+            {
+                foreach (var vagueSection in vagueSectionList)
+                {
+                    foreach (var vagueSectionList2 in vagueSectionsSorted)
+                    {
+                        foreach (var vagueSection2 in vagueSectionList2)
                         {
-                            colIndexes[whichCol]++;
-                            break;
-                        }
-                        else
-                        {
-                            // add it
-                            selectableElement.Index = elements.Count + elementCount;
-                            elements.Add(selectableElement);
-                            colIndexes[whichCol]++;
+                            var rectToCheck = new Rect(vagueSection.Bounds.X - 2 * wordSpacing,
+                                vagueSection.Bounds.Y - 2 * lineSpacing, vagueSection.Bounds.Width + 4 * wordSpacing,
+                                vagueSection.Bounds.Height + 4 * lineSpacing);
+                            if (vagueSection == vagueSection2 || vagueSectionsToRemove.Contains(vagueSection2))
+                            {
+                                continue;
+                            }
+
+                            if (rectToCheck.Contains(vagueSection2.Bounds))
+                            {
+                                // find spot in vaguesection 1 to add vaguesection2
+                                for (var index = 1; index < vagueSection.SectionElements.Count; index++)
+                                {
+                                    bool betweenY = vagueSection.SectionElements[index - 1].Bounds.Y -
+                                                    vagueSection.SectionElements[index - 1].Bounds.Height <
+                                                    vagueSection2.SectionElements[0].Bounds.Y &&
+                                                    vagueSection.SectionElements[index].Bounds.Y +
+                                                    vagueSection.SectionElements[index].Bounds.Height >
+                                                    vagueSection2.SectionElements[0].Bounds.Y;
+                                    if (betweenY)
+                                    {
+                                        vagueSection.SectionElements.InsertRange(index - 1, vagueSection2.SectionElements);
+                                        vagueSectionsToRemove.Add(vagueSection2);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-            var outstr = elements.Aggregate("", ((seed, e) => seed + (e.Contents as string)));
 
-            return elements;
+            var sectionsRemoved = 0;
+            foreach (var vagueSectionList in vagueSectionsSorted)
+            {
+                foreach (var section in vagueSectionsToRemove)
+                {
+                    sectionsRemoved += vagueSectionList.Remove(section) ? 1 : 0;
+                }
+            }
+
+            foreach (var vagueSectionList in vagueSectionsSorted)
+            {
+                vagueSectionList.Sort((s1, s2) => Math.Sign(s1.Bounds.X - s2.Bounds.X));
+            }
+
+            var sortedElements = new List<SelectableElement>();
+            var i = 0;
+            SelectableElement previousElement = null;
+            foreach (var vagueSectionList in vagueSectionsSorted)
+            {
+                foreach (var vagueSection in vagueSectionList)
+                {
+                    foreach (var element in vagueSection.SectionElements)
+                    {
+                        bool overlapping = element.Bounds.Left - previousElement?.Bounds.Left < wordSpacing / 2;
+                        bool sameY = element.Bounds.Top - previousElement?.Bounds.Top < element.Bounds.Height / 2;
+                        bool sameText = element.Contents.Equals(previousElement?.Contents);
+                        if (previousElement != null && overlapping && sameY && sameText)
+                        {
+                            continue;
+                        }
+
+                        element.Index = i;
+                        i++;
+                        sortedElements.Add(element);
+
+                        previousElement = element;
+                    }
+                }
+            }
+
+            return (sortedElements, /*new List<List<PDFSection>> {sections}*/ vagueSectionsSorted);
         }
 
         /// <summary>

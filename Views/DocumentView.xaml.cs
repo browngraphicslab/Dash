@@ -167,7 +167,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
-            Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+            //Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 10;
@@ -206,6 +206,7 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
+                return;
                 bool right = e.IsRightPressed();
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -369,7 +370,7 @@ namespace Dash
                           ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
-            if (!Double.IsNaN(Width))
+            if (!double.IsNaN(Width))
             {
                 extraOffsetX = ActualWidth - Width;
             }
@@ -377,7 +378,7 @@ namespace Dash
 
             double extraOffsetY = 0;
 
-            if (!Double.IsNaN(Height))
+            if (!double.IsNaN(Height))
             {
                 extraOffsetY = ActualHeight - Height;
             }
@@ -960,13 +961,13 @@ namespace Dash
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                     {
-                        dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
+                        dragDoc = await creatorFunc(dm.DraggedDocumentViews[index]);
                     }
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
@@ -1174,9 +1175,9 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = AnyBehaviors() ? FontAwesomeIcon.AddressBook : FontAwesomeIcon.Plus }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
-                {
-                    await UIFunctions.ManageBehaviors(ViewModel.DocumentController);
-                };
+            {
+                await UIFunctions.ManageBehaviors(ViewModel.DocumentController);
+            };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()

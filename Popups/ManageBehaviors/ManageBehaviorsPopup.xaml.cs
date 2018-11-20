@@ -67,7 +67,7 @@ namespace Dash.Popups
             xFieldModifiers.ItemsSource = fields;
             xBehaviorsPopup.IsOpen = true;
             MainPage.Instance.XGrid.Children.Add(this);
-            MainPage.Instance.xOverlay.Visibility = Visibility.Visible;
+            MainPage.Instance.OverlayVisibility(Visibility.Visible);
             return _tcs.Task;
         }
 
@@ -181,7 +181,7 @@ namespace Dash.Popups
         {
             xBehaviorsPopup.IsOpen = false;
             MainPage.Instance.XGrid.Children.Remove(this);
-            MainPage.Instance.xOverlay.Visibility = Visibility.Collapsed;
+            MainPage.Instance.OverlayVisibility(Visibility.Collapsed);
             _tcs.SetResult(new ListController<DocumentController>(ViewModel.Behaviors.ToList()));
         }
 

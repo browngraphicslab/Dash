@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Windows.UI.Xaml.Documents;
 using Dash.Controllers.Operators;
+using Org.BouncyCastle.Asn1.Cms;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -400,7 +401,7 @@ namespace Dash
 
                 var dropRegion = dragDoc;
                 if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dropRegion = KeyStore.RegionCreator[dragDoc.DocumentType](view);
+                    dropRegion = await KeyStore.RegionCreator[dragDoc.DocumentType](view);
                 linkDocumentToSelection(dropRegion, true);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
@@ -475,7 +476,44 @@ namespace Dash
             menu.AddAction("BASIC", new ActionViewModel("To-Do",  "Create a todo note",  CreateTodoAction, source));
             menu.AddAction("BASIC", new ActionViewModel("Google", "Google Clip",         GoogleClip,       source));
             menu.AddAction("BASIC", new ActionViewModel("Bio",    "Google Bio",          GoogleBio,       source));
+            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue", CreateTravelogue, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
+        }
+
+        private async Task<bool> CreateTravelogue(ActionFuncParams actionParams)
+        {
+            var (collections, tags) = await MainPage.Instance.PromptTravelogue();
+
+            if (collections == null || tags == null)
+            {
+                return true;
+            }
+
+            var events = EventManager.GetEvents();
+
+            var eventDocs = new List<DocumentController>();
+            foreach (var eventDoc in events)
+            {
+                if (collections.Contains(eventDoc.GetDataDocument()
+                    .GetField<DocumentController>(KeyStore.EventCollectionKey)))
+                {
+                    var eventTags = eventDoc.GetDataDocument().GetField<TextController>(KeyStore.EventTagsKey).Data.ToUpper()
+                        .Split(", ");
+                    if (tags.Any(t => eventTags.Contains(t)))
+                    {
+                        eventDocs.Add(eventDoc);
+                    }
+                }
+            }
+
+            // create collection
+            var collection = new CollectionNote(this.ViewModel.Position, CollectionViewType.Stacking, 500, 500,
+                eventDocs);
+            collection.Document.SetTitle("Travelogue Created " + DateTime.Now.ToLocalTime().ToString("f"));
+            var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            cfv?.ViewModel.AddDocument(collection.Document);
+
+            return true;
         }
 
         private Task<bool> MakeTitleAction(ActionFuncParams actionParams)

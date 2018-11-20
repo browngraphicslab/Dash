@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using DashShared;
 using Windows.UI.Xaml;
@@ -160,7 +161,6 @@ namespace Dash
 	    public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible");
         public static KeyController ImageStretchKey                      = KeyController.Get("ImageStretch");
-
         public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
         public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
         public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
@@ -169,17 +169,29 @@ namespace Dash
         public static KeyController RemoveOperatorsKey                   = KeyController.Get("_RemoveOperators");
         public static KeyController XamlKey                              = KeyController.Get("Xaml");
         public static KeyController DefaultTextboxXamlKey                = KeyController.Get("DefaultTextboxXamlKey");
+        public static KeyController EventManagerKey                      = KeyController.Get("_EventManagerKey");
+        public static KeyController EventCollectionKey                   = KeyController.Get("Event Collection");
+        public static KeyController EventTagsKey                         = KeyController.Get("Event Tags");
+        public static KeyController EventDisplay1Key                     = KeyController.Get("_EventDisplay1Key");
+        public static KeyController EventDisplay2Key                     = KeyController.Get("_EventDisplay2Key");
         public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
         public static KeyController GlobalDefinitionsKey                 = KeyController.Get("_GlobalDefinitions");
+	    public static KeyController IsAnnotationKey                      = KeyController.Get("IsAnnotation");
+        public static KeyController IsTemplateKey                        = KeyController.Get("IsTemplate");
+        public static KeyController InitialSizeKey                       = KeyController.Get("_InitialSize");
+	    public static KeyController PdfHeightKey                         = KeyController.Get("_PdfHeight");
+        public static KeyController YouTubeUrlKey                        = KeyController.Get("_YouTubeUrl");
+        public static KeyController SearchStringKey                      = KeyController.Get("SearchStringOrigin");
+        public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
 
-        public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
+	    public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
 			TypeRenderer[type] = makeViewFunc;
 			RegionCreator[type] = makeRegionFunc;
 		}
 
 		public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
-		public delegate DocumentController MakeRegionFunc(DocumentView view, Point? point = null);
+		public delegate Task<DocumentController> MakeRegionFunc(DocumentView view, Point? point = null);
 		public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
 		public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
 

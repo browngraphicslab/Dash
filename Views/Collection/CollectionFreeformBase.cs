@@ -874,9 +874,24 @@ namespace Dash
                 var items = GetItemsControl().ItemsPanelRoot.Children;
                 foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
                 {
+                    if (dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType))
+                        continue;
                     if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
                     {
                         selectedDocs.Add(dv);
+                    }
+                }
+                if (selectedDocs.Count == 0)
+                {
+                    foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
+                    {
+                        if (!dv.ViewModel.AreContentsHitTestVisible && dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType))
+                        {
+                            if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
+                            {
+                                selectedDocs.Add(dv);
+                            }
+                        }
                     }
                 }
             }

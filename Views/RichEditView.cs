@@ -41,16 +41,16 @@ namespace Dash
         {
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastDesiredSize;
-            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width > ViewModel.Width)
+            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
             {
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = DesiredSize.Height; });
                 return base.MeasureOverride(availableSize);
             }
 
             var text = getRtfText();
             var readable = getReadableText();
-            if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
-                Document.GetText(TextGetOptions.FormatRtf, out text);
+            //if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
+            //    Document.GetText(TextGetOptions.FormatRtf, out text);
             if (text != _lastSizeRTFText || _lastDesiredSize == new Size() || _lastSizeAvailableSize != availableSize)
             {
                 var rtb = MainPage.Instance.RTBHackBox;
@@ -60,7 +60,7 @@ namespace Dash
                 _lastSizeRTFText = text;
                 _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; fe.Height = rtb.DesiredSize.Height; });
             } 
             return _lastDesiredSize;
         }
@@ -176,13 +176,13 @@ namespace Dash
 
             SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
 
-            var sizeBinding = new Binding
-            {
-                Source = SettingsView.Instance,
-                Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
-                Mode = BindingMode.OneWay
-            };
-            SetBinding(FontSizeProperty, sizeBinding);
+            //var sizeBinding = new Binding
+            //{
+            //    Source = SettingsView.Instance,
+            //    Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
+            //    Mode = BindingMode.OneWay
+            //};
+            //SetBinding(FontSizeProperty, sizeBinding);
 
             _annotationManager = new AnnotationManager(this);
 
@@ -360,26 +360,7 @@ namespace Dash
 
         private async void this_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.TryGetLoneDragDocAndView(out DocumentController dragDoc, out DocumentView view))
-            {
-                if (view != null && !MainPage.Instance.IsShiftPressed() && string.IsNullOrWhiteSpace(Document.Selection.Text))
-                {
-                    e.Handled = false;
-                    return;
-                }
-
-                var dropRegion = dragDoc;
-                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                    dropRegion = KeyStore.RegionCreator[dragDoc.DocumentType](view);
-                linkDocumentToSelection(dropRegion, true);
-
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
-            }
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
-            }
-            e.Handled = true;
+            e.Handled = false;
         }
 
         private void CreateActionMenu(RichEditBox sender)
@@ -426,7 +407,45 @@ namespace Dash
             menu.AddAction("BASIC", new ActionViewModel("To-Do",  "Create a todo note",  CreateTodoAction, source));
             menu.AddAction("BASIC", new ActionViewModel("Google", "Google Clip",         GoogleClip,       source));
             menu.AddAction("BASIC", new ActionViewModel("Bio",    "Google Bio",          GoogleBio,       source));
+            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue", CreateTravelogue, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
+        }
+
+        private async Task<bool> CreateTravelogue(ActionFuncParams actionParams)
+        {
+            var (collections, tags) = await MainPage.Instance.PromptTravelogue();
+
+            if (collections == null || tags == null)
+            {
+                return true;
+            }
+
+            var events = EventManager.GetEvents();
+
+            var eventDocs = new List<DocumentController>();
+            foreach (var eventDoc in events)
+            {
+                if (collections.Contains(eventDoc.GetDataDocument()
+                    .GetField<DocumentController>(KeyStore.EventCollectionKey)))
+                {
+                    var eventTags = eventDoc.GetDataDocument().GetField<TextController>(KeyStore.EventTagsKey).Data.ToUpper()
+                        .Split(", ");
+                    if (tags.Any(t => eventTags.Contains(t)))
+                    {
+                        eventDocs.Add(eventDoc);
+                    }
+                }
+            }
+
+            // create collection
+            var collection = new CollectionNote(this.ViewModel.Position, CollectionViewType.Stacking, 500, 500,
+                eventDocs);
+            collection.Document.SetTitle("Travelogue Created " + DateTime.Now.ToLocalTime().ToString("f"));
+
+            var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            cfv?.ViewModel.AddDocument(collection.Document);
+
+            return true;
         }
 
         private Task<bool> MakeTitleAction(ActionFuncParams actionParams)
@@ -809,10 +828,41 @@ namespace Dash
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
                 Document.Selection.ParagraphFormat.Alignment = align;
                 Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
+
+                var text = ViewModel.DataDocument.GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
+                           " | Created a text note:";
+                var eventDoc = new RichTextNote(text).Document;
+                var tags = "rich text, note, " + Document.Selection.Text.Substring(0, Document.Selection.Text.Length - 2);
+                eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                eventDoc.SetField(KeyStore.EventDisplay1Key, ViewModel.DocumentController, true);
+                var displayXaml =
+                    @"<Grid
+                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                            xmlns:dash=""using:Dash""
+                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                            </Border>
+                            <ScrollViewer Height=""200"" Grid.Row=""2"" VerticalScrollBarVisibility=""Visible"">
+                                <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                                    <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                                        Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                        VerticalAlignment=""Top"" />
+                                </StackPanel>
+                            </ScrollViewer>
+                            </Grid>";
+                EventManager.EventOccured(eventDoc, displayXaml);
             }
             Document.Selection.SetRange(s1, s2);
-            Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
-            Document.Selection.CharacterFormat.Size = origFormat.Size;
+            Document.Selection.CharacterFormat = origFormat;
             _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
         }
 
@@ -847,10 +897,6 @@ namespace Dash
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         { 
-            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
-            {
-                CreateActionMenu(this);
-            }
             if (GetValue(TextProperty) is RichTextModel.RTD xamlText)
             {
                 Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -864,6 +910,10 @@ namespace Dash
                 GotFocus += RichTextView_GotFocus;
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
+            }
+            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
+            {
+                CreateActionMenu(this);
             }
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
