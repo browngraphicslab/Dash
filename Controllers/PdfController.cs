@@ -7,7 +7,7 @@ namespace Dash
     /// <summary>
     /// Controls data represeting an pdf in a Document.
     /// </summary>
-    class PdfController : FieldModelController<PdfModel>
+    public class PdfController : FieldModelController<PdfModel>
     {
         // == CONSTRUCTORS ==
         public PdfController() : base(new PdfModel())
@@ -41,22 +41,14 @@ namespace Dash
             {
                 if (PdfFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Uri data = PdfFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    PdfFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Uri val, bool withUndo = true)
-        {
-            Uri data = PdfFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            PdfFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public Uri Data
@@ -85,7 +77,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return "PdfController";
+            return DSL.GetFuncName<PdfOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()

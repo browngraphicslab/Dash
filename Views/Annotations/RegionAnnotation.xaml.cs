@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
@@ -15,7 +16,9 @@ namespace Dash
 {
     public sealed partial class RegionAnnotation
     {
-        private Point _previewStartPoint;
+        private Point            _previewStartPoint;
+        private FrameworkElement _regionPreviewGeometry;
+        private bool             _isRightToLeft = false;
 
         public RegionAnnotation(AnnotationOverlay parent, Selection selectionViewModel) :
             base(parent, selectionViewModel?.RegionDocument)
@@ -35,14 +38,7 @@ namespace Dash
 
                 for (var i = 0; i < posList.Count; ++i)
                 {
-                    var r = new Rectangle
-                    {
-                        Width = sizeList[i].Data.X,
-                        Height = sizeList[i].Data.Y,
-                        DataContext = selectionViewModel,
-                        IsDoubleTapEnabled = false
-                    };
-                    RenderSubRegion(posList[i].Data, PlacementMode.Top, r, selectionViewModel);
+                    RenderSubRegion(posList[i].Data, sizeList[i].Data.X, sizeList[i].Data.Y, PlacementMode.Top, selectionViewModel);
                 }
             }
         }
@@ -63,99 +59,126 @@ namespace Dash
             return false;
         }
 
-        private void RenderSubRegion(Point pos, PlacementMode mode, Shape r, Selection vm)
+        private void RenderSubRegion(Point pos, double width, double height, PlacementMode mode, Selection vm)
         {
-            r.Stroke = new SolidColorBrush(Colors.Black);
-            r.StrokeThickness = 2;
-            r.StrokeDashArray = new DoubleCollection {2};
-            r.HorizontalAlignment = HorizontalAlignment.Left;
-            r.VerticalAlignment = VerticalAlignment.Top;
-            InitializeAnnotationObject(r, pos, mode);
-            LayoutRoot.Children.Add(r);
+            var geometry = makeRegionPreview(width < 0, Math.Abs(width), height);
+            InitializeAnnotationObject(geometry, pos, mode);
+            geometry.IsHitTestVisible = true;
+            LayoutRoot.Children.Add(geometry);
         }
 
         public override void StartAnnotation(Point p)
         {
             _previewStartPoint = p;
-            ParentOverlay.XPreviewRect.RenderTransform = new TranslateTransform
-            {
-                X = p.X,
-                Y = p.Y
-            };
-            Debug.WriteLine("start" + p.X + " " + p.Y);
-            XPos = p.X;
-            YPos = p.Y;
+            ParentOverlay.XPreviewRect.RenderTransform = new TranslateTransform() { X = p.X, Y = p.Y};
             ParentOverlay.XPreviewRect.Width = 0;
             ParentOverlay.XPreviewRect.Height = 0;
             ParentOverlay.XPreviewRect.Visibility = Visibility.Visible;
-            if (!ParentOverlay.XAnnotationCanvas.Children.Contains(ParentOverlay.XPreviewRect))
-            {
-                ParentOverlay.XAnnotationCanvas.Children.Insert(0, ParentOverlay.XPreviewRect);
-            }
+            ParentOverlay.XPreviewRect.Children.Remove(_regionPreviewGeometry);
         }
 
         public override void UpdateAnnotation(Point p)
         {
-            if (p.X < _previewStartPoint.X)
+            ParentOverlay.XPreviewRect.Width  = Math.Abs(_previewStartPoint.X - p.X);
+            ParentOverlay.XPreviewRect.Height = Math.Abs(_previewStartPoint.Y - p.Y);
+            ParentOverlay.XPreviewRect.Children.Remove(_regionPreviewGeometry);
+            _isRightToLeft = p.X < _previewStartPoint.X;
+            if (_isRightToLeft)
             {
-                ParentOverlay.XPreviewRect.Width = _previewStartPoint.X - p.X;
                 (ParentOverlay.XPreviewRect.RenderTransform as TranslateTransform).X = p.X;
             }
-            else
-            {
-                ParentOverlay.XPreviewRect.Width = p.X - _previewStartPoint.X;
-            }
-
             if (p.Y < _previewStartPoint.Y)
             {
-                ParentOverlay.XPreviewRect.Height = _previewStartPoint.Y - p.Y;
                 (ParentOverlay.XPreviewRect.RenderTransform as TranslateTransform).Y = p.Y;
             }
-            else
-            {
-                ParentOverlay.XPreviewRect.Height = p.Y - _previewStartPoint.Y;
-            }
-            ParentOverlay.XPreviewRect.Visibility = Visibility.Visible;
-        }
-
-        Rectangle XRegionRect;
-
-        public override void EndAnnotation(Point p)
-        {
-            XRegionRect = new Rectangle
-            {
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection {2},
-                Fill = ParentOverlay.XPreviewRect.Fill,
-                Opacity = ParentOverlay.XPreviewRect.Opacity,
-                Stroke = new SolidColorBrush(Colors.Black),
-                Width = ParentOverlay.XPreviewRect.Width,
-                Height = ParentOverlay.XPreviewRect.Height,
-                VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                RenderTransform = ParentOverlay.XPreviewRect.RenderTransform
-            };
 
             if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
             {
-                ParentOverlay.XAnnotationCanvas.Children.Add(XRegionRect);
+                _regionPreviewGeometry = makeRegionPreview(_isRightToLeft, ParentOverlay.XPreviewRect.Width, ParentOverlay.XPreviewRect.Height);
+                ParentOverlay.XPreviewRect.Children.Add(_regionPreviewGeometry);
+            }
+        }
+
+        public override void EndAnnotation(Point p)
+        {
+            ParentOverlay.XPreviewRect.Children.Remove(_regionPreviewGeometry);
+
+            if (ParentOverlay.XPreviewRect.Width > 4 && ParentOverlay.XPreviewRect.Height > 4)
+            {
+                _isRightToLeft = p.X < _previewStartPoint.X;
+                _regionPreviewGeometry = makeRegionPreview(_isRightToLeft, ParentOverlay.XPreviewRect.Width, ParentOverlay.XPreviewRect.Height);
+                _regionPreviewGeometry.RenderTransform = ParentOverlay.XPreviewRect.RenderTransform;
+                ParentOverlay.XAnnotationCanvas.Children.Add(_regionPreviewGeometry);
                 ParentOverlay.CurrentAnchorableAnnotations.Add(this);
+            } else
+            {
+                SelectionManager.DeselectAll();
             }
         }
         public override double AddToRegion(DocumentController region)
         {
-            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController((XRegionRect.RenderTransform as TranslateTransform).X, (XRegionRect.RenderTransform as TranslateTransform).Y));
-            region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(XRegionRect.Width, XRegionRect.Height));
+            region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController((_regionPreviewGeometry.RenderTransform as TranslateTransform).X, (_regionPreviewGeometry.RenderTransform as TranslateTransform).Y));
+            region.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(_regionPreviewGeometry.Width * (_isRightToLeft ? -1 : 1), _regionPreviewGeometry.Height));
 
-            return YPos;
+            return _previewStartPoint.Y;
         }
-        
+
+        private FrameworkElement makeRegionPreview(bool flip, double width, double height)
+        {
+            FrameworkElement geometry = null;
+            if (width < 50)
+            {
+                var y = new Path()
+                {
+                    StrokeThickness = 0.5,
+                    Stroke = new SolidColorBrush(Colors.Black),
+                };
+                var pf = new PathFigure() { StartPoint = new Point(flip ? width : 0, 0) };
+                var fc = new PathFigureCollection();
+                fc.Add(pf);
+                y.Data = new PathGeometry() { Figures = fc };
+                var bs = new BezierSegment();
+                bs.Point1 = new Point(flip ? 0 : width, 0);
+                bs.Point2 = new Point(flip ? width : 0, height / 2);
+                bs.Point3 = new Point(flip ? 0 : width, height / 2);
+                pf.Segments.Add(bs);
+                var bs2 = new BezierSegment();
+                bs2.Point1 = new Point(flip ? width : 0, height / 2);
+                bs2.Point2 = new Point(flip ? 0 : width, height);
+                bs2.Point3 = new Point(flip ? width : 0, height);
+                pf.Segments.Add(bs2);
+                pf.IsClosed = false;
+                var g = new Grid();
+                g.Children.Add(y);
+                g.Background = new SolidColorBrush(Colors.Transparent);
+                geometry = g;
+            }
+            else
+            {
+                var r = new Rectangle
+                {
+                    Fill = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xff, 0)),
+                    Opacity = ParentOverlay.XPreviewRect.Opacity,
+                    StrokeThickness = 0.5,
+                    StrokeDashArray = new DoubleCollection { 2 },
+                    Stroke = new SolidColorBrush(Colors.Black),
+                };
+                geometry = r;
+            }
+            geometry.IsHitTestVisible = false;
+            geometry.Width = width;
+            geometry.Height = height;
+            geometry.HorizontalAlignment = HorizontalAlignment.Left;
+            geometry.VerticalAlignment = VerticalAlignment.Top;
+            return geometry;
+        }
+
         private void LayoutRoot_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 49);
         }
 
-        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
         private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())

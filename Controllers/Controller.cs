@@ -9,8 +9,8 @@ namespace Dash
     /// <summary>
     /// The Base class for all controllers which communicate with the server
     /// </summary>
-    public abstract class Controller<T> where T:EntityBase
-    {   
+    public abstract class Controller<T> where T : EntityBase
+    {
         // == CONSTRUCTOR ==
         protected Controller(T model)
         {
@@ -67,10 +67,7 @@ namespace Dash
         /// <param name="undoEvent"></param>
         protected virtual void UpdateOnServer(UndoCommand undoEvent)
         {
-            if(undoEvent != null)
-            {
-                UndoManager.EventOccured(undoEvent);
-            }
+            UndoManager.EventOccured(undoEvent);
 
             _serverEndpoint.UpdateDocument(this);
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DashShared;
 using Type = Zu.TypeScript.TsTypes.Type;
@@ -12,6 +13,21 @@ namespace Dash
     public abstract class CachedEndpoint : IModelEndpoint<FieldModel>
     {
         private readonly Dictionary<string, FieldControllerBase> _cache = new Dictionary<string, FieldControllerBase>();
+
+        private readonly System.Threading.Timer _cleanupTimer;
+
+        protected CachedEndpoint()
+        {
+            //_cleanupTimer = new Timer(Cleanup, null, 30 * 1000, 30 * 1000);
+        }
+
+        private async void Cleanup(object state)
+        {
+            //TODO Make this use ids so we don't create a ton of field models for no reason
+            var docs = (await GetDocumentsByQuery(new EverythingQuery<FieldModel>())).Where(fm => !_cache.ContainsKey(fm.Id)).ToList();
+            await DeleteModels(docs);
+            Debug.WriteLine($"Cleanup removed {docs.Count} items");
+        }
 
         protected abstract Task AddModel(FieldModel newDocument);
         protected abstract Task UpdateModel(FieldModel documentToUpdate);
@@ -112,18 +128,26 @@ namespace Dash
             {
                 var foundFields = await GetDocuments(missingIds);
                 var foundFieldsDict = foundFields.ToDictionary(fm => fm.Id, fm => fm);
-                var controllers = new List<FieldControllerBase>(foundFields.Count);
-                for (int i = 0; i < foundFields.Count; i++)
+                var initFields = new List<FieldControllerBase>();
+                for (int i = 0; i < missingIds.Count; i++)
                 {
-                    var f = foundFieldsDict[missingIds[i]];
-                    var field = FieldControllerFactory.CreateFromModel(f);
-                    Debug.Assert(!_cache.ContainsKey(missingIds[i]));
-                    _cache[missingIds[i]] = field;
-                    controllers.Add(field);
+                    FieldControllerBase field;
+                    //This is necessary because the same item might be in ids more than once,
+                    //so we could have put it in the cache in a previous iteration
+                    if (_cache.TryGetValue(missingIds[i], out var getField))
+                    {
+                        field = getField;
+                    } else
+                    {
+                        var f = foundFieldsDict[missingIds[i]];
+                        field = FieldControllerFactory.CreateFromModel(f);
+                        _cache[missingIds[i]] = field;
+                        initFields.Add(field);
+                    }
                     fields[missingIdxs[i]] = field;
                 }
-
-                await Task.WhenAll(controllers.Select(c => c.InitializeAsync()));
+                //TODO This can/should be a Task.WhenAll
+                initFields.ForEach(async (f) => await f.InitializeAsync());
             }
 
             return fields;
@@ -135,7 +159,7 @@ namespace Dash
             var typedFields = fields.OfType<V>().ToList();
             if (typedFields.Count != fields.Count)
             {
-                throw new ArgumentException("Some of the fields where of the wrong type", nameof(ids));
+                throw new ArgumentException("Some of the fields were of the wrong type", nameof(ids));
             }
 
             return typedFields;

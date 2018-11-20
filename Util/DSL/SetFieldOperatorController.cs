@@ -49,7 +49,7 @@ namespace Dash
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
-            var keyName = (inputs[KeyNameKey] as TextController)?.Data.Replace("_", " ");
+            var keyName = (inputs[KeyNameKey] as TextController)?.Data;
             var fieldValue = inputs[FieldValueKey];
 
             if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.Name, fieldValue.GetValue(null).ToString()));
@@ -58,7 +58,7 @@ namespace Dash
 
             var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
 
-            outputs[ResultDocKey] = new TextController(feedback + fieldValue.GetValue(null));
+            outputs[ResultDocKey] = new TextController(feedback + (fieldValue?.GetValue(null) ?? "null"));
 
             return Task.CompletedTask;
         }

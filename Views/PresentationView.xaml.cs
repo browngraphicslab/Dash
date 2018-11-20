@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -124,14 +125,13 @@ namespace Dash
 
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     xPinnedNodesListView.SelectedIndex = 0;
-                    NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
 
 
                     _startCollection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
 
                     _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
                     _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
-                    NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
+                    NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
 
                     IsPresentationPlaying = true;
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -180,7 +180,7 @@ namespace Dash
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
+            NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
@@ -207,16 +207,36 @@ namespace Dash
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
+            NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
         }
 
         // ON TRASH CLICK: remove from viewmodel
-        private void DeletePin(object sender, RoutedEventArgs e) =>
-            FullPinDelete((sender as Button)?.DataContext as DocumentController);
+        private void DeletePin(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            ViewModel.RemoveNode(itemViewModel);
+            DrawLinesWithNewDocs();
+
+            int selectedIndex = xPinnedNodesListView.SelectedIndex;
+            if (selectedIndex == xPinnedNodesListView.Items?.Count - 1 && !_repeat)
+            {
+                //end presentation
+                IsNextEnabled(false);
+            }
+
+            if (selectedIndex == 0 && !_repeat)
+            {
+                //disable back button
+                IsBackEnabled(false);
+            }
+        }
 
         public void FullPinDelete(DocumentController doc)
         {
-            ViewModel.RemovePinFromPinnedNodesCollection(doc);
+            if (!ViewModel.RemovePinFromPinnedNodesCollection(doc))
+            {
+                return;
+            }
 
             DrawLinesWithNewDocs();
 
@@ -237,7 +257,7 @@ namespace Dash
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            var dc = (DocumentController)e.ClickedItem;
+            var dc = ((PresentationItemViewModel)e.ClickedItem).Document;
             NavigateToDocument(dc);
         }
 
@@ -272,7 +292,7 @@ namespace Dash
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
             xPinnedNodesListView.SelectedIndex = LastSelectedIndex;
-            NavigateToDocument((DocumentController)xPinnedNodesListView.SelectedItem);
+            NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -311,7 +331,7 @@ namespace Dash
 
             //use bounds to find closest sides on each neighboring doc
             //get midpoitns of every side of both docs
-            var docA = (docs[i] as DocumentController);
+            var docA = ((PresentationItemViewModel) docs[i]).Document;
             var docAPos = docA.GetField<PointController>(KeyStore.PositionFieldKey).Data;
             var docASize = docA.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             var docAsides = new List<Tuple<Point, Point>>();
@@ -322,7 +342,7 @@ namespace Dash
             var docATop = docAPos.Y;
             var docABottom = docAPos.Y + docASize.Y;
 
-            var docB = (docs[i + 1] as DocumentController);
+            var docB = ((PresentationItemViewModel) docs[i + 1]).Document;
             var docBPos = docB.GetField<PointController>(KeyStore.PositionFieldKey).Data;
             var docBSize = docB.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             var docBsides = new List<Tuple<Point, Point>>();
@@ -371,33 +391,30 @@ namespace Dash
             }
 
             //get right collection
-            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>()
-                .GetCanvas();
-            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>()
-                .GetCanvas();
-            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>()
-                .Reverse();
+            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>().GetTransformedCanvas();
+            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>().GetTransformedCanvas();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>().Reverse();
             foreach (var col in allCollections)
             {
                 foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
                 {
-                    if (Equals(docs[i] as DocumentController, doc.ViewModel.DocumentController))
+                    if (Equals(docs[i], doc.ViewModel.DocumentController))
                     {
-                        docViewA = col.GetCanvas();
+                        docViewA = col.GetTransformedCanvas();
                     }
 
-                    if (Equals(docs[i + 1] as DocumentController, doc.ViewModel.DocumentController))
+                    if (Equals(docs[i + 1], doc.ViewModel.DocumentController))
                     {
-                        docViewB = col.GetCanvas();
+                        docViewB = col.GetTransformedCanvas();
                     }
                 }
             }
 
             //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-            startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
-            endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
+            startPoint     = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
+            endPoint       = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
             startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
-            endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
+            endControlPt   = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
 
             return new List<Point>()
             {
@@ -580,8 +597,7 @@ namespace Dash
 
         }
 
-        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
-            Context c)
+        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             UpdatePaths();
         }
@@ -593,16 +609,16 @@ namespace Dash
                 MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
 
             //show lines
-            foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
+            foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
             {
-                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
             }
 
-            foreach (DocumentController viewModelPinnedNode in ViewModel.PinnedNodes)
+            foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
             {
-                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
             }
 
             DrawLines();
@@ -620,8 +636,8 @@ namespace Dash
 
             foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
             {
-                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                viewModelPinnedNode.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.AddFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.AddFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
             }
 
             foreach (var coll in allCollections)
@@ -644,8 +660,8 @@ namespace Dash
 
             foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
             {
-                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
-                viewModelPinnedNode.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.RemoveFieldUpdatedListener(KeyStore.PositionFieldKey, DocFieldUpdated);
+                viewModelPinnedNode.Document.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, DocFieldUpdated);
             }
 
             foreach (var coll in allCollections)
@@ -706,31 +722,18 @@ namespace Dash
             DocumentController viewRefDoc = viewRef.ViewModel?.LayoutDocument;
 
             var ind = 0;
-            foreach (DocumentController viewDoc in ViewModel?.PinnedNodes)
+            foreach (var viewDoc in ViewModel?.PinnedNodes)
             {
-                if (viewDoc == viewRefDoc) break;
+                if (viewDoc.Document == viewRefDoc) break;
                 ind++;
             }
 
             if (ind == ViewModel.PinnedNodes.Count) return;
 
-            xNumberList.SelectionMode = ListViewSelectionMode.None;
-            xNumberList.SelectedIndex = ind;
-            if (xNumberList.SelectedItem is PresentationNumberViewModel selectedNum)
-                selectedNum.FontWeight = FontWeights.ExtraBold;
         }
 
         public void ClearHighlightedMatch()
         {
-            if (xNumberList.Items != null)
-            {
-                foreach (object vm in xNumberList.Items)
-                {
-                    (vm as PresentationNumberViewModel).FontWeight = FontWeights.Normal;
-                }
-            }
-
-            xNumberList.SelectedIndex = -1;
         }
 
         internal void SimulateAnimation(bool expand)
@@ -739,14 +742,12 @@ namespace Dash
             {
                 xTransportControls.Height = 60;
                 xPinnedNodesListView.Opacity = 1;
-                xPresentationTitle.Opacity = 1;
                 xSettingsPanel.Opacity = 1;
             }
             else
             {
                 xTransportControls.Height = 0;
                 xPinnedNodesListView.Opacity = 0;
-                xPresentationTitle.Opacity = 0;
                 xSettingsPanel.Opacity = 0;
             }
         }
@@ -780,7 +781,7 @@ namespace Dash
             //fixes bug with combobox not updating
             xPresentations.DisplayMemberPath = "Title";
 
-            xSettingsFlyout.ShowAt(xSettingsButton);
+            xSettingsFlyout.ShowAt(xSettingsIcon);
         }
 
         private void XPresentations_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -810,6 +811,59 @@ namespace Dash
         {
             ViewModel.RenamePres(ViewModel.CurrPres, xTitle.Text);
             
+        }
+
+        private void XDropGrid_OnDragEnter(object sender, DragEventArgs e)
+        {
+            var dragModel = e.DataView.GetDragModel();
+            if (!(dragModel is DragDocumentModel ddm))
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+                return;
+            }
+
+            if (ddm.DraggedDocuments.Count == 0 || (ddm.DraggedDocuments.Count == 1 && ddm.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) == null))
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+                return;
+            }
+
+            XDropGrid.Visibility = Visibility.Visible;
+            e.AcceptedOperation = DataPackageOperation.Copy;
+        }
+
+        private void XDropGrid_OnDragLeave(object sender, DragEventArgs e)
+        {
+            XDropGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void XDropGrid_OnDrop(object sender, DragEventArgs e)
+        {
+            XDropGrid.Visibility = Visibility.Collapsed;
+            if (!(e.DataView.GetDragModel() is DragDocumentModel dragModel)) return;
+
+            IEnumerable<DocumentController> docs = null;
+
+            if (dragModel.DraggedDocuments.Count == 1 && dragModel.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) is var list)
+            {
+                docs = list;
+            } else if (dragModel.DraggedDocuments.Count > 1)
+            {
+                docs = dragModel.DraggedDocuments;
+            }
+
+            if (docs != null)
+            {
+                foreach (var documentController in docs)
+                {
+                    ViewModel.AddToPinnedNodesCollection(documentController);
+                }
+            }
+        }
+
+        private void XDeletePresentationButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ViewModel.DeletePresentation(ViewModel.CurrPres);
         }
     }
 }

@@ -19,6 +19,7 @@ namespace Dash
     public sealed partial class CollectionTreeView : ICollectionView
     {
         public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.TreeView;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public CollectionTreeView()
@@ -53,6 +54,9 @@ namespace Dash
         {
 
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
 
         public void SetUseActiveFrame(bool useActiveFrame)
         {
@@ -76,7 +80,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 Debug.Assert(ViewModel != null, "ViewModel != null");
-                var documentController = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;
+                var documentController = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN).Document;
                 ViewModel.AddDocument(documentController);
             }
         }
@@ -125,7 +129,7 @@ namespace Dash
         {
             //List of Document Controller - one document controller for each collection
             //so a data file is made for each element in this list
-            var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
+            var collectionDataDocs = ViewModel.CollectionController.Select(dc => dc.GetDataDocument());
 
             ExportToTxt newExport = new ExportToTxt();
 

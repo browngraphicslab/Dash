@@ -68,10 +68,13 @@ namespace Dash
             element.ManipulationCompleted += (sender, args) => args.Handled = true;  
         }
 
+        private bool _disableScrollWheel = false;
+        public void SetDisableScrollWheel(bool noScrollWheel) { _disableScrollWheel = noScrollWheel; }
+
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             // bcz: don't zoom the contents of collections when FitToParent is set -- instead, it would be better if the container document size changed...
-            if (this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
+            if (_disableScrollWheel || _freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
                 return;
             e.Handled = true;
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
@@ -187,6 +190,7 @@ namespace Dash
         }
         private bool ClampScale(double scaleFactor)
         {
+            return false;
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;

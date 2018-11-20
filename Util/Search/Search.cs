@@ -168,7 +168,19 @@ namespace Dash
 
             if (docs == null)
             {
-                var nodes = useAll ? DocumentTree.MainPageTree.GetAllNodes() : DocumentTree.MainPageTree;
+
+                IEnumerable<DocumentNode> nodes;
+                if (visitor.SearchRoot != null)
+                {
+                    nodes = useAll
+                        ? new DocumentTree(visitor.SearchRoot).GetAllNodes()
+                        : new DocumentTree(visitor.SearchRoot);
+                }
+                else
+                {
+                    nodes = useAll ? DocumentTree.MainPageTree.GetAllNodes() : DocumentTree.MainPageTree;
+                }
+
                 foreach (var node in nodes)
                 {
                     DocSearch(node.ViewDocument);

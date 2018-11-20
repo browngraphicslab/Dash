@@ -28,10 +28,10 @@ namespace Dash
             _opName = opName;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            var varCtrl = await _var.Execute(scope);
-            var assignCtrl = await _assignExp.Execute(scope);
+            var (varCtrl, _) = await _var.Execute(scope);
+            var (assignCtrl, _) = await _assignExp.Execute(scope);
 
             var inputs = new List<FieldControllerBase>
             {
@@ -49,11 +49,11 @@ namespace Dash
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(e, _opName));
             }
-            return output;
+            return (output, ControlFlowFlag.None);
         }
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();

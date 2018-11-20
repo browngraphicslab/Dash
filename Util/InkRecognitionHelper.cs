@@ -236,7 +236,7 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             //Construct the new collection
-            var cnote  = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
+            var cnote  = new CollectionNote(position, CollectionViewType.Freeform);
             cnote.SetDocuments(recognizedDocuments);
             var documentController = cnote.Document;
             documentController.SetLayoutDimensions(region.BoundingRect.Width,
@@ -290,7 +290,8 @@ namespace Dash
                         TryGetText(containedLine, out string text, out KeyController key,
                             intersectionEnumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                         var relativePosition = new Point(containedRect.X - topLeft.X, containedRect.Y - topLeft.Y);
-                        doc.ParseDocField(key, "="+text);
+                        //TODO
+                        //doc.ParseDocField(key, "="+text);
                         var field = doc.GetField(key);
                         if (field != null)
                         {

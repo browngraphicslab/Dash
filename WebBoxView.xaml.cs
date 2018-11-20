@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -25,14 +27,61 @@ namespace Dash
             Loaded += WebBoxView_Loaded;
             Unloaded += WebBoxView_Unloaded;
 
-            var binding = new FieldBinding<ImageController>
+            var text = document.GetDataDocument().GetField<DateTimeController>(KeyStore.DateCreatedKey).Data
+                           .ToString("g") + " | Navigated to " + document.GetDataDocument()
+                           .GetDereferencedField<HtmlController>(KeyStore.DataKey, null);
+
+            if (EventManager.HasEvent(text))
             {
-                Document = LayoutDocument,
-                Key = KeyStore.SettingsBackupIntervalKey,
-                Mode = BindingMode.OneWay,
-                Converter = UriToBitmapImageConverter.Instance
-            };
-            xCacheBitmap.AddFieldBinding(Image.SourceProperty, binding);
+                return;
+            }
+
+            var eventDoc = new RichTextNote(text).Document;
+            var tags = "website, ";
+            var splitBySlash = (document.GetDataDocument().GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?
+                                    .Data
+                                ?? document.Title).Split("/", StringSplitOptions.RemoveEmptyEntries);
+            if (splitBySlash.Length >= 2)
+            {
+                tags += splitBySlash[1];
+            }
+
+            eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+
+            Loaded += ContainerHandler;
+
+            void ContainerHandler(object sender, RoutedEventArgs args)
+            {
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                Loaded -= ContainerHandler;
+            }
+
+            var copy = document.GetCopy();
+            copy.SetHeight(150);
+            copy.SetWidth(500);
+            eventDoc.SetField(KeyStore.EventDisplay1Key, copy, true);
+            var displayXaml =
+                @"<Grid
+                    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                    xmlns:dash=""using:Dash""
+                    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height=""Auto""></RowDefinition>
+                        <RowDefinition Height=""*""></RowDefinition>
+                        <RowDefinition Height=""*""></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                        <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                    </Border>
+                    <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                        <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                            Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                            VerticalAlignment=""Top"" />
+                    </StackPanel>
+                    </Grid>";
+            EventManager.EventOccured(eventDoc, displayXaml);
         }
 
         private void WebBoxView_Unloaded(object sender, RoutedEventArgs e)
@@ -44,7 +93,7 @@ namespace Dash
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
             if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) ||
-                LayoutDocument.GetField<ImageController>(KeyStore.SettingsBackupIntervalKey)?.Data == null)
+                xWebViewRectangleBrush.Fill == null)
             {
                 Unfreeze();
             }
@@ -56,46 +105,27 @@ namespace Dash
             if (args.SelectedViews.Contains(docView) && SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
             {
                 Unfreeze();
-            } 
-            else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) || 
-                (xCacheBitmap.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
+            }
+            else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) ||
+                (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
             {
                 Freeze();
             }
         }
 
-        private async Task Freeze()
+        private async void Freeze()
         {
-            var rtb = new RenderTargetBitmap();
-            var size = new Point(Math.Round(ActualWidth), Math.Round(ActualHeight));
-            //var transformToVisual = _xWebView.TransformToVisual(Window.Current.Content);
-            //var rect = transformToVisual.TransformBounds(new Rect(0, 0, size.X, size.Y));
-            //size = new Point(rect.Width, rect.Height);
-            if (size.X > 0 && size.Y > 0)
-            {
-                try
-                {
-                    await rtb.RenderAsync(_xWebView, (int)size.X, (int)size.Y);
-                    var buf = await rtb.GetPixelsAsync();
+            var b = new WebViewBrush();
+            b.SourceName = "_xWebView";
+            b.Redraw();
+            xWebViewRectangleBrush.Fill = b;
 
-                    var sb = SoftwareBitmap.CreateCopyFromBuffer(buf, BitmapPixelFormat.Bgra8, rtb.PixelWidth, rtb.PixelHeight, BitmapAlphaMode.Premultiplied);
-                    var localFile = await ImageToDashUtil.CreateUniqueLocalFile();
-                    await Util.SaveSoftwareBitmapToFile(sb, localFile);
-                    LayoutDocument.SetField<ImageController>(KeyStore.SettingsBackupIntervalKey, new Uri(localFile.Path), true);
-                } catch (Exception) { }
-                _xWebView.Visibility = Visibility.Collapsed;
-                xCacheBitmap.Visibility = Visibility.Visible;
-                if (xTextBlock != null)
-                    xTextBlock.Visibility = Visibility.Collapsed;
-                if (_xWebView != null)
-                    _xWebView.Tag = AllowManipulation;
-            } 
-            else // if the web view hasn't been constructed fully yet, wait 250ms and try again
-            {
-                var dp = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 250) };
-                dp.Tick += (s, e) => { Freeze();  dp.Stop(); };
-                dp.Start();
-            }
+            xWebViewRectangleBrush.Visibility = Visibility.Visible;
+            _xWebView.Visibility = Visibility.Collapsed;
+            if (xTextBlock != null)
+                xTextBlock.Visibility = Visibility.Collapsed;
+            if (_xWebView != null)
+                _xWebView.Tag = AllowManipulation;
         }
 
         private void Unfreeze()
@@ -107,9 +137,8 @@ namespace Dash
             }
             if (_xWebView.Visibility == Visibility.Collapsed)
             {
-                xCacheBitmap.Visibility = Visibility.Collapsed;
+                xWebViewRectangleBrush.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 _xWebView.Visibility = Visibility.Visible;
-                _xWebView.Tag = BlockManipulation;
                 if (xTextBlock != null)
                     xTextBlock.Visibility = Visibility.Visible;
             }
@@ -120,7 +149,7 @@ namespace Dash
         private void constructWebBrowserViewer()
         {
             _xWebView = new WebView(WebViewExecutionMode.SeparateThread);
-            _xWebView.Tag = BlockManipulation;
+            _xWebView.Name = "_xWebView";
             var html = LayoutDocument.GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?.Data;
             var htmlAddress = LayoutDocument.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey)?.Data;
             if (html.StartsWith("http"))
@@ -128,7 +157,7 @@ namespace Dash
                 htmlAddress = html;
                 // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
                 _xWebView.Navigate(new Uri(html));
-            } 
+            }
             else
             {
                 var correctedHtml = html;
@@ -139,20 +168,24 @@ namespace Dash
                     correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
                     correctedHtml = modHtml.Replace("<HTML>", "<HTML><head><style>img {height: auto !important;}</style></head>");
                     correctedHtml = correctedHtml.Replace(" //", " http://").Replace("\"//", "\"http://");
-                } 
+                }
                 _xWebView.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
             };
 
             _xWebView.LoadCompleted += Web_LoadCompleted;
         }
 
-        private static void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+        private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             var _WebView = sender as WebView;
 
             _WebView.ScriptNotify -= _WebView_ScriptNotify;
             _WebView.ScriptNotify += _WebView_ScriptNotify;
 
+            if (double.IsNaN(_WebView.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.LayoutDocument.GetWidth() ?? double.NaN))
+            {
+                await _WebView.InvokeScriptAsync("eval", new[] { "window.external.notify(document.body.scrollWidth.toString() + ' ' + document.body.scrollHeight.toString());" });
+            }
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
             //await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up');    } document.onmouseup=x;" });
@@ -163,7 +196,7 @@ namespace Dash
             ////"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
 
             ////});
-            
+
             _WebView.NavigationStarting -= Web_NavigationStarting;
             _WebView.NavigationStarting += Web_NavigationStarting;
             _WebView.NavigationCompleted -= _WebView_NavigationCompleted;
@@ -177,6 +210,16 @@ namespace Dash
             var parent = web?.GetFirstAncestorOfType<DocumentView>();
             if (parent == null)
                 return;
+
+            var splits = (e.Value as string).Split(' ');
+            var x = double.Parse(splits[0]);
+            var y = Math.Min(500, double.Parse(splits[1]));
+            parent.ViewModel.LayoutDocument.SetWidth(x);
+            parent.ViewModel.LayoutDocument.SetHeight(y);
+            web.UpdateLayout();
+
+            //parent.ViewModel?.LayoutDocument.SetWidth(x);
+            //parent.ViewModel?.LayoutDocument.SetHeight(y);
 
             //var shiftState = web.IsShiftPressed();
             //switch (e.Value as string)
@@ -237,10 +280,11 @@ namespace Dash
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
-            if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1) {
+            if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1)
+            {
                 webBoxView?.Freeze();
             }
         }
-        
+
     }
 }

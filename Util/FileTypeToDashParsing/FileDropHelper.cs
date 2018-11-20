@@ -133,7 +133,7 @@ namespace Dash
                         Debug.WriteLine(e);
                     }
                 }
-                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
+                var cnote = new CollectionNote(where, CollectionViewType.Schema, 200, 200, outputCollection);
                 return cnote.Document;
             }
             else
@@ -179,7 +179,9 @@ namespace Dash
 							// make the video box with the Uri set as the video's, and return it
 			                var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
 			                var uri = url.Uri;
-			                return VideoToDashUtil.CreateVideoBoxFromUri(uri);
+							var video = VideoToDashUtil.CreateVideoBoxFromUri(uri);
+			                video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
+			                return video;
 		                }
 		                // if that returns an error somehow, just return the page instead
 		                catch (Exception)
@@ -189,7 +191,7 @@ namespace Dash
 	                }
 	                else
 					{
-						return new HtmlNote(link.AbsoluteUri, where: where).Document;
+						return new HtmlNote(link.AbsoluteUri, where: where, size: new Size(double.NaN, double.NaN)).Document;
 					}
 
 				case FileType.Pdf:

@@ -78,12 +78,7 @@ namespace Dash
 
             // LOOPS & CONDITIONALS
 
-            for_in_lp,
-            do_while_lp,
-            while_lp,
-            for_lp,
             if_st,
-            let,
 
             // CONVERTERS
 
@@ -197,7 +192,35 @@ namespace Dash
             // HELP
 
             help,
-            print
+            print,
+            get_selected_docs,
+            text_input,
+            copy,
+            video,
+            audio,
+            color,
+            now,
+            pdf,
+            max,
+            min,
+            sin,
+            cos,
+            tan,
+            for_in,
+            rand,
+            rand_i,
+            remove,
+            instance,
+            view_copy,
+            active_document,
+            split_horizontal,
+            split_vertical,
+            close_split,
+            frame_history_back,
+            frame_history_forward,
+            undo,
+            redo,
+            alias_of
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
@@ -356,15 +379,11 @@ namespace Dash
                 "Binary, comparative - given two numbers, returns true if A is less than than or equivalent to B and returns false if not.\n            " +
                 "Invoked by its function call in the REPL, formatted as less_than_equals(A, B).\n      " +
                 "EXAMPLES:\n            less_than_equals(2^3, 3^2) = true\n            less_than_equals(3, 3) = true",
-            [Name.for_in_lp] =
+            [Name.for_in] =
                 "A specialty, indexless for-loop, a 'for in' loop sequentially iterates through a list allowing repetitive operations.\n            " +
                 "Invoked by its function call in the REPL, formatted as for (var <arbitrary_name> in [1, 2, 3, 4, 5]) { <perform_task> }.\n      " +
                 "EXAMPLE:\n            var scores = [35, 49, 18, 72]; for (var sc in scores) { sc *= 2 } return scores = [70, 98, 36, 144]",
-            [Name.do_while_lp] = "",
-            [Name.while_lp] = "",
-            [Name.for_lp] = "",
             [Name.if_st] = "",
-            [Name.let] = "",
             [Name.to_list] = "",
             [Name.to_string] = "",
             [Name.data_document] = "",

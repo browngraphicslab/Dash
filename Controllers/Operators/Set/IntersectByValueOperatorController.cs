@@ -48,8 +48,8 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
-            var set2 = ((inputs[SetBKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
+            var set1 = inputs[SetAKey] as IEnumerable<FieldControllerBase>;
+            var set2 = inputs[SetBKey] as IEnumerable<FieldControllerBase>;
 
             var returnSet = new ListController<FieldControllerBase>();
 

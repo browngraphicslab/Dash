@@ -46,18 +46,18 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var input = (BaseListController) inputs[InputKey];
+            var input = (IListController) inputs[InputKey];
             var op = (OperatorController)inputs[OperatorKey];
             if (op.Inputs.Count != 1 || op.Outputs.Count != 1)
             {
                 return Task.CompletedTask;
             }
-            List<FieldControllerBase> outputList = new List<FieldControllerBase>(input.Data.Count);
+            List<FieldControllerBase> outputList = new List<FieldControllerBase>(input.Count);
             Dictionary<KeyController, FieldControllerBase> inDict = new Dictionary<KeyController, FieldControllerBase>();
             Dictionary<KeyController, FieldControllerBase> outDict = new Dictionary<KeyController, FieldControllerBase>();
             var inKey = op.Inputs.First().Key;
             var outKey = op.Outputs.First().Key;
-            foreach (var fieldModelController in input.Data)
+            foreach (var fieldModelController in input.AsEnumerable())
             {
                 inDict[inKey] = fieldModelController;
                 op.

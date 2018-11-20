@@ -22,7 +22,7 @@ namespace Dash
             _parameters = parameters;
         }
 
-        public override async Task<FieldControllerBase> Execute(Scope scope)
+        public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             OperatorController op = null;
             var opName = Op.Name.invalid;
@@ -41,7 +41,12 @@ namespace Dash
             }
             else
             {
-                op = await _funcName.Execute(scope) as FunctionOperatorController;
+                var (field, _) = await _funcName.Execute(scope);
+                op = field as FunctionOperatorController;
+                if (op == null)
+                {
+                    throw new ScriptExecutionException(new TextErrorModel("Tried to invoke a non-function"));
+                }
             }
 
             var inputs = new List<FieldControllerBase>();
@@ -53,20 +58,17 @@ namespace Dash
                 }
                 else
                 {
-                    inputs.Add(await scriptExpression.Execute(scope));
+                    var (field2, _) = await scriptExpression.Execute(scope);
+                    inputs.Add(field2);
                 }
             }
 
             try
             {
-                scope = new ReturnScope();
+                scope = new Scope();
 
                 var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
-                return output;
-            }
-            catch (ReturnException)
-            {
-                return scope.GetReturn;
+                return (output, ControlFlowFlag.None);
             }
             catch (ScriptExecutionException)
             {
@@ -75,7 +77,7 @@ namespace Dash
             catch (Exception e)
             {
                 if (e.Message.Contains("Invalid group name:")) throw new ScriptExecutionException(new TextErrorModel($"Invalid Regex group name encountered: {e.Message.Substring(e.Message.IndexOf("Invalid group name:") + 20).ToLower()}"));
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(e, opName));
             }
         }
 

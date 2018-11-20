@@ -21,7 +21,8 @@ namespace Dash
         Left,
         Right,
         Up,
-        Down
+        Down,
+        InPlace
     }
 
     public class SplitUpdatedEventArgs

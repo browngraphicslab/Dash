@@ -16,6 +16,11 @@ namespace Dash
         {
             return App.Instance.Container.GetRequiredService<IModelEndpoint<T>>();
         }
+
+        public LocalPDFEndpoint GetPDFEndpoint()
+        {
+            return App.Instance.Container.GetRequiredService<LocalPDFEndpoint>();
+        }
         public IModelEndpoint<FieldModel> Fields => GetEndpoint<FieldModel>();
     }
 }

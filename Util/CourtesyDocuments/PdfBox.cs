@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -31,50 +32,28 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "PdfBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
-            MainPage.Instance.TogglePopup();
-            var pdfView = new PdfView(docController);
-            SetupPdfBinding(pdfView, docController, context);
-            
+            var pdfView = new PdfView();
+            SetupPdfBinding(pdfView, docController, key, context);
             return pdfView;
         }
-
-        private static ReferenceController GetPdfReference(DocumentController docController)
-        {
-            return docController.GetField(KeyStore.DataKey) as ReferenceController;
-        }
-
-        public static DocumentController MakeRegionDocument(DocumentView documentView, Point? point = null)
+        public static Task<DocumentController> MakeRegionDocument(DocumentView documentView, Point? point = null)
         {
             return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
 
-        protected static void SetupPdfBinding(PdfView pdf, DocumentController controller,
-            Context context)
+        public static void SetupPdfBinding(PdfView pdf, DocumentController controller, KeyController key, Context context)
         {
-
-            //controller.AddFieldUpdatedListener(KeyStore.PdfVOffsetFieldKey, 
-            //    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-            //    {
-            //        if (!pdf.IsPointerOver())
-            //        {
-            //            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //            System.Diagnostics.Debug.WriteLine("Telling me" + ((dargs.NewValue as NumberController)?.Data ?? 0));
-            //            pdf.ScrollToVerticalOffset((dargs.NewValue as NumberController)?.Data ?? 0);
-            //        }
-            //    });
-
-
-            BindPdfSource(pdf, controller, context);
+            BindPdfSource(pdf, controller, key, context);
         }
 
-        protected static void BindPdfSource(PdfView pdf, DocumentController docController, Context context)
+        protected static void BindPdfSource(PdfView pdf, DocumentController docController, KeyController key, Context context)
         {
             var binding = new FieldBinding<PdfController>()
             {
                 Document = docController,
-                Key = KeyStore.DataKey,
+                Key = key,
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 //Converter = UriToStreamConverter.Instance

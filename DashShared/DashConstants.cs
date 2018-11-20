@@ -104,7 +104,7 @@ namespace DashShared
         //DEFAULT SETTINGS CONSTANTS
 
         public const bool DefaultNightModeEngaged = false; //theme state
-        public const int DefaultFontSize = 16; //pt
+        public const int DefaultFontSize = 12; //pt
         public const int DefaultNumBackups = 3; //backups
         public const int DefaultBackupInterval = 900; //seconds
         public const bool DefaultInfiniteUpwardPanningStatus = true;

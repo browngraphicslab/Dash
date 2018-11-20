@@ -17,7 +17,7 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
                 e.GetPosition(MainPage.Instance));
             
-            collection.ViewModel.AddDocument(new CollectionNote(where, CollectionView.CollectionViewType.Freeform).Document);
+            collection.ViewModel.AddDocument(new CollectionNote(where, CollectionViewType.Freeform).Document);
         }
         public static void HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
@@ -26,7 +26,7 @@ namespace Dash
 
         public static bool UnHideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
-            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null).TypedData)
+            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null))
                 if (vm.GetDataDocument().Equals(docController.GetDataDocument()) && vm.GetHidden())
                 {
                     vm.SetHidden(false);

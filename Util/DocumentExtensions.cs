@@ -20,7 +20,7 @@ namespace Dash
         {
             var layoutList = doc.GetLayoutList(null);
             // if the layoutlist contains the new layout do nothing
-            if (layoutList.GetElements().Contains(newLayoutController))
+            if (layoutList.Contains(newLayoutController))
             {
                 return;
             }
@@ -66,7 +66,7 @@ namespace Dash
             var docs = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             if (docs != null)
             {
-                var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN,
+                var snap = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN,
                     copyData ? docs.Select(doc => doc.GetDataCopy()) : docs.Select(doc => doc.GetViewCopy())).Document;
 
                 var snapshots = collection.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.SnapshotsKey);
@@ -255,7 +255,7 @@ namespace Dash
             if (type == "List")
             {
                 var neighboring = neighboringRaw as ListController<TextController>;
-                if (neighboring != null && neighboring.TypedData.Count > 0)
+                if (neighboring != null && neighboring.Count > 0)
                 {
                     var context = doc.GetFirstContext();
                     MainPage.Instance.WebContext.SetScroll(context.Scroll);
@@ -311,9 +311,9 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            if (neighboring != null && neighboring.Count > 0)
             {
-                var contexts = neighboring.TypedData.Select(td => td.Data.CreateObject<DocumentContext>());
+                var contexts = neighboring.Select(td => td.Data.CreateObject<DocumentContext>());
                 var maxDuration = contexts.Max(context => context.ViewDuration);
                 var longestViewed = contexts.First(context => context.ViewDuration == maxDuration);
                 return longestViewed;
@@ -325,9 +325,9 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            if (neighboring != null && neighboring.Count > 0)
             {
-                var contexts = neighboring.TypedData.Select(td => td.Data.CreateObject<DocumentContext>());
+                var contexts = neighboring.Select(td => td.Data.CreateObject<DocumentContext>());
                 var grouped = contexts.GroupBy(c => c.Url);
                 var enumerable = grouped as IGrouping<string, DocumentContext>[] ?? grouped.ToArray();
                 var maxSum = enumerable.Max(group => group.Sum(i => i.ViewDuration));
@@ -341,9 +341,9 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            if (neighboring != null && neighboring.Count > 0)
             {
-                return neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
+                return neighboring.Last().Data.CreateObject<DocumentContext>();
             }
             return null;
         }
@@ -352,9 +352,9 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            if (neighboring != null && neighboring.Count > 0)
             {
-                return neighboring.TypedData.First().Data.CreateObject<DocumentContext>();
+                return neighboring.First().Data.CreateObject<DocumentContext>();
             }
             return null;
         }
@@ -363,9 +363,9 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.TypedData.Count > 0)
+            if (neighboring != null && neighboring.Count > 0)
             {
-                return neighboring.TypedData.Select(d => d.Data.CreateObject<DocumentContext>()).ToList();
+                return neighboring.Select(d => d.Data.CreateObject<DocumentContext>()).ToList();
             }
             return null;
         }
@@ -479,7 +479,7 @@ namespace Dash
                 else if (kvp.Value is ListController<DocumentController>)
                 {
                     var docList = new List<DocumentController>();
-                    foreach (var d in kvp.Value.DereferenceToRoot<ListController<DocumentController>>(new Context(doc)).TypedData)
+                    foreach (var d in kvp.Value.DereferenceToRoot<ListController<DocumentController>>(new Context(doc)))
                     {
                         docList.Add(d.makeCopy(ref refs, ref oldToNewDocMappings, excludeKeys, dontCopyKeys));
                     }

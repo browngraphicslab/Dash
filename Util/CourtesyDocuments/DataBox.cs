@@ -32,24 +32,23 @@ namespace Dash
         {
             //add field binding for content of content presenter
             var contentPresenter = new ContentPresenter();
-            BindContent(contentPresenter, documentController, context);
+            BindContent(contentPresenter, documentController, KeyStore.DataKey);
             return contentPresenter;
 
             //return new DataFieldToMakeViewConverter(documentController, context).ConvertDataToXaml(
             //    documentController.GetDereferencedField(KeyStore.DataKey, null), null);
         }
 
-		public static void BindContent(ContentPresenter presenter, DocumentController docController, Context context)
+		public static void BindContent(ContentPresenter presenter, DocumentController docController, KeyController key)
 		{
-			var converter = new DataFieldToMakeViewConverter(docController, context);
+			var converter = new DataFieldToMakeViewConverter(docController, null);
 
 			var contentBinding = new FieldBinding<FieldControllerBase, TextController>()
 			{
-				Key = KeyStore.DataKey,
+				Key = key,
 				Document = docController,
 				Converter = converter,
 				Mode = BindingMode.OneWay,
-				Context = context,
                 ValueType = BindingValueType.Field,
                 Tag = "BindContent is DataBox"
 			};

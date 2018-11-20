@@ -66,6 +66,16 @@ namespace Dash
             XMarkdownBlock.AddHandler(DoubleTappedEvent, new DoubleTappedEventHandler(XMarkdownBlock_DoubleTapped), true);
 
             _markdownBoxKeyDownHandler = new KeyEventHandler(xMarkdownBox_KeyDown);
+
+            this.Loaded += EditableMarkdownBlock_Loaded;
+        }
+
+        private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            {
+                MakeEditable();
+            }
         }
 
         private void XMarkdownBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
@@ -113,6 +123,11 @@ namespace Dash
 
         private void XMarkdownBox_OnLoaded(object sender, RoutedEventArgs e)
         {
+            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            {
+                MainPage.Instance.ClearForceFocus();
+                XMarkdownBox.Focus(FocusState.Programmatic);
+            }
             XMarkdownBlock.Visibility = Visibility.Collapsed;
             XMarkdownBox.Focus(FocusState.Programmatic);
             XMarkdownBox.Text = GetExpression() ?? XMarkdownBlock.Text;

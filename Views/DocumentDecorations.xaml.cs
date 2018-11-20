@@ -19,6 +19,7 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media.Animation;
 using DashShared;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -40,7 +41,7 @@ namespace Dash
         public WrapPanel XTagContainer => xTagContainer;
         private DocumentController _currentLink;
         public bool touchActivated = false;
-      
+
 
         private bool optionClick;
 
@@ -108,14 +109,13 @@ namespace Dash
 
         public List<DocumentView> SelectedDocs
         {
-            get => _selectedDocs;
+            get => _selectedDocs.Where((s) => s.IsInVisualTree()).ToList();
             set
             {
                 foreach (var docView in _selectedDocs)
                 {
                     docView.PointerEntered -= SelectedDocView_PointerEntered;
                     docView.PointerExited -= SelectedDocView_PointerExited;
-                    docView.SizeChanged -= DocView_OnSizeChanged;
                     docView.FadeOutBegin -= DocView_OnDeleted;
                 }
 
@@ -130,7 +130,6 @@ namespace Dash
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
                     docView.PointerExited += SelectedDocView_PointerExited;
-                    docView.SizeChanged += DocView_OnSizeChanged;
                     docView.FadeOutBegin += DocView_OnDeleted;
                 }
 
@@ -142,15 +141,52 @@ namespace Dash
             VisibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
         }
-
-        private void DocView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void keyHdlr(object sender, KeyRoutedEventArgs e)
         {
-            SetPositionAndSize();
+            if (SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
+            }
         }
+
+        private void ptrHdlr(object sender, PointerRoutedEventArgs e)
+        {
+            if (SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
+            }
+        }
+        private void tapHdlr(object sender, TappedRoutedEventArgs e)
+        {
+            if (SelectedDocs.Count > 0)
+            {
+                SetPositionAndSize(false);
+            }
+        }
+
+        private object ptrhdlr = null, taphdlr = null, keyhdlr = null;
 
         private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
+            if (ptrhdlr == null)
+            {
+                ptrhdlr = new PointerEventHandler(ptrHdlr);
+                taphdlr = new TappedEventHandler(tapHdlr);
+                keyhdlr = new KeyEventHandler(keyHdlr);
+            }
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerMovedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerMovedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerReleasedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerReleasedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerWheelChangedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerWheelChangedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.TappedEvent, taphdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.TappedEvent, taphdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyDownEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyDownEvent, keyhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyUpEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyUpEvent, keyhdlr, true);
             this.InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             SuggestGrid.Visibility = Visibility.Collapsed;
@@ -158,7 +194,7 @@ namespace Dash
             _titleTip.Content = HeaderFieldKey.Name;
             ToolTipService.SetToolTip(xHeaderText, _titleTip);
             xHeaderText.PointerEntered += (s, e) => _titleTip.IsOpen = true;
-            xHeaderText.PointerExited  += (s, e) => _titleTip.IsOpen = false;
+            xHeaderText.PointerExited += (s, e) => _titleTip.IsOpen = false;
             xHeaderText.GotFocus += (s, e) =>
             {
                 if (xHeaderText.Text == "<empty>") xHeaderText.SelectAll();
@@ -181,7 +217,7 @@ namespace Dash
                 {
                     (sender as FrameworkElement).ManipulationCompleted -= ResizeHandles_OnManipulationCompleted;
                     (sender as FrameworkElement).ManipulationCompleted += ResizeHandles_OnManipulationCompleted;
-                    
+
                     UndoManager.StartBatch();
 
                     MainPage.Instance.Focus(FocusState.Programmatic);
@@ -202,7 +238,8 @@ namespace Dash
                 xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
             {
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.PointerReleased += (s, e) => {
+                handle.PointerReleased += (s, e) =>
+                {
                     handle.ReleasePointerCapture(e.Pointer);
                     e.Handled = true;
                 };
@@ -216,8 +253,8 @@ namespace Dash
                     }
                 };
             }
-            SelectionManager.DragManipulationStarted += (s,e) =>  ResizerVisibilityState = Visibility.Collapsed;
-            SelectionManager.DragManipulationCompleted += (s,e) => 
+            SelectionManager.DragManipulationStarted += (s, e) => ResizerVisibilityState = Visibility.Collapsed;
+            SelectionManager.DragManipulationCompleted += (s, e) =>
                  ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
 
         }
@@ -277,36 +314,51 @@ namespace Dash
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public void SetPositionAndSize()
+        public void SetPositionAndSize(bool rebuildMenu = true)
         {
-            var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
+            var topLeft  = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 
             var parentIsFreeform = true;
-            foreach (var doc in SelectedDocs)
+            var showPDFControls = false;
+            try
             {
-                if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewModel.ViewType != CollectionView.CollectionViewType.Freeform)
-                    parentIsFreeform = false;
-                var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
-
-                topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
-                topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
-
-                botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
-                botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
-
-                if (doc.ViewModel != null)
+                foreach (var doc in SelectedDocs)
                 {
-                    TagMap.Clear();
-                    GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
+                    if (doc.GetFirstDescendantOfType<PdfView>() != null)
+                        showPDFControls = true;
+                    if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
+                        parentIsFreeform = false;
+                    var viewModelBounds = doc.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(doc.ActualWidth, doc.ActualHeight)));
+
+                    topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
+                    topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
+
+                    botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
+                    botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
+
+                    if (doc.ViewModel != null)
+                    {
+                        TagMap.Clear();
+                        GetLinkTypes(doc.ViewModel.DataDocument, TagMap); // make sure all of this documents link types have been added to the menu of link types
+                    }
                 }
             }
-            this.xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            this.xURISource.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            catch (Exception e)
+            {
+                Debug.WriteLine("Got Exception:" + e);
+            }
+            xHeaderText.Visibility = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
+            xScrollNavStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
+            xPageButtonStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
 
-            ResizerVisibilityState = _selectedDocs.FirstOrDefault()?.GetFirstAncestorOfType<CollectionFreeformView>() == null ? Visibility.Collapsed : Visibility.Visible;
+            ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && _selectedDocs.First().ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
 
-            rebuildMenuIfNeeded();
+            if (rebuildMenu)
+            {
+                rebuildMenuIfNeeded();
+            }
 
             if (!double.IsPositiveInfinity(topLeft.X) && !double.IsPositiveInfinity(topLeft.Y) &&
                 !double.IsNegativeInfinity(botRight.X) && !double.IsNegativeInfinity(botRight.Y))
@@ -347,14 +399,14 @@ namespace Dash
                 HorizontalOffset = 5,
                 Placement = PlacementMode.Right
             };
-            
+
             var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
             xButtonsPanel.Children.Add(button);
 
             //adds tooltip with link tag name inside
             ToolTipService.SetToolTip(button, toolTip);
         }
-        
+
 
         //checks to see if a tag with the same name has already been created. if not, then a new tag is created
         public Tag AddTagIfUnique(string name)
@@ -441,7 +493,7 @@ namespace Dash
             //check each relevant tag name & create the tag graphic & button for it
             foreach (var name in TagMap.Keys.Where((k) => k != null))
             {
-                    //adds the tag box & link button that connects the name of the tag to all link docs included in the list
+                //adds the tag box & link button that connects the name of the tag to all link docs included in the list
                 AddLinkTypeButton(name);
                 AddTag(name, TagMap[name]);
             }
@@ -501,25 +553,25 @@ namespace Dash
             foreach (var l in doc.GetLinks(null))
             {
                 //for each tag name of this link
-                
-                    var str = l.GetDataDocument().GetLinkTag().Data;
-                    //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
-                    if (map.ContainsKey(str))
-                    {
-                        if (!map[str].Contains(l))
-                            map[str].Add(l);
-                    }
-                    else //create new list containing link doc
-                    {
-                        map.Add(str, new List<DocumentController> { l });
-                    }
-              
+
+                var str = l.GetDataDocument().GetLinkTag().Data;
+                //tag name could already exist in side panel, in which case we need to add it to the list of dcs that are related to this tag 
+                if (map.ContainsKey(str))
+                {
+                    if (!map[str].Contains(l))
+                        map[str].Add(l);
+                }
+                else //create new list containing link doc
+                {
+                    map.Add(str, new List<DocumentController> { l });
+                }
+
                 //linknames.Add(string.Join(", ", tags?.Select(tc => tc.Data) ?? new string[0]));
             }
 
             var regions = doc.GetDataDocument().GetRegions();
             if (regions != null)
-                foreach (var region in regions.TypedData)
+                foreach (var region in regions)
                 {
                     GetLinkTypes(region.GetDataDocument(), map);
                 }
@@ -580,16 +632,15 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            foreach (var docView in SelectedDocs)
-            {
-                var docCollectionView = docView.GetFirstAncestorOfType<AnnotationOverlay>() == null ? docView.ParentCollection : null;
-                args.Data.SetDragModel(new DragDocumentModel(docView) { DraggingLinkButton = true, DraggedDocCollectionViews = new List<CollectionViewModel>(new[] { docCollectionView.ViewModel } ) });
-                args.AllowedOperations =
-                    DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation =
-                    DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-            }
-
+            //bcz: fix this -- it dies for multiple document selections
+            var dragDocOffset  = args.GetPosition(sender);
+            var relDocOffsets  = SelectedDocs.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
+            var parCollections = SelectedDocs.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
+            args.Data.SetDragModel(new DragDocumentModel(SelectedDocs, parCollections, relDocOffsets, dragDocOffset) { DraggingLinkButton = true });
+            args.AllowedOperations =
+                DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation =
+                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             //touchActivated = false;
         }
 
@@ -601,6 +652,54 @@ namespace Dash
         //        doc.ToggleTemplateEditor();
         //    }
         //}
+
+        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
+        }
+
+        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
+            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
+        }
+
+        public void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.NextPage());
+            e.Handled = true;
+        }
+
+        public void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.PrevPage());
+            e.Handled = true;
+        }
+
+        public void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.ScrollBack());
+            e.Handled = true;
+        }
+
+        public void XScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+             pv?.ScrollForward());
+            e.Handled = true;
+        }
 
         private void XTitleBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -669,7 +768,7 @@ namespace Dash
                         {
                             xTagContainer.Children.Add(recent);
                         }
-                        
+
                     }
                 }
                 else
@@ -717,34 +816,6 @@ namespace Dash
             }
         }
 
-        private void XAnnotateEllipseBorder_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            //activation mode only relevant for images & pdfs now
-            var shouldActivate = true;
-            foreach (DocumentView doc in SelectedDocs)
-            {
-                var docType = doc.ViewModel.DocumentController.DocumentType;
-                if (!docType.Equals(ImageBox.DocumentType) && !docType.Equals(PdfBox.DocumentType)) shouldActivate = false;
-            }
-
-            if (shouldActivate == false) return;
-
-            using (UndoManager.GetBatchHandle())
-            {
-                if (!MainPage.Instance.IsShiftPressed())
-                {
-                    LinkActivationManager.DeactivateAllExcept(SelectedDocs);
-                }
-
-                foreach (var doc in SelectedDocs)
-                {
-                    LinkActivationManager.ToggleActivation(doc);
-                }
-            }
-
-
-        }
-
         private void XAutoSuggestBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
             //if enter is pressed, the text in the search box will be made into a new tag 
@@ -758,7 +829,7 @@ namespace Dash
                 var newtag = AddTagIfUnique(entry);
                 if (!TagMap.ContainsKey(entry))
                     TagMap.Add(entry, new List<DocumentController>());
-                
+
                 newtag.Select();
 
                 box.Text = "";
@@ -795,7 +866,7 @@ namespace Dash
             //TODO: DO I NEED THIS?
             //TODO: Update selected tags based on currtag (CHECK MORE THAN JUST RECENT TAGS)
 
-            
+
 
             //if one link has this tag, open tag editor for that link
             if (TagMap[currTag.Text].Count == 1)
@@ -864,25 +935,25 @@ namespace Dash
             xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
             switch (currEditLink?.GetDataDocument().GetLinkBehavior())
             {
-                case LinkBehavior.Follow:
-                    xTypeZoom.IsSelected = true;
-                    break;
-                case LinkBehavior.Annotate:
-                    xTypeAnnotation.IsSelected = true;
-                    break;
-                case LinkBehavior.Dock:
-                    xTypeDock.IsSelected = true;
-                    break;
-                case LinkBehavior.Overlay:
-                    break;
-                case LinkBehavior.Float:
-                    xTypeFloat.IsSelected = true;
-                    break;
+            case LinkBehavior.Follow:
+                xTypeZoom.IsSelected = true;
+                break;
+            case LinkBehavior.Annotate:
+                xTypeAnnotation.IsSelected = true;
+                break;
+            case LinkBehavior.Dock:
+                xTypeDock.IsSelected = true;
+                break;
+            case LinkBehavior.Overlay:
+                break;
+            case LinkBehavior.Float:
+                xTypeFloat.IsSelected = true;
+                break;
             }
 
         }
 
-      
+
 
         private void XInContext_OnToggled(object sender, RoutedEventArgs e)
         {
@@ -900,36 +971,36 @@ namespace Dash
 
             switch (selected)
             {
-                case "Zoom":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
-                    //set in context toggle based on saved info before making area visible 
-                    if (xInContext != null && xInContextGrid != null)
-                    {
-                        xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
-                        xInContextGrid.Visibility = Visibility.Visible;
-                    }
-                    
-                    break;
-                case "Annotation":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
-                    xInContextGrid.Visibility = Visibility.Collapsed;
-                    break;
-                case "Dock":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
-                    //set in context toggle based on saved info before making area visible 
-                    if (xInContext != null && xInContextGrid != null)
-                    {
-                        xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
-                        xInContextGrid.Visibility = Visibility.Visible;
-                    }
-                    
-                    break;
-                case "Float":
-                    currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
-                    xInContextGrid.Visibility = Visibility.Collapsed;
-                    break;
-                default:
-                    break;
+            case "Follow":
+                currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
+                //set in context toggle based on saved info before making area visible 
+                if (xInContext != null && xInContextGrid != null)
+                {
+                    xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+                    xInContextGrid.Visibility = Visibility.Visible;
+                }
+
+                break;
+            case "Annotation":
+                currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
+                xInContextGrid.Visibility = Visibility.Collapsed;
+                break;
+            case "Dock":
+                currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
+                //set in context toggle based on saved info before making area visible 
+                if (xInContext != null && xInContextGrid != null)
+                {
+                    xInContext.IsOn = currEditLink?.GetDataDocument()?.GetField<BoolController>(KeyStore.LinkContextKey)?.Data ?? true;
+                    xInContextGrid.Visibility = Visibility.Visible;
+                }
+
+                break;
+            case "Float":
+                currEditLink?.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
+                xInContextGrid.Visibility = Visibility.Collapsed;
+                break;
+            default:
+                break;
             }
         }
 
@@ -968,28 +1039,28 @@ namespace Dash
         {
             switch (e.Key)
             {
-                case VirtualKey.Enter:
-                    if (xHeaderText.Text.StartsWith("#"))
-                    {
-                        ResetHeader(xHeaderText.Text.Substring(1));
-                    }
-                    else
-                    {
-                        CommitHeaderText();
-                    }
-                    break;
-                case VirtualKey.Down:
-                case VirtualKey.Up:
-                    ChooseNextHeaderKey(e.Key == VirtualKey.Up);
-                    break;
-                default :
-                    xHeaderText.Foreground = new SolidColorBrush(Colors.Red);
-                    break;
+            case VirtualKey.Enter:
+                if (xHeaderText.Text.StartsWith("#"))
+                {
+                    ResetHeader(xHeaderText.Text.Substring(1));
+                }
+                else
+                {
+                    CommitHeaderText();
+                }
+                break;
+            case VirtualKey.Down:
+            case VirtualKey.Up:
+                ChooseNextHeaderKey(e.Key == VirtualKey.Up);
+                break;
+            default:
+                xHeaderText.Foreground = new SolidColorBrush(Colors.Red);
+                break;
             }
             e.Handled = true;
         }
 
-        private void ChooseNextHeaderKey(bool prev=false)
+        private void ChooseNextHeaderKey(bool prev = false)
         {
             var keys = new List<KeyController>();
             foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
@@ -1052,6 +1123,30 @@ namespace Dash
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
+        private void XLinkToBox_OnDropDownOpened(object sender, object e)
+        {
+
+        }
+
+        private void XLinkToBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            //save field for what link behavior is selected
+            var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
+
+            switch (selected)
+            {
+            case "Region":
+                currEditLink?.SetLinkBehavior(LinkBehavior.ShowRegion);
+
+                break;
+            case "Document":
+                currEditLink?.SetLinkBehavior(LinkBehavior.ShowDocument);
+                break;
+            default:
+                break;
+            }
+        }
+
         private async void UserControl_Drop(object sender, DragEventArgs e)
         {
             e.Handled = true;
@@ -1071,7 +1166,7 @@ namespace Dash
         }
 
         // try dropping the Xaml style below onto the blue frame of one or more selected text documents:
-        /*
+        /* -- restyles a text note 
         <Grid
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -1086,7 +1181,7 @@ namespace Dash
                     <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
                 </Border>
                 <Border Grid.Row="1" Background="CadetBlue" >
-                    <dash:RichTextView x:Name="xRichTextFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+                    <dash:RichEditView x:Name="xRichTextFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
                 </Border>
             <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
                 <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
@@ -1094,6 +1189,79 @@ namespace Dash
                 <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
                 <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
             </StackPanel>
+        </Grid>  
+        -- restyles an image to have a caption
+<Grid
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dash="using:Dash"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="Auto"></RowDefinition>
+    </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="CadetBlue" >
+            <dash:EditableImage x:Name="xImageFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+        </Border>
+        <Border Grid.Row="1" Background="CadetBlue" MinHeight="30">
+            <dash:RichEditView x:Name="xRichTextFieldCaption" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+        </Border>
+</Grid>
+        <Grid
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:dash="using:Dash"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+                <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
+                    <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
+                </Border>
+                <Border Grid.Row="1" Background="CadetBlue" >
+                    <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+                </Border>
+            <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
+                <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <dash:EditableTextBlock x:Name="xTextFieldAuthor" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0" />
+                <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />
+                <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+          <Grid
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:dash="using:Dash"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                    <Border Grid.Row="1" Background="CadetBlue">
+                        <StackPanel Orientation="Horizontal">
+                            <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Left" Width="1000" VerticalAlignment="Top" />
+                            <dash:CollectionView x:Name="xCollectionFieldAnnotations" Width="5000" Background="Yellow" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White">
+                        <TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0"/>
+                        <TextBlock x:Name="xTextFieldAuthor" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0"/>
+                        <TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0"/>
+                        <TextBlock x:Name="xTextFieldDateCreated" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                    </StackPanel>
+            </Grid>
+            <Grid IsHitTestVisible="False" Opacity="0.3" HorizontalAlignment="Right" Margin="0 0 -85 0">
+                <Grid.RenderTransform>
+                    <RotateTransform Angle="45" CenterX="55" CenterY="50"/>
+                </Grid.RenderTransform>
+                 <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White" Width="195" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <TextBlock x:Name="xTextFieldTitle" Text="DOC TITLE" HorizontalAlignment="Stretch" Padding="23 0 0 0" Height="25" VerticalAlignment="Top" />
+                </Border>
+            </Grid>
         </Grid>
         */
 

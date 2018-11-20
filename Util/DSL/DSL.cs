@@ -12,7 +12,10 @@ namespace Dash
     {
         private readonly Scope _scope;
 
-        public DSL(Scope scope = null) => _scope = new ReturnScope(scope);
+        public DSL(Scope scope = null)
+        {
+            _scope = scope;
+        }
 
         public DSL(OuterReplScope scope)
         {

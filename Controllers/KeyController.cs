@@ -42,25 +42,16 @@ namespace Dash
             {
                 if (KeyModel.Name != value)
                 {
-                    SetName(value);
+                    string data = KeyModel.Name;
+                    UndoCommand newEvent = new UndoCommand(() => Name = value, () => Name = data);
+
+                    KeyModel.Name = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
         }
 
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetName(string val, bool withUndo = true)
-        {
-            string data = KeyModel.Name;
-            UndoCommand newEvent = new UndoCommand(() => SetName(val, false), () => SetName(data, false));
-
-            KeyModel.Name = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
-        }
-
-        private static string _hackId;
         public KeyModel KeyModel => Model as KeyModel;
 
         /// <summary>
@@ -70,12 +61,15 @@ namespace Dash
         /// <param name="guid"></param>
         private KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
+            HashCode = Id.GetHashCode();
         }
 
         public KeyController(KeyModel model) : base(model)
         {
             Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
             _nameDictionary[model.Name] = this;
+
+            HashCode = Id.GetHashCode();
         }
 
         public override string ToString()
@@ -89,11 +83,10 @@ namespace Dash
             return k != null && k.Id.Equals(Id);
         }
 
+        private int HashCode { get; } 
         public override int GetHashCode()
         {
-
-            return Id.GetHashCode();
-
+            return HashCode;
         }
 
         public override FieldControllerBase Copy()

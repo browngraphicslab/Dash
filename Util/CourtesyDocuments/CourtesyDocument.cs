@@ -79,36 +79,6 @@ namespace Dash
             //dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
-        protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
-
-
-        [Obsolete("Use FieldBindings and AddFieldBinding instead")]
-        protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate) where T : FrameworkElement
-        {
-            DocumentController.DocumentUpdatedHandler handler = (sender, args, c) =>
-            {
-                if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
-                bindingDelegate(element, sender, c); //TODO Should be context or args.Context?
-            };
-
-            AddHandlers(element, docController, k, context, bindingDelegate, handler);
-        }
-
-        protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate, DocumentController.DocumentUpdatedHandler handler) where T : FrameworkElement
-        {
-            element.Loaded += delegate
-            {
-                bindingDelegate(element, docController, context);
-                docController.AddFieldUpdatedListener(k, handler);
-            };
-            element.Unloaded += delegate
-            {
-                docController.RemoveFieldUpdatedListener(k, handler);
-            };
-        }
-
         public static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
             FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
@@ -197,6 +167,7 @@ namespace Dash
             // assign the default fields
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
+				[KeyStore.InitialSizeKey] = new PointController(size.Width, size.Height),
                 [KeyStore.WidthFieldKey] = new NumberController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),
@@ -224,7 +195,9 @@ namespace Dash
         Annotate,
         Dock,
         Float,
-        Overlay
+        Overlay,
+        ShowRegion,
+        ShowDocument
     }
 
     public static class CourtesyDocumentExtensions
@@ -371,17 +344,17 @@ namespace Dash
             return document.GetField<ListController<OperatorController>>(scriptKey);
         }
 
-        public static List<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
         {
             if (linkFromOrToKey == null)
             {
                 var fromLinks = document.GetLinks(KeyStore.LinkFromKey);
                 var toLinks   = document.GetLinks(KeyStore.LinkToKey);
-                var allinks   = new List<DocumentController>(fromLinks);
+                var allinks   = new ListController<DocumentController>(fromLinks);
                 allinks.AddRange(toLinks);
                 return allinks;
             }
-            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null)?.TypedData ?? new List<DocumentController>();
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null) ?? new ListController<DocumentController>();
         }
 
         public static TextController GetLinkTag(this DocumentController document)
@@ -430,6 +403,14 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
+        public static AnnotationType GetAnnotationType(this DocumentController document)
+        {
+            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            return t == null
+                ? AnnotationType.None
+                : Enum.Parse<AnnotationType>(t.Data);
+        }
+
         public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
             var t = regionDocumentController.GetDataDocument().GetDereferencedField<TextController>(KeyStore.RegionTypeKey, null);
@@ -437,8 +418,7 @@ namespace Dash
                 ? AnnotationType.None
                 : Enum.Parse<AnnotationType>(t.Data);
 
-            switch (annoType) { 
-            
+            switch (annoType) {
                 case AnnotationType.Pin:       return new PinAnnotation(overlay, new Selection(regionDocumentController,
                                                              new SolidColorBrush(Color.FromArgb(255, 0x1f, 0xff, 0)), new SolidColorBrush(Colors.Red)));
                 case AnnotationType.Region:    return new RegionAnnotation(overlay, new Selection(regionDocumentController));

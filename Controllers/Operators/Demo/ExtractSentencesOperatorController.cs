@@ -59,7 +59,7 @@ namespace Dash
             var textFieldKey = inputs[TextField] as KeyController;
 
             var outputDocs = new List<DocumentController>();
-            foreach (var inputDoc in collection.TypedData)
+            foreach (var inputDoc in collection)
             {
                 var dataDoc = inputDoc.GetDataDocument();
                 var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextController)?.Data;

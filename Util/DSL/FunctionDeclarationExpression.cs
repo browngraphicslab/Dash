@@ -50,9 +50,9 @@ namespace Dash
             _returnType = retur;
         }
 
-        public override Task<FieldControllerBase> Execute(Scope scope)
+        public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            return Task.FromResult<FieldControllerBase>(new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType, scope));
+            return Task.FromResult<(FieldControllerBase, ControlFlowFlag)>((new FunctionOperatorController(_functionCode, _parameters, _funcBlock, _returnType, scope), ControlFlowFlag.None));
         }
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();

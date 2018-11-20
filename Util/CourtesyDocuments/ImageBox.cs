@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -26,33 +27,27 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "ImageBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
         {
             // create the image
-
-            var editableImage = new EditableImage(docController, context);
-           
-            var image = editableImage.Image;
-            
-
+            var editableImage = new EditableImage();
             // setup bindings on the image
-            SetupImageBinding(image, docController, context);
+            SetupBinding(editableImage, docController, key, context);
+
+            return editableImage;
+        }
+
+	    public static void SetupBinding(EditableImage editableImage, DocumentController controller, KeyController key, Context context)
+        {
+            editableImage.DataFieldKey = key;
+            BindImageSource(editableImage, controller, key, context);
+        }
+
+        protected static void BindImageSource(EditableImage editableImage, DocumentController docController, KeyController key, Context context)
+        {
+            var image = editableImage.Image;
             editableImage.HorizontalAlignment = HorizontalAlignment.Left;
             editableImage.VerticalAlignment = VerticalAlignment.Top;
-
-            var border = new Border();
-            border.Child = editableImage;
-            return border;
-        }
-
-		protected static void SetupImageBinding(Image image, DocumentController controller,
-            Context context)
-        {
-            BindImageSource(image, controller, context);
-        }
-
-        protected static void BindImageSource(Image image, DocumentController docController, Context context)
-        {
             var binding = new FieldBinding<ImageController>
             {
                 Document = docController,
@@ -74,7 +69,7 @@ namespace Dash
             image.AddFieldBinding(Image.StretchProperty, binding2);
         }
 
-	    public static DocumentController MakeRegionDocument(DocumentView image, Point? point)
+	    public static Task<DocumentController> MakeRegionDocument(DocumentView image, Point? point)
 	    {
 		    return image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
 	    }

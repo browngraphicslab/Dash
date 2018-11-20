@@ -10,15 +10,10 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Telerik.UI.Xaml.Controls.Grid;
-using Telerik.UI.Xaml.Controls.Grid.Primitives;
 using Windows.UI.Xaml.Data;
-using Microsoft.Office.Interop.Word;
 using Microsoft.Toolkit.Uwp.UI.Controls;
-using NewControls;
 using CheckBox = Windows.UI.Xaml.Controls.CheckBox;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
-using StackPanel = Windows.UI.Xaml.Controls.StackPanel;
 using Task = System.Threading.Tasks.Task;
 using TextBlock = Windows.UI.Xaml.Controls.TextBlock;
 
@@ -47,6 +42,8 @@ namespace Dash
 
         private ListController<KeyController> Keys { get; set; }
 
+        public CollectionViewType ViewType => CollectionViewType.Schema;
+
         public CollectionDBSchemaView()
         {
             InitializeComponent();
@@ -57,7 +54,7 @@ namespace Dash
             xDataGrid.CanUserSortColumns = true;
             xDataGrid.CanUserResizeColumns = true;
             xDataGrid.CanUserReorderColumns = true;
-            xDataGrid.ColumnWidth = new DataGridLength(200);
+            xDataGrid.ColumnWidth = new DataGridLength(100);
             xDataGrid.GridLinesVisibility = DataGridGridLinesVisibility.All;
             xDataGrid.CellEditEnding += XDataGridOnCellEditEnding;
             xDataGrid.LoadingRow += XDataGrid_LoadingRow;
@@ -72,27 +69,36 @@ namespace Dash
         private void XDataGrid_Sorting(object sender, DataGridColumnEventArgs e)
         {
             var sortColumn = (WindowsDictionaryColumn)e.Column;
-            if (_sortColumn != null && sortColumn != _sortColumn)
+            var colHeaderVM = sortColumn.Header as ColumnHeaderViewModel;
+            if (colHeaderVM.IsSelected != Visibility.Visible)
             {
-                _sortColumn.SortDirection = null;
+                xDataGrid.Columns.ToList().ForEach((c) => (c.Header as ColumnHeaderViewModel).IsSelected = Visibility.Collapsed);
+                colHeaderVM.IsSelected = Visibility.Visible;
             }
-
-            _sortColumn = sortColumn;
-            switch (e.Column.SortDirection)
+            else
             {
-            case DataGridSortDirection.Ascending:
-                _sortColumn.SortDirection = DataGridSortDirection.Descending;
-                break;
-            case DataGridSortDirection.Descending:
-                _sortColumn.SortDirection = null;
-                break;
-            default:
-                _sortColumn.SortDirection = DataGridSortDirection.Ascending;
-                break;
-            }
+                if (_sortColumn != null && sortColumn != _sortColumn)
+                {
+                    _sortColumn.SortDirection = null;
+                }
 
-            //ViewModel.ContainerDocument.SetField<ListController<TextController>>(KeyStore.ColumnSortingKey, new List<string>(new string[] { _sortColumn.Key.Name, _sortColumn.SortDirection?.ToString() ?? "" }), true);
-            UpdateSort();
+                _sortColumn = sortColumn;
+                switch (e.Column.SortDirection)
+                {
+                case DataGridSortDirection.Ascending:
+                    _sortColumn.SortDirection = DataGridSortDirection.Descending;
+                    break;
+                case DataGridSortDirection.Descending:
+                    _sortColumn.SortDirection = null;
+                    break;
+                default:
+                    _sortColumn.SortDirection = DataGridSortDirection.Ascending;
+                    break;
+                }
+
+                //ViewModel.ContainerDocument.SetField<ListController<TextController>>(KeyStore.ColumnSortingKey, new List<string>(new string[] { _sortColumn.Key.Name, _sortColumn.SortDirection?.ToString() ?? "" }), true);
+                UpdateSort();
+            }
         }
 
         private void UpdateSort()
@@ -145,13 +151,22 @@ namespace Dash
                 //xDataGrid.UpdateLayout();
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
 
-                var keys = InitializeDocs().ToList();
+                var keys = (IList<KeyController>)InitializeDocs().ToList();
                 var savedKeys = ViewModel.ContainerDocument
-                    .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns).TypedData;
+                    .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
                 foreach (var key in savedKeys ?? keys)
                 {
                     AddKey(key);
                 }
+            }
+        }
+
+
+        public void OnDocumentSelected(bool selected)
+        {
+            if (!selected)
+            {
+                xDataGrid.Columns.ToList().ForEach((c) => (c.Header as ColumnHeaderViewModel).IsSelected = Visibility.Collapsed);
             }
         }
 
@@ -202,8 +217,7 @@ namespace Dash
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Stacking,
-                200, 200).Document;
+            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Stacking, 200, 200).Document;
             var docs = newDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
             int placement = 0;
             foreach (var key in Keys)
@@ -255,10 +269,11 @@ namespace Dash
 
             foreach (var key in Keys)
             {
-                xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) {Header = key, HeaderStyle = xHeaderStyle });
+                xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { HeaderStyle = xHeaderStyle });
             }
 
-            if (ViewModel.IsLoaded && xDataGrid.ItemsSource == null)
+            //TODO tfs Events
+            if (/*ViewModel.IsLoaded &&*/ xDataGrid.ItemsSource == null)
             {
                 xDataGrid.ItemsSource = ViewModel.BindableDocumentViewModels;
             }
@@ -284,7 +299,7 @@ namespace Dash
             if (!Keys.Contains(key))
             {
                 Keys.Add(key);
-                xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) {Header = key, HeaderStyle = xHeaderStyle});
+                xDataGrid.Columns.Add(new WindowsDictionaryColumn(key, this) { HeaderStyle = xHeaderStyle});
                 var schemaColumns =
                     ViewModel.ContainerDocument
                         .GetField<ListController<KeyController>>(KeyStore.SchemaDisplayedColumns);
@@ -445,9 +460,14 @@ namespace Dash
         {
             AddNewColumn();
         }
-
+        
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            if (this.IsCtrlPressed())
+            {
+                var delta = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
+                ViewModel.CellFontSize = Math.Max(2, ViewModel.CellFontSize * (delta > 0 ? 0.95 : 1.05));
+            }
             e.Handled = true;
         }
 
@@ -520,144 +540,6 @@ namespace Dash
             }
         }
 
-        public class DataGridDictionaryColumn : DataGridTypedColumn
-        {
-            public KeyController Key { get; set; }
-
-            public DataGridDictionaryColumn(KeyController key)
-            {
-                PropertyName = key.Name;
-                Key = key;
-            }
-
-            public override object GetEditorType(object item)
-            {
-                return typeof(TextBox);
-            }
-
-            public override FrameworkElement CreateEditorContentVisual()
-            {
-                return new TextBox();
-            }
-
-            public override object CreateContainer(object rowItem)
-            {
-                return new MyContentPresenter();
-            }
-
-            public override object GetContainerType(object rowItem)
-            {
-                return typeof(MyContentPresenter);
-            }
-
-            protected override DataGridFilterControlBase CreateFilterControl()
-            {
-                return new DataGridTextFilterControl()
-                {
-                    PropertyName = PropertyName
-                };
-            }
-
-            public override void PrepareEditorContentVisual(FrameworkElement editorContent, Binding binding)
-            {
-                var doc = ((DocumentController)binding.Source).GetDataDocument();
-                var field = doc.GetField(Key);
-                ((TextBox)editorContent).Text = DSL.GetScriptForField(field, doc);
-            }
-
-            public override void ClearEditorContentVisual(FrameworkElement editorContent)
-            {
-                editorContent.ClearValue(TextBox.TextProperty);
-            }
-
-            public override void PrepareCell(object container, object value, object item)
-            {
-                base.PrepareCell(container, value, item);
-
-                var thisDoc = (DocumentController)item; //This should be data doc I think
-                var cp = (MyContentPresenter)container;
-                cp.SetDocumentAndKey(thisDoc, Key);
-            }
-        }
-
-        public class WindowsDictionaryColumn : Microsoft.Toolkit.Uwp.UI.Controls.DataGridColumn
-        {
-            public KeyController Key { get; private set; }
-            public CollectionDBSchemaView Parent { get; }
-
-            public WindowsDictionaryColumn(KeyController key, CollectionDBSchemaView parent)
-            {
-                Key = key;
-                Parent = parent;
-            }
-
-            protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
-            {
-                var atb = new ActionTextBox
-                {
-                    IsSpellCheckEnabled = false
-                };
-                atb.AddKeyHandler(VirtualKey.Enter, async args =>
-                {
-                    if (cell.IsCtrlPressed())
-                    {
-                        await Parent.FillColumn(atb, Key);
-                        Parent.DataGrid.CancelEdit();
-                        args.Handled = true;
-                    }
-                });
-                return atb;
-            }
-        protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
-        {
-            var doc = ((DocumentViewModel)dataItem).DataDocument;
-            var textblock = new TextBlock
-            {
-                IsDoubleTapEnabled = false
-            };
-            textblock.DataContextChanged += Textblock_DataContextChanged;
-            var binding = new FieldBinding<FieldControllerBase, TextController>
-            {
-                Document = doc,
-                Key = Key,
-                Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay,
-                FallbackValue = "<null>"
-            };
-            textblock.AddFieldBinding(TextBlock.TextProperty, binding);
-            return textblock;
-            //var contentPresenter = new MyContentPresenter();
-            //contentPresenter.SetDocumentAndKey(((DocumentViewModel)dataItem).DataDocument, Key);
-            //contentPresenter.IsHitTestVisible = false;
-            //return contentPresenter;
-        }
-
-        private void Textblock_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            var binding = new FieldBinding<FieldControllerBase, TextController>
-            {
-                Document = (sender.DataContext as DocumentViewModel).DataDocument,
-                Key = Key,
-                Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay,
-            };
-            sender.AddFieldBinding(TextBlock.TextProperty, binding);
-        }
-
-            protected override object PrepareCellForEdit(FrameworkElement editingElement,
-                RoutedEventArgs editingEventArgs)
-            {
-                var tb = (ActionTextBox)editingElement;
-
-                var doc = (DocumentViewModel)editingElement.DataContext;
-                var dataDoc = doc.DataDocument;
-
-                tb.Text = DSL.GetScriptForField(dataDoc.GetField(Key), dataDoc);
-
-                return string.Empty;
-            }
-        }
-
         public class MyContentPresenter : ContentPresenter
         {
             public DocumentController Document { get; private set; }
@@ -674,6 +556,133 @@ namespace Dash
                 Key = key;
                 TableBox.BindContent(this, Document, Key, null);
             }
+        }
+
+        private void Border_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xDataGrid.Columns.ToList().ForEach((c) => (c.Header as ColumnHeaderViewModel).IsSelected = Visibility.Collapsed);
+            ((sender as Border).DataContext as ColumnHeaderViewModel).IsSelected = Visibility.Visible;
+        }
+    }
+
+    public class BindingHelper
+    {
+        public static readonly DependencyProperty FontSizeProperty =
+        DependencyProperty.RegisterAttached("FontSize", typeof(string), typeof(BindingHelper),
+            new PropertyMetadata(null, new PropertyChangedCallback(FontSizePropertyChanged)));
+
+        public static string GetFontSize(DependencyObject obj)
+        {
+            return (string)obj.GetValue(FontSizeProperty);
+        }
+
+        public static void SetFontSize(DependencyObject obj, string value)
+        {
+            obj.SetValue(FontSizeProperty, value);
+        }
+
+        private static void FontSizePropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is string propertyPath)
+            {
+                // ugh ... the textBlock's dataContext is it's row's document view model, so we need to get the collection view model from the tag
+                if (obj is TextBlock textBlock && textBlock.Tag is CollectionViewModel collectionViewModel)
+                {
+                    BindingOperations.SetBinding(textBlock,  TextBlock.FontSizeProperty,
+                                           new Binding { Source = collectionViewModel, Path = new PropertyPath(propertyPath)});
+                }
+                if (obj is ActionTextBox aTextBox && aTextBox.Tag is CollectionViewModel collectionViewModel2)
+                {
+                    BindingOperations.SetBinding(aTextBox, ActionTextBox.FontSizeProperty,
+                                           new Binding { Source = collectionViewModel2, Path = new PropertyPath(propertyPath) });
+                }
+            }
+        }
+    }
+    public class ColumnHeaderViewModel :ViewModelBase
+    {
+        private Visibility          _isSelected = Visibility.Collapsed;
+        public Visibility            IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                SetProperty<Visibility>(ref _isSelected, value);
+            }
+        }
+        public KeyController         Key                 { get; private set; }
+        public CollectionViewModel   CollectionViewModel { get; private set; }
+        public ColumnHeaderViewModel(CollectionViewModel cvm, KeyController key)
+        {
+            CollectionViewModel = cvm;
+            Key = key;
+            IsSelected = Visibility.Collapsed;
+        }
+
+        public override string ToString()
+        {
+            return Key?.ToString();
+        }
+    }
+
+
+    public class WindowsDictionaryColumn : DataGridColumn
+    {
+        public KeyController Key => (Header as ColumnHeaderViewModel).Key;
+        public CollectionDBSchemaView Parent { get; }
+        public WindowsDictionaryColumn(KeyController key, CollectionDBSchemaView parent)
+        {
+            Header = new ColumnHeaderViewModel(parent.ViewModel, key);
+            Parent = parent;
+        }
+
+        protected override FrameworkElement GenerateEditingElement(DataGridCell cell, object dataItem)
+        {
+            var atb = new ActionTextBox {  IsSpellCheckEnabled = false, Tag = Parent.ViewModel }; // must set Tag so that BindingHelper can find CollectionViewModel
+            atb.AddKeyHandler(VirtualKey.Enter, async args =>
+            {
+                if (cell.IsCtrlPressed())
+                {
+                    await Parent.FillColumn(atb, Key);
+                    Parent.DataGrid.CancelEdit();
+                    args.Handled = true;
+                }
+            });
+            return atb;
+        }
+        protected override FrameworkElement GenerateElement(DataGridCell cell, object dataItem)
+        {
+            var textblock = new TextBlock { IsDoubleTapEnabled = false, Tag = Parent.ViewModel }; // must set Tag so that BindingHelper can find CollectionViewModel
+            textblock.DataContextChanged += Textblock_DataContextChanged;
+            return textblock;
+        }
+
+        private void Textblock_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (sender.DataContext is DocumentViewModel)
+            {
+                var binding = new FieldBinding<FieldControllerBase, TextController>
+                {
+                    Document = (sender.DataContext as DocumentViewModel).DataDocument,
+                    Key = Key,
+                    Converter = new ObjectToStringConverter(),
+                    Mode = BindingMode.OneWay,
+                };
+                sender.AddFieldBinding(TextBlock.TextProperty, binding);
+            }
+        }
+
+        protected override object PrepareCellForEdit(FrameworkElement editingElement,
+            RoutedEventArgs editingEventArgs)
+        {
+            var tb = (ActionTextBox)editingElement;
+
+            var doc = (DocumentViewModel)editingElement.DataContext;
+            var dataDoc = doc.DataDocument;
+
+            tb.Text = DSL.GetScriptForField(dataDoc.GetField(Key), dataDoc);
+
+            return string.Empty;
         }
     }
 }

@@ -82,7 +82,7 @@ namespace Dash
                 var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
                 var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
 
-                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema);
+                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Schema);
 
                 MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, new Windows.UI.Core.DispatchedHandler(
                     async () => new execClass(correctedHtml, script, doc)));
@@ -126,8 +126,8 @@ namespace Dash
                     var children = Cnote.Document.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
-                            foreach (var d in (f.Value as ListController<DocumentController>).TypedData)
-                                if (!children.GetElements().Contains(d))
+                            foreach (var d in (f.Value as ListController<DocumentController>))
+                                if (!children.Contains(d))
                                 {
                                     foreach (var field in d.EnumDisplayableFields().ToArray())
                                     {

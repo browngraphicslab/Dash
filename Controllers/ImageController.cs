@@ -21,8 +21,8 @@ namespace Dash
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
         {
-			
-		}
+
+        }
 
         // == METHODS ==
 
@@ -42,22 +42,14 @@ namespace Dash
             {
                 if (ImageFieldModel.Data != value)
                 {
-                    SetData(value);
+                    Uri data = ImageFieldModel.Data;
+                    UndoCommand newEvent = new UndoCommand(() => Data = value, () => Data = data);
+
+                    ImageFieldModel.Data = value;
+                    UpdateOnServer(newEvent);
+                    OnFieldModelUpdated(null);
                 }
             }
-        }
-
-        /*
-       * Sets the data property and gives UpdateOnServer an UndoCommand 
-       */
-        private void SetData(Uri val, bool withUndo = true)
-        {
-            Uri data = ImageFieldModel.Data;
-            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
-
-            ImageFieldModel.Data = val;
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(null);
         }
 
         public Uri Data
@@ -86,7 +78,7 @@ namespace Dash
 
         public override string ToScriptString(DocumentController thisDoc)
         {
-            return DSL.GetFuncName<TextToImageOperator>() + $"(\"{Data}\")";
+            return DSL.GetFuncName<ImageOperator>() + $"(\"{Data}\")";
         }
 
         public override FieldControllerBase GetDefaultController()
@@ -114,7 +106,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return ImageFieldModel.Data.AbsolutePath;
+            return ImageFieldModel.Data.AbsoluteUri;
         }
 
         public override FieldControllerBase Copy()
@@ -122,6 +114,6 @@ namespace Dash
             return new ImageController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }
 
-        
+
     }
 }

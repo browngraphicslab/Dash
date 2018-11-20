@@ -43,7 +43,7 @@ namespace Dash
 
         }
 
-        private void OnTitleFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        private void OnTitleFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
             if (xTitleInput.Text != tfmc.Data)
@@ -76,7 +76,7 @@ namespace Dash
             var data = new List<(string term, string definition, string image)>();
 
             // iterate over all the docs
-            foreach (var doc in collection.TypedData)
+            foreach (var doc in collection)
             { 
                 var dataDoc = doc?.GetDataDocument();
 

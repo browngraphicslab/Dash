@@ -261,14 +261,19 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument.GetViewCopy()).ToList();
+            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
 
-            var dragModel = new DragDocumentModel(docs, CollectionView.CollectionViewType.Page)
+            var searchString = xAutoSuggestBox.Text;
+            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection =>
             {
-                SearchCol = true,
-                SearchText = xAutoSuggestBox.Text
-            };
-            args.Data.SetDragModel(dragModel);
+                collection.GetDataDocument().SetField<TextController>(KeyStore.SearchStringKey, searchString, true);
+                var fields = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                for (var index = 0; index < fields.Count; index++)
+                {
+                    var doc = fields[index];
+                    doc.SetField(KeyStore.SearchOriginKey, docs[index], true);
+                }
+            }, true));
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
