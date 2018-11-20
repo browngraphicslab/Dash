@@ -1123,6 +1123,30 @@ namespace Dash
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
+        private void XLinkToBox_OnDropDownOpened(object sender, object e)
+        {
+
+        }
+
+        private void XLinkToBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            //save field for what link behavior is selected
+            var selected = ((sender as ComboBox)?.SelectedItem as ComboBoxItem)?.Content;
+
+            switch (selected)
+            {
+            case "Region":
+                currEditLink?.SetLinkBehavior(LinkBehavior.ShowRegion);
+
+                break;
+            case "Document":
+                currEditLink?.SetLinkBehavior(LinkBehavior.ShowDocument);
+                break;
+            default:
+                break;
+            }
+        }
+
         private async void UserControl_Drop(object sender, DragEventArgs e)
         {
             e.Handled = true;

@@ -115,7 +115,7 @@ namespace Dash
         }
         ~PdfAnnotationView()
         {
-            //Debug.WriteLine("FINALIZING PdfAnnotationView");
+            Debug.WriteLine("FINALIZING PdfAnnotationView");
         }
         public void GoToPage(double pageNum)
         {
@@ -222,10 +222,10 @@ namespace Dash
         /// </summary>
         /// <param name="pointInAnnotationOverlayCoords"></param>
         /// <returns></returns>
-        public DocumentController GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
+        public async Task<DocumentController> GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
         {
-            var regionDoc = AnnotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null && pointInAnnotationOverlayCoords != null) // make a pushpin if we have a point and no region
+            var regionDoc = await AnnotationOverlay.CreateRegionFromPreviewOrSelection();
+            if (regionDoc == null && pointInAnnotationOverlayCoords != null)
             {
                 regionDoc = AnnotationOverlay.CreatePinRegion(calculateClosestPointOnPDF(pointInAnnotationOverlayCoords.Value));
             }
@@ -294,8 +294,7 @@ namespace Dash
                         for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
                         {
                             var ele = _annotationOverlay.TextSelectableElements[i];
-                            var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
-                            ;
+                            var fontFamily = ele.FontFamily;
                             var correctedFont = fontFamily;
                             if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
                             {
@@ -351,18 +350,7 @@ namespace Dash
                         }
 
                         var selectableElement = _annotationOverlay.TextSelectableElements[index];
-                        var nchar = ((string)selectableElement.Contents).First();
-                        if (prevIndex > 0 && sb.Length > 0 &&
-                            (nchar > 128 || char.IsUpper(nchar) ||
-                             (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
-                              !char.IsLower(sb[sb.Length - 1]))) &&
-                            _annotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
-                            _annotationOverlay.TextSelectableElements[index].Bounds.Top)
-                        {
-                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
-                        }
-                        var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                            .GetFontName();
+                        var font = selectableElement.FontFamily;
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             var dpi = DisplayInformation.GetForCurrentView().LogicalDpi;
@@ -373,13 +361,13 @@ namespace Dash
                                 currentFontSize = fontSize;
                             }
 
-                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.AvgWidth)
                             {
                                 sb.Append("{\\b");
                                 isBold = true;
                             }
                             else if (isBold && selectableElement.Bounds.Width <
-                                     1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                                     1.05 * selectableElement.AvgWidth)
                             {
                                 sb.Append("}");
                                 isBold = false;
@@ -405,13 +393,21 @@ namespace Dash
                             }
 
                             var contents = (string)selectableElement.Contents;
-                            if (char.IsWhiteSpace(contents, 0))
+                            if (contents.Equals("\n"))
+                            {
+                                sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
+                            }
+                            else if (char.IsWhiteSpace(contents, 0))
                             {
                                 sb.Append("\\~");
                             }
                             else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
                             {
                                 sb.Append("\\_");
+                            }
+                            else if (char.IsNumber(contents.First()))
+                            {
+                                sb.Append("\\" + (string)selectableElement.Contents);
                             }
                             else
                             {
@@ -455,11 +451,11 @@ namespace Dash
         }
 
 
-        private void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
+        private async void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
         {
             if (KeyStore.RegionCreator.TryGetValue(ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
             {
-                GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay)).Link(added, LinkBehavior.Annotate);
+                (await GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay))).Link(added, LinkBehavior.Annotate);
             }
         }
 

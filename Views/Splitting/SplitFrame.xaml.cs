@@ -60,7 +60,6 @@ namespace Dash
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true, ResizersVisible = false };
-
             return doc;
         }
 

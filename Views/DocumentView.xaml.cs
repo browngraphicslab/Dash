@@ -170,7 +170,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
-            Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+            //Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 10;
@@ -953,13 +953,13 @@ namespace Dash
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                     {
-                        dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
+                        dragDoc = await creatorFunc(dm.DraggedDocumentViews[index]);
                     }
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
