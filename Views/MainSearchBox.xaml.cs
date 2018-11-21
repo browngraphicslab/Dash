@@ -290,10 +290,7 @@ namespace Dash
         {
             Debug.Write("Dragging a copy into workspace...");
             var svm = (sender as FrameworkElement)?.DataContext as SearchResultViewModel;
-            var dragModel = new DragDocumentModel(svm?.ViewDocument)
-            {
-                DragCopy = true
-            };
+            var dragModel = new DragDocumentModel(svm?.ViewDocument);
             // get the sender's view docs and set the key for the drag to a static const
             args.Data.SetDragModel(dragModel);
 
