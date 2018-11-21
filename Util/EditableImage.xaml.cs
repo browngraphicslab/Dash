@@ -62,6 +62,7 @@ namespace Dash
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
                 _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
                 XAnnotationGrid.Children.Add(_annotationOverlay);
+                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
 
             Loaded += EditableImage_Loaded;
@@ -422,12 +423,12 @@ namespace Dash
         {
             if (IsCropping) e.Handled = true;
             var point = e.GetCurrentPoint(_annotationOverlay);
-
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
             }
             _downPt = e.GetCurrentPoint(this).Position;
+            e.Handled = true;
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -438,9 +439,9 @@ namespace Dash
             }
         }
 
-        public DocumentController GetRegionDocument(Point? docViewPoint)
+        public async Task<DocumentController> GetRegionDocument(Point? docViewPoint)
         {
-            var regionDoc = _annotationOverlay.CreateRegionFromPreviewOrSelection();
+            var regionDoc = await _annotationOverlay.CreateRegionFromPreviewOrSelection();
             if (regionDoc == null)
             {
                 if (docViewPoint != null)

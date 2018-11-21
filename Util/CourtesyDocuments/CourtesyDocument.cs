@@ -167,6 +167,7 @@ namespace Dash
             // assign the default fields
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
+				[KeyStore.InitialSizeKey] = new PointController(size.Width, size.Height),
                 [KeyStore.WidthFieldKey] = new NumberController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointController(pos),
@@ -194,7 +195,9 @@ namespace Dash
         Annotate,
         Dock,
         Float,
-        Overlay
+        Overlay,
+        ShowRegion,
+        ShowDocument
     }
 
     public static class CourtesyDocumentExtensions
@@ -400,6 +403,14 @@ namespace Dash
             document.GetDataDocument().SetField<TextController>(KeyStore.RegionTypeKey, annotationType.ToString(), true);
         }
 
+        public static AnnotationType GetAnnotationType(this DocumentController document)
+        {
+            var t = document.GetDataDocument().GetField<TextController>(KeyStore.RegionTypeKey);
+            return t == null
+                ? AnnotationType.None
+                : Enum.Parse<AnnotationType>(t.Data);
+        }
+
         public static AnchorableAnnotation CreateAnnotationAnchor(this DocumentController regionDocumentController, AnnotationOverlay overlay)
         {
             var t = regionDocumentController.GetDataDocument().GetDereferencedField<TextController>(KeyStore.RegionTypeKey, null);
@@ -473,6 +484,15 @@ namespace Dash
         {
             return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
-        
+
+        public static string GetDocType(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.DocumentTypeKey, null)?.Data;
+        }
+
+        public static string GetAuthor(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.AuthorKey, null)?.Data;
+        }
     }
 }

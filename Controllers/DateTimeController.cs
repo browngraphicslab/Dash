@@ -98,10 +98,11 @@ namespace Dash
         /*
          * Returns a StringSearchModel based on the text query submitted and the contents of this instance's Data (DateTime)
          */
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
             if (searchString == null)
                 return new StringSearchModel(Data.ToString("G"));
+            return options.Matches(Data.ToString("G"));
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             return Data.ToString("G").Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString("G")) ? new StringSearchModel(Data.ToString("G")) : StringSearchModel.False;
         }

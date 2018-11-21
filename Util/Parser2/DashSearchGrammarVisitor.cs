@@ -10,19 +10,21 @@ namespace Dash
     using SearchPair = KeyValuePair<KeyController, StringSearchModel>;
     using Result = List<KeyValuePair<KeyController, StringSearchModel>>;
 
-    public delegate Result SearchPredicate(DocumentController document);
+
+    public delegate Result SearchPredicate(DocumentController document, Search.SearchOptions options);
 
     public class DashSearchGrammarVisitor : SearchGrammarBaseVisitor<SearchPredicate>
     {
+        public DocumentController SearchRoot { get; private set; }
         public override SearchPredicate VisitAnd([NotNull] SearchGrammarParser.AndContext context)
         {
             var l = context.or().Select(c => c.Accept(this)).ToList();
-            return doc =>
+            return (doc, options) =>
             {
                 var result = new Result();
                 foreach (var searchPredicate in l)
                 {
-                    var keyValuePairs = searchPredicate(doc);
+                    var keyValuePairs = searchPredicate(doc, options);
                     if (!keyValuePairs.Any())
                     {
                         return new Result();
@@ -35,28 +37,66 @@ namespace Dash
 
         public override SearchPredicate VisitFunction([NotNull] SearchGrammarParser.FunctionContext context)
         {
-            var dsl = new DSL();
             var func = context.GetText();
             var funcName = context.WORD().GetText();
-            var field = dsl.Run("return " + func, true).Result;//TODO This probably shouldn't access Result
-            if (field is ListController<DocumentController> list)
+            var exp = TypescriptToOperatorParser.ParseToExpression(func);
+            try
             {
-                return document =>
+                var field = exp.Execute(new Scope()).GetAwaiter().GetResult().Item1; //TODO This probably shouldn't access Result
+
+                if (field is ListController<DocumentController> list)
                 {
-                    if (list.Contains(document))
+                    return (document, options) =>
                     {
-                        return new Result()
+                        if (list.Contains(document))
                         {
+                            return new Result()
+                            {
                             new SearchPair(KeyController.Get(funcName),
                                 new StringSearchModel("Was contained in " + func))
-                        };
+                            };
+                        }
+
+                        return new Result();
+                    };
+                }
+            }
+            catch (ScriptExecutionException e)
+            {
+                if (e.Error is VariableNotFoundExecutionErrorModel varErr && varErr.VariableName == "doc")
+                {
+                    bool failed = false;
+
+                    Result SearchPredicate(DocumentController document, Search.SearchOptions options)
+                    {
+                        if (failed)
+                        {
+                            return new Result();
+                        }
+
+                        var scope = new Scope();
+                        scope.DeclareVariable("doc", document);
+                        var result = exp.Execute(scope).GetAwaiter().GetResult().Item1;
+                        if (result is BoolController b && b.Data)
+                        {
+                            return new Result()
+                            {
+                            new SearchPair(KeyController.Get(funcName),
+                                new StringSearchModel("Matched predicate " + func))
+                            };
+                        }
+                        else
+                        {
+                            failed = true;
+                            return new Result();
+                        }
                     }
 
-                    return new Result();
-                };
+                    return SearchPredicate;
+                }
             }
 
-            return doc => new Result();
+            return (doc, options) => new Result();
         }
 
         public override SearchPredicate VisitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context)
@@ -64,7 +104,17 @@ namespace Dash
             var keys = new HashSet<KeyController>(context.keylist().Accept(new DashSearchGrammarKvVisitor()));
             var value = context.value().GetText().Trim('"');
             var negate = context.ChildCount == 4;
-            return doc =>
+
+            if (keys.Count == 1 && keys.First().Name == "SearchPath")
+            {
+                var doc = DocumentTree.GetDocumentAtPath(value);
+                if (doc != null)
+                {
+                    SearchRoot = doc;
+                    return (document, options) => new Result {new SearchPair(keys.First(), new StringSearchModel("In path"))};
+                }
+            }
+            return (doc, options) =>
             {
                 var result = new Result();
                 if (negate)
@@ -75,7 +125,7 @@ namespace Dash
                         {
                             continue;
                         }
-                        var res = field.Value.SearchForString(value);
+                        var res = field.Value.SearchForString(value, options);
                         if (res.StringFound)
                         {
                             result.Add(new SearchPair(field.Key, res));
@@ -86,14 +136,14 @@ namespace Dash
                 {
                     foreach (var key in keys)
                     {
-                        var res = doc.GetDereferencedField(key, null)?.SearchForString(value);
+                        var res = doc.GetDereferencedField(key, null)?.SearchForString(value, options);
                         if (res?.StringFound ?? false)
                         {
                             result.Add(new SearchPair(key, res));
                         }
                     }
                 }
-                
+
                 return result;
             };
         }
@@ -106,9 +156,9 @@ namespace Dash
                 return visitNegation;
             }
 
-            return doc =>
+            return (doc, options) =>
             {
-                var result = visitNegation(doc);
+                var result = visitNegation(doc, options);
                 if (result.Any())
                 {
                     return new Result();
@@ -124,12 +174,12 @@ namespace Dash
         public override SearchPredicate VisitOr([NotNull] SearchGrammarParser.OrContext context)
         {
             var l = context.negation().Select(c => c.Accept(this)).ToList();
-            return doc =>
+            return (doc, options) =>
             {
                 var result = new Result();
                 foreach (var searchPredicate in l)
                 {
-                    result.AddRange(searchPredicate(doc));
+                    result.AddRange(searchPredicate(doc, options));
                 }
                 return result;
             };
@@ -143,12 +193,12 @@ namespace Dash
         public override SearchPredicate VisitValue([NotNull] SearchGrammarParser.ValueContext context)
         {
             string textToSearch = context.WORD()?.Symbol.Text ?? context.STRING().Symbol.Text.Trim('"');
-            return doc =>
+            return (doc, options) =>
             {
                 var result = new Result();
                 foreach (var field in doc.EnumDisplayableFields())
                 {
-                    var res = field.Value.SearchForString(textToSearch);
+                    var res = field.Value.SearchForString(textToSearch, options);
                     if (res.StringFound)
                     {
                         result.Add(new SearchPair(field.Key, res));

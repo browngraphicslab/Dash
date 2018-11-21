@@ -79,6 +79,8 @@ namespace Dash
         public static string GetScriptForOperatorTree(ReferenceController operatorReference, Context context = null)
         {
             var doc = operatorReference.GetDocumentController(context);
+            if (doc == null)
+                return "<nodoc>";  // bcz: make a PageView, set the Script to be:  this.data_doc().Caption, then select the main body of the PageView and drag off the link icon to get a KeyValue pane.  This will fire for the Title field.
             var op = doc?.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
 
             if (op == null)
@@ -200,7 +202,12 @@ namespace Dash
             case SyntaxKind.TemplateTail:
                 break;
             case SyntaxKind.Identifier:
-                var identifierExpression = node as Identifier;
+                var identifierExpression = (Identifier) node;
+
+                if (identifierExpression.Text == "NaN")
+                {
+                    return new LiteralExpression(new NumberController(double.NaN));
+                }
 
                 return new VariableExpression(identifierExpression.Text);
             case SyntaxKind.BreakKeyword:

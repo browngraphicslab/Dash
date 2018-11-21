@@ -42,21 +42,22 @@ namespace Dash
             }
         }
 
-        public override StringSearchModel SearchForString(string searchString)
-        {
-            var data = (Model as VideoModel)?.Data;
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
-            {
-                return new StringSearchModel(data.AbsoluteUri);
-            }
-            return StringSearchModel.False;
-        }
-
         public override string ToScriptString(DocumentController thisDoc)
         {
             return DSL.GetFuncName<VideoOperator>() + $"(\"{Data}\")";
         }
+
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
+		{
+			var data = (Model as VideoModel)?.Data;
+		    return options.Matches(data.AbsoluteUri);
+            var reg = new System.Text.RegularExpressions.Regex(searchString);
+            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
+			{
+				return new StringSearchModel(data.AbsoluteUri);
+			}
+			return StringSearchModel.False;
+		}
 
         public override FieldControllerBase GetDefaultController()
         {

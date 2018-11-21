@@ -276,7 +276,7 @@ namespace Dash
         /*
          * Recursive search of list for Dash's search functionality
          */
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
             if (string.IsNullOrEmpty(searchString))
             {
@@ -284,7 +284,7 @@ namespace Dash
             }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
-            return _typedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
+            return _typedData.FirstOrDefault(controller => controller.SearchForString(searchString, options).StringFound)?.SearchForString(searchString, options) ?? StringSearchModel.False;
         }
 
         public override string ToScriptString(DocumentController thisDoc)

@@ -1,0 +1,46 @@
+﻿<UserControl
+    x:Class="Dash.KeyValueScriptView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    AllowDrop="True"
+     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+    Drop="UserControl_Drop"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    DataContextChanged="EditableScriptView_OnDataContextChanged">
+
+    <Grid x:Name="xBackground" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="xDataBoxContainer" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="xFormulaColumn" Width="0"></ColumnDefinition>
+                <ColumnDefinition x:Name="xValueColumn" Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="XTextBox" Grid.Column="0"
+                         x:FieldModifier="public"
+                         FontSize="14"
+                         FontWeight="{x:Bind FontWeight, Mode=OneWay}"
+                         Foreground="{x:Bind Foreground}"
+                         Background="{x:Bind Background}"
+                         HorizontalAlignment="Stretch" 
+                         TextWrapping="Wrap" 
+                         BorderThickness="0" 
+                         Padding="10">
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout x:Name="Flyout">
+                        <MenuFlyout.Items>
+                            <MenuFlyoutItem x:Name="xFlyoutItem">
+                            </MenuFlyoutItem>
+                        </MenuFlyout.Items>
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
+            </TextBox>
+            <Grid  Grid.Column="1">
+                <ContentPresenter x:Name="xFieldValue" Content="{Binding Content}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

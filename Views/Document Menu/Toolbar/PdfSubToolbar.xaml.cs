@@ -101,7 +101,7 @@ namespace Dash
             xRegionToggle.IsChecked = false;
             xInkToggle.IsChecked = false;
 
-            _currentPdfView.SetAnnotationType(AnnotationType.Selection);
+            _currentPdfView?.SetAnnotationType(AnnotationType.Selection);
         }
 
         private void XRegionToggle_OnChecked(object sender, RoutedEventArgs e)
@@ -278,7 +278,12 @@ namespace Dash
 
             _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
 	    }
-	}
+
+        private void xToPageBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            xToPageBox.Text = _currentPdfView.PageNum().ToString();
+        }
+    }
 
 
 }

@@ -128,7 +128,7 @@ namespace Dash
 
             else if (transferType.HasFlag(Internal))
             {
-                dropDocs.AddRange(packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
+                dropDocs.AddRange(await packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
             }
 
             return dropDocs;
@@ -136,10 +136,10 @@ namespace Dash
 
         // HELPER METHODS
 
-        public static List<DocumentController> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender, bool dontMove = false)
+        public static async Task<List<DocumentController>> GetAllInternalDroppableDocuments(this DataPackageView packageView, Point? where, FrameworkElement sender, bool dontMove = false)
         {
             var dragModel = packageView.GetDragModel();
-            return (dragModel?.CanDrop(sender) ?? false) ? dragModel.GetDropDocuments(where, sender, dontMove) : new List<DocumentController>();
+            return (dragModel?.CanDrop(sender) ?? false) ? await dragModel.GetDropDocuments(where, sender, dontMove) : new List<DocumentController>();
         }
 
         private static async Task<DocumentController> ConvertBitmapData(DataPackageView packageView, Point where)

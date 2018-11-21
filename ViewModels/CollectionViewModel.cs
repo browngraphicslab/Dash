@@ -38,6 +38,7 @@ namespace Dash
         private static ICollectionView _previousDragEntered;
         private bool _canDragItems = true;
         private double _cellFontSize = 9;
+        public bool IsTemplate => ContainerDocument.GetDereferencedField<BoolController>(KeyStore.IsTemplateKey, null)?.Data ?? false;
         private SettingsView.WebpageLayoutMode WebpageLayoutMode => SettingsView.Instance.WebpageLayout;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null) ?? ContainerDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
         public InkController InkController => ContainerDocument.GetDataDocument().GetDereferencedField<InkController>(KeyStore.InkDataKey, null);
@@ -354,8 +355,7 @@ namespace Dash
                 else
                 {
                     var pres = MainPage.Instance.xPresentationView;
-                    if (pres.ViewModel != null && pres.ViewModel.PinnedNodes.Contains(document))
-                        pres.FullPinDelete(document);
+                    pres.FullPinDelete(document);
                 }
             }
         }
@@ -560,7 +560,7 @@ namespace Dash
                 else if (dvp.Contains(StandardDataFormats.Html))
                 {
                     var text = await dvp.GetHtmlFormatAsync();
-                    var layoutMode = await MainPage.Instance.GetLayoutType();
+                    var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.GetLayoutType() : SettingsView.Instance.WebpageLayout;
 
                     if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
                         (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
@@ -648,11 +648,11 @@ namespace Dash
                 WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
                 await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
 
-                StorageFolder storageFolder = ApplicationData.Current.LocalFolder;
-                StorageFile savefile = await storageFolder.CreateFileAsync("paste.jpg",
+                var storageFolder = ApplicationData.Current.LocalFolder;
+                var savefile = await storageFolder.CreateFileAsync(Guid.NewGuid().ToString() + ".jpg",
                     CreationCollisionOption.ReplaceExisting);
-                IRandomAccessStream stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
-                BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
+                var stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
                 // Get pixels of the WriteableBitmap object 
                 Stream pixelStream = writeableBitmap.PixelBuffer.AsStream();
                 byte[] pixels = new byte[pixelStream.Length];
@@ -753,7 +753,7 @@ namespace Dash
 
                         if (dragDocModel.DraggedDocCollectionViews[i] == null)
                         {
-                            var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlay>();
+                            var overlay = dragDocModel.DraggedDocumentViews[i].GetFirstAncestorOfType<AnnotationOverlayEmbeddings>();
                             overlay?.EmbeddedDocsList.Remove(dragDocModel.DraggedDocuments[i]);
                         }
                         else
@@ -773,9 +773,16 @@ namespace Dash
                         docsToAdd[i].SetVerticalAlignment(VerticalAlignment.Top);
                     if (double.IsNaN(docsToAdd[i].GetWidth()) && !docsToAdd[i].DocumentType.Equals(WebBox.DocumentType))
                         docsToAdd[i].SetWidth(300);
+                    if (double.IsNaN(docsToAdd[i].GetHeight()) && (
+                        docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType) || docsToAdd[i].DocumentType.Equals(PdfBox.DocumentType)))
+                        docsToAdd[i].SetHeight(500);
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);
                 }
+            }
+            if (collectionViewModel.IsTemplate)
+            {
+                RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
             }
 
             return docsToAdd;

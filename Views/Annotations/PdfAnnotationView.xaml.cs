@@ -27,6 +27,8 @@ using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -101,8 +103,6 @@ namespace Dash
 
             ScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
-            Canvas.SetZIndex(xButtonPanel, 999);
-
             _scrollTimer = new DispatcherTimer() { Interval = new TimeSpan(0, 0, 0, 0, 500) };
             _scrollTimer.Tick += (s, e) =>
             {
@@ -115,9 +115,8 @@ namespace Dash
         }
         ~PdfAnnotationView()
         {
-            //Debug.WriteLine("FINALIZING PdfAnnotationView");
+            Debug.WriteLine("FINALIZING PdfAnnotationView");
         }
-
         public void GoToPage(double pageNum)
         {
             var sizes = Pages.PageSizes;
@@ -128,22 +127,36 @@ namespace Dash
             {
                 if (page++ >= pageNum)
                     break;
-                var scale = xPdfCol.ActualWidth / size.Width;
-                currOffset += (size.Height + 10) * scale;
+                currOffset += (size.Height + 10) * pageScaling(size.Width);
             }
 
             ScrollViewer.ChangeView(null, currOffset, 1);
+        }
 
+        public int PageNum()
+        {
+            var sizes = Pages.PageSizes;
+            var currOffset = 0.0;
+
+            int page = 1;
+            foreach (var size in sizes)
+            {
+                currOffset += size.Height * pageScaling(size.Width);
+                if (currOffset > ScrollViewer.VerticalOffset)
+                    break;
+                currOffset += 10 * pageScaling(size.Width);
+                page++;
+            }
+            return page;
         }
 
         public void ScrollToPosition(double pos)
         {
             var sizes = Pages.PageSizes;
             var botOffset = 0.0;
-            var annoWidth = xCollectionView.ActualWidth;
             foreach (var size in sizes)
             {
-                var scale = (ScrollViewer.ViewportWidth - annoWidth) / size.Width;
+                var scale = ScrollViewer.ViewportWidth / size.Width;
                 if (botOffset + (size.Height * scale) - pos > 1)
                 {
                     break;
@@ -155,6 +168,26 @@ namespace Dash
             ScrollViewer.ChangeView(null, botOffset, null);
         }
         
+        public double RightMargin { get; set; }
+        public double LeftMargin { get; set; }
+        public void SetRightMargin(double margin)
+        {
+            xPdfGrid.Padding = new Thickness(0);
+            PdfMaxWidth -= RightMargin;
+            RightMargin = margin;
+            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+            PdfMaxWidth += RightMargin;
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+        }
+        public void SetLeftMargin(double margin)
+        {
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin/pageScaling(Pages.PageSizes[0].Width) };
+            xPdfGrid.Padding = new Thickness(0);
+            PdfMaxWidth -= LeftMargin;
+            LeftMargin = margin;
+            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+            PdfMaxWidth += LeftMargin;
+        }
 
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
         {
@@ -189,10 +222,10 @@ namespace Dash
         /// </summary>
         /// <param name="pointInAnnotationOverlayCoords"></param>
         /// <returns></returns>
-        public DocumentController GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
+        public async Task<DocumentController> GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
         {
-            var regionDoc = AnnotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null && pointInAnnotationOverlayCoords != null) // make a pushpin if we have a point and no region
+            var regionDoc = await AnnotationOverlay.CreateRegionFromPreviewOrSelection();
+            if (regionDoc == null && pointInAnnotationOverlayCoords != null)
             {
                 regionDoc = AnnotationOverlay.CreatePinRegion(calculateClosestPointOnPDF(pointInAnnotationOverlayCoords.Value));
             }
@@ -261,8 +294,7 @@ namespace Dash
                         for (var i = selection.Range.Key; i <= selection.Range.Value; i++)
                         {
                             var ele = _annotationOverlay.TextSelectableElements[i];
-                            var fontFamily = ele.TextData?.GetFont()?.GetFontProgram()?.GetFontNames()?.GetFontName();
-                            ;
+                            var fontFamily = ele.FontFamily;
                             var correctedFont = fontFamily;
                             if ((fontFamily?.Contains("Times", StringComparison.OrdinalIgnoreCase) ?? false))
                             {
@@ -318,18 +350,7 @@ namespace Dash
                         }
 
                         var selectableElement = _annotationOverlay.TextSelectableElements[index];
-                        var nchar = ((string)selectableElement.Contents).First();
-                        if (prevIndex > 0 && sb.Length > 0 &&
-                            (nchar > 128 || char.IsUpper(nchar) ||
-                             (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
-                              !char.IsLower(sb[sb.Length - 1]))) &&
-                            _annotationOverlay.TextSelectableElements[prevIndex].Bounds.Bottom <
-                            _annotationOverlay.TextSelectableElements[index].Bounds.Top)
-                        {
-                            sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
-                        }
-                        var font = selectableElement.TextData.GetFont().GetFontProgram().GetFontNames()
-                            .GetFontName();
+                        var font = selectableElement.FontFamily;
                         if (selectableElement.Type == SelectableElement.ElementType.Text)
                         {
                             var dpi = DisplayInformation.GetForCurrentView().LogicalDpi;
@@ -340,13 +361,13 @@ namespace Dash
                                 currentFontSize = fontSize;
                             }
 
-                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                            if (!isBold && selectableElement.Bounds.Width > 1.05 * selectableElement.AvgWidth)
                             {
                                 sb.Append("{\\b");
                                 isBold = true;
                             }
                             else if (isBold && selectableElement.Bounds.Width <
-                                     1.05 * selectableElement.TextData.GetFont().GetFontProgram().GetAvgWidth())
+                                     1.05 * selectableElement.AvgWidth)
                             {
                                 sb.Append("}");
                                 isBold = false;
@@ -372,13 +393,21 @@ namespace Dash
                             }
 
                             var contents = (string)selectableElement.Contents;
-                            if (char.IsWhiteSpace(contents, 0))
+                            if (contents.Equals("\n"))
+                            {
+                                sb.Append("\\par}\\pard{\\sa120 \\fs" + 2 * currentFontSize);
+                            }
+                            else if (char.IsWhiteSpace(contents, 0))
                             {
                                 sb.Append("\\~");
                             }
                             else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
                             {
                                 sb.Append("\\_");
+                            }
+                            else if (char.IsNumber(contents.First()))
+                            {
+                                sb.Append("\\" + (string)selectableElement.Contents);
                             }
                             else
                             {
@@ -397,53 +426,49 @@ namespace Dash
                 }
             }
         }
-
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
             KeyDown += PdfAnnotationView_KeyDown;
-            SelectionManager.SelectionChanged += SelectionManagerOnSelectionChanged;
             if (AnnotationOverlay == null)
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
                 xPdfGrid.Children.Add(AnnotationOverlay);
+                xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
             var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
             cvm.DocumentAdded += Cvm_DocumentAdded;
-            xCollectionView.DataContext = cvm;
-            (xCollectionView.CurrentView as CollectionFreeformView)?.SetDisableTransformations();
             if (Pages.PageSizes.Count != 0)
+            {
                 Pages.Initialize();
+            }
         }
 
-        private void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
+        public void Bind()
+        {
+            Pages.Initialize();
+        }
+
+
+        private async void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
         {
             if (KeyStore.RegionCreator.TryGetValue(ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
             {
-                GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay)).Link(added, LinkBehavior.Annotate);
+                (await GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay))).Link(added, LinkBehavior.Annotate);
             }
         }
 
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
             _annotationOverlay.TextSelectableElements?.Clear();
-            SelectionManager.SelectionChanged -= SelectionManagerOnSelectionChanged;
-        }
-
-        private void SelectionManagerOnSelectionChanged(DocumentSelectionChangedEventArgs args)
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            xButtonPanel.Visibility = SelectionManager.IsSelected(docview) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (PdfMaxWidth > 0)
             {
-                Pages.ScrollViewerContentWidth = xPdfCol.ActualWidth;
-                var ratio = xPdfCol.ActualWidth / PdfMaxWidth;
-                xCollectionView.RenderTransform = new Windows.UI.Xaml.Media.ScaleTransform() { ScaleX = ratio, ScaleY = ratio };
+                Pages.ScrollViewerContentWidth = ScrollViewer.ActualWidth - LeftMargin - RightMargin;
             }
         }
 
@@ -504,7 +529,8 @@ namespace Dash
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, e.GetCurrentPoint(_annotationOverlay).Position);
+                var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
+                _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
             } else if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
@@ -533,33 +559,36 @@ namespace Dash
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
         }
 
-        private void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XNextPageButton_OnPointerPressed()
         {
             PageNext();
         }
 
-        private void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XPreviousPageButton_OnPointerPressed()
         {
             PagePrev();
         }
 
-        private void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XScrollBack_OnPointerPressed()
         {
             PopBackStack(_BackStack, _ForwardStack, ScrollViewer);
         }
 
-        private void XScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public void XScrollForward_OnPointerPressed()
         {
             PopForwardStack(_ForwardStack, _BackStack, ScrollViewer);
         }
-
+        private double pageScaling(double width)
+        {
+            return  ScrollViewer.ActualWidth  / xPdfGrid.ActualWidth;
+        }
         private void PagePrev()
         {
             var sizes = Pages.PageSizes;
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = xPdfCol.ActualWidth / size.Width;
+                var scale = pageScaling(size.Width);
                 if (currOffset + (size.Height + 10) * scale - ScrollViewer.VerticalOffset >= -1)
                 {
                     break;
@@ -577,7 +606,7 @@ namespace Dash
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = xPdfCol.ActualWidth / size.Width;
+                var scale = pageScaling(size.Width);
                 currOffset += (size.Height + 10) * scale;
                 if (currOffset - ScrollViewer.VerticalOffset > 1)
                 {
@@ -635,19 +664,13 @@ namespace Dash
             }
         }
 
-        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        public void OnDragEnter(object sender, DragEventArgs e)
         {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip)
-                tip.IsOpen = true;
+            e.AcceptedOperation = e.DataView.HasDragModel() ? e.AcceptedOperation | DataPackageOperation.Copy : DataPackageOperation.None;
         }
-
-        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
+        public void OnDrop(object sender, DragEventArgs e)
         {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor =
-            //    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
+            AnnotationOverlay.OnDrop(sender, e);
         }
     }
 }

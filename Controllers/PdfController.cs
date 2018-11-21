@@ -59,11 +59,13 @@ namespace Dash
 
         // == OVERRIDEN FROM PARENT ==
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
             var data = (Model as PdfModel)?.Data;
             if (searchString == null)
                 return new StringSearchModel(data.AbsoluteUri);
+
+            return options.Matches(data.AbsoluteUri);
 
             var reg = new System.Text.RegularExpressions.Regex(searchString);
             if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
