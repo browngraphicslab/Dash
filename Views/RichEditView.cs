@@ -402,12 +402,12 @@ namespace Dash
             cfv?.AddToMenu(menu);
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC", new ActionViewModel("Title",  "Add title",           MakeTitleAction,  source));
-            menu.AddAction("BASIC", new ActionViewModel("Center", "Align text to center",SetCenterAction,  source));
-            menu.AddAction("BASIC", new ActionViewModel("To-Do",  "Create a todo note",  CreateTodoAction, source));
-            menu.AddAction("BASIC", new ActionViewModel("Google", "Google Clip",         GoogleClip,       source));
-            menu.AddAction("BASIC", new ActionViewModel("Bio",    "Google Bio",          GoogleBio,       source));
-            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue", CreateTravelogue, source));
+            menu.AddAction("BASIC",      new ActionViewModel("Title",      "Add title",            MakeTitleAction,  source));
+            menu.AddAction("BASIC",      new ActionViewModel("Center",     "Align text to center", SetCenterAction,  source));
+            menu.AddAction("BASIC",      new ActionViewModel("To-Do",      "Create a todo note",   CreateTodoAction, source));
+            menu.AddAction("BASIC",      new ActionViewModel("Google",     "Google Clip",          GoogleClip,       source));
+            menu.AddAction("BASIC",      new ActionViewModel("Bio",        "Google Bio",           GoogleBio,        source));
+            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue",    CreateTravelogue, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
         }
 
@@ -420,6 +420,7 @@ namespace Dash
                 return true;
             }
 
+            bool useAll = tags.Contains("INCLUDE ALL TAGS");
             var events = EventManager.GetEvents();
 
             var eventDocs = new List<DocumentController>();
@@ -430,7 +431,7 @@ namespace Dash
                 {
                     var eventTags = eventDoc.GetDataDocument().GetField<TextController>(KeyStore.EventTagsKey).Data.ToUpper()
                         .Split(", ");
-                    if (tags.Any(t => eventTags.Contains(t)))
+                    if (useAll || tags.Any(t => eventTags.Contains(t)))
                     {
                         eventDocs.Add(eventDoc);
                     }
