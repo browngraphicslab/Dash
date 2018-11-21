@@ -139,7 +139,7 @@
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
 
-        <Grid x:Name="xSearchCodeBox" Height="32" Visibility="Collapsed" BorderThickness="2 0 2 2" BorderBrush="Gray" Grid.Column="2" Grid.Row="1">
+        <Grid x:Name="xSearchCodeBox" Height="32" Visibility="Collapsed" BorderThickness="2 0 2 2" BorderBrush="Gray" Grid.Column="2" Grid.Row="1" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="12"></ColumnDefinition>
@@ -167,26 +167,12 @@
             </Grid.Resources>
         </Grid>
 
-        <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="1" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="2" Height="25"
-                Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Left" >
-            <FlyoutBase.AttachedFlyout>
-                <MenuFlyout x:Name="XMenuFlyout" Opening="FlyoutBase_OnOpen">
-                    <MenuFlyoutSubItem Text="Document">
-                        <MenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
-                        <MenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
-                    </MenuFlyoutSubItem>
-                </MenuFlyout>
-            </FlyoutBase.AttachedFlyout>
-        </Button>
-
-        <Grid x:Name="XOptionsGrid" Grid.Row="2" Grid.Column="0" Visibility ="Collapsed" Grid.ColumnSpan="2" Margin="0 5 0 0 ">
+        <Grid x:Name="XOptionsGrid" Grid.Row="1" Grid.Column="0" Visibility ="Collapsed" Grid.ColumnSpan="2" Margin="0 5 0 0 ">
             <Grid.RowDefinitions>
                 <RowDefinition/>
+                <RowDefinition Height="5"/>
                 <RowDefinition/>
+                <RowDefinition Height="5"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -194,10 +180,26 @@
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="XCaseSensButton" Grid.Column="0" Grid.Row="0" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
-            <Button x:Name="XMatchWordButton" Grid.Column="2" Grid.Row="0" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
-            <Button x:Name="XRegexButton" Grid.Column="0" Grid.Row="1" Content=".*" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 5 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" BorderBrush="Transparent" BorderThickness="3 3 3 3" />
-            <Button x:Name="XClearFiltersButton" Grid.Column="2" Grid.Row="1" Content="X" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="Red" Margin="0 5 0 0"  Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
+
+            <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="0" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="3" Height="25"
+                    Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Stretch" >
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout x:Name="XMenuFlyout" Opening="FlyoutBase_OnOpen">
+                        <MenuFlyoutSubItem Text="Document">
+                            <MenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
+                        </MenuFlyoutSubItem>
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <Button x:Name="XCaseSensButton" Grid.Column="0" Grid.Row="2" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XMatchWordButton" Grid.Column="2" Grid.Row="2" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XRegexButton" Grid.Column="0" Grid.Row="4" Content=".*" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 5 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" BorderBrush="Transparent" BorderThickness="3 3 3 3" />
+            <Button x:Name="XClearFiltersButton" Grid.Column="2" Grid.Row="4" Content="X" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="Red" Margin="0 5 0 0"  Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
         </Grid>
 
         
