@@ -236,7 +236,7 @@ namespace Dash
             }
             else
             {
-                templateButton.Content = "Generate Template";
+                templateButton.Content = "Use Template";
                 await RemoveTemplate();
             }
         }
