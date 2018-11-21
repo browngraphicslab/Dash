@@ -101,8 +101,8 @@ namespace Dash
 
 
         //these lists save the RecentTags and Tags in between refreshes/restarts so that they are preserved for the user
-        public ListController<DocumentController> RecentTagsSave;
-        public ListController<DocumentController> TagsSave;
+        //public ListController<DocumentController> RecentTagsSave;
+        //public ListController<DocumentController> TagsSave;
 
         private double _docWidth;
         private bool _visibilityLock;
@@ -271,31 +271,31 @@ namespace Dash
         //this method retrieves the saved recent tags and saved tags from their respective keys and repopulates the RecentTags and Tags lists 
         public void LoadTags(DocumentController settingsdoc)
         {
-            RecentTagsSave =
-                settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
-            TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
-            foreach (var documentController in RecentTagsSave)
-            {
-                //RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-                //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
-                xRecentTagsDivider.Visibility = Visibility.Visible;
-            }
+            //RecentTagsSave =
+            //    settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
+            //TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
+            //foreach (var documentController in RecentTagsSave)
+            //{
+            //    //RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
+            //    //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
+            //    xRecentTagsDivider.Visibility = Visibility.Visible;
+            //}
 
-            foreach (var documentController in TagsSave)
-            {
-                //var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-                //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
-                //Tags.Add(tag);
-                //_tagNameDict.Add(tag.Text, tag);
-                ////possibly repopulate the TagMap here??
-                //xRecentTagsDivider.Visibility = Visibility.Visible;
-            }
+            //foreach (var documentController in TagsSave)
+            //{
+            //    //var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
+            //    //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
+            //    //Tags.Add(tag);
+            //    //_tagNameDict.Add(tag.Text, tag);
+            //    ////possibly repopulate the TagMap here??
+            //    //xRecentTagsDivider.Visibility = Visibility.Visible;
+            //}
 
-            //graphically displays the reloaded recent tags
-            foreach (var tag in RecentTags)
-            {
-                xTagContainer.Children.Add(tag);
-            }
+            ////graphically displays the reloaded recent tags
+            //foreach (var tag in RecentTags)
+            //{
+            //    xTagContainer.Children.Add(tag);
+            //}
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -445,22 +445,22 @@ namespace Dash
                 var doc = new DocumentController();
                 doc.SetField<TextController>(KeyStore.DataKey, linkName, true);
                 doc.SetField<ColorController>(KeyStore.BackgroundColorKey, hexColor, true);
-                TagsSave.Add(doc);
+                //TagsSave.Add(doc);
 
                 //if there are currently less than 5 recent tags (aka less than 5 tags currently exist), add the new tag to the recent tags
                 if (_recentTags.Count < 5)
                 {
                     _recentTags.Enqueue(tag);
-                    RecentTagsSave.Add(doc);
+                    //RecentTagsSave.Add(doc);
                 }
                 //otherwise, get rid of the oldest recent tag and add the new tag to recent tags, as well as update the recenttagssave
                 else
                 {
                     var deq = _recentTags.Dequeue();
-                    RecentTagsSave.RemoveAt(0);
+                    //RecentTagsSave.RemoveAt(0);
                     _inLineTags.Push(deq);
                     _recentTags.Enqueue(tag);
-                    RecentTagsSave.Add(doc);
+                    //RecentTagsSave.Add(doc);
                 }
 
                 //replace the default recent tags to include the newest tag

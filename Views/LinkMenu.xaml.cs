@@ -34,11 +34,11 @@ namespace Dash
         public WrapPanel XTagContainer => xTagContainer;
 
         //these lists save the RecentTags and Tags in between refreshes/restarts so that they are preserved for the user
-        public List<Tuple<String, Color>> RecentTagsSave;
-        public List<Tuple<String, Color>> TagsSave;
+        public ListController<DocumentController> RecentTagsSave;
+        public ListController<DocumentController> TagsSave;
 
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
-        public Dictionary<string, Tag> _tagNameDict = new Dictionary<string, Tag>();
+        public Dictionary<string, Tag> _tagNameDict;
 
        
         public LinkMenu()
@@ -46,6 +46,7 @@ namespace Dash
             this.InitializeComponent();
             //Tags = new List<Tag>();
             _recentTags = new Queue<Tag>();
+            _tagNameDict = new Dictionary<string, Tag>();
             Loaded += LinkMenu_Loaded;
             Unloaded += LinkMenu_Unloaded;
 
@@ -53,22 +54,25 @@ namespace Dash
 
         private void LinkMenu_Loaded(object sender, RoutedEventArgs e)
         {
+            xTagContainer.Children.Clear();
             _recentTags.Clear();
-            var settingsDoc = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
-            RecentTagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
-            TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
-            foreach (var documentController in RecentTagsSave)
+            _tagNameDict.Clear();
+            var settingsDoc = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
+            RecentTagsSave = settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
+            TagsSave = settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
+            foreach (var documentController in RecentTagsSave.Reverse())
             {
-                RecentTags.Enqueue(new Tag(this, documentController.Item1, documentController.Item2));
+                RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).ToString(), documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
             }
 
             foreach (var documentController in TagsSave)
             {
-                var tag = new Tag(this, documentController.Item1, documentController.Item2);
-                Tags.Add(tag);
-                _tagNameDict.Add(tag.Text, tag);
-                //possibly repopulate the TagMap here??
-                xRecentTagsDivider.Visibility = Visibility.Visible;
+
+                var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).ToString(), documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
+                if (!_tagNameDict.ContainsKey(tag.Text))
+                {
+                    _tagNameDict.Add(tag.Text, tag);
+                }
             }
 
             //graphically displays the reloaded recent tags
@@ -76,10 +80,25 @@ namespace Dash
             {
                 xTagContainer.Children.Add(tag);
             }
+
+            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            var binding = new FieldBinding<FieldControllerBase, TextController>
+            {
+                Document = linkDoc.GetDataDocument(),
+                Key = KeyStore.DataKey,
+                Mode = BindingMode.OneTime,
+                Context = null,
+                GetConverter = FieldConversion.GetFieldtoStringConverter,
+                FallbackValue = "<Something to fill the space>"
+            };
+            xDescriptionBox.AddFieldBinding(TextBox.TextProperty, binding);
         }
 
         private void LinkMenu_Unloaded(object sender, RoutedEventArgs e)
         {
+
+            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            linkDoc.GetDataDocument().SetField<TextController>(KeyStore.DataKey, xDescriptionBox.Text, true);
 
         }
 
@@ -120,24 +139,21 @@ namespace Dash
                 var doc = new DocumentController();
                 doc.SetField<TextController>(KeyStore.DataKey, linkName, true);
                 doc.SetField<ColorController>(KeyStore.BackgroundColorKey, hexColor, true);
-                //TagsSave.Add(doc);
+                TagsSave.Add(doc);
 
                 //if there are currently less than 5 recent tags (aka less than 5 tags currently exist), add the new tag to the recent tags
                 if (_recentTags.Count < 5)
                 {
                     _recentTags.Enqueue(tag);
-                    Tuple<String, Color> recentTuple = new Tuple<String, Color>(tag.Name, tag.Color);
-                    RecentTagsSave.Add(recentTuple);
-                    //RecentTagsSave.Add(doc);
+                    RecentTagsSave.Add(doc);
                 }
                 //otherwise, get rid of the oldest recent tag and add the new tag to recent tags, as well as update the recenttagssave
                 else
                 {
-                    var deq = _recentTags.Dequeue();
-                    //RecentTagsSave.RemoveAt(0);
-                    //_inLineTags.Push(deq);
+                    _recentTags.Dequeue();
+                    RecentTagsSave.RemoveAt(0);
                     _recentTags.Enqueue(tag);
-                    //RecentTagsSave.Add(doc);
+                    RecentTagsSave.Add(doc);
                 }
 
                 //replace the default recent tags to include the newest tag
@@ -147,9 +163,6 @@ namespace Dash
                     xTagContainer.Children.Add(recent);
                 }
             }
-
-            Tuple<String, Color> tagTuple = new Tuple<String, Color>(tag.Name, tag.Color);
-            TagsSave.Add(tagTuple);
             return tag;
         }
 
@@ -231,6 +244,39 @@ namespace Dash
                     }
                 }
             }
+        }
+
+        private void xLinkBehavior_OnChecked(object sender, RoutedEventArgs e)
+        {
+            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
+                          (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            if (sender == xTypeZoom)
+            {
+                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
+            }
+
+            if (sender == xTypeAnnotation)
+            {
+                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
+            }
+
+            if (sender == xTypeDock)
+            {
+                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
+            }
+
+            if (sender == xTypeFloat)
+            {
+                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
+            }
+        }
+
+        private void XInContext_OnToggled(object sender, RoutedEventArgs e)
+        {
+            var toggled = (sender as ToggleSwitch)?.IsOn;
+            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
+                          (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            linkDoc.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
         }
     }
 }

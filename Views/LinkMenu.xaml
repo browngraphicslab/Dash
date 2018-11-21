@@ -71,19 +71,10 @@
            
 
             <StackPanel x:Name="xLinkTypeBox" Orientation="Horizontal"  HorizontalAlignment="Center" Margin="0, 10, 0, 10">
-                <!--<Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>-->
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" Margin="10 0 5 0"  FontSize="14" x:Name="xTypeZoom">Zoom</RadioButton>
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" Grid.Column="0" Grid.Row="1" FontSize="14" x:Name="xTypeAnnotation">Annotation</RadioButton>
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" Grid.Column="1" Grid.Row="0" FontSize="14" x:Name="xTypeDock">Dock</RadioButton>
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" Margin="5 0 10 0" Grid.Column="1" Grid.Row="1" FontSize="14" x:Name="xTypeFloat">Float</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="10 0 5 0"  FontSize="14" x:Name="xTypeZoom">Zoom</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeAnnotation">Annotation</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeDock">Dock</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 10 0" FontSize="14" x:Name="xTypeFloat">Float</RadioButton>
             </StackPanel>
 
 
@@ -97,7 +88,7 @@
                     <TextBlock Grid.Column="0" FontSize="11" Foreground="{StaticResource DashDarkBlueBrush}" FontWeight="SemiBold" Padding="0" Height="14" Width="50" VerticalAlignment="Top" TextAlignment="Left"  Margin="5,5,0,0">Context</TextBlock>
                     <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0" Margin="0 15 5 0"/>
                 </Grid>
-                <ToggleSwitch x:Name="xInContext"  HorizontalAlignment="Center" IsOn="True" Margin="30,0,0,0"></ToggleSwitch>
+                <ToggleSwitch x:Name="xInContext"  HorizontalAlignment="Center" IsOn="True" Margin="30,0,0,0" Toggled="XInContext_OnToggled"></ToggleSwitch>
             </StackPanel>
 
             <Grid >

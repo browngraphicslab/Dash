@@ -61,14 +61,6 @@ namespace Dash
             }
         }
 
-        //      //temporary method for telling all links associated with this tag that an additional tag has been added
-        //      public void UpdateOtherTags()
-        //      {
-        //          //get active links from doc dec based on last-pressed btn & add this tag to them
-        //          _docdecs.UpdateAllTags(this);
-
-        //      }
-
         public void AddTag(DocumentController link)
         {
             link.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, Text, true);
@@ -77,7 +69,6 @@ namespace Dash
         private void RemoveTag(DocumentController link)
         {
             link.GetDataDocument().RemoveField(KeyStore.LinkTagKey);
-            //link.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, "Annotation", true);
         }
 
         public int Compare(Tag x, Tag y)
@@ -91,7 +82,6 @@ namespace Dash
             {
                 return Compare(this, tag);
             }
-
             return 0;
         }
 
@@ -135,8 +125,7 @@ namespace Dash
             {
                 tag.Deselect();
             }
-
-
+            
             xTagContainer.BorderThickness = new Thickness(2);
             xTagContainer.Padding = new Thickness(4, -2, 4, 6);
 
@@ -192,18 +181,6 @@ namespace Dash
             //            }
             //        }
             //}
-        }
-
-        public void RidSelectionBorder()
-        {
-            xTagContainer.BorderThickness = new Thickness(0);
-
-        }
-
-        public void AddSelectionBorder()
-        {
-            xTagContainer.BorderThickness = new Thickness(2);
-
         }
 
         private void DeleteButton_PointerEntered(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
@@ -265,13 +242,6 @@ namespace Dash
                   
                 }
 
-
-
-                
-
-
-
-
                 temp.Reverse();
 
                 foreach (var tag in temp)
@@ -281,9 +251,7 @@ namespace Dash
                     doc.SetField<ColorController>(KeyStore.BackgroundColorKey, tag.Color, true);
 
                 }
-                
             }
-
         }
 
         private void DeleteTag()

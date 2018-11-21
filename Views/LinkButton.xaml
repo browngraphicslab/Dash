@@ -17,7 +17,7 @@
 
     <FlyoutBase.AttachedFlyout>
         <Flyout Placement="Right" x:Name="xFlyout">
-            <local:LinkMenu></local:LinkMenu>
+            <local:LinkMenu x:Name="xLinkMenu"></local:LinkMenu>
         </Flyout>
 
     </FlyoutBase.AttachedFlyout>

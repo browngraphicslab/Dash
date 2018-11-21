@@ -80,6 +80,7 @@ namespace Dash
         {
 
             _tooltip.IsOpen = false;
+            xLinkMenu.DataContext = _documentView;
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
 
             e.Handled = true;
