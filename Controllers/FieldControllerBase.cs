@@ -116,7 +116,7 @@ namespace Dash
         /// </summary>
         /// <param name="searchString"></param>
         /// <returns></returns>
-        public abstract StringSearchModel SearchForString(string searchString);
+        public abstract StringSearchModel SearchForString(string searchString, Search.SearchOptions options);
 
         /// <summary>
         /// Convert a field to a script that will evaluate to that field

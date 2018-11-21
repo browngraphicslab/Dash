@@ -67,8 +67,10 @@ namespace Dash
             return Data;
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
         {
+            return options.Matches(Data);
+
             int maxStringSize = 125;
             int textDecrementForContext = 8;
 
@@ -79,19 +81,13 @@ namespace Dash
 
             if (Data != null)
             {
-                var reg = new System.Text.RegularExpressions.Regex(searchString);
-                var index = _lowerData.IndexOf(searchString.ToLower());
-                if (index >= 0 || reg.IsMatch(Data))
+                if (options.Regex != null)
                 {
-                    if (index < 0)
+                    if (options.Regex.IsMatch(Data))
                     {
-                        return new StringSearchModel(Data);
-                    }
-                    index = Math.Max(0, index - textDecrementForContext);
-                    var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
-                    return new StringSearchModel(substring);
-                }
 
+                    }
+                }
             }
             return StringSearchModel.False;
         }

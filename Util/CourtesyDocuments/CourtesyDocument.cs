@@ -484,6 +484,15 @@ namespace Dash
         {
             return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
-        
+
+        public static string GetDocType(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.DocumentTypeKey, null)?.Data;
+        }
+
+        public static string GetAuthor(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.AuthorKey, null)?.Data;
+        }
     }
 }
