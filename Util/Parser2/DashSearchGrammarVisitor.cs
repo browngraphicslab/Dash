@@ -11,20 +11,21 @@ namespace Dash
     using Result = List<KeyValuePair<KeyController, StringSearchModel>>;
 
 
-    public delegate Result SearchPredicate(DocumentController document, Search.SearchOptions options);
+    public delegate Result SearchPredicate(DocumentController document);
 
     public class DashSearchGrammarVisitor : SearchGrammarBaseVisitor<SearchPredicate>
     {
+        public Search.SearchOptions Options { get; set; }
         public DocumentController SearchRoot { get; private set; }
         public override SearchPredicate VisitAnd([NotNull] SearchGrammarParser.AndContext context)
         {
             var l = context.or().Select(c => c.Accept(this)).ToList();
-            return (doc, options) =>
+            return doc =>
             {
                 var result = new Result();
                 foreach (var searchPredicate in l)
                 {
-                    var keyValuePairs = searchPredicate(doc, options);
+                    var keyValuePairs = searchPredicate(doc);
                     if (!keyValuePairs.Any())
                     {
                         return new Result();
@@ -46,7 +47,7 @@ namespace Dash
 
                 if (field is ListController<DocumentController> list)
                 {
-                    return (document, options) =>
+                    return document =>
                     {
                         if (list.Contains(document))
                         {
@@ -67,7 +68,7 @@ namespace Dash
                 {
                     bool failed = false;
 
-                    Result SearchPredicate(DocumentController document, Search.SearchOptions options)
+                    Result SearchPredicate(DocumentController document)
                     {
                         if (failed)
                         {
@@ -96,7 +97,7 @@ namespace Dash
                 }
             }
 
-            return (doc, options) => new Result();
+            return doc => new Result();
         }
 
         public override SearchPredicate VisitKvsearch([NotNull] SearchGrammarParser.KvsearchContext context)
@@ -111,10 +112,11 @@ namespace Dash
                 if (doc != null)
                 {
                     SearchRoot = doc;
-                    return (document, options) => new Result {new SearchPair(keys.First(), new StringSearchModel("In path"))};
+                    return document => new Result { new SearchPair(keys.First(), new StringSearchModel("In path")) };
                 }
             }
-            return (doc, options) =>
+            var matcher = Options?.CreateMatcher(value) ?? new Search.SearchMatcher(value, false);
+            return doc =>
             {
                 var result = new Result();
                 if (negate)
@@ -125,7 +127,7 @@ namespace Dash
                         {
                             continue;
                         }
-                        var res = field.Value.SearchForString(value, options);
+                        var res = field.Value.SearchForString(matcher);
                         if (res.StringFound)
                         {
                             result.Add(new SearchPair(field.Key, res));
@@ -136,7 +138,7 @@ namespace Dash
                 {
                     foreach (var key in keys)
                     {
-                        var res = doc.GetDereferencedField(key, null)?.SearchForString(value, options);
+                        var res = doc.GetDereferencedField(key, null)?.SearchForString(matcher);
                         if (res?.StringFound ?? false)
                         {
                             result.Add(new SearchPair(key, res));
@@ -156,9 +158,9 @@ namespace Dash
                 return visitNegation;
             }
 
-            return (doc, options) =>
+            return doc =>
             {
-                var result = visitNegation(doc, options);
+                var result = visitNegation(doc);
                 if (result.Any())
                 {
                     return new Result();
@@ -174,12 +176,12 @@ namespace Dash
         public override SearchPredicate VisitOr([NotNull] SearchGrammarParser.OrContext context)
         {
             var l = context.negation().Select(c => c.Accept(this)).ToList();
-            return (doc, options) =>
+            return doc =>
             {
                 var result = new Result();
                 foreach (var searchPredicate in l)
                 {
-                    result.AddRange(searchPredicate(doc, options));
+                    result.AddRange(searchPredicate(doc));
                 }
                 return result;
             };
@@ -193,12 +195,13 @@ namespace Dash
         public override SearchPredicate VisitValue([NotNull] SearchGrammarParser.ValueContext context)
         {
             string textToSearch = context.WORD()?.Symbol.Text ?? context.STRING().Symbol.Text.Trim('"');
-            return (doc, options) =>
+            var matcher = Options?.CreateMatcher(textToSearch) ?? new Search.SearchMatcher(textToSearch, false);
+            return doc =>
             {
                 var result = new Result();
                 foreach (var field in doc.EnumDisplayableFields())
                 {
-                    var res = field.Value.SearchForString(textToSearch, options);
+                    var res = field.Value.SearchForString(matcher);
                     if (res.StringFound)
                     {
                         result.Add(new SearchPair(field.Key, res));

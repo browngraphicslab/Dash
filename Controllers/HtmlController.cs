@@ -64,7 +64,7 @@ namespace Dash
             return Data;
         }
 
-        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
             return StringSearchModel.False;
         }

@@ -11,47 +11,61 @@ namespace Dash
 {
     public class Search
     {
-
         public class SearchOptions
         {
-            public string SearchString { get; }
-            public Regex Regex { get; }
-            private bool MatchCase;
-            public SearchOptions(string searchString, bool matchCase, bool useRegex, bool matchWholeWord)
+            public bool UseRegex { get; }
+            private bool MatchCase { get; }
+            public bool MatchWholeWord { get; }
+
+            public SearchOptions(bool matchCase, bool useRegex, bool matchWholeWord)
             {
                 MatchCase = matchCase;
-                if (useRegex)
+                UseRegex = useRegex;
+                MatchWholeWord = matchWholeWord;
+            }
+
+            public SearchMatcher CreateMatcher(string searchString)
+            {
+                var flags = RegexOptions.Compiled;
+                flags |= MatchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
+                if (MatchWholeWord)
                 {
-                    if (matchWholeWord)
-                    {
-                        Regex = new Regex(@"\b" + searchString + @"\b",
-                            RegexOptions.Compiled);
-                    }
-                    else
-                    {
-                        Regex = new Regex(searchString);
-                    }
+                    searchString = $@"\b{searchString}\b";
+                }
+
+                if (UseRegex)
+                {
+                    return new SearchMatcher(new Regex(searchString, flags));
                 }
                 else
                 {
-                    if (matchCase && matchWholeWord)
+                    if (MatchWholeWord)
                     {
-                        Regex = new Regex(@"\b" + searchString + @"\b",
-                            RegexOptions.Compiled);
+                        return new SearchMatcher(new Regex(searchString, flags));
                     }
                     else
                     {
-                        if (matchWholeWord)
-                        {
-                            Regex = new Regex(@"\b" + searchString + @"\b",
-                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                        }
-                        else
-                        {
-                            SearchString = matchCase ? searchString : searchString.ToLower();
-                        }
+                        return new SearchMatcher(searchString, MatchCase);
                     }
                 }
+            }
+        }
+
+        public class SearchMatcher
+        {
+            public string SearchString { get; }
+            public Regex Regex { get; }
+            public bool MatchCase { get; }
+
+            public SearchMatcher(string searchString, bool matchCase)
+            {
+                SearchString = searchString;
+                MatchCase = matchCase;
+            }
+
+            public SearchMatcher(Regex regex)
+            {
+                Regex = regex;
             }
 
             public StringSearchModel Matches(string data)
@@ -64,7 +78,7 @@ namespace Dash
                     return new StringSearchModel("");
                 }
 
-                if (Regex!=null)
+                if (Regex != null)
                 {
                     if (Regex.IsMatch(data))
                     {
@@ -74,8 +88,8 @@ namespace Dash
                 else
                 // standard text search
                 {
-                    data = MatchCase ? data : data.ToLower();
-                    int index = data.IndexOf(SearchString);
+                    int index = data.IndexOf(SearchString,
+                        MatchCase ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase);
                     if (index < 0)
                     {
                         return StringSearchModel.False;
@@ -115,7 +129,7 @@ namespace Dash
                 }
             }
 
-            return new SearchOptions(inputString,matchcase,useregex,matchword);
+            return new SearchOptions(matchcase,useregex,matchword);
         }
 
         //TODO: Type-Based Search
@@ -147,7 +161,7 @@ namespace Dash
 
             var searchBoxLexer = new SearchGrammarLexer(new AntlrInputStream(inputString));
             var parser = new SearchGrammarParser(new CommonTokenStream(searchBoxLexer)) { BuildParseTree = true };
-            var visitor = new DashSearchGrammarVisitor();
+            var visitor = new DashSearchGrammarVisitor() { Options = searchOptions };
             var parseTree = visitor.Visit(parser.query());
 
             var results = new List<SearchResult>();
@@ -157,7 +171,7 @@ namespace Dash
 
             void DocSearch(DocumentController doc)
             {
-                var res = parseTree(doc,searchOptions);
+                var res = parseTree(doc);
                 foreach (var result in res)
                 {
                     keyRefs.Add(result.Key.Name);
