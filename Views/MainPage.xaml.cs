@@ -136,7 +136,7 @@ namespace Dash
                 }
             };
 
-            xToolbar.SetValue(Canvas.ZIndexProperty, 20);
+            Canvas.SetZIndex(xToolbar, 20);
 
             SplitFrame.ActiveDocumentChanged += frame =>
             {
@@ -188,6 +188,8 @@ namespace Dash
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             await DotNetRPC.Init();
+
+            await DocumentScope.InitGlobalScope();
 
             var docs = await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType));
@@ -295,7 +297,9 @@ namespace Dash
             toolbar.SetBackgroundColor(Colors.SkyBlue);
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
-            data.Add(await GetButton("\uE107", @"
+            var buttons = new List<(string icon, string function)>
+            {
+                ("\uE107", @"
 function(d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -304,17 +308,45 @@ function(d) {
         doc.Parent.remove(doc.Document);
     }
 }
-"));
-            data.Add(await GetButton("\uE10E", @"
+"),
+            ("\uE10E", @"
 function(d) {
     undo();
 }
-"));
-            data.Add(await GetButton("\uE10D", @"
+"),
+            ("\uE10D", @"
 function(d) {
     redo();
 }
-"));
+"),
+            ("\uF57C", @"
+function (d) {
+    split_horizontal();
+}
+"),
+            ("\uF57D", @"
+function (d) {
+    split_vertical();
+}
+"),
+            ("\uE8BB", @"
+function (d) {
+    close_split();
+}
+"),
+            ("\uE72B", @"
+function (d) {
+    frame_history_back();
+}
+"),
+            ("\uE72A", @"
+function (d) {
+    frame_history_forward();
+}
+")
+            };
+
+            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function))));
         }
 
         #region LOAD AND UPDATE SETTINGS
