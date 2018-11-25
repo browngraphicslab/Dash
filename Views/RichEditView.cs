@@ -43,7 +43,7 @@ namespace Dash
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
             {
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = DesiredSize.Width);
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = DesiredSize.Height; });
                 return base.MeasureOverride(availableSize);
             }
 
@@ -60,7 +60,7 @@ namespace Dash
                 _lastSizeRTFText = text;
                 _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => fe.Width = rtb.DesiredSize.Width);
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; fe.Height = rtb.DesiredSize.Height; });
             } 
             return _lastDesiredSize;
         }
@@ -176,13 +176,13 @@ namespace Dash
 
             SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
 
-            var sizeBinding = new Binding
-            {
-                Source = SettingsView.Instance,
-                Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
-                Mode = BindingMode.OneWay
-            };
-            SetBinding(FontSizeProperty, sizeBinding);
+            //var sizeBinding = new Binding
+            //{
+            //    Source = SettingsView.Instance,
+            //    Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
+            //    Mode = BindingMode.OneWay
+            //};
+            //SetBinding(FontSizeProperty, sizeBinding);
 
             _annotationManager = new AnnotationManager(this);
 
@@ -402,12 +402,51 @@ namespace Dash
             cfv?.AddToMenu(menu);
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC", new ActionViewModel("Title",  "Add title",           MakeTitleAction,  source));
-            menu.AddAction("BASIC", new ActionViewModel("Center", "Align text to center",SetCenterAction,  source));
-            menu.AddAction("BASIC", new ActionViewModel("To-Do",  "Create a todo note",  CreateTodoAction, source));
-            menu.AddAction("BASIC", new ActionViewModel("Google", "Google Clip",         GoogleClip,       source));
-            menu.AddAction("BASIC", new ActionViewModel("Bio",    "Google Bio",          GoogleBio,       source));
+            menu.AddAction("BASIC",      new ActionViewModel("Title",      "Add title",            MakeTitleAction,  source));
+            menu.AddAction("BASIC",      new ActionViewModel("Center",     "Align text to center", SetCenterAction,  source));
+            menu.AddAction("BASIC",      new ActionViewModel("To-Do",      "Create a todo note",   CreateTodoAction, source));
+            menu.AddAction("BASIC",      new ActionViewModel("Google",     "Google Clip",          GoogleClip,       source));
+            menu.AddAction("BASIC",      new ActionViewModel("Bio",        "Google Bio",           GoogleBio,        source));
+            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue",    CreateTravelogue, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
+        }
+
+        private async Task<bool> CreateTravelogue(ActionFuncParams actionParams)
+        {
+            var (collections, tags) = await MainPage.Instance.PromptTravelogue();
+
+            if (collections == null || tags == null)
+            {
+                return true;
+            }
+
+            bool useAll = tags.Contains("INCLUDE ALL TAGS");
+            var events = EventManager.GetEvents();
+
+            var eventDocs = new List<DocumentController>();
+            foreach (var eventDoc in events)
+            {
+                if (collections.Contains(eventDoc.GetDataDocument()
+                    .GetField<DocumentController>(KeyStore.EventCollectionKey)))
+                {
+                    var eventTags = eventDoc.GetDataDocument().GetField<TextController>(KeyStore.EventTagsKey).Data.ToUpper()
+                        .Split(", ");
+                    if (useAll || tags.Any(t => eventTags.Contains(t)))
+                    {
+                        eventDocs.Add(eventDoc);
+                    }
+                }
+            }
+
+            // create collection
+            var collection = new CollectionNote(this.ViewModel.Position, CollectionViewType.Stacking, 500, 500,
+                eventDocs);
+            collection.Document.SetTitle("Travelogue Created " + DateTime.Now.ToLocalTime().ToString("f"));
+
+            var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            cfv?.ViewModel.AddDocument(collection.Document);
+
+            return true;
         }
 
         private Task<bool> MakeTitleAction(ActionFuncParams actionParams)
@@ -790,10 +829,41 @@ namespace Dash
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
                 Document.Selection.ParagraphFormat.Alignment = align;
                 Document.Selection.CharacterFormat.Size = origFormat.Size + hashcount * 5;
+
+                var text = ViewModel.DataDocument.GetField<DateTimeController>(KeyStore.DateCreatedKey).Data.ToString("g") +
+                           " | Created a text note:";
+                var eventDoc = new RichTextNote(text).Document;
+                var tags = "rich text, note, " + Document.Selection.Text.Substring(0, Document.Selection.Text.Length - 2);
+                eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                eventDoc.SetField(KeyStore.EventDisplay1Key, ViewModel.DocumentController, true);
+                var displayXaml =
+                    @"<Grid
+                            xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                            xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                            xmlns:dash=""using:Dash""
+                            xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                                <RowDefinition Height=""*""></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                            </Border>
+                            <ScrollViewer Height=""200"" Grid.Row=""2"" VerticalScrollBarVisibility=""Visible"">
+                                <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                                    <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                                        Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                                        VerticalAlignment=""Top"" />
+                                </StackPanel>
+                            </ScrollViewer>
+                            </Grid>";
+                EventManager.EventOccured(eventDoc, displayXaml);
             }
             Document.Selection.SetRange(s1, s2);
-            Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
-            Document.Selection.CharacterFormat.Size = origFormat.Size;
+            Document.Selection.CharacterFormat = origFormat;
             _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
         }
 

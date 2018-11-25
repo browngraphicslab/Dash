@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Windows.UI.Xaml;
 using Dash.Annotations;
 
 // ReSharper disable once CheckNamespace
@@ -12,12 +14,51 @@ namespace Dash
         private string _currentTitle;
         private string _currentContext;
         private int _currentIndex;
+        private string _docIcon;
+        public bool IsCopy = false;
+        public int _copies = 1;
+        public string _DropVisibility = "Collapsed";
+        public string _BorderThickness = "0 0 0 0";
         public List<string> Titles { get; }
         public List<string> ContextualTexts { get; }
         public DocumentController ViewDocument { get; }
         public DocumentController DocumentCollection { get; set; }
         public bool IsLikelyUsefulContextText { get; }
         public int FieldCount { get; }
+
+        public int Copies { get; set; }= 1;
+
+        public string BorderThickness
+        {
+            get => _BorderThickness;
+            set
+            {
+                _BorderThickness = value;
+                OnPropertyChanged();
+            }
+        }
+        public string DropDownVisibility
+        {
+            get => _DropVisibility;
+            set
+            {
+                _DropVisibility = value;
+                OnPropertyChanged();
+            }
+        } 
+        
+        public List<SearchResultViewModel> svmCopies = new List<SearchResultViewModel>();
+        private string _dropDownText = ">";
+
+        public string DropDownText
+        {
+            get => _dropDownText;
+            set
+            {
+                _dropDownText = value; 
+                OnPropertyChanged();
+            }
+        }
 
         public string CurrentTitle
         {
@@ -34,7 +75,7 @@ namespace Dash
             get => _currentContext;
             private set
             {
-                _currentContext = value;
+                _currentContext = "Value: "+ value;
                 OnPropertyChanged();
             }
         }
@@ -45,6 +86,16 @@ namespace Dash
             private set
             {
                 _currentIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string DocIcon
+        {
+            get => _docIcon;
+            private set
+            {
+                _docIcon = value;
                 OnPropertyChanged();
             }
         }
@@ -60,7 +111,37 @@ namespace Dash
 
             CurrentIndex = 0;
 
-            if (Titles.Any()) UpdateText();
+            if (Titles.Any())
+            {
+                UpdateText();
+            }
+
+            var type = viewDoc.GetDocType();
+            //Debug.WriteLine(type);
+            switch (type)
+            {
+            case "Image Box":
+                DocIcon = (string)Application.Current.Resources["ImageIcon"];
+                break;
+            case "Rich Text Box":
+                DocIcon = (string)Application.Current.Resources["DocumentIcon"];
+                break;
+            case "Collection Box":
+                DocIcon = (string)Application.Current.Resources["CollectionIcon"];
+                break;
+            case "Pdf Box":
+                DocIcon = (string)Application.Current.Resources["PdfDocumentIcon"];
+                break;
+            case "Audio Box":
+                DocIcon = (string)Application.Current.Resources["AudioIcon"];
+                break;
+            case "Video Box":
+                DocIcon = (string)Application.Current.Resources["VideoIcon"];
+                break;
+            default:
+                DocIcon = (string)Application.Current.Resources["DocumentIcon"];
+                break;
+            }
         }
 
         private void UpdateText()

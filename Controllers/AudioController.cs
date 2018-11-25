@@ -41,15 +41,9 @@ namespace Dash
             }
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            var data = (Model as AudioModel)?.Data;
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
-            {
-                return new StringSearchModel(data.AbsoluteUri);
-            }
-            return StringSearchModel.False;
+            return matcher.Matches(Data.AbsoluteUri);
         }
 
         public override string ToScriptString(DocumentController thisDoc)
