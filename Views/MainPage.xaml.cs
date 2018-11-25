@@ -235,7 +235,7 @@ namespace Dash
             var toolbar = MainDocument.GetField<DocumentController>(KeyStore.ToolbarKey);
             if (toolbar == null)
             {
-                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid, double.NaN, 70).Document;
                 await InitToolbar(toolbar);
                 MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
             }
