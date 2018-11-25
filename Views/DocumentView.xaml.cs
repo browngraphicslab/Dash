@@ -1472,7 +1472,7 @@ namespace Dash
 
         private void XMasterStack_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-           if (e.PointerDeviceType == PointerDeviceType.Mouse) xMenuFlyout.ShowAt(xMasterStack);
+           if (e.PointerDeviceType == PointerDeviceType.Mouse) xMenuFlyout.ShowAt(MainPage.Instance.xCanvas, e.GetPosition(MainPage.Instance.xCanvas));
         }
     }
 }

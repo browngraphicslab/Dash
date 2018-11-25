@@ -795,14 +795,7 @@ namespace Dash
 		        TouchInteractions.isPanning = false;
 		        args.Handled = true;
                 //CASE WHERE DOC IS HELD & background is tapped -> launch radial menu
-		       // bool holdingPdf = TouchInteractions.HeldDocument == null ? false : 
-		      //      TouchInteractions.HeldDocument.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
-
-               // if ((TouchInteractions.NumFingers == 2  && TouchInteractions.HeldDocument != null) || hold)
-		       // {
-		            TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
-		        // }
-
+		        TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
 		    }
 			// marquee on left click by default
 			if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
