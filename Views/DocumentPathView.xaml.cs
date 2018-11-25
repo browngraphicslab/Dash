@@ -87,13 +87,16 @@ namespace Dash
         {
             panel.Children.Clear();
 
-            foreach (var documentController in path.Skip(1))//Skip the main document (root)
+            var documentControllers = path.Skip(1).ToList();
+            for (int index = 0; index < documentControllers.Count; index++)
             {
-                panel.Children.Add(new TextBlock { Text = "/" });
+                var documentController = documentControllers[index];
+                var child = index < documentControllers.Count - 1 ? documentControllers[index + 1] : null;
+                panel.Children.Add(new TextBlock {Text = "/"});
 
-                TextBlock tb = new TextBlock
+                var tb = new TextBlock
                 {
-                    DataContext = documentController,
+                    DataContext = (documentController, child),
                     TextTrimming = TextTrimming.CharacterEllipsis,
                     MaxWidth = 200,
                     MaxLines = 1
@@ -107,16 +110,22 @@ namespace Dash
                 tb.Tapped += TbOnTapped;
                 panel.Children.Add(tb);
             }
-
         }
 
         private void TbOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             var tb = (TextBlock) sender;
-            var doc = (DocumentController) tb.DataContext;
+            var (doc, child) = ((DocumentController, DocumentController)) tb.DataContext;
             Debug.Assert(doc != null);
 
-            this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(doc);
+            if (child != null)
+            {
+                this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(child, doc);
+            }
+            else
+            {
+                this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(doc);
+            }
         }
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)

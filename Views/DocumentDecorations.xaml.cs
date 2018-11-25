@@ -1076,6 +1076,7 @@ namespace Dash
                 ResetHeader(keys[ind].Name);
             } while (xHeaderText.Text == "<empty>");
         }
+
         private void CommitHeaderText()
         {
             foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DocumentController))
@@ -1087,6 +1088,7 @@ namespace Dash
             xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
             ResetHeader();
         }
+
         private void ResetHeader(string newkey = null)
         {
             if (SelectedDocs.Count > 0)
