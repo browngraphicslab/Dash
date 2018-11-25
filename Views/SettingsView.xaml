@@ -62,8 +62,6 @@
                     </StackPanel>
                 </StackPanel>
                 <Slider x:Name="xBackgroundOpacitySlider" Margin="10, 10, 0, 0" Header="Background Opacity" Maximum="1" Minimum="0" HorizontalAlignment="Left" Width="150" StepFrequency="0.05"></Slider>
-                <TextBlock Text="Use PDF Text Selection"></TextBlock>
-                <ToggleSwitch IsOn="{x:Bind UsePdfTextSelection, Mode=TwoWay}"></ToggleSwitch>
                 <TextBlock Text="Use Ink"></TextBlock>
                 <ToggleSwitch IsOn="{x:Bind UseInkCanvas, Mode=TwoWay}"></ToggleSwitch>
                 <Grid>

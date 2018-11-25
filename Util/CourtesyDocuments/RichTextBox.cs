@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -62,11 +63,10 @@ namespace Dash
             };
             element.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
         }
-
-        public static DocumentController MakeRegionDocument(DocumentView richTextBox, Point? point = null)
+        public static Task<DocumentController> MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<RichEditView>();
-            return rtv?.GetRegionDocument();
+            return Task.FromResult(rtv?.GetRegionDocument());
         }
         
         public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)

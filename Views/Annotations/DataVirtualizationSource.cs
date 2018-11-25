@@ -37,7 +37,7 @@ namespace Dash
         }
         ~DataVirtualizationSource()
         {
-            //Debug.WriteLine("Finalizing DataVirtualizationSource");
+            Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
         
         public double ScrollViewerContentWidth = 1;
