@@ -265,9 +265,19 @@ namespace Dash
                     PageNext();
                     args.Handled = true;
                 }
-                if (args.Key == VirtualKey.PageUp)
+                else if (args.Key == VirtualKey.PageUp)
                 {
                     PagePrev();
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Down)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset + 20, null);
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Up)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset - 20, null);
                     args.Handled = true;
                 }
             }
