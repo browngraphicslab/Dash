@@ -121,7 +121,10 @@ namespace Dash
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
-                xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, XDocumentView.ActualWidth, XDocumentView.ActualHeight);
+                var ele = (FrameworkElement)Window.Current.Content;
+                xFloating.ManipulateControlPosition(ele.ActualWidth - XDocumentView.ActualWidth,
+                    ele.ActualHeight - XDocumentView.ActualHeight,
+                    XDocumentView.ActualHeight, XDocumentView.ActualWidth);
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             };
         }
