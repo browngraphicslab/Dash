@@ -209,9 +209,24 @@ namespace Dash
                 RemoveViewModels(args.OldItems, args.StartingChangeIndex);
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-                DocumentViewModels.Clear();
-                AddViewModels(args.NewItems, 0);
+                NewViewModels(args.NewItems);
                 break;
+            }
+        }
+
+        private void NewViewModels(IList<DocumentController> docs)
+        {
+            var removed = DocumentViewModels.Select(dvm => dvm.DocumentController).Except(docs).ToList();
+            var added   = docs.Except(DocumentViewModels.Select(dvm => dvm.DocumentController)).ToList();
+
+            if (removed.Any())
+            {
+                RemoveViewModels(removed, -1);
+            }
+
+            if (added.Any())
+            {
+                AddViewModels(added, -1);
             }
         }
 
