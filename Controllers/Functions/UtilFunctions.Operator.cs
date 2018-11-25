@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -266,6 +266,93 @@ public sealed class GlobalExportOperator : OperatorController
         var name = (TextController)inputs[NameKey];
         var field = (FieldControllerBase)inputs[FieldKey];
         Dash.UtilFunctions.GlobalExport(name, field);
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.sort)]
+public sealed class SortOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController ListKey = KeyController.Get("List");
+
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public SortOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public SortOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("SortOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new SortOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(ListKey, new IOInfo(DashShared.TypeInfo.List, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.List,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var list = (IListController)inputs[ListKey];
+        var output0 = Dash.UtilFunctions.Sort(list);
+        outputs[Output0Key] = output0.AsField();
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.sort)]
+public sealed class SortDocsOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController ListControllerKey = KeyController.Get("ListController");
+    public static readonly KeyController SelectorKey = KeyController.Get("Selector");
+
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public SortDocsOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public SortDocsOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("SortDocsOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new SortDocsOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(ListControllerKey, new IOInfo(DashShared.TypeInfo.List, true)),
+        new KeyValuePair<KeyController, IOInfo>(SelectorKey, new IOInfo(DashShared.TypeInfo.Key, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.List,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var listController = (ListController<DocumentController>)inputs[ListControllerKey];
+        var selector = (KeyController)inputs[SelectorKey];
+        var output0 = Dash.UtilFunctions.SortDocs(listController, selector);
+        outputs[Output0Key] = output0.AsField();
         return Task.CompletedTask;
     }
 
