@@ -57,7 +57,7 @@ namespace Dash
 
         public static void ShowMenu(Point point, DocumentView view)
         {
-            MainPage.Instance.xTouchMenu.InitializeMenu(point, view);
+            MainPage.Instance.xTouchMenu.ShowMenu(point, view);
         }
 
         public static void HideMenu()

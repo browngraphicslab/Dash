@@ -31,7 +31,7 @@ namespace Dash
             xRadialMenu.CenterButtonFontSize = 25;
         }
 
-        public void InitializeMenu(Point location, DocumentView docView)
+        public void ShowMenu(Point location, DocumentView docView)
         {
             _doc = docView;
             xRadialMenu.CenterButtonLeft = 0;
