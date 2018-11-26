@@ -151,5 +151,10 @@ namespace Dash
 
     */
 
+        //if we want a size gauge
+        private void XSize_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
+        {
+            
+        }
     }
 }
