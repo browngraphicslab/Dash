@@ -12,12 +12,12 @@
         <TextBlock x:Name="xTextField0" Text="DOC TITLE" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Top"/>
     </Border>
     <Border Grid.Row="1" Background="CadetBlue" >
-        <dash:PdfView x:Name="xPdfFieldData" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+        <dash:PdfView x:Name="xPdfField1" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
     </Border>
     <StackPanel Orientation="Horizontal"  Grid.Row="2" Height="30" Background="White" >
         <!--<TextBlock Text="Author:" HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />-->
-        <dash:EditableTextBlock x:Name="xTextField1" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0" />
+        <dash:EditableTextBlock x:Name="xTextField2" Text="author" HorizontalAlignment="Stretch" VerticalAlignment="Center" Padding="0 0 5 0" />
         <!--<TextBlock Text="Created: " HorizontalAlignment="Stretch" FontStyle="Italic" FontSize="9" VerticalAlignment="Center" Margin="0 5 0 0" Padding="0 0 5 0" />-->
-        <TextBlock x:Name="xTextField2" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <TextBlock x:Name="xTextField3" Text="created" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
     </StackPanel>
 </Grid>

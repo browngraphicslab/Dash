@@ -42,6 +42,7 @@ namespace Dash.Popups.TemplatePopups
                 var input = new List<string>
                 {
                     fields.ElementAtOrDefault(xTextFieldTitle.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextFieldPdf.SelectedIndex),
                     fields.ElementAtOrDefault(xTextFieldAuthor.SelectedIndex),
                     fields.ElementAtOrDefault(xTextFieldDateCreated.SelectedIndex)
                 };
