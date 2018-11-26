@@ -459,7 +459,7 @@ namespace Dash
 
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
-            _annotationOverlay.TextSelectableElements?.Clear();
+            _annotationOverlay?.TextSelectableElements?.Clear();
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
