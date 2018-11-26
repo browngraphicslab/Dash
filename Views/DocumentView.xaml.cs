@@ -925,6 +925,7 @@ namespace Dash
             if (dragModel != null)
             {
                 if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
+                e.Handled = true;
 
                 if (MainPage.Instance.IsAltPressed())
                 {
@@ -943,7 +944,6 @@ namespace Dash
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
                     UpdateBindings();
-                    e.Handled = true;
                     return;
                 }
 
@@ -959,7 +959,7 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, e.GetPosition(this));
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
@@ -970,7 +970,6 @@ namespace Dash
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
                     : e.DataView.RequestedOperation;
-                e.Handled = true;
             }
         }
 
