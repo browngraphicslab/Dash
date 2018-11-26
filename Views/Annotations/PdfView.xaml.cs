@@ -163,7 +163,7 @@ namespace Dash
                 });
                 if (textToSet != null)
                 {
-                    _botPdf.DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
+                    _botPdf.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
                 }
             }
             else if (_botPdf.AnnotationOverlay.TextSelectableElements?.Any() ?? false)
