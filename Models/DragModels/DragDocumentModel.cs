@@ -116,13 +116,13 @@ namespace Dash
                     docs.Add(DraggedDocuments[i].GetViewCopy(GetPosition(i)));
                 }
             }
-            //else if (target?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
-            //{
-            //    for (int i = 0; i < DraggedDocuments.Count; i++)
-            //    {
-            //        docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
-            //    }
-            //}
+            else if (target?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
+            {
+                for (int i = 0; i < DraggedDocuments.Count; i++)
+                {
+                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
+                }
+            }
             else
             {
                 for (int i = 0; i < DraggedDocuments.Count; i++)
