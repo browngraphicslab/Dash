@@ -49,7 +49,10 @@ namespace Dash
             var fromKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey) ?? (IEnumerable<DocumentController>)new List<DocumentController>();
             toKeys.AddRange(fromKeys);
             xLinkList.ItemsSource = toKeys;
-            xLinkMenu.DataContext = new DocumentViewModel(toKeys.First());
+            if (toKeys.Count != 0)
+            {
+                xLinkMenu.DataContext = new DocumentViewModel(toKeys.First());
+            }
             _allKeys = toKeys;
         }
 
@@ -90,7 +93,7 @@ namespace Dash
         {
 
             OpenFlyout(sender as FrameworkElement);
-            e.Handled = true;
+            e.Handled = true;   
 
             //_docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
             //if (_docdecs.CurrentLinks.Count == 1)
@@ -109,8 +112,8 @@ namespace Dash
 
         public void OpenFlyout(FrameworkElement fwe)
         {
-            _tooltip.IsOpen = false;
             FlyoutBase.ShowAttachedFlyout(fwe);
+            _tooltip.IsOpen = false;
 
             _docdecs.CurrentLinks = _docdecs.TagMap[_text];
         }

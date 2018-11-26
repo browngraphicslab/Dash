@@ -513,6 +513,7 @@ namespace Dash
         public void rebuildMenuIfNeeded()
         {
             xButtonsPanel.Children.Clear();
+            LinkButtons.Clear();
             //check each relevant tag name & create the tag graphic & button for it
             foreach (var name in TagMap.Keys.Where((k) => k != null))
             {

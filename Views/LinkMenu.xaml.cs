@@ -56,7 +56,7 @@ namespace Dash
 
         private void LinkMenu_DataContextChanged(object sender, DataContextChangedEventArgs e)
         {
-            if (LinkDoc == null)
+            if (LinkDoc == null || !this.IsInVisualTree())
             {
                 return;
             }

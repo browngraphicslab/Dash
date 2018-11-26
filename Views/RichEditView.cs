@@ -39,6 +39,8 @@ namespace Dash
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (Tag != null && Tag.Equals("HACK"))
+                return base.MeasureOverride(availableSize);
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
@@ -87,7 +89,7 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && docView != null)
                 {
                     if (!SelectionManager.IsSelected(docView))
                     {
@@ -158,7 +160,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(getReadableText()) &&  DataFieldKey.Equals(KeyStore.DataKey))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.IsSelected(docView))
+                    if (docView != null && !SelectionManager.IsSelected(docView))
                     {
                         using (UndoManager.GetBatchHandle())
                         {

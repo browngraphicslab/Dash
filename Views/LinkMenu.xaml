@@ -24,9 +24,10 @@
                 <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0" Margin="0 15 5 0"/>
             </Grid>
 
-            <local:RichEditView x:Name="xDescriptionBox" BorderThickness="2" BorderBrush="Gray"  Margin="10" Height="80" FontSize="16">
+            <Grid>
+                <local:RichEditView x:Name="xDescriptionBox" Tag="HACK" BorderThickness="2" BorderBrush="Gray"  Margin="10" FontSize="16"/>
+            </Grid>
 
-            </local:RichEditView>
             <!--TAGS-->
             <Grid Margin="3 5 5 5" x:Name="xTagsDivider">
                 <Grid.ColumnDefinitions>
