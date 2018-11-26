@@ -1173,6 +1173,22 @@ namespace Dash
 
         private void XPrevOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchString = documentView.ViewModel.DocumentController
+                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+                if (!searchString.Equals(xSearchBox.Text))
+                {
+                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                        xSearchBox.Text, true);
+                }
+            }
+
+            foreach (var documentView in SelectedDocs)
+            {
+                documentView.ViewModel.DocumentController.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, true, true);
+            }
+
             //foreach (var documentView in SelectedDocs)
             //{
             //    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
@@ -1192,9 +1208,15 @@ namespace Dash
         {
             foreach (var documentView in SelectedDocs)
             {
-                documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
-                    xSearchBox.Text, true);
+                var searchString = documentView.ViewModel.DocumentController
+                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+                if (!searchString.Equals(xSearchBox.Text))
+                {
+                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                        xSearchBox.Text, true);
+                }
             }
+
             foreach (var documentView in SelectedDocs)
             {
                 var searchIndex =
