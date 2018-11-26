@@ -959,7 +959,7 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, e.GetPosition(this));
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? e.GetPosition(this) : (Point?) null);
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
@@ -1022,9 +1022,7 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-            var ann = new AnnotationManager(this);
-            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(),
-                e.GetPosition(this));
+            new AnnotationManager(this).FollowRegion(this, ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)
