@@ -163,7 +163,7 @@ namespace Dash
                 });
                 if (textToSet != null)
                 {
-                    _botPdf.DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
+                    _botPdf.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
                 }
             }
             else if (_botPdf.AnnotationOverlay.TextSelectableElements?.Any() ?? false)
@@ -219,12 +219,16 @@ namespace Dash
         public void ShowRegions()
         {
             _topPdf.AnnotationOverlay.Visibility = Visibility.Visible;
+            _topPdf.xPdfGridWithEmbeddings.Visibility = Visibility.Visible;
             _botPdf.AnnotationOverlay.Visibility = Visibility.Visible;
+            _botPdf.xPdfGridWithEmbeddings.Visibility = Visibility.Visible;
         }
         public void HideRegions()
         {
             _topPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
+            _topPdf.xPdfGridWithEmbeddings.Visibility = Visibility.Collapsed;
             _botPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
+            _botPdf.xPdfGridWithEmbeddings.Visibility = Visibility.Collapsed;
         }
         public int PageNum() { return _botPdf.PageNum();  }
         public bool AreAnnotationsVisible()

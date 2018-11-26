@@ -6,6 +6,47 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
+[OperatorType(Op.Name.add)]
+public sealed class AddOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController ListKey = KeyController.Get("List");
+    public static readonly KeyController ItemKey = KeyController.Get("Item");
+
+
+    public AddOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public AddOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("AddOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new AddOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(ListKey, new IOInfo(DashShared.TypeInfo.List, true)),
+        new KeyValuePair<KeyController, IOInfo>(ItemKey, new IOInfo(DashShared.TypeInfo.Any, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var list = (IListController)inputs[ListKey];
+        var item = (FieldControllerBase)inputs[ItemKey];
+        Dash.ListFunctions.Add(list, item);
+        return Task.CompletedTask;
+    }
+
+}
+
 [OperatorType(Op.Name.remove)]
 public sealed class RemoveOperator : OperatorController
 {
@@ -46,6 +87,44 @@ public sealed class RemoveOperator : OperatorController
         var item = (FieldControllerBase)inputs[ItemKey];
         var output0 = Dash.ListFunctions.Remove(list, item);
         outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.clear)]
+public sealed class ClearOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController ListKey = KeyController.Get("List");
+
+
+    public ClearOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public ClearOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("ClearOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new ClearOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(ListKey, new IOInfo(DashShared.TypeInfo.List, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var list = (IListController)inputs[ListKey];
+        Dash.ListFunctions.Clear(list);
         return Task.CompletedTask;
     }
 

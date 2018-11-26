@@ -380,7 +380,7 @@ namespace Dash
                 var script = "for (var doc in docs){ \r" + code + "\r }";
 
                 //run script
-                var scope = new OuterReplScope();
+                var scope = new DocumentScope();
                 scope.DeclareVariable("docs", new ListController<DocumentController>(docs));
                 var dsl = new DSL(scope);
                 dsl.Run(script, true);

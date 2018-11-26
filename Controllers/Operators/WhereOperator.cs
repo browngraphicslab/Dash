@@ -47,7 +47,7 @@ namespace Dash.Controllers.Operators
             {
                 foreach (var field in inputList.AsEnumerable().ToArray())
                 {
-                    var res = await OperatorScript.Run(lambda, new List<FieldControllerBase> { field }, new Scope());
+                    var res = await OperatorScript.Run(lambda, new List<FieldControllerBase> { field }, new DictionaryScope());
                     if (res is BoolController b&& b.Data) outputList.Add(field);
                 }
             }

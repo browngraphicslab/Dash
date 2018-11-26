@@ -143,7 +143,7 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() || 
+            if (_freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() || 
                 (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 2) || (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 && isPanning))
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());

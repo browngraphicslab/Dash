@@ -26,5 +26,15 @@ namespace Dash
 
             return null;
         }
+
+        public static void TogglePresentation()
+        {
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
+        }
+
+        public static void ExportWorkspace()
+        {
+            MainPage.Instance.Publish_OnTapped(null, null);
+        }
     }
 }

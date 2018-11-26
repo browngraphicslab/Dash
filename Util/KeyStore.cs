@@ -159,6 +159,7 @@ namespace Dash
         public static KeyController EventDisplay1Key                     = KeyController.Get("_EventDisplay1Key");
         public static KeyController EventDisplay2Key                     = KeyController.Get("_EventDisplay2Key");
         public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
+        public static KeyController GlobalDefinitionsKey                 = KeyController.Get("_GlobalDefinitions");
 	    public static KeyController IsAnnotationKey                      = KeyController.Get("IsAnnotation");
         public static KeyController IsTemplateKey                        = KeyController.Get("IsTemplate");
         public static KeyController InitialSizeKey                       = KeyController.Get("_InitialSize");
