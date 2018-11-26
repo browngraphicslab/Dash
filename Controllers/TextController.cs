@@ -67,29 +67,9 @@ namespace Dash
             return Data;
         }
 
-        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            return options.Matches(Data);
-
-            int maxStringSize = 125;
-            int textDecrementForContext = 8;
-
-            _lowerData = String.IsNullOrEmpty(_lowerData) ? ((Model as TextModel)?.Data?.ToLower() ?? "") : _lowerData;
-
-            if (searchString == null)
-                return new StringSearchModel("");
-
-            if (Data != null)
-            {
-                if (options.Regex != null)
-                {
-                    if (options.Regex.IsMatch(Data))
-                    {
-
-                    }
-                }
-            }
-            return StringSearchModel.False;
+            return matcher.Matches(Data);
         }
 
         public override string ToScriptString(DocumentController thisDoc = null)
