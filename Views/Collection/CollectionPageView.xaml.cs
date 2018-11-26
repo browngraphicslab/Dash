@@ -175,7 +175,6 @@ namespace Dash
 
         private void Navigate_OnClicked(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("navigate tapped");
             var originalDoc = CurrentPage.DocumentController.GetDereferencedField<DocumentController>(KeyStore.SearchOriginKey,null);
             SplitFrame.HighlightDoc(originalDoc, SplitFrame.HighlightMode.Highlight);
             var tree = DocumentTree.MainPageTree;
@@ -185,7 +184,6 @@ namespace Dash
                 SplitFrame.OpenInActiveFrame(originalDoc);
                 return;
             }
-
             SplitFrame.OpenDocumentInWorkspace(originalDoc, node.Parent.ViewDocument);
         }
 
@@ -319,6 +317,19 @@ namespace Dash
         private void Thumb_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             e.Handled = true;
+        }
+
+        private void Navigate_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            var mfi = sender as MenuFlyoutItem;
+            if (CurrentPage.DocumentController
+                    .GetDereferencedField<DocumentController>(KeyStore.SearchOriginKey, null) != null)
+            {
+                if (mfi != null)
+                {
+                    mfi.Visibility = Visibility.Visible;
+                }
+            }
         }
     }
 }

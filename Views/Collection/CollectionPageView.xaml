@@ -33,11 +33,10 @@
                     <DataTemplate>
                         <TextBlock DataContextChanged="FrameworkElement_OnDataContextChanged" RightTapped="Thumb_RightTapped">
                             <TextBlock.ContextFlyout>
-
                                 <MenuFlyout>
                                     <MenuFlyoutItem Text="Rename" Click="Rename_OnClicked"/>
                                     <MenuFlyoutItem Text="Delete" Click="Delete_OnClicked"/>
-                                    <MenuFlyoutItem x:Name="XNavigate" Text="Navigate to context" Click="Navigate_OnClicked"/>
+                                    <MenuFlyoutItem Text="Navigate to context" Click="Navigate_OnClicked" Visibility="Collapsed" Loaded="Navigate_OnLoaded"/>
                                 </MenuFlyout>
                             </TextBlock.ContextFlyout>
                         </TextBlock>
