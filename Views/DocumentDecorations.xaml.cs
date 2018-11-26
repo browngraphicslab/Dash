@@ -312,6 +312,12 @@ namespace Dash
 
             ResetHeader(); // force header field to update
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
+
+            if (SelectedDocs.Count == 1)
+            {
+                xSearchBox.Text = SelectedDocs.First().ViewModel.DocumentController
+                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+            }
         }
 
         public void SetPositionAndSize(bool rebuildMenu = true)
@@ -1162,6 +1168,49 @@ namespace Dash
                     pc.ViewModel.RemoveDocument(dc);
                     pc.ViewModel.AddDocument(dc);
                 }
+            }
+        }
+
+        private void XPrevOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            //foreach (var documentView in SelectedDocs)
+            //{
+            //    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+            //        xSearchBox.Text, true);
+            //}
+            //foreach (var documentView in SelectedDocs)
+            //{
+            //    var searchIndex =
+            //        documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -2;
+
+            //    documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey,
+            //        searchIndex, true);
+            //}
+        }
+
+        private void XNextOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                    xSearchBox.Text, true);
+            }
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchIndex =
+                    documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -1;
+
+                documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey,
+                    searchIndex + 1, true);
+            }
+        }
+
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                    sender.Text, true);
             }
         }
 

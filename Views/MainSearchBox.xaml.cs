@@ -364,6 +364,10 @@ namespace Dash
             if (string.IsNullOrWhiteSpace(text)) return;
             //highlight doc results
             HighlightSearchResults(docs);
+            foreach (var doc in docs)
+            {
+                doc.SetField<TextController>(KeyStore.SearchStringKey, text, true);
+            }
 
             var vmGroups = new List<SearchResultViewModel>();
             foreach (SearchResult res in searchRes)

@@ -166,6 +166,7 @@ namespace Dash
         public static KeyController YouTubeUrlKey                        = KeyController.Get("_YouTubeUrl");
         public static KeyController SearchStringKey                      = KeyController.Get("SearchStringOrigin");
         public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
+        public static KeyController SearchIndexKey                       = KeyController.Get("SearchIndex");
 
 	    public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{
