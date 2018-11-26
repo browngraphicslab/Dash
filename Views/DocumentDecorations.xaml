@@ -46,7 +46,7 @@
             </Storyboard>
         </Grid.Resources>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
-        <StackPanel x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="0 5 0 0">
+        <StackPanel Background="White"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="5">
             <AutoSuggestBox x:Name="xSearchBox" Foreground="White" Width="150" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
                             QuerySubmitted="AutoSuggestBox_QuerySubmitted"></AutoSuggestBox>
             <Grid x:Name="xNextOccur" PointerPressed="XNextOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">

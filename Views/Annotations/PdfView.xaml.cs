@@ -136,7 +136,7 @@ namespace Dash
                 }
 
                 _botPdf.ScrollViewer.ChangeView(null,
-                    _botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top, null);
+                    _botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top + _botPdf.ScrollViewer.ViewportHeight / 2, null, true);
                 //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds
                 //    .Top);
                 LayoutDocument.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, false, true);
@@ -182,7 +182,7 @@ namespace Dash
                             prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
 
                             _botPdf.ScrollViewer.ChangeView(null,
-                                _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top, null);
+                                _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top + _botPdf.ScrollViewer.ViewportHeight / 2, null, true);
                             //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
                             //    .Top);
                             _previousSelections.Add(index - i);
