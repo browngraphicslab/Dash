@@ -261,7 +261,9 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
+            var srs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).ToList();
+            //var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
+            var docs = srs.Select(sr => sr.ViewDocument).ToList();
 
             var searchString = xAutoSuggestBox.Text;
             args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection =>
@@ -484,10 +486,6 @@ namespace Dash
 
             var vmGroups = new List<SearchResultViewModel>();
 
-            Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
-            Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
-            Debug.WriteLine("OPTIONS:"+_options.Count);
-
             foreach (var resList in map)
             {
                 var res = resList.Value.First();
@@ -543,8 +541,6 @@ namespace Dash
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
-
-            Debug.WriteLine("First length: "+first.Length);
 
             foreach (var searchResultViewModel in first)
             {
@@ -672,8 +668,6 @@ namespace Dash
             var index = itemsSource.IndexOf(viewModel);
             var count = itemsSource.Count;
             var numCopies = viewModel.Copies;
-            Debug.WriteLine(numCopies);
-            //Debug.WriteLine(index);
             if (viewModel?.DropDownText == ">")
             {
                 viewModel.DropDownText = "v";
@@ -716,11 +710,6 @@ namespace Dash
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
-        {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-        }
-
-        private void Options_Tapped(object sender, RoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }

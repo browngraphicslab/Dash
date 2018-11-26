@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
+using Windows.UI.Xaml.Controls.Primitives;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -38,7 +39,7 @@ namespace Dash
             {
                 if (_templateDocument != null)
                 {
-                    templateButton.Content = "Remove  Template";
+                    templateButton.Content = "Remove Template";
                     XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { IsDimensionless = true };
                 }
                 if (ViewModel?.DocumentViewModels.Count > 0)
@@ -172,6 +173,22 @@ namespace Dash
             ViewModel.RemoveDocument(CurrentPage.DocumentController);
         }
 
+        private void Navigate_OnClicked(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("navigate tapped");
+            var originalDoc = CurrentPage.DocumentController.GetDereferencedField<DocumentController>(KeyStore.SearchOriginKey,null);
+            SplitFrame.HighlightDoc(originalDoc, SplitFrame.HighlightMode.Highlight);
+            var tree = DocumentTree.MainPageTree;
+            var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(originalDoc));
+            if (node?.Parent == null)
+            {
+                SplitFrame.OpenInActiveFrame(originalDoc);
+                return;
+            }
+
+            SplitFrame.OpenDocumentInWorkspace(originalDoc, node.Parent.ViewDocument);
+        }
+
         private TextBox _renameBox;
         private Flyout _flyout;
 
@@ -231,7 +248,7 @@ namespace Dash
         {
             if (_templateDocument == null && CurrentPage !=null)
             {
-                templateButton.Content = "Remove  Template";
+                templateButton.Content = "Remove Template";
                 CreateTemplate();
             }
             else
@@ -297,6 +314,11 @@ namespace Dash
                 ScriptToggle.Content = "Show Script";
                 xTextBox.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void Thumb_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }
