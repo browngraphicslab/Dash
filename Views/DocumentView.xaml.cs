@@ -1059,7 +1059,7 @@ namespace Dash
                     Converter = new StringToBrushConverter(),
                     Mode = BindingMode.TwoWay,
                     Context = new Context(),
-                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
+                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.White)
                 };
                 xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }

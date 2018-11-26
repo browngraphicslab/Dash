@@ -43,7 +43,7 @@ namespace Dash
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
             {
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = DesiredSize.Height; });
+                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = double.NaN; });
                 return base.MeasureOverride(availableSize);
             }
 
@@ -60,7 +60,7 @@ namespace Dash
                 _lastSizeRTFText = text;
                 _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; fe.Height = rtb.DesiredSize.Height; });
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; });
             } 
             return _lastDesiredSize;
         }

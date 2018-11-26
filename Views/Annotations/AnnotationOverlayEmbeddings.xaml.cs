@@ -53,7 +53,6 @@ namespace Dash
                     EmbeddedViewModels.Add(
                         new DocumentViewModel(reg)
                         {
-                            Undecorated = true,
                             ResizersVisible = true,
                             DragWithinParentBounds = false
                         }));
