@@ -52,6 +52,7 @@ namespace Dash
             if (toKeys.Count != 0)
             {
                 xLinkMenu.DataContext = new DocumentViewModel(toKeys.First());
+                xLinkList.SelectedItem = toKeys.First();
             }
             _allKeys = toKeys;
         }
@@ -148,7 +149,11 @@ namespace Dash
         private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int index = xLinkList.SelectedIndex;
-            xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
+            if (_allKeys != null)
+            {
+                xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
+            }
+            
         }
     }
 }
