@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -33,7 +34,7 @@ namespace Dash.Views.Collection
             using (UndoManager.GetBatchHandle())
             {
                 var doc = ViewModel.ContainerDocument.GetViewCopy();
-                ViewModel.ViewType = Enum.Parse<CollectionViewType>(ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionViewType.Freeform.ToString());
+                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey,ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionViewType.Freeform.ToString(), true);
                 doc.SetWidth(double.NaN);
                 doc.SetHeight(double.NaN);
                 doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -53,7 +54,7 @@ namespace Dash.Views.Collection
         private void xFolderPreview_Drop(object sender, DragEventArgs e) { drop(e, KeyStore.FolderPreviewKey); }
 
         private void xFolderIcon_Drop(object sender, DragEventArgs e)    { drop(e, KeyStore.FolderIconKey); }
-        private void drop(DragEventArgs e, KeyController key)
+        private async Task drop(DragEventArgs e, KeyController key)
         { 
             var dragModel = e.DataView.GetDragModel();
             if (dragModel is DragDocumentModel dm)
@@ -62,7 +63,7 @@ namespace Dash.Views.Collection
             }
             if (dragModel is DragFieldModel dfm)
             {
-                DropDoc(dfm.GetDropDocuments(new Point(),null).First(), key);
+                DropDoc((await dfm.GetDropDocuments(new Point(),null)).First(), key);
             }
             e.Handled = true;
         }

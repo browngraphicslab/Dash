@@ -116,7 +116,7 @@ namespace Dash
             var typeSublists = new List<KeyValuePair<int, string>>();
             foreach (var overload in _functionMap[functionName])
             {
-                var typeInfoList = overload.ParamTypes.Select(kv => kv.Value.Type).ToList();
+                var typeInfoList = overload.ParamTypes.Select(kv => $"{kv.Key.Name} : {kv.Value.Type}").ToList();
                 var numParams = typeInfoList.Count;
                 typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n            ({string.Join(", ", typeInfoList)})"));
             }

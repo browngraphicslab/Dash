@@ -68,6 +68,21 @@ namespace Dash
             }
         }
 
+        private Point? _forceFocusPoint;
+        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
+        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
+        {
+            _forceFocusPoint = where;
+            TextPreviewer = collection;
+        }
+        public void ClearForceFocus()
+        {
+            TextPreviewer?.ClearPreview();
+            _forceFocusPoint = null;
+        }
+
+        public CollectionFreeformBase TextPreviewer = null;
+
         public static int GridSplitterThickness { get; } = 7;
 
         public SettingsView GetSettingsView => xSettingsView;
@@ -91,8 +106,6 @@ namespace Dash
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
-            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = false;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
 
             SetUpToolTips();
@@ -130,8 +143,29 @@ namespace Dash
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
+         
+
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
+
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
+            Window.Current.SetTitleBar(trickyTitleBar);
+        }
+        public DocumentController MiscellaneousFolder
+        {
+            get
+            {
+                var folders = MainDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                var misc = folders.Where((doc) => doc.Title == "Miscellaneous").FirstOrDefault();
+                if (misc == null)
+                {
+                    misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
+                    misc.SetTitle("Miscellaneous");
+                    MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
+                   // folders.Add(misc);
+                }
+                return misc;
+            }
         }
 
         public void Query(string search)
@@ -170,14 +204,6 @@ namespace Dash
             }
             FieldControllerBase.MakeRoot(MainDocument);
 
-            var l = new ListController<TextController>();
-            for (int i = 0; i < 2000; i++)
-            {
-                l.Add(new TextController());
-            }
-
-            MainDocument.SetField(KeyController.Get("some string it doesnt matter"), l, true);
-
             LoadSettings();
 
             //get current presentations if any and set data context of pres view to pres view model
@@ -203,6 +229,15 @@ namespace Dash
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
             //xMainTreeView.ToggleDarkMode(true);
+
+            var toolbar = MainDocument.GetField<DocumentController>(KeyStore.ToolbarKey);
+            if (toolbar == null)
+            {
+                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
+            }
+
+            //MenuToolbar.Instance.SetCollection(toolbar);
 
             SetupMapView(lastWorkspace);
 
@@ -230,6 +265,8 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
+
+            EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -300,7 +337,6 @@ namespace Dash
             if (this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
-                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
 
@@ -330,19 +366,6 @@ namespace Dash
                 }
             }
 
-            //deactivate all docs if esc was pressed
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    LinkActivationManager.DeactivateAll();
-                }
-
-            }
-
-            
-       
-
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {
@@ -356,8 +379,10 @@ namespace Dash
 
         public void CollapseSearch()
         {
-            xSearchBoxGrid.Visibility = Visibility.Collapsed;
-            xShowHideSearchIcon.Text = "\uE721"; //magnifying glass in segoe
+            if (FocusManager.GetFocusedElement() != xSearchButton)
+            {
+                xSearchBoxGrid.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -402,20 +427,18 @@ namespace Dash
             xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        private void xSearchButton_Clicked (object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
                 xFadeAnimationOut.Begin();
                 xSearchBoxGrid.Visibility = Visibility.Collapsed;
-                xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 xSearchBoxGrid.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
-                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
@@ -475,7 +498,7 @@ namespace Dash
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
         }
 
-        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
         }
@@ -522,7 +545,6 @@ namespace Dash
                 else
                 {
                     xUtilTabColumn.MinWidth = 300;
-                    xPresentationView.xTransportControls.Height = 60;
                     xPresentationView.SimulateAnimation(true);
                 }
 
@@ -542,11 +564,10 @@ namespace Dash
                 else
                 {
                     xUtilTabColumn.MinWidth = 0;
-                    xPresentationView.xTransportControls.Height = 0;
                     xPresentationView.SimulateAnimation(false);
                 }
 
-                PresentationView presView = Instance.xPresentationView;
+                PresentationView presView = xPresentationView;
                 presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
                 presView.RemoveLines();
             }
@@ -587,7 +608,6 @@ namespace Dash
 
             return mode;
         }
-
         public async Task<DocumentController> GetVideoFile()
         {
             var videoPopup = new ImportVideoPopup();
@@ -801,6 +821,11 @@ namespace Dash
                 return LinkHandledResult.HandledRemainOpen;
             }
 
+            if (linkDoc.GetLinkBehavior().Equals(LinkBehavior.ShowRegion))
+            {
+                AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
+            }
+
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
@@ -809,6 +834,7 @@ namespace Dash
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
+                    //AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
                     //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
                 }
                 else // otherwise, it's a hidden region that we have to show
@@ -922,13 +948,35 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
-
+        
         public async Task<(string, string)> PromptNewTemplate()
         {
             var templatePopup = new NewTemplatePopup();
             SetUpPopup(templatePopup);
 
             var results = await templatePopup.GetFormResults();
+            UnsetPopup();
+
+            return results;
+        }
+        
+	    public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
+	    {
+			// TODO: do the following eventually; for now it will just export everything you have
+		    // var documentList = await GetDocumentsToPublish();
+
+		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+		    allDocuments.Remove(MainDocument.GetDataDocument());
+			
+		    await new Publisher().StartPublication(allDocuments);
+        }
+
+        public async Task<(List<DocumentController>, List<string>)> PromptTravelogue()
+        {
+            var traveloguePopup = new TraveloguePopup();
+            SetUpPopup(traveloguePopup);
+
+            var results = await traveloguePopup.GetFormResults();
             UnsetPopup();
 
             return results;

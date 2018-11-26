@@ -60,18 +60,11 @@ namespace Dash
 
         // == OVERRIDEN FROM PARENT ==
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
             var data = (Model as ImageModel)?.Data;
-            if (searchString == null)
-                return new StringSearchModel(data.AbsoluteUri);
 
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
-            {
-                return new StringSearchModel(data.AbsoluteUri);
-            }
-            return StringSearchModel.False;
+            return matcher.Matches(data.AbsoluteUri);
         }
 
         public override string ToScriptString(DocumentController thisDoc)
@@ -104,7 +97,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return ImageFieldModel.Data.AbsolutePath;
+            return ImageFieldModel.Data.AbsoluteUri;
         }
 
         public override FieldControllerBase Copy()

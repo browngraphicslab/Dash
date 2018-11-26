@@ -90,27 +90,6 @@ namespace Dash
             
             xTagContainer.BorderThickness = new Thickness(0);
             xTagContainer.Padding = new Thickness(4, 0, 4, 6);
-
-            //var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-            //if (_docdecs.SelectedDocs.Count == 1)
-            //{
-            //    foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-            //        foreach (var link in firstDoc.ViewModel.DataDocument.GetLinks(direction == LinkDirection.ToSource ? KeyStore.LinkFromKey : KeyStore.LinkToKey))
-            //        {
-            //            var currtags = link.GetDataDocument().GetLinkTags();
-            //            if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-            //            {
-            //                RemoveTag(link, currtags);
-            //                break;
-            //            }
-
-            //            if ((link.GetLinkTags()?.Count ?? 0) == 0)
-            //            {
-            //                RemoveTag(link, currtags);
-            //                break;
-            //            }
-            //        }
-            //}
         }
 
         public void Select()
@@ -162,6 +141,7 @@ namespace Dash
                 }
             }
 
+
             //var firstDoc = _linkMenu.SelectedDocs.FirstOrDefault();
             //if (_linkMenu.SelectedDocs.Count == 1)
             //{
@@ -174,13 +154,7 @@ namespace Dash
             //            //    break;
             //            //}
 
-            //            if (link.GetDataDocument().GetLinkTag() != null)
-            //            {
-            //                AddTag(link);
-            //                break;
-            //            }
-            //        }
-            //}
+          
         }
 
         private void DeleteButton_PointerEntered(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)

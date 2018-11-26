@@ -47,7 +47,10 @@ namespace Dash
         }
         public override void StartAnnotation(Point p)
         {
-            _selectionStartPoint = p;
+            if (ParentOverlay.TextSelectableElements.Any() && ParentOverlay.PageEndIndices.Any())
+            {
+                _selectionStartPoint = p;
+            }
         }
         public SelectableElement GetClosestElementInDirection(Point p, Point dir)
         {
@@ -95,30 +98,34 @@ namespace Dash
 
         public override void UpdateAnnotation(Point p)
         {
-            if (_selectionStartPoint.HasValue)
+            if (ParentOverlay.TextSelectableElements.Any() && ParentOverlay.PageEndIndices.Any())
             {
-                if (Math.Abs(_selectionStartPoint.Value.X - p.X) < 3 &&
-                    Math.Abs(_selectionStartPoint.Value.Y - p.Y) < 3)
+                if (_selectionStartPoint.HasValue)
                 {
-                    return;
-                }
-                var dir = new Point(p.X - _selectionStartPoint.Value.X, p.Y - _selectionStartPoint.Value.Y);
-                var startEle = GetClosestElementInDirection(_selectionStartPoint.Value, dir);
-                if (startEle == null)
-                {
-                    return;
-                }
+                    if (Math.Abs(_selectionStartPoint.Value.X - p.X) < 3 &&
+                        Math.Abs(_selectionStartPoint.Value.Y - p.Y) < 3)
+                    {
+                        return;
+                    }
 
-                var currentEle = GetClosestElementInDirection(p, new Point(-dir.X, -dir.Y));
-                if (currentEle == null)
-                {
-                    return;
-                }
+                    var dir = new Point(p.X - _selectionStartPoint.Value.X, p.Y - _selectionStartPoint.Value.Y);
+                    var startEle = GetClosestElementInDirection(_selectionStartPoint.Value, dir);
+                    if (startEle == null)
+                    {
+                        return;
+                    }
 
-                ParentOverlay.SelectElements(Math.Min(startEle.Index, currentEle.Index),
-                    Math.Max(startEle.Index, currentEle.Index), _selectionStartPoint ?? new Point(), p);
-                XPos = Math.Min(XPos, startEle.Bounds.X);
-                YPos = Math.Min(YPos, startEle.Bounds.Y);
+                    var currentEle = GetClosestElementInDirection(p, new Point(-dir.X, -dir.Y));
+                    if (currentEle == null)
+                    {
+                        return;
+                    }
+
+                    ParentOverlay.SelectElements(Math.Min(startEle.Index, currentEle.Index),
+                        Math.Max(startEle.Index, currentEle.Index), _selectionStartPoint ?? new Point(), p);
+                    XPos = Math.Min(XPos, startEle.Bounds.X);
+                    YPos = Math.Min(YPos, startEle.Bounds.Y);
+                }
             }
         }
 
@@ -139,7 +146,7 @@ namespace Dash
             }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
 
-            if (ParentOverlay.TextSelectableElements != null && indexList.Any() && _selectionViewModel != null)
+            if (ParentOverlay.TextSelectableElements?.Count() > 0 && indexList.Any() && _selectionViewModel != null)
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -189,7 +196,9 @@ namespace Dash
                     {
                         region.AddToListField(KeyStore.SelectionIndicesListKey,
                             new PointController(prevStartIndex, prevUsedIndex));
-                        prevStartIndex = i;
+						region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey,
+							new PointController(prevStartIndex, prevUsedIndex));
+						prevStartIndex = i;
                     }
 
                     prevUsedIndex = i;
@@ -204,7 +213,10 @@ namespace Dash
             }
 
             if (ClipRect == Rect.Empty)
-                region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
+			{
+				region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
+				region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
+			}
 
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(0, YPos));
             

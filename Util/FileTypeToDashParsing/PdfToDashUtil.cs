@@ -10,12 +10,15 @@ using Windows.Storage.Streams;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.ApplicationModel.DataTransfer;
+using MyToolkit.Resources;
 using Dash.Controllers;
 
 namespace Dash
 {
+
     public class PdfToDashUtil : IFileParser
     {
+	    public static DocumentType PdfType = new DocumentType("150FD51D-E421-44ED-A3C8-AB9A932B2C7C", "Pdf Note");
 
         public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
@@ -30,7 +33,7 @@ namespace Dash
             var uniqueFilePath = Guid.NewGuid() + ".pdf";
             var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
             await uri.GetHttpStreamToStorageFileAsync(localFile);
-            return GetPDFDoc(localFile);
+            return GetPDFDoc(localFile, uri.LocalPath.Trim('/'));
         }
 
         public DocumentController GetPDFDoc(StorageFile file, string title = null)
@@ -45,7 +48,7 @@ namespace Dash
                 [KeyStore.DateCreatedKey] = new DateTimeController(),
                 [KeyStore.AuthorKey] = new TextController(MainPage.Instance.GetSettingsView.UserName)
             };
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
+            var dataDoc = new DocumentController(fields, PdfType);
 
 //#pragma warning disable 4014
 //            Task.Run(async () =>
@@ -55,8 +58,10 @@ namespace Dash
 //            });
 
             // return a new pdf box
-            DocumentController layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
+            var layout =  new PdfBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey)).Document;
             layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
+            var docContextReference = new DocumentReferenceController(layout, KeyStore.DocumentContextKey);
+            layout.SetField(KeyStore.TitleKey, new PointerReferenceController(docContextReference, KeyStore.TitleKey), true);
             return layout;
         }
 

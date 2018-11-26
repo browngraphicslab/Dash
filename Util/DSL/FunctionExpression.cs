@@ -77,11 +77,11 @@ namespace Dash
             catch (Exception e)
             {
                 if (e.Message.Contains("Invalid group name:")) throw new ScriptExecutionException(new TextErrorModel($"Invalid Regex group name encountered: {e.Message.Substring(e.Message.IndexOf("Invalid group name:") + 20).ToLower()}"));
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(e, opName));
             }
         }
 
-        //TDDO This should be fixed
+        //TODO This should be fixed
         public Op.Name GetOperatorName() => Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? "");
 
 

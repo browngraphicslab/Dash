@@ -79,7 +79,7 @@ namespace Dash
             _lastDataContext = DataContext;
 
             // get the operator field model controller form the data context
-            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<ListController<OperatorController>>(null).TypedData[0];
+            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<ListController<OperatorController>>(null)[0];
 
             // bind the input and output lists (the things we link to)
             var inputsBinding = new Binding

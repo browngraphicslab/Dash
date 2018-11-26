@@ -124,8 +124,6 @@ namespace Dash
             var doc = GetDocumentController(refValue.Item1);
             var copyOnWrite = (doc.GetField(FieldKey) is DocumentReferenceController dref3) ? (dref3.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite: false;
             var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
-            if (refValue.Item2 is string s)
-                return doc.ParseDocField(FieldKey, s, field, copyOnWrite || field?.ReadOnly == true);
             if (refValue.Item2 is RichTextModel.RTD rtd)
             {
                 doc.SetField<RichTextController>(FieldKey, rtd, true);
@@ -141,7 +139,7 @@ namespace Dash
         /// </summary>
         /// <param name="searchString"></param>
         /// <returns></returns>
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
             return StringSearchModel.False;
         }

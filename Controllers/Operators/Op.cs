@@ -206,7 +206,21 @@ namespace Dash
             sin,
             cos,
             tan,
-            for_in
+            for_in,
+            rand,
+            rand_i,
+            remove,
+            instance,
+            view_copy,
+            active_document,
+            split_horizontal,
+            split_vertical,
+            close_split,
+            frame_history_back,
+            frame_history_forward,
+            undo,
+            redo,
+            alias_of
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

@@ -129,7 +129,7 @@ namespace Dash
         {
             //List of Document Controller - one document controller for each collection
             //so a data file is made for each element in this list
-            var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
+            var collectionDataDocs = ViewModel.CollectionController.Select(dc => dc.GetDataDocument());
 
             ExportToTxt newExport = new ExportToTxt();
 
