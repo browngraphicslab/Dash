@@ -39,7 +39,7 @@ namespace Dash
                 if (_templateDocument != null)
                 {
                     templateButton.Content = "Remove  Template";
-                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { IsDimensionless = true };
+                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { Undecorated = true, IsDimensionless = true };
                 }
                 if (ViewModel?.DocumentViewModels.Count > 0)
                 {
@@ -64,7 +64,7 @@ namespace Dash
             if(field == null) { return false; }
 
             XDocDisplay.DataContext =
-                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){IsDimensionless = true};
+                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){ Undecorated = true, IsDimensionless = true};
             return true;
         }
 
