@@ -38,28 +38,31 @@ namespace Dash
         public ListController<DocumentController> TagsSave;
 
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
-        public Dictionary<string, Tag> _tagNameDict;
-        public DocumentController _linkDoc;
+        public Dictionary<string, Tag> TagNameDict;
+        public DocumentViewModel LinkDoc => DataContext as DocumentViewModel;
 
-       
+
         public LinkMenu()
         {
             this.InitializeComponent();
             //Tags = new List<Tag>();
             _recentTags = new Queue<Tag>();
-            _tagNameDict = new Dictionary<string, Tag>();
-            _linkDoc = (DataContext as DocumentController);
-            Loaded += LinkMenu_Loaded;
+            TagNameDict = new Dictionary<string, Tag>();
+            DataContextChanged += LinkMenu_DataContextChanged;
             Unloaded += LinkMenu_Unloaded;
-            
+
 
         }
 
-        private void LinkMenu_Loaded(object sender, RoutedEventArgs e)
+        private void LinkMenu_DataContextChanged(object sender, DataContextChangedEventArgs e)
         {
+            if (LinkDoc == null)
+            {
+                return;
+            }
             xTagContainer.Children.Clear();
             _recentTags.Clear();
-            _tagNameDict.Clear();
+            TagNameDict.Clear();
             var settingsDoc = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
             RecentTagsSave = settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
             TagsSave = settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
@@ -72,9 +75,9 @@ namespace Dash
             {
 
                 var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).ToString(), documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
-                if (!_tagNameDict.ContainsKey(tag.Text))
+                if (!TagNameDict.ContainsKey(tag.Text))
                 {
-                    _tagNameDict.Add(tag.Text, tag);
+                    TagNameDict.Add(tag.Text, tag);
                 }
             }
 
@@ -87,28 +90,43 @@ namespace Dash
             //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
             var binding = new FieldBinding<FieldControllerBase, TextController>
             {
-                Document = _linkDoc.GetDataDocument(),
+                Document = LinkDoc.DataDocument,
                 Key = KeyStore.DataKey,
-                Mode = BindingMode.OneTime,
-                Context = null,
-                GetConverter = FieldConversion.GetFieldtoStringConverter,
-                FallbackValue = "<Something to fill the space>"
+                Mode = BindingMode.TwoWay
             };
-            xDescriptionBox.AddFieldBinding(TextBox.TextProperty, binding);
+            xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
+            String text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey).Data;
+            switch (text)
+            {
+            default:
+                break;
+            case "Follow":
+                xTypeFollow.IsChecked = true;
+                break;
+            case "Annotate":
+                xTypeAnnotation.IsChecked = true;
+                break;
+            case "Dock":
+                xTypeDock.IsChecked = true;
+                break;
+            case "Float":
+                xTypeFloat.IsChecked = true;
+                break;
+            }
         }
 
         private void LinkMenu_Unloaded(object sender, RoutedEventArgs e)
         {
 
             //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            _linkDoc.GetDataDocument().SetField<TextController>(KeyStore.DataKey, xDescriptionBox.Text, true);
+            //LinkDoc.GetDataDocument().SetField<TextController>(KeyStore.DataKey, xDescriptionBox.Text, true);
 
         }
 
         //checks to see if a tag with the same name has already been created. if not, then a new tag is created
         public Tag AddTagIfUnique(string name)
         {
-            if (_tagNameDict.TryGetValue(name, out var tag))
+            if (TagNameDict.TryGetValue(name, out var tag))
             {
                 return tag;
             }
@@ -126,9 +144,9 @@ namespace Dash
             Tag tag = null;
 
             //removes an old tag if one already exists and redoes it
-            if (_tagNameDict.ContainsKey(linkName))
+            if (TagNameDict.ContainsKey(linkName))
             {
-                tag = _tagNameDict[linkName];
+                tag = TagNameDict[linkName];
             }
             else
             {
@@ -136,7 +154,7 @@ namespace Dash
                 tag = new Tag(this, linkName, hexColor);
 
                 //Tags.Add(tag);
-                _tagNameDict.Add(linkName, tag);
+                TagNameDict.Add(linkName, tag);
 
                 //creates a new document controller out of the tag details to save into the database via tagssave
                 var doc = new DocumentController();
@@ -208,17 +226,17 @@ namespace Dash
                 else
                 {
                     //first gather the tags that start with the search input, as they are more relevant than others
-                    foreach (var name in _tagNameDict.Keys)
+                    foreach (var name in TagNameDict.Keys)
                     {
                         if (name.StartsWith(search))
                         {
-                            _tagNameDict.TryGetValue(name, out var tag);
+                            TagNameDict.TryGetValue(name, out var tag);
                             results.Add(tag);
                         }
                     }
                     var temp = new List<Tag>();
                     //then gather the tags that contain the search input anywhere, and add them to the results if they have not already been added
-                    foreach (var name in _tagNameDict.Keys)
+                    foreach (var name in TagNameDict.Keys)
                     {
                         if (name.Contains(search))
                         {
@@ -232,7 +250,7 @@ namespace Dash
                             }
                             if (unique)
                             {
-                                _tagNameDict.TryGetValue(name, out var tag);
+                                TagNameDict.TryGetValue(name, out var tag);
                                 results.Add(tag);
                             }
                         }
@@ -253,33 +271,33 @@ namespace Dash
         {
             //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
             //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            if (sender == xTypeZoom)
+            if (sender == xTypeFollow)
             {
-                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
+                LinkDoc.DataDocument.SetLinkBehavior(LinkBehavior.Follow);
             }
 
             if (sender == xTypeAnnotation)
             {
-                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
+                LinkDoc.DataDocument.SetLinkBehavior(LinkBehavior.Annotate);
             }
 
             if (sender == xTypeDock)
             {
-                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
+                LinkDoc.DataDocument.SetLinkBehavior(LinkBehavior.Dock);
             }
 
             if (sender == xTypeFloat)
             {
-                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
+                LinkDoc.DataDocument.SetLinkBehavior(LinkBehavior.Float);
             }
         }
 
-        private void XInContext_OnToggled(object sender, RoutedEventArgs e)
-        {
-            //var toggled = (sender as ToggleSwitch)?.IsOn;
-            //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
-            //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            //linkDoc.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
-        }
+        //private void XInContext_OnToggled(object sender, RoutedEventArgs e)
+        //{
+        //    //var toggled = (sender as ToggleSwitch)?.IsOn;
+        //    //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
+        //    //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+        //    //linkDoc.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
+        //}
     }
 }

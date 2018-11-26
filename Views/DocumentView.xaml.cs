@@ -963,10 +963,14 @@ namespace Dash
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
-                    MainPage.Instance.AddFloatingDoc(linkDoc);
+                    //MainPage.Instance.AddFloatingDoc(linkDoc);
+                
+
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
+                MainPage.Instance.XDocumentDecorations.SetPositionAndSize(true);
+                MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType);
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
                     : e.DataView.RequestedOperation;

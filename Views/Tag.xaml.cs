@@ -95,7 +95,7 @@ namespace Dash
         public void Select()
         {
 
-            foreach (var tag in _linkMenu._tagNameDict)
+            foreach (var tag in _linkMenu.TagNameDict)
             {
                 tag.Value.Deselect();
             }
@@ -201,7 +201,7 @@ namespace Dash
                     {
                         temp.Add(currtag);
                     }
-                    _linkMenu._tagNameDict.Remove(currtag.Text);
+                    _linkMenu.TagNameDict.Remove(currtag.Text);
                     
 
 
@@ -212,7 +212,7 @@ namespace Dash
                 foreach (var tag in temp)
                 {
                     _linkMenu.RecentTags.Enqueue(tag);
-                    _linkMenu._tagNameDict.Add(tag.Text, tag);
+                    _linkMenu.TagNameDict.Add(tag.Text, tag);
                   
                 }
 
@@ -230,7 +230,7 @@ namespace Dash
 
         private void DeleteTag()
         {
-            if (_linkMenu._tagNameDict.Count > 1 && _linkMenu._tagNameDict.ContainsKey(Text))
+            if (_linkMenu.TagNameDict.Count > 1 && _linkMenu.TagNameDict.ContainsKey(Text))
             {
                 if (!this.Text.Equals("Annotation"))
                 {
@@ -243,7 +243,7 @@ namespace Dash
                     //    _docdecs.TagMap["Annotation"] = oldlinks;
                     //}
 
-                    _linkMenu._tagNameDict.Remove(Text);
+                    _linkMenu.TagNameDict.Remove(Text);
                     _linkMenu.XTagContainer.Children.Remove(this as UIElement);
                     DocumentController tempTag = new DocumentController();
                     DocumentController tempRecent = new DocumentController();

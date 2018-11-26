@@ -21,7 +21,7 @@
                 <ComboBox x:Name="xLinkList" PlaceholderText="Select a link"  FontSize="14" Width="350" Margin="2 0 2 10" Background="White" SelectionChanged="XLinkList_OnSelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBox x:Name="xTextBox" Loaded="TextBoxLoaded" BorderBrush="Transparent" Background="Transparent" IsEnabled="False" />
+                            <TextBox x:Name="xTextBox" Loaded="TextBoxLoaded" BorderBrush="Transparent" Background="Transparent" IsEnabled="False" Margin="-5"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                     <x:String>Green</x:String>

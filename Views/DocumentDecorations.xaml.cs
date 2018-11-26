@@ -31,6 +31,8 @@ namespace Dash
         private Visibility _visibilityState;
         private List<DocumentView> _selectedDocs;
 
+        public List<LinkButton> LinkButtons = new List<LinkButton>();
+
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
         public ObservableDictionary<string, Tag> _tagNameDict = new ObservableDictionary<string, Tag>();
         //TagMap is used to keep track of the different activated tags displayed underneath the link button. it contains a list of names of tags paired with a list of all of the links tagged with that specific tag.
@@ -400,11 +402,32 @@ namespace Dash
                 Placement = PlacementMode.Right
             };
 
-            var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
-            xButtonsPanel.Children.Add(button);
+            if (SelectedDocs.Count != 0)
+            {
+                var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
+                xButtonsPanel.Children.Add(button);
+                LinkButtons.Add(button);
 
-            //adds tooltip with link tag name inside
-            ToolTipService.SetToolTip(button, toolTip);
+                //adds tooltip with link tag name inside
+                ToolTipService.SetToolTip(button, toolTip);
+            }
+            
+        }
+
+        public void OpenNewLinkMenu(String text)
+        {
+
+            if (text == null)
+            {
+                text = "Annotation";
+            }
+            foreach (var lb in LinkButtons)
+            {
+                if (lb.Text.Equals(text))
+                {
+                    lb.OpenFlyout(lb);
+                }
+            }
         }
 
 
@@ -1270,5 +1293,7 @@ namespace Dash
         {
             e.AcceptedOperation = e.DataView.AvailableFormats.Contains(StandardDataFormats.Text) ? DataPackageOperation.Copy : DataPackageOperation.None;
         }
+
+        
     }
 }

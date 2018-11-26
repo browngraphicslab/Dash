@@ -24,9 +24,9 @@
                 <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0" Margin="0 15 5 0"/>
             </Grid>
 
-            <TextBox x:Name="xDescriptionBox" BorderThickness="2" BorderBrush="Gray"  Margin="10" Height="80" Text="Enter description..." FontSize="16">
+            <local:RichEditView x:Name="xDescriptionBox" BorderThickness="2" BorderBrush="Gray"  Margin="10" Height="80" FontSize="16">
 
-            </TextBox>
+            </local:RichEditView>
             <!--TAGS-->
             <Grid Margin="3 5 5 5" x:Name="xTagsDivider">
                 <Grid.ColumnDefinitions>
@@ -71,14 +71,14 @@
            
 
             <StackPanel x:Name="xLinkTypeBox" Orientation="Horizontal"  HorizontalAlignment="Center" Margin="0, 10, 0, 10">
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="10 0 5 0"  FontSize="14" x:Name="xTypeZoom">Zoom</RadioButton>
                 <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeAnnotation">Annotation</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="10 0 5 0"  FontSize="14" x:Name="xTypeFollow">Follow</RadioButton>
                 <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeDock">Dock</RadioButton>
                 <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 10 0" FontSize="14" x:Name="xTypeFloat">Float</RadioButton>
             </StackPanel>
 
 
-            <!--CONTEXT-->
+            <!--CONTEXT--><!--
             <StackPanel Orientation="Vertical" x:Name="xInContextGrid" Margin="0,-10,0,0" >
                 <Grid Margin="3 5 5 5" x:Name="xContextDivider">
                     <Grid.ColumnDefinitions>
@@ -89,7 +89,7 @@
                     <Grid Grid.Column="1" BorderBrush="{StaticResource DashDarkBlueBrush}" BorderThickness="0 1.5 0 0" Margin="0 15 5 0"/>
                 </Grid>
                 <ToggleSwitch x:Name="xInContext"  HorizontalAlignment="Center" IsOn="True" Margin="30,0,0,0" Toggled="XInContext_OnToggled"></ToggleSwitch>
-            </StackPanel>
+            </StackPanel>-->
 
             <Grid >
                 <StackPanel Orientation="Horizontal">

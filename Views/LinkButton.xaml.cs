@@ -32,7 +32,6 @@ namespace Dash
         private DocumentDecorations _docdecs;
         private ToolTip _tooltip;
         private DocumentView _documentView;
-        private DocumentController _currLinkDoc;
         private List<DocumentController> _allKeys;
 
         public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, DocumentView documentView)
@@ -46,11 +45,11 @@ namespace Dash
             xEllipse.Fill = new SolidColorBrush(_color);
             xLinkType.Text = text.Substring(0, 1);
 
-            var toKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
-            var fromKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+            var toKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey)?.ToList() ?? new List<DocumentController>();
+            var fromKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey) ?? (IEnumerable<DocumentController>)new List<DocumentController>();
             toKeys.AddRange(fromKeys);
             xLinkList.ItemsSource = toKeys;
-            _currLinkDoc = toKeys.First();
+            xLinkMenu.DataContext = new DocumentViewModel(toKeys.First());
             _allKeys = toKeys;
         }
 
@@ -87,17 +86,11 @@ namespace Dash
             }
         }
 
-        private void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        public void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
 
-            _tooltip.IsOpen = false;
-            //LinkMenu linkMenu = new LinkMenu(_currLinkDoc); //datacontext was originally _documentview
-            xLinkMenu.DataContext = _currLinkDoc;
-            //xStackPanel.Children.Add(linkMenu);
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-
+            OpenFlyout(sender as FrameworkElement);
             e.Handled = true;
-            _docdecs.CurrentLinks = _docdecs.TagMap[_text];
 
             //_docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
             //if (_docdecs.CurrentLinks.Count == 1)
@@ -112,6 +105,14 @@ namespace Dash
             //            actualchild.Deselect();
             //        }
             //    }
+        }
+
+        public void OpenFlyout(FrameworkElement fwe)
+        {
+            _tooltip.IsOpen = false;
+            FlyoutBase.ShowAttachedFlyout(fwe);
+
+            _docdecs.CurrentLinks = _docdecs.TagMap[_text];
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
@@ -144,7 +145,7 @@ namespace Dash
         private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int index = xLinkList.SelectedIndex;
-            _currLinkDoc = _allKeys.ElementAt(index);
+            xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
         }
     }
 }
