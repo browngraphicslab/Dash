@@ -18,7 +18,7 @@
         <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center"  Stretch="Fill" CacheMode="BitmapCache" />
         <Viewbox Stretch="Fill" x:Name="AnnotationViewbox">
             <Grid x:Name="XAnnotationGridWithEmbeddings" CompositeMode="SourceOver">
-                <Grid x:Name="XAnnotationGrid" CompositeMode="MinBlend"/>
+                <Grid x:Name="XAnnotationGrid" CompositeMode="SourceOver"/>
             </Grid>
         </Viewbox>
         <!--<StackPanel x:Name="xLinkStack" Visibility="Collapsed"/>-->

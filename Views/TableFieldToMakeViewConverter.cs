@@ -141,6 +141,7 @@ namespace Dash
                         Mode = BindingMode.OneWay,
                         Document = dc,
                         Key = KeyStore.TitleKey,
+                        CanBeNull = true
                     });
                     Stack.Children.Add(tb);
                 }

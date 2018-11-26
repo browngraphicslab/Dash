@@ -168,8 +168,8 @@ namespace Dash
                     !CurrentAnchorableAnnotations.OfType<RegionAnnotation>().Any(i => i?.Width < 10 && i?.Height < 10))
                 {
                     var rtb = new RenderTargetBitmap();
-                    var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
-                    await rtb.RenderAsync(pdfview, (int)pdfview.ActualWidth, (int)pdfview.ActualHeight);
+                    var containingDocumentView = this.GetFirstAncestorOfType<DocumentView>();
+                    await rtb.RenderAsync(containingDocumentView, (int)containingDocumentView.ActualWidth, (int)containingDocumentView.ActualHeight);
 
                     var buf = (await rtb.GetPixelsAsync()).ToArray();
                     var bitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
