@@ -55,11 +55,9 @@ namespace Dash
 
         public override FieldControllerBase Copy() => new BoolController(Data);
 
-        public override StringSearchModel SearchForString(string searchString, Search.SearchOptions options)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            return options.Matches(Data.ToString().ToLower());
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
+            return matcher.Matches(Data.ToString().ToLower());
         }
 
         public override string ToScriptString(DocumentController thisDoc)
