@@ -54,8 +54,19 @@ namespace Dash
             };
 
             xOuterGrid.PointerPressed += OnPointerPressed;
-            var color = xOuterGrid.Background;
         }
+
+        private async void Clipboard_ContentChanged(object sender, object e)
+        {
+            if (ViewModel.ContainerDocument.Title.Contains("clipboard"))
+            {
+                var cpb = Clipboard.GetContent();
+                Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                await ViewModel.Paste(cpb, new Point());
+                Clipboard.ContentChanged += Clipboard_ContentChanged;
+            }
+        }
+
         ~CollectionView()
         {
             //Debug.WriteLine("Finalizing CollectionView");
@@ -124,6 +135,7 @@ namespace Dash
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"CollectionView {id} unloaded {--count}");
+            Clipboard.ContentChanged -= Clipboard_ContentChanged;
         }
     
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
@@ -136,6 +148,7 @@ namespace Dash
             //ParentDocumentView.DocumentDeselected += ParentDocumentView_DocumentDeselected;
 
             //Debug.WriteLine($"CollectionView {id} loaded : {++count}");
+            Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
 
         private void ParentDocumentView_DocumentDeselected(DocumentView obj)

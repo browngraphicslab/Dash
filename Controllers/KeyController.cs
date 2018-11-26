@@ -61,12 +61,15 @@ namespace Dash
         /// <param name="guid"></param>
         private KeyController(string name, Guid guid) : base(new KeyModel(name, guid.ToString()))
         {
+            HashCode = Id.GetHashCode();
         }
 
         public KeyController(KeyModel model) : base(model)
         {
             Debug.Assert(!_nameDictionary.ContainsKey(model.Name));
             _nameDictionary[model.Name] = this;
+
+            HashCode = Id.GetHashCode();
         }
 
         public override string ToString()
@@ -80,11 +83,10 @@ namespace Dash
             return k != null && k.Id.Equals(Id);
         }
 
+        private int HashCode { get; } 
         public override int GetHashCode()
         {
-
-            return Id.GetHashCode();
-
+            return HashCode;
         }
 
         public override FieldControllerBase Copy()
@@ -118,11 +120,9 @@ namespace Dash
             return Name;
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            return searchString == null || (Name.ToLower().Contains(searchString.ToLower()) ||
-               reg.IsMatch(Name)) ? new StringSearchModel(Name) : StringSearchModel.False;
+            return matcher.Matches(Name);
         }
 
         public override string ToScriptString(DocumentController thisDoc)

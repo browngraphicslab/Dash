@@ -26,6 +26,62 @@ namespace Dash
             InitializeComponent();
             Loaded += WebBoxView_Loaded;
             Unloaded += WebBoxView_Unloaded;
+
+            var text = document.GetDataDocument().GetField<DateTimeController>(KeyStore.DateCreatedKey).Data
+                           .ToString("g") + " | Navigated to " + document.GetDataDocument()
+                           .GetDereferencedField<HtmlController>(KeyStore.DataKey, null);
+
+            if (EventManager.HasEvent(text))
+            {
+                return;
+            }
+
+            var eventDoc = new RichTextNote(text).Document;
+            var tags = "website, ";
+            var splitBySlash = (document.GetDataDocument().GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?
+                                    .Data
+                                ?? document.Title).Split("/", StringSplitOptions.RemoveEmptyEntries);
+            if (splitBySlash.Length >= 2)
+            {
+                tags += splitBySlash[1];
+            }
+
+            eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
+
+            Loaded += ContainerHandler;
+
+            void ContainerHandler(object sender, RoutedEventArgs args)
+            {
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                Loaded -= ContainerHandler;
+            }
+
+            var copy = document.GetCopy();
+            copy.SetHeight(150);
+            copy.SetWidth(500);
+            eventDoc.SetField(KeyStore.EventDisplay1Key, copy, true);
+            var displayXaml =
+                @"<Grid
+                    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                    xmlns:dash=""using:Dash""
+                    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height=""Auto""></RowDefinition>
+                        <RowDefinition Height=""*""></RowDefinition>
+                        <RowDefinition Height=""*""></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                        <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                    </Border>
+                    <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
+                        <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
+                            Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
+                            VerticalAlignment=""Top"" />
+                    </StackPanel>
+                    </Grid>";
+            EventManager.EventOccured(eventDoc, displayXaml);
         }
 
         private void WebBoxView_Unloaded(object sender, RoutedEventArgs e)
@@ -49,8 +105,8 @@ namespace Dash
             if (args.SelectedViews.Contains(docView) && SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
             {
                 Unfreeze();
-            } 
-            else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) || 
+            }
+            else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) ||
                 (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
             {
                 Freeze();
@@ -63,7 +119,7 @@ namespace Dash
             b.SourceName = "_xWebView";
             b.Redraw();
             xWebViewRectangleBrush.Fill = b;
-            
+
             xWebViewRectangleBrush.Visibility = Visibility.Visible;
             _xWebView.Visibility = Visibility.Collapsed;
             if (xTextBlock != null)
@@ -101,7 +157,7 @@ namespace Dash
                 htmlAddress = html;
                 // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
                 _xWebView.Navigate(new Uri(html));
-            } 
+            }
             else
             {
                 var correctedHtml = html;
@@ -112,7 +168,7 @@ namespace Dash
                     correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
                     correctedHtml = modHtml.Replace("<HTML>", "<HTML><head><style>img {height: auto !important;}</style></head>");
                     correctedHtml = correctedHtml.Replace(" //", " http://").Replace("\"//", "\"http://");
-                } 
+                }
                 _xWebView.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
             };
 
@@ -161,7 +217,7 @@ namespace Dash
             parent.ViewModel.LayoutDocument.SetWidth(x);
             parent.ViewModel.LayoutDocument.SetHeight(y);
             web.UpdateLayout();
-            
+
             //parent.ViewModel?.LayoutDocument.SetWidth(x);
             //parent.ViewModel?.LayoutDocument.SetHeight(y);
 
@@ -224,10 +280,11 @@ namespace Dash
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
-            if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1) {
+            if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1)
+            {
                 webBoxView?.Freeze();
             }
         }
-        
+
     }
 }

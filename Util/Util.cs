@@ -47,7 +47,7 @@ namespace Dash
             dropShadow.BlurRadius = 15.0f;
             dropShadow.Offset = new Vector3(0f, 0f, 0f);
             // Associate the shape of the shadow with the shape of the target element
-            dropShadow.Mask = shadowTarget.GetAlphaMask();
+            //dropShadow.Mask = shadowTarget.GetAlphaMask();
 
             // Create a Visual to hold the shadow
             var shadowVisual = compositor.CreateSpriteVisual();

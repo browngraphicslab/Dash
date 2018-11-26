@@ -24,5 +24,10 @@ namespace Dash
                 }, DocumentType.DefaultType));
             return result.ToListController();
         }
+
+        public static DocumentController ActiveDocument()
+        {
+            return SplitFrame.ActiveFrame.DocumentController;
+        }
     }
 }

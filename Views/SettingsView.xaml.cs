@@ -541,18 +541,6 @@ namespace Dash
         #endregion
 
 
-        private bool _usePdfTextSelection = false;
-        public bool UsePdfTextSelection
-        {
-            get => _usePdfTextSelection;
-            set
-            {
-                if (value == _usePdfTextSelection) return;
-                _usePdfTextSelection = value;
-                OnPropertyChanged();
-            }
-        }
-
         private bool _useInkCanvas = false;
         public bool UseInkCanvas
         {

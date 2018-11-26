@@ -46,6 +46,38 @@
             </Storyboard>
         </Grid.Resources>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
+        <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
+            <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="0"  />
+                </ToolTipService.ToolTip>
+            </Grid>
+            <Grid x:Name="xScrollForward" PointerPressed="XScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
+        </StackPanel>
+        <StackPanel x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
+            <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
+        </StackPanel>
 
         <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
                 <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
@@ -153,6 +185,11 @@
                     <ComboBoxItem x:Name="xTypeAnnotation">Annotation</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeDock">Dock</ComboBoxItem>
                     <ComboBoxItem x:Name="xTypeFloat">Float</ComboBoxItem>
+                </ComboBox>
+                <TextBlock>Link To:</TextBlock>
+                <ComboBox x:Name="xLinkToBox" SelectionChanged="XLinkToBox_OnSelectionChanged" HorizontalAlignment="Center" Margin="0,0,0,10" DropDownOpened="XLinkToBox_OnDropDownOpened">
+                    <ComboBoxItem x:Name="xToRegion">Region</ComboBoxItem>
+                    <ComboBoxItem x:Name="xToDocument">Document</ComboBoxItem>
                 </ComboBox>
 
 

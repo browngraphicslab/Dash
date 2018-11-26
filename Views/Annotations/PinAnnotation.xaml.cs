@@ -20,6 +20,7 @@ namespace Dash
 
             AnnotationType = AnnotationType.Pin;
 
+
             InitializeAnnotationObject(xShape, null, PlacementMode.Top);
 
             PointerPressed += (s, e) => e.Handled = true;

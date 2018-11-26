@@ -107,9 +107,12 @@ namespace Dash
             }
         }
 
-        protected virtual void InitializeAnnotationObject(Shape shape, Point? pos, PlacementMode mode)
+        protected virtual void InitializeAnnotationObject(FrameworkElement shape, Point? pos, PlacementMode mode)
         {
-            shape.SetBinding(Shape.FillProperty, ViewModel.GetFillBinding());
+            if (shape is Shape)
+            {
+                shape.SetBinding(Shape.FillProperty, ViewModel.GetFillBinding());
+            }
             shape.Tapped += (sender, args) =>
             {
                 if (this.IsCtrlPressed() && this.IsAltPressed())

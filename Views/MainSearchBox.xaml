@@ -10,11 +10,7 @@
     d:DesignWidth="400"
     >
 
-
-   
-    
-
-    <Grid>
+    <Grid HorizontalAlignment="Stretch" Margin="-50,0,0,0" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
@@ -23,19 +19,21 @@
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" Margin="-35, 0, 0, 0" CanDrag="True">
+        <Border x:Name="xCollectionDragBorder" Grid.Column="0" Grid.Row="0" Background="Transparent" DragStarting="XCollDragIcon_OnDragStarting" CanDrag="True">
             <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
                        FontSize="{StaticResource DefaultFontSize}" 
                        Text="{StaticResource CollectionIcon}" 
-                       HorizontalAlignment="Stretch"
+                       HorizontalAlignment="Center"
                        VerticalAlignment="Center"
             />
         </Border>
-        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped" Width="35">
-            <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" Margin="4 1 0 0">
+        <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped"  HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="1" Width="40" >
+            <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" HorizontalAlignment="Center">
                 
             </TextBlock>
 
@@ -60,7 +58,7 @@
                     Drop="XAutoSuggestBox_OnDrop"
                     Grid.Column="2"
                     Grid.Row="0"
-                    AllowDrop="True">
+                    AllowDrop="True" >
             <AutoSuggestBox.ItemTemplate>
 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
@@ -69,26 +67,41 @@
                         PointerExited="Grid_PointerExited" 
                         CanDrag="True" 
                         DragStarting="SearchResult_OnDragStarting"
-                        Tapped="UIElement_OnTapped">
+                        Tapped="UIElement_OnTapped"
+                        BorderThickness ="{Binding BorderThickness}"
+                        BorderBrush ="Red"
+                        >
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="32"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="220"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock 
-                            x:Name="xCollDragIcon"
+                        <TextBlock
+                            x:Name="xDropDown"
                             Grid.Column="0"
+                            Text ="{Binding DropDownText}"
+                            FontSize ="15"
+                            Foreground="Black"
+                            Width ="15"
+                            Height="30"
+                            HorizontalAlignment="Center"
+                            Visibility="{Binding DropDownVisibility}"
+                            Tapped ="XDropDown_OnPointerPressed"/>
+                        <TextBlock 
+                            x:Name="xCollIcon"
+                            Grid.Column="1"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
                             FontSize="15"
-                            Text="{StaticResource DocumentIcon}"
+                            Text="{Binding DocIcon}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             Height="32"
                             Width="32"
-                            Margin="3, 15, 0, 0"
+                            Margin="0, 25, 0, 0"
                             PointerWheelChanged="DocIcon_OnPointerWheelChanged"/>
                         <TextBlock x:Name="xNumFields"
-                            Grid.Column="0"
+                            Grid.Column="1"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
                             FontSize="10"
@@ -99,7 +112,7 @@
                             Width="35"
                             Margin="20, 32, 0, 0"/>
                         <TextBlock x:Name="xFieldNum"
-                            Grid.Column="0"
+                            Grid.Column="1"
                             FontFamily="{StaticResource FontAwesome}"
                             Foreground="{StaticResource TitleText}"
                             FontSize="10"
@@ -109,7 +122,16 @@
                             Height="32"
                             Width="35"
                             Margin="20, 11, 0, 0"/>
-                        <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="1">
+                        <TextBlock x:Name="xCopyCount"
+                            Grid.Column = "1"
+                            Foreground ="Red"
+                            FontSize = "10"
+                            Text ="{Binding Copies}"
+                            Height ="32"
+                            Width ="35"
+                            Margin ="5,0,0,0"
+                        />
+                        <StackPanel Orientation="Vertical" Margin="6, 9, 0, 0" Grid.Column="2">
                             <TextBlock Text="{Binding CurrentTitle}" FontWeight="Medium"></TextBlock>
                             <TextBlock Text="{Binding CurrentContext}"></TextBlock>
                         </StackPanel>
@@ -118,15 +140,15 @@
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
 
-        <Grid x:Name="xSearchCodeBox" Height="32" Visibility="Collapsed" BorderThickness="2 0 2 2" BorderBrush="Gray" Grid.Column="2" Grid.Row="1">
+        <Grid x:Name="xSearchCodeBox" Height="32" Visibility="Collapsed" BorderThickness="2 0 2 2" BorderBrush="Gray" Grid.Column="2" Grid.Row="1" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="12"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <FontIcon x:Name="xDragScript" Grid.Column="1"
-                          FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
+                      Glyph="&#x03A3;" FontFamily="Candara" FontSize="12" CanDrag="True" DragStarting="XSearchCode_OnDragStarting" Tapped="XDragScript_OnTapped" />
             <TextBox x:Name="xSearchCode" FontSize="14" PlaceholderText="Run on each document" Grid.Column="0" BorderThickness="0" Margin="0 0 0 0"
-                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting" ></TextBox>
+                        CanDrag="True"  KeyUp="XSearchCode_OnKeyUp" DragStarting="XSearchCode_OnDragStarting"/>
 
             <Grid.Resources>
                 <Storyboard x:Name="xFadeAnimationIn">
@@ -145,5 +167,44 @@
                 </Storyboard>
             </Grid.Resources>
         </Grid>
+
+        <Grid x:Name="XOptionsGrid" Grid.Row="1" Grid.Column="0" Visibility ="Collapsed" Grid.ColumnSpan="2" Margin="0 5 0 0 ">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="5"/>
+                <RowDefinition/>
+                <RowDefinition Height="5"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="xFilterButton" ClickMode="Press"  Grid.Row="0" Grid.Column="0" Content="Filter by:" Grid.ColumnSpan="3" Height="25"
+                    Background="{StaticResource DashDarkBlueBrush}" Click="Filter_Tapped" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Stretch" >
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout x:Name="XMenuFlyout" Opening="FlyoutBase_OnOpen">
+                        <MenuFlyoutSubItem Text="Document">
+                            <MenuFlyoutItem x:Name="xImageFilter" Text="Image" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xTextFilter" Text="Text" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xAudioFilter" Text="Audio" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xVideoFilter" Text="Video" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xPDFFilter" Text="PDF" Tapped="Document_OnClick"/>
+                            <MenuFlyoutItem x:Name="xCollectionFilter" Text="Collection" Tapped="Document_OnClick"/>
+                        </MenuFlyoutSubItem>
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+            <Button x:Name="XCaseSensButton" Grid.Column="0" Grid.Row="2" Content="Aa" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Foreground ="White" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XMatchWordButton" Grid.Column="2" Grid.Row="2" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
+            <Button x:Name="XRegexButton" Grid.Column="0" Grid.Row="4" Content=".*" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 5 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" BorderBrush="Transparent" BorderThickness="3 3 3 3" />
+            <Button x:Name="XClearFiltersButton" Grid.Column="2" Grid.Row="4" Content="X" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="Red" Margin="0 5 0 0"  Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
+        </Grid>
+
+        
+        
+        
     </Grid>
 </UserControl>
