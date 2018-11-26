@@ -7,19 +7,36 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Windows.System;
+using Windows.UI;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Dash.Annotations;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using MyToolkit.UI;
+using Telerik.UI.Xaml.Controls.Chart;
 using static Dash.DataTransferTypeInfo;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class MainSearchBox
+    public sealed partial class MainSearchBox 
     {
         private int _selectedIndex = -1;
         private bool _arrowBlock = false;
+
+        private Dictionary<string, string> _filterDictionary;
+        private Dictionary<string, MenuFlyoutItem> _filtertoMenuFlyout;
+        private Dictionary<Button, string> _optiontofilter;
+        private HashSet<string> _options;
+        private HashSet<string> _documentFilters;
+        private HashSet<string> _authorFilters;
+
 
         #region Definition and Initilization
         public const int MaxSearchResultSize = 75;
@@ -29,6 +46,7 @@ namespace Dash
         {
             InitializeComponent();
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
+            InitializeFilters();
 
             _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
             _searchTimer.Tick += SearchTimerOnTick;
@@ -38,6 +56,87 @@ namespace Dash
         {
             ExecuteDishSearch(xAutoSuggestBox);
             _searchTimer.Stop();
+        }
+
+        private void InitializeFilters()
+        {
+            _filterDictionary = new Dictionary<string, string>
+            {
+                ["Image"] = "Image Box",
+                ["Text"] = "Rich Text Box",
+                ["Audio"] = "Audio Box",
+                ["Video"] = "Video Box",
+                ["PDF"] = "Pdf Box",
+                ["Collection"] = "Collection Box"
+            };
+
+            _filtertoMenuFlyout = new Dictionary<string, MenuFlyoutItem>
+            {
+                ["Image"] = xImageFilter,
+                ["Text"] = xTextFilter,
+                ["Audio"] = xAudioFilter,
+                ["Video"] = xVideoFilter,
+                ["PDF"] = xPDFFilter,
+                ["Collection"] = xCollectionFilter
+            };
+
+            _optiontofilter = new Dictionary<Button, string>()
+            {
+                [XCaseSensButton] = "Case sensitive",
+                [XMatchWordButton] = "Match whole word",
+                [XRegexButton] = "Regex"
+            };
+
+
+            _options = new HashSet<string>();
+            _documentFilters = new HashSet<string>();
+            _authorFilters = new HashSet<string>();
+
+            var placementMode = PlacementMode.Bottom;
+
+            var t1 = new ToolTip
+            {
+                Content = "Case sensitive",
+                Placement = placementMode
+            };
+            ToolTipService.SetToolTip(XCaseSensButton,t1);
+            var t2 = new ToolTip
+            {
+                Content = "Match whole word",
+                Placement = placementMode
+            };
+            ToolTipService.SetToolTip(XMatchWordButton,t2);
+            var t3 = new ToolTip
+            {
+                Content = "Use Regex",
+                Placement = placementMode
+            };
+            ToolTipService.SetToolTip(XRegexButton,t3);
+            var t4 = new ToolTip
+            {
+                Content = "Clear all filters",
+                Placement = placementMode
+            };
+            ToolTipService.SetToolTip(XClearFiltersButton,t4);
+
+        }
+
+        private void ShowToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Button button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
+            
+        }
+
+        private void HideToolTip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Button button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
+             
         }
 
         #endregion
@@ -189,7 +288,9 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument);
+            Debug.Write("Dragging a copy into workspace...");
+            var svm = (sender as FrameworkElement)?.DataContext as SearchResultViewModel;
+            var dragModel = new DragDocumentModel(svm?.ViewDocument);
             // get the sender's view docs and set the key for the drag to a static const
             args.Data.SetDragModel(dragModel);
 
@@ -226,6 +327,8 @@ namespace Dash
                 //collapse search bar
                 xFadeAnimationOut.Begin();
                 xSearchCodeBox.Visibility = Visibility.Collapsed;
+                xFilterButton.Visibility = Visibility.Collapsed;
+                XOptionsGrid.Visibility = Visibility.Collapsed;
 
             }
             else
@@ -237,6 +340,8 @@ namespace Dash
                     easingType: EasingType.Default).Start();
                 xSearchCodeBox.Visibility = Visibility.Visible;
                 xFadeAnimationIn.Begin();
+                xFilterButton.Visibility = Visibility.Visible;
+                XOptionsGrid.Visibility = Visibility.Visible;
             }
         }
 
@@ -324,7 +429,7 @@ namespace Dash
         #endregion
 
         #region Search
-        private static void ExecuteDishSearch(AutoSuggestBox searchBox)
+        private void ExecuteDishSearch(AutoSuggestBox searchBox)
         {
             if (searchBox == null) return;
 
@@ -337,9 +442,10 @@ namespace Dash
             itemsSource?.Clear();
 
             IEnumerable<SearchResult> searchRes;
-            try {
+            try
+            {
 
-                searchRes = Search.Parse(text).ToList();
+                searchRes = Search.Parse(text,options:_options).ToList();
             }
             catch (Exception)
             {
@@ -360,8 +466,22 @@ namespace Dash
                     }
                 }
             }
+
+            var map = new Dictionary<DocumentController, List<SearchResult>>();
+            foreach (var searchResult in searchRes)
+            {
+                if (map.TryGetValue(searchResult.DataDocument, out var results))
+                {
+                    results.Add(searchResult);
+                }
+                else
+                {
+                    map[searchResult.DataDocument] = new List<SearchResult>() { searchResult };
+                }
+            }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
             if (string.IsNullOrWhiteSpace(text)) return;
+
             //highlight doc results
             HighlightSearchResults(docs);
             foreach (var doc in docs)
@@ -370,23 +490,77 @@ namespace Dash
             }
 
             var vmGroups = new List<SearchResultViewModel>();
-            foreach (SearchResult res in searchRes)
+
+            Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
+            Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
+            Debug.WriteLine("OPTIONS:"+_options.Count);
+
+            foreach (var resList in map)
             {
+                var res = resList.Value.First();
                 if (res.ViewDocument.DocumentType.Equals(RichTextBox.DocumentType))
                 {
                     res.DataDocument.SetField(CollectionDBView.SelectedKey, Search.SearchTerm.ConvertSearchTerms(res.RtfHighlight), true);
                 }
+
+                var docAuthor = res.DataDocument.GetAuthor();
+                var docType = res.ViewDocument.GetDocType();
+
+                if (_authorFilters.Count > 0)
+                {
+                    if (!_authorFilters.Contains(docAuthor))
+                    {
+                        continue;
+                    }
+                }
+
+                if (_documentFilters.Count > 0)
+                {
+                    var trueDocumentFilters = new HashSet<string>();
+                    foreach (var docFilter in _documentFilters)
+                    {
+                        trueDocumentFilters.Add(_filterDictionary[docFilter]);
+                    }
+                    if (!trueDocumentFilters.Contains(docType))
+                    {
+                        continue;
+                    }
+                }
+
                 SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
-                DocumentController parent = res.Node.Parent?.ViewDocument;
-                if (parent != null) newVm.DocumentCollection = parent;
+
+                // removing copies 
+
+                var numOfCopies = resList.Value.Count;
+                newVm.Copies = numOfCopies;
+                if (numOfCopies > 1)
+                {
+                    newVm.DropDownVisibility = "Visible";
+                    foreach (var sr in resList.Value)
+                    {
+                        newVm.svmCopies.Add(DocumentSearchResultToViewModel(sr));
+                    }
+                }
+
                 vmGroups.Add(newVm);
             }
 
             var first = vmGroups
-                .Where(doc => /*doc?.DocumentCollection != null && */!doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+                .Where(doc => !doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
                 .Take(MaxSearchResultSize).ToArray();
 
-            foreach (SearchResultViewModel searchResultViewModel in first) { itemsSource?.Add(searchResultViewModel); }
+            var docsToHighlight = new List<DocumentController>();
+
+            Debug.WriteLine("First length: "+first.Length);
+
+            foreach (var searchResultViewModel in first)
+            {
+                itemsSource?.Add(searchResultViewModel);
+                docsToHighlight.Add(searchResultViewModel.ViewDocument);
+            }
+
+            HighlightSearchResults(docsToHighlight);
+
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs, bool animate = false)
@@ -412,21 +586,20 @@ namespace Dash
             foreach (var node in DocumentTree.MainPageTree)
             {
                 var a = node.DataDocument;
-                if (a.GetField(CollectionDBView.SelectedKey) != null)
-                {
-                    a.SetField(CollectionDBView.SelectedKey, new ListController<TextController>(new TextController("")), true);
-                }
+                a.RemoveField(CollectionDBView.SelectedKey);
             }
         }
 
         private static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult result)
         {
-            string docTitle = result.ViewDocument.ToString();
+            var view = result.ViewDocument;
+            string docTitle = view.ToString();
             int len = docTitle.Length > 10 ? 10 : docTitle.Length - 1;
             string suffix = len < docTitle.Length - 1 ? "..." : "";
             docTitle = docTitle.Substring(1, len) + suffix;
-            var titles = result.FormattedKeyRef.Select(key => docTitle + key).ToList();
-            return new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, null, true);
+            var titles = result.FormattedKeyRef.Select(key => "Title:" + docTitle + ", Key:" + key).ToList();
+            var svm = new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, result.Node.Parent?.ViewDocument, true);
+            return svm;
         }
 
         #endregion
@@ -435,7 +608,6 @@ namespace Dash
         {
             var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
             bool forward = e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0;
-
             if (forward) viewModel?.NextField();
             else viewModel?.PreviousField();
 
@@ -497,6 +669,224 @@ namespace Dash
                 }
 
                 break;
+            }
+        }
+
+        private void XDropDown_OnPointerPressed(object sender, TappedRoutedEventArgs e)
+        {
+            var viewModel = ((sender as TextBlock)?.DataContext as SearchResultViewModel);
+            var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
+            var index = itemsSource.IndexOf(viewModel);
+            var count = itemsSource.Count;
+            var numCopies = viewModel.Copies;
+            Debug.WriteLine(numCopies);
+            //Debug.WriteLine(index);
+            if (viewModel?.DropDownText == ">")
+            {
+                viewModel.DropDownText = "v";
+                int counter = 0;
+                foreach (var svm in viewModel.svmCopies)
+                {
+                    if (index == count)
+                    {
+                        itemsSource?.Add(svm);
+                    }
+                    else
+                    {
+                        itemsSource.Insert(index + 1, svm);
+                    }
+
+                    if (counter == 0)
+                    {
+                        svm.BorderThickness = "0 0 0 1";
+                    }
+                    if (counter == numCopies - 1)
+                    {
+                        svm.BorderThickness = "0 1 0 0";
+                    }
+
+                    counter++;
+                    //svm.BorderThickness = "0 0 0 1";
+                }
+            }
+            else if (viewModel?.DropDownText == "v")
+            {
+                viewModel.DropDownText = ">";
+                foreach (var svm in viewModel.svmCopies)
+                {
+                    itemsSource?.Remove(svm);
+                }
+            }
+
+            e.Handled = true;
+
+        }
+
+        private void Filter_Tapped(object sender, RoutedEventArgs e)
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+        }
+
+        private void Options_Tapped(object sender, RoutedEventArgs e)
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+        }
+
+        #region Clean Filters
+
+        private void SetFilterText()
+        {
+            int numFilters = _authorFilters.Count + _documentFilters.Count;
+            if (numFilters == 0)
+            {
+                xFilterButton.Content = "Filter by:";
+            }
+            else
+            {
+                xFilterButton.Content = "Filter by: (" + numFilters + ")";
+            }
+
+        }
+
+        private void Document_OnClick(object sender, TappedRoutedEventArgs e)
+        {
+
+            if (sender is MenuFlyoutItem mf)
+            {
+                var document = mf.Text;
+                if (_documentFilters.Contains(document))
+                {
+                    _documentFilters.Remove(document);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                }
+                else
+                {
+                    _documentFilters.Add(document);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
+                }
+                SetFilterText();
+            }
+        }
+        private void Author_OnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            if (sender is MenuFlyoutItem mf)
+            {
+                string author = mf.Text;
+                if (_authorFilters.Contains(author))
+                {
+                    _authorFilters.Remove(author);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Normal;
+                }
+                else
+                {
+                    _authorFilters.Add(author);
+                    mf.FontWeight = Windows.UI.Text.FontWeights.Bold;
+                }
+                SetFilterText();
+            }
+        }
+
+        private MenuFlyoutSubItem _authorItem;
+
+        private void FlyoutBase_OnOpen(object sender, object e)
+        {
+            if (sender is MenuFlyout flyout)
+            {
+                if (_authorItem != null)
+                {
+                    flyout.Items.Remove(_authorItem);
+                }
+                _authorItem = new MenuFlyoutSubItem() { Text = "Author" };
+                var nodes = DocumentTree.MainPageTree;
+                var currentAuthors = new HashSet<string>();
+                // add authors to current authors
+                foreach (var node in nodes)
+                {
+                    if (!node.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+                    {
+                        if (!node.Parent.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) ==
+                            true)
+                        {
+                            var author = node.DataDocument.GetAuthor();
+                            if (!currentAuthors.Contains(author) && author != null)
+                            {
+                                currentAuthors.Add(author);
+                            }
+                        }
+                    }
+                }
+                foreach (var auth in currentAuthors)
+                {
+                    var authorItem = new MenuFlyoutItem
+                    {
+                        Text = auth,
+                    };
+                    _authorItem?.Items?.Add(authorItem);
+                    if (_authorFilters.Contains(auth))
+                    {
+                        authorItem.FontWeight = Windows.UI.Text.FontWeights.Bold;
+                    }
+                    authorItem.Click += Author_OnClick;
+                }
+                flyout.Items.Add(_authorItem);
+            }
+        }
+
+        private void Clear_Filters()
+        {
+            _authorFilters.Clear();
+            foreach (var filter in _documentFilters)
+            {
+                var mfi = _filtertoMenuFlyout[filter];
+                mfi.FontWeight = Windows.UI.Text.FontWeights.Normal;
+            }
+            _documentFilters.Clear();
+            SetFilterText();
+        }
+
+        private void Clear_Options()
+        {
+            foreach (var option in _options)
+            {
+                var bt = _optiontofilter.FirstOrDefault(x => x.Value == option).Key;
+                bt.BorderBrush = new SolidColorBrush(Colors.Transparent);
+
+            }
+            _options.Clear();
+        }
+
+        #endregion
+
+
+        private void XRegexButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button bt)
+            {
+                XOptionButton_OnClick(sender,e);
+            }
+        }
+
+        private void XClearFiltersButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Clear_Filters();
+            Clear_Options();
+        }
+
+        private void XOptionButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button bt)
+            {
+                var option = _optiontofilter[bt];
+                if (_options.Contains(option))
+                {
+                    _options.Remove(option);
+                    bt.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                }
+                else
+                {
+                    _options.Add(option);
+                    bt.BorderBrush = new SolidColorBrush(Colors.DarkOrange);
+                }
             }
         }
     }

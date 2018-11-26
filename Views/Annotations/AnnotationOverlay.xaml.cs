@@ -168,8 +168,8 @@ namespace Dash
                     !CurrentAnchorableAnnotations.OfType<RegionAnnotation>().Any(i => i?.Width < 10 && i?.Height < 10))
                 {
                     var rtb = new RenderTargetBitmap();
-                    var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
-                    await rtb.RenderAsync(pdfview, (int)pdfview.ActualWidth, (int)pdfview.ActualHeight);
+                    var containingDocumentView = this.GetFirstAncestorOfType<DocumentView>();
+                    await rtb.RenderAsync(containingDocumentView, (int)containingDocumentView.ActualWidth, (int)containingDocumentView.ActualHeight);
 
                     var buf = (await rtb.GetPixelsAsync()).ToArray();
                     var bitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
@@ -888,7 +888,7 @@ namespace Dash
                 RegionDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
             {
                 var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
-                var val = this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DataDocument.Equals(dest.GetDataDocument()));
+                var val  = AnnotationOverlayEmbeddings.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DataDocument.Equals(dest.GetDataDocument()));
                 if (val != null)
                 {
                     val.ViewModel.LayoutDocument.ToggleHidden();
@@ -949,9 +949,9 @@ namespace Dash
                 }
                 else if (dm?.DraggingLinkButton == true && !this.IsShiftPressed())
                 {
-                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, true);
-                    StartAnnotation(AnnotationType.Pin, where, new AnchorableAnnotation.Selection(CreatePinRegion(where, targets.FirstOrDefault())));
-                    e.Handled = true;
+                    //var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, true);
+                    //StartAnnotation(AnnotationType.Pin, where, new AnchorableAnnotation.Selection(CreatePinRegion(where, targets.FirstOrDefault())));
+                    //e.Handled = true;
                 }
                 else
                 {

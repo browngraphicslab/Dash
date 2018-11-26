@@ -45,7 +45,8 @@ namespace Dash
                 Converter = converter,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                ValueType = BindingValueType.Field
+                ValueType = BindingValueType.Field,
+                CanBeNull = true
             };
             presenter.AddFieldBinding(ContentPresenter.ContentProperty, contentBinding);
         }
