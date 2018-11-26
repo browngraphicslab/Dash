@@ -171,6 +171,7 @@ namespace Dash
                 lastIndex += newElements.Count;
                 pages.Add(lastIndex);
             }
+            pages.Add(lastIndex);
 
 
             StringBuilder sb = new StringBuilder(elements.Count);
@@ -181,6 +182,10 @@ namespace Dash
             var elemClone = new List<SelectableElement>(elements);
             foreach (var element in elemClone.Skip(1))
             {
+                if (!((string)element.Contents).Any())
+                {
+                    continue;
+                }
                 var nchar = ((string)element.Contents).First();
                 if (prevIndex > 0 && sb.Length > 0 &&
                     (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height

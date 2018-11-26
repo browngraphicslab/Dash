@@ -135,8 +135,10 @@ namespace Dash
                     _botPdf.AnnotationOverlay.SelectIndex(_searchEnd - i);
                 }
 
-                _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds
-                    .Top);
+                _botPdf.ScrollViewer.ChangeView(null,
+                    _botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top, null);
+                //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds
+                //    .Top);
                 LayoutDocument.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, false, true);
             }
         }
@@ -158,7 +160,6 @@ namespace Dash
         {
             var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
             int i = 0;
-            var searchIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
 
             // if (searchIndex + 1 > prevIndex)
             {
@@ -180,8 +181,10 @@ namespace Dash
 
                             prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
 
-                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
-                                .Top);
+                            _botPdf.ScrollViewer.ChangeView(null,
+                                _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top, null);
+                            //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
+                            //    .Top);
                             _previousSelections.Add(index - i);
                             return;
                         }
