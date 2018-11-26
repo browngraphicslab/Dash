@@ -23,12 +23,12 @@ namespace Dash.Popups.TemplatePopups
     public sealed partial class CitationPopup : UserControl, ICustomTemplate
     {
         private ObservableCollection<string> fields = new ObservableCollection<string>();
-        public CitationPopup(DocumentController doc)
+        public CitationPopup(IEnumerable<string> hashFields)
         {
             this.InitializeComponent();
-            foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+            foreach (var field in hashFields)
             {
-                fields.Add(field.Key.Name);
+                fields.Add(field);
             }
         }
 

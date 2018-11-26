@@ -22,12 +22,12 @@ namespace Dash.Popups.TemplatePopups
     public sealed partial class NotePopup : UserControl, ICustomTemplate
     {
         private ObservableCollection<string> fields = new ObservableCollection<string>();
-        public NotePopup(DocumentController doc)
+        public NotePopup(IEnumerable<string> hashFields)
         {
             this.InitializeComponent();
-            foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+            foreach (var field in hashFields)
             {
-                fields.Add(field.Key.Name);
+                fields.Add(field);
             }
         }
 

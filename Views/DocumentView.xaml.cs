@@ -1295,9 +1295,13 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                var template = await MainPage.Instance.GetLayoutTemplate(ViewModel.DocumentController);
-                
-                ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, template, true);
+                var docs = SelectionManager.GetSelectedDocs().Select(doc => doc.ViewModel.DocumentController);
+                var template = await MainPage.Instance.GetLayoutTemplate(docs);
+
+                foreach (var doc in docs)
+                {
+                    doc.SetField<TextController>(KeyStore.XamlKey, template, true);
+                }
                     //this.ShowXaml();
             }
         }

@@ -599,7 +599,7 @@ namespace Dash
             return mode;
         }
 
-        public async Task<string> GetLayoutTemplate(DocumentController doc)
+        public async Task<string> GetLayoutTemplate(IEnumerable<DocumentController> docs)
         {
             var popup = new LayoutTemplatesPopup();
             SetUpPopup(popup);
@@ -607,17 +607,21 @@ namespace Dash
             var templateType = await popup.GetTemplate();
             UnsetPopup();
 
+            var fields = 
+                docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
+                Aggregate((a, b) => a.Intersect(b));
+
             ICustomTemplate templatePopup;
             switch (templateType)
             {
             case TemplateList.TemplateType.Citation:
-                templatePopup = new CitationPopup(doc);
+                templatePopup = new CitationPopup(fields);
                 break;
             case TemplateList.TemplateType.Note:
-                templatePopup = new NotePopup(doc);
+                templatePopup = new NotePopup(fields);
                 break;
             case TemplateList.TemplateType.Card:
-                templatePopup = new CardPopup(doc);
+                templatePopup = new CardPopup(fields);
                 break;
             default:
                 //templatePopup = new LayoutTemplatesPopup();

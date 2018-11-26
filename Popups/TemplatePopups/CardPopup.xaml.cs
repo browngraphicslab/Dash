@@ -22,12 +22,12 @@ namespace Dash.Popups.TemplatePopups
     public sealed partial class CardPopup : UserControl, ICustomTemplate
     {
         private ObservableCollection<string> fields = new ObservableCollection<string>();
-        public CardPopup(DocumentController doc)
+        public CardPopup(IEnumerable<string> hashFields)
         {
             this.InitializeComponent();
-            foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+            foreach (var field in hashFields)
             {
-                fields.Add(field.Key.Name);
+                fields.Add(field);
             }
         }
 
