@@ -69,7 +69,7 @@ namespace Dash
         }
 
         private Point? _forceFocusPoint;
-        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
+        public Point? ForceFocusPoint { get => _forceFocusPoint; }
         public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
             _forceFocusPoint = where;
@@ -143,7 +143,7 @@ namespace Dash
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
-         
+
 
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
@@ -162,7 +162,7 @@ namespace Dash
                     misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
                     misc.SetTitle("Miscellaneous");
                     MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
-                   // folders.Add(misc);
+                    // folders.Add(misc);
                 }
                 return misc;
             }
@@ -226,7 +226,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-            
+
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -272,7 +272,7 @@ namespace Dash
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
         }
 
-        private async Task<DocumentController> GetButton(string icon, string tappedHandler)
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name)
         {
             var op = await new DSL().Run(tappedHandler, true) as OperatorController;
             if (op == null)
@@ -287,9 +287,10 @@ namespace Dash
       xmlns:dash='using:Dash'
       xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
     <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center' />
-</Grid>" , true);
+</Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
-            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> {op}, true);
+            doc.SetField<TextController>(KeyStore.TitleKey, name, true);
+            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> { op }, true);
 
             return doc;
         }
@@ -299,9 +300,9 @@ namespace Dash
             toolbar.SetBackgroundColor(Colors.SkyBlue);
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
-            var buttons = new List<(string icon, string function)>
+            var buttons = new List<(string icon, string name, string function)>
             {
-                ("\uE107", @"
+                ("\uE107", "Delete", @"
 function(d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -311,44 +312,84 @@ function(d) {
     }
 }
 "),
-            ("\uE10E", @"
+                ("\uE923", "Make Instance", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.instance());
+    }
+}
+"),
+                ("\uE924", "Make View Copy", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.view_copy());
+    }
+}
+"),
+                ("\uE16F", "Make Copy", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.copy());
+    }
+}
+"),
+                ("\uE10E", "Undo", @"
 function(d) {
     undo();
 }
 "),
-            ("\uE10D", @"
+                ("\uE10D", "Redo", @"
 function(d) {
     redo();
 }
 "),
-            ("\uF57C", @"
+                ("\uF57C", "Split Horizontal", @"
 function (d) {
     split_horizontal();
 }
 "),
-            ("\uF57D", @"
+                ("\uF57D", "Split Vertical", @"
 function (d) {
     split_vertical();
 }
 "),
-            ("\uE8BB", @"
+                ("\uE8BB", "Close Split", @"
 function (d) {
     close_split();
 }
 "),
-            ("\uE72B", @"
+                ("\uE72B", "Back", @"
 function (d) {
     frame_history_back();
 }
 "),
-            ("\uE72A", @"
+                ("\uE72A", "Forward", @"
 function (d) {
     frame_history_forward();
 }
-")
+"),
+                ("\uE898", "Export", @"
+function (d) {
+    export_workspace();
+}
+"),
+                ("\uE768", "Toggle Presentation", @"
+function (d) {
+    toggle_presentation();
+}
+"),
             };
 
-            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function))));
+            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name))));
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -451,11 +492,11 @@ function (d) {
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {
-               
+
                 var docs = SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>();
                 SelectionManager.SelectDocuments(docs, this.IsShiftPressed());
             }
-            
+
             e.Handled = true;
         }
 
@@ -509,7 +550,7 @@ function (d) {
             //xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Clicked (object sender, RoutedEventArgs tappedRoutedEventArgs)
+        private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
@@ -555,7 +596,7 @@ function (d) {
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-            } 
+            }
 
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
@@ -1030,7 +1071,7 @@ function (d) {
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
-        
+
         public async Task<(string, string)> PromptNewTemplate()
         {
             var templatePopup = new NewTemplatePopup();
@@ -1041,16 +1082,16 @@ function (d) {
 
             return results;
         }
-        
-	    public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
-	    {
-			// TODO: do the following eventually; for now it will just export everything you have
-		    // var documentList = await GetDocumentsToPublish();
 
-		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
-		    allDocuments.Remove(MainDocument.GetDataDocument());
-			
-		    await new Publisher().StartPublication(allDocuments);
+        public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            // TODO: do the following eventually; for now it will just export everything you have
+            // var documentList = await GetDocumentsToPublish();
+
+            var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+            allDocuments.Remove(MainDocument.GetDataDocument());
+
+            await new Publisher().StartPublication(allDocuments);
         }
 
         public async Task<(List<DocumentController>, List<string>)> PromptTravelogue()
