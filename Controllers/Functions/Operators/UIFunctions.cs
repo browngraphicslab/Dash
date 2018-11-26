@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,9 +14,10 @@ namespace Dash
     {
         public static async Task<ListController<DocumentController>> ManageBehaviors(DocumentController layoutDoc)
         {
-            var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel() };
-            var updatedBehaviors = await manageBehaviors.OpenAsync(layoutDoc);
             var dataDoc = layoutDoc.GetDataDocument();
+            var behaviors = new ObservableCollection<DocumentController>(dataDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey));
+            var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel(behaviors) };
+            var updatedBehaviors = await manageBehaviors.OpenAsync(layoutDoc);
 
             dataDoc.SetField(KeyStore.DocumentBehaviorsKey, updatedBehaviors, true);
 
