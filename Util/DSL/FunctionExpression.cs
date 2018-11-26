@@ -81,7 +81,7 @@ namespace Dash
             }
         }
 
-        //TDDO This should be fixed
+        //TODO This should be fixed
         public Op.Name GetOperatorName() => Op.Parse((_funcName as VariableExpression)?.GetVariableName() ?? "");
 
 

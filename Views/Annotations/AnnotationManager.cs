@@ -24,7 +24,7 @@ namespace Dash
 		}
 
         //TODO This can be made static and can take in a framework element instead of IEnumerable<ILinkHandler>
-	    public void FollowRegion(DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType=null)
+	    public void FollowRegion(DocumentView originatingView, DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType=null)
         {
             _linkFlyout.Items?.Clear();
             var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
@@ -49,7 +49,7 @@ namespace Dash
 	        {
                 var link = linkToCount == 0 ? linksFrom?[0] : linksTo?[0];
                 if (linkType == null || (link.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
-                    FollowLink(link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
+                    FollowLink(originatingView, link, linkToCount != 0 ? LinkDirection.ToDestination : LinkDirection.ToSource, linkHandlers);
 	        }
 	        else if (!MainPage.Instance.IsShiftPressed())
             {
@@ -58,7 +58,7 @@ namespace Dash
                     foreach (DocumentController linkTo in linksTo)
                         if (linkType == null || (linkTo.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
-                            FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers);
+                            FollowLink(originatingView, linkTo, LinkDirection.ToDestination, linkHandlers);
                         }
                 }
 
@@ -69,7 +69,7 @@ namespace Dash
                     foreach (var linkFrom in linksFrom)
                         if (linkType == null || (linkFrom.GetDataDocument().GetLinkTag()?.Data.Equals(linkType) ?? false))
                         {
-                            FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers);
+                            FollowLink(originatingView, linkFrom, LinkDirection.ToSource, linkHandlers);
                         }
                 }
             }
@@ -89,7 +89,7 @@ namespace Dash
 			                    Text = targetTitle,
 			                    DataContext = linkTo
 		                    };
-		                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkTo, LinkDirection.ToDestination, linkHandlers));
+		                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(originatingView, linkTo, LinkDirection.ToDestination, linkHandlers));
 		                    item.Click += itemHdlr;
 		                    defaultHdlr = itemHdlr;
 		                    _linkFlyout.Items?.Add(item);
@@ -111,7 +111,7 @@ namespace Dash
 		                    Text = targetTitle,
 		                    DataContext = linkFrom
 	                    };
-	                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(linkFrom, LinkDirection.ToSource, linkHandlers));
+	                    var itemHdlr = new RoutedEventHandler((s, e) => FollowLink(originatingView, linkFrom, LinkDirection.ToSource, linkHandlers));
 	                    item.Click += itemHdlr;
 	                    defaultHdlr = itemHdlr;
 	                    _linkFlyout.Items?.Add(item);
@@ -124,7 +124,7 @@ namespace Dash
 			}
 	    }
 
-	    public void FollowLink(DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
+	    public void FollowLink(DocumentView originatingView, DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
 	    {
             //show link description floating doc if operator output is true
 	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);

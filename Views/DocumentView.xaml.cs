@@ -926,6 +926,7 @@ namespace Dash
             if (dragModel != null)
             {
                 if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
+                e.Handled = true;
 
                 if (MainPage.Instance.IsAltPressed())
                 {
@@ -944,7 +945,6 @@ namespace Dash
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
                     UpdateBindings();
-                    e.Handled = true;
                     return;
                 }
 
@@ -960,7 +960,7 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? e.GetPosition(this) : (Point?) null);
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
@@ -971,7 +971,6 @@ namespace Dash
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
                     : e.DataView.RequestedOperation;
-                e.Handled = true;
             }
         }
 
@@ -1024,9 +1023,7 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-            var ann = new AnnotationManager(this);
-            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(),
-                e.GetPosition(this));
+            new AnnotationManager(this).FollowRegion(this, ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)
@@ -1061,7 +1058,7 @@ namespace Dash
                     Converter = new StringToBrushConverter(),
                     Mode = BindingMode.TwoWay,
                     Context = new Context(),
-                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
+                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.White)
                 };
                 xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }

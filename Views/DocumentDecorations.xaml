@@ -130,7 +130,7 @@
                             <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
                         </ToolTipService.ToolTip>
                     </Grid>
-                    <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Grid.Row="1" Spacing="4"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
+                    <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="1" Spacing="2"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
                  </Grid>
             </Canvas>
 
