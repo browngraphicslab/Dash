@@ -8,7 +8,7 @@
             <Example> Search Dash for Quantum Mechanics </Example>
             <ListenFor RequireAppName="BeforeOrAfterPhrase"> search for {destination} </ListenFor>
             <ListenFor RequireAppName="ExplicitlySpecified"> search {builtin:AppName} for {destination} </ListenFor>
-            <Feedback> Searching for term {destination} </Feedback>
+            <Feedback> Searching for term "{destination}" </Feedback>
             <Navigate />
         </Command>
 
