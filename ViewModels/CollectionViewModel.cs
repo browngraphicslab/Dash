@@ -795,7 +795,7 @@ namespace Dash
                         docsToAdd[i].SetFitToParent(true);
                 }
             }
-            if (collectionViewModel.IsTemplate)
+            if (collectionViewModel?.IsTemplate ?? false)
             {
                 RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
             }

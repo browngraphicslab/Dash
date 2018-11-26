@@ -952,17 +952,26 @@ function (d) {
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SetHighlight(true);
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                     //AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
                     //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                  
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
                     onScreenView.ViewModel.LayoutDocument.SetHidden(false);
+                }
+                if (onScreenView.Visibility == Visibility.Visible)
+                {
+                    onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
+                    onScreenView.ViewModel.SetHighlight(true);
+                } else
+                {
+                    onScreenView.ViewModel.SetHighlight(false);
+                    onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegion());
                 }
             }
             else
@@ -970,9 +979,8 @@ function (d) {
                 //Dock_Link(linkDoc, direction);
                 //target.SetHidden(false);
                 ToggleFloatingDoc(target);
+                target.GotoRegion(region, linkDoc);
             }
-
-            target.GotoRegion(region, linkDoc);
 
             return LinkHandledResult.HandledRemainOpen;
         }

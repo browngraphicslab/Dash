@@ -447,8 +447,6 @@ namespace Dash
                 xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
-            var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
-            cvm.DocumentAdded += Cvm_DocumentAdded;
             if (Pages.PageSizes.Count != 0)
             {
                 Pages.Initialize();
@@ -471,7 +469,7 @@ namespace Dash
 
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
-            _annotationOverlay.TextSelectableElements?.Clear();
+            _annotationOverlay?.TextSelectableElements?.Clear();
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -515,7 +513,7 @@ namespace Dash
                     SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
                 }
 
-                this.Focus(FocusState.Pointer);
+                Focus(FocusState.Pointer);
             }
         }
 
