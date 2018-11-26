@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
@@ -30,6 +32,8 @@ namespace Dash
         private DocumentDecorations _docdecs;
         private ToolTip _tooltip;
         private DocumentView _documentView;
+        private DocumentController _currLinkDoc;
+        private List<DocumentController> _allKeys;
 
         public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, DocumentView documentView)
         {
@@ -41,6 +45,13 @@ namespace Dash
             _tooltip = tooltip;
             xEllipse.Fill = new SolidColorBrush(_color);
             xLinkType.Text = text.Substring(0, 1);
+
+            var toKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey);
+            var fromKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey);
+            toKeys.AddRange(fromKeys);
+            xLinkList.ItemsSource = toKeys;
+            _currLinkDoc = toKeys.First();
+            _allKeys = toKeys;
         }
 
         private void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
@@ -80,7 +91,9 @@ namespace Dash
         {
 
             _tooltip.IsOpen = false;
-            xLinkMenu.DataContext = _documentView;
+            //LinkMenu linkMenu = new LinkMenu(_currLinkDoc); //datacontext was originally _documentview
+            xLinkMenu.DataContext = _currLinkDoc;
+            //xStackPanel.Children.Add(linkMenu);
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
 
             e.Handled = true;
@@ -109,6 +122,29 @@ namespace Dash
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
+        }
+
+        private void TextBoxLoaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = (sender as TextBox);
+            if (textBox != null)
+            {
+                DocumentController linkDoc = (textBox.DataContext as DocumentController);
+                var fieldBinding = new FieldBinding<TextController>
+                {
+                    Key = KeyStore.TitleKey,
+                    Document = linkDoc,
+                    Mode = BindingMode.OneWay,
+                    Context = null
+                };
+                textBox.AddFieldBinding(TextBox.TextProperty, fieldBinding);
+            }
+        }
+
+        private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = xLinkList.SelectedIndex;
+            _currLinkDoc = _allKeys.ElementAt(index);
         }
     }
 }

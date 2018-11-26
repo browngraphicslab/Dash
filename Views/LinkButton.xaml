@@ -17,7 +17,18 @@
 
     <FlyoutBase.AttachedFlyout>
         <Flyout Placement="Right" x:Name="xFlyout">
-            <local:LinkMenu x:Name="xLinkMenu"></local:LinkMenu>
+            <StackPanel x:Name="xStackPanel" Orientation="Vertical">
+                <ComboBox x:Name="xLinkList" PlaceholderText="Select a link"  FontSize="14" Width="350" Margin="2 0 2 10" Background="White" SelectionChanged="XLinkList_OnSelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBox x:Name="xTextBox" Loaded="TextBoxLoaded" BorderBrush="Transparent" Background="Transparent" IsEnabled="False" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <x:String>Green</x:String>
+                </ComboBox>
+                <local:LinkMenu x:Name="xLinkMenu"></local:LinkMenu>
+            </StackPanel>
+            
         </Flyout>
 
     </FlyoutBase.AttachedFlyout>

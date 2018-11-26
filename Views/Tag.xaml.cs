@@ -271,6 +271,27 @@ namespace Dash
 
                     _linkMenu._tagNameDict.Remove(Text);
                     _linkMenu.XTagContainer.Children.Remove(this as UIElement);
+                    DocumentController tempTag = new DocumentController();
+                    DocumentController tempRecent = new DocumentController();
+                    foreach (var doc in _linkMenu.TagsSave)
+                    {
+                        if (doc.GetField<TextController>(KeyStore.DataKey).ToString().Equals(Text))
+                        {
+                            tempTag = doc;
+                        }
+                    }
+
+                    _linkMenu.TagsSave.Remove(tempTag);
+
+                    foreach (var doc in _linkMenu.RecentTagsSave)
+                    {
+                        if (doc.GetField<TextController>(KeyStore.DataKey).ToString().Equals(Text))
+                        {
+                            tempRecent = doc;
+                        }
+                    }
+
+                    _linkMenu.RecentTagsSave.Remove(tempRecent);
                 }
             }
         }

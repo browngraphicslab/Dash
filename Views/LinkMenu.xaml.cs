@@ -39,6 +39,7 @@ namespace Dash
 
         //_tagNameDict is used for the actual tags graphically added into the tag/link pane. it contains a list of names of the tags paired with the tags themselves.
         public Dictionary<string, Tag> _tagNameDict;
+        public DocumentController _linkDoc;
 
        
         public LinkMenu()
@@ -47,8 +48,10 @@ namespace Dash
             //Tags = new List<Tag>();
             _recentTags = new Queue<Tag>();
             _tagNameDict = new Dictionary<string, Tag>();
+            _linkDoc = (DataContext as DocumentController);
             Loaded += LinkMenu_Loaded;
             Unloaded += LinkMenu_Unloaded;
+            
 
         }
 
@@ -81,10 +84,10 @@ namespace Dash
                 xTagContainer.Children.Add(tag);
             }
 
-            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
             var binding = new FieldBinding<FieldControllerBase, TextController>
             {
-                Document = linkDoc.GetDataDocument(),
+                Document = _linkDoc.GetDataDocument(),
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.OneTime,
                 Context = null,
@@ -97,8 +100,8 @@ namespace Dash
         private void LinkMenu_Unloaded(object sender, RoutedEventArgs e)
         {
 
-            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            linkDoc.GetDataDocument().SetField<TextController>(KeyStore.DataKey, xDescriptionBox.Text, true);
+            //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            _linkDoc.GetDataDocument().SetField<TextController>(KeyStore.DataKey, xDescriptionBox.Text, true);
 
         }
 
@@ -248,35 +251,35 @@ namespace Dash
 
         private void xLinkBehavior_OnChecked(object sender, RoutedEventArgs e)
         {
-            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
-                          (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
+            //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
             if (sender == xTypeZoom)
             {
-                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
+                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Follow);
             }
 
             if (sender == xTypeAnnotation)
             {
-                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
+                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Annotate);
             }
 
             if (sender == xTypeDock)
             {
-                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
+                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Dock);
             }
 
             if (sender == xTypeFloat)
             {
-                linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
+                _linkDoc.GetDataDocument().SetLinkBehavior(LinkBehavior.Float);
             }
         }
 
         private void XInContext_OnToggled(object sender, RoutedEventArgs e)
         {
-            var toggled = (sender as ToggleSwitch)?.IsOn;
-            var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
-                          (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            linkDoc.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
+            //var toggled = (sender as ToggleSwitch)?.IsOn;
+            //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
+            //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
+            //linkDoc.GetDataDocument().SetField<BoolController>(KeyStore.LinkContextKey, toggled, true);
         }
     }
 }
