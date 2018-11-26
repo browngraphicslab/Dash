@@ -914,7 +914,7 @@ namespace Dash
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
             }
-            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
+            if (DataDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
             {
                 CreateActionMenu(this);
             }

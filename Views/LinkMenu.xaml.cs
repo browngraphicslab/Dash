@@ -101,6 +101,11 @@ namespace Dash
             };
             xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
             String text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey).Data;
+
+            if (!this.IsInVisualTree())
+            {
+                return;
+            }
             switch (text)
             {
             default:
