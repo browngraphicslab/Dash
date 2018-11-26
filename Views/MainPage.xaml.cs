@@ -599,7 +599,7 @@ namespace Dash
             return mode;
         }
 
-        public async Task<string> GetLayoutTemplate()
+        public async Task<string> GetLayoutTemplate(DocumentController doc)
         {
             var popup = new LayoutTemplatesPopup();
             SetUpPopup(popup);
@@ -607,17 +607,17 @@ namespace Dash
             var templateType = await popup.GetTemplate();
             UnsetPopup();
 
-            CustomTemplate templatePopup;
+            ICustomTemplate templatePopup;
             switch (templateType)
             {
             case TemplateList.TemplateType.Citation:
-                templatePopup = new CitationPopup();
+                templatePopup = new CitationPopup(doc);
                 break;
             case TemplateList.TemplateType.Note:
-                templatePopup = new NotePopup();
+                templatePopup = new NotePopup(doc);
                 break;
             case TemplateList.TemplateType.Card:
-                templatePopup = new CardPopup();
+                templatePopup = new CardPopup(doc);
                 break;
             default:
                 //templatePopup = new LayoutTemplatesPopup();

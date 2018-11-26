@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -19,11 +20,16 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Popups.TemplatePopups
 {
-    public sealed partial class CitationPopup : UserControl, CustomTemplate
+    public sealed partial class CitationPopup : UserControl, ICustomTemplate
     {
-        public CitationPopup()
+        private ObservableCollection<string> fields = new ObservableCollection<string>();
+        public CitationPopup(DocumentController doc)
         {
             this.InitializeComponent();
+            foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+            {
+                fields.Add(field.Key.Name);
+            }
         }
 
         public Task<List<string>> GetLayout()
@@ -35,9 +41,9 @@ namespace Dash.Popups.TemplatePopups
             {
                 var input = new List<string>
                 {
-                    xTextFieldTitle.Text,
-                    xTextFieldAuthor.Text,
-                    xTextFieldDateCreated.Text
+                    fields.ElementAtOrDefault(xTextFieldTitle.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextFieldAuthor.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextFieldDateCreated.SelectedIndex)
                 };
 
                 xLayoutPopup.IsOpen = false;

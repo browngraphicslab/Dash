@@ -28,7 +28,7 @@ namespace Dash
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
 
     <StackPanel Orientation=""Horizontal"" HorizontalAlignment=""Center"">
-        <StackPanel Margin=""0 40 0 0"">
+        <StackPanel>
             <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
                 <dash:EditableTextBlock x:Name=""xTextField0"" Text=""Title"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" />
             </Border>

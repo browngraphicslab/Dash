@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -18,11 +19,16 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Popups.TemplatePopups
 {
-    public sealed partial class CardPopup : UserControl, CustomTemplate
+    public sealed partial class CardPopup : UserControl, ICustomTemplate
     {
-        public CardPopup()
+        private ObservableCollection<string> fields = new ObservableCollection<string>();
+        public CardPopup(DocumentController doc)
         {
             this.InitializeComponent();
+            foreach (var field in doc.GetDataDocument().EnumDisplayableFields())
+            {
+                fields.Add(field.Key.Name);
+            }
         }
 
         public Task<List<string>> GetLayout()
@@ -35,13 +41,13 @@ namespace Dash.Popups.TemplatePopups
             {
                 var input = new List<string>
                 {
-                    xTextFieldTitle.Text,
-                    xTextFieldImage.Text,
-                    xTextField0.Text,
-                    xTextField1.Text,
-                    xTextField2.Text,
-                    xTextField3.Text,
-                    xTextField4.Text
+                    fields.ElementAtOrDefault(xTextFieldTitle.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextFieldImage.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextField0.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextField1.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextField2.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextField3.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextField4.SelectedIndex)
                 };
 
                 xLayoutPopup.IsOpen = false;

@@ -21,22 +21,27 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <StackPanel Margin="0 40 0 0">
                         <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
-                            <dash:EditableTextBlock x:Name="xTextFieldTitle" Text="Title" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                        </Border>
-                            <Border BorderThickness="10" BorderBrush="CadetBlue" Background="White" Margin="0 0 0 0" Width="146" Height="160">
-                            <dash:EditableTextBlock x:Name="xTextFieldImage" Text="Image" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                        </Border>
+                        <ComboBox x:Name="xTextFieldTitle" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Center"
+                                ItemsSource="{x:Bind fields}" SelectedItem="Title"/>
+                                </Border>
+                                <Border BorderThickness="10" BorderBrush="CadetBlue" Background="White" Margin="0 0 0 0" Width="146" Height="160">
+                                    <ComboBox x:Name="xTextFieldImage" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Top"
+                                          ItemsSource="{x:Bind fields}" PlaceholderText="Image"/>
+                                </Border>
                                 </StackPanel>
                                 <Border BorderThickness="2" BorderBrush="CadetBlue" Margin ="0 40 0 0" Width ="146">
                         <StackPanel Margin="0 0 0 0">
-                                    <dash:EditableTextBlock x:Name="xTextField0" Text="Default1" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 10 10 0" />
-                                    <dash:EditableTextBlock x:Name="xTextField1" Text="Default2" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
-                                    <dash:EditableTextBlock x:Name="xTextField2" Text="Default3" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
-                                    <dash:EditableTextBlock x:Name="xTextField3" Text="Default4" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
-                                    <dash:EditableTextBlock x:Name="xTextField4" Text="Default5" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 10 0" />
-                            
-
-
+                                    <!--<dash:EditableTextBlock x:Name="xTextField0" Text="Default1" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 10 10 0" />-->
+                                    <ComboBox x:Name="xTextField0" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Center" Margin="0 6.5 10 0"
+                                          ItemsSource="{x:Bind fields}" PlaceholderText="Default1"/>
+                                    <ComboBox x:Name="xTextField1" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Center" Margin="0 6.5 10 0"
+                                          ItemsSource="{x:Bind fields}" PlaceholderText="Default2"/>
+                                    <ComboBox x:Name="xTextField2" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Center" Margin="0 6.5 10 0"
+                                          ItemsSource="{x:Bind fields}" PlaceholderText="Default3"/>
+                                    <ComboBox x:Name="xTextField3" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Center" Margin="0 6.5 10 0"
+                                          ItemsSource="{x:Bind fields}" PlaceholderText="Default4"/>
+                                    <ComboBox x:Name="xTextField4" HorizontalAlignment="Left" Height="30" Width="100" VerticalAlignment="Center" Margin="0 6.5 10 0" 
+                                          ItemsSource="{x:Bind fields}" PlaceholderText="Default5"/>
                                 </StackPanel>
                                     </Border>
                         </StackPanel>
