@@ -59,10 +59,6 @@ namespace Dash
 
         private void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            foreach (var doc in _docdecs.SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-            }
         }
         
         private void LinkButton_PointerExited(object sender, PointerRoutedEventArgs args)
@@ -82,12 +78,12 @@ namespace Dash
             {
                 _tooltip.IsOpen = false;
             }
-            
             if (_documentView != null)
             {
-                new AnnotationManager(_documentView).FollowRegion(_documentView.ViewModel.DocumentController,
+                new AnnotationManager(_documentView).FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
             }
+            args.Handled = true;
         }
 
         public void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)

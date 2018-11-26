@@ -165,6 +165,8 @@ namespace Dash
             foreach (var page in pageElements)
             {
                 var (newElements, vagueSectionList) = GetSortedSelectableElements(page, elements.Count);
+                if (vagueSectionList == null || newElements == null)
+                    continue;
                 vagueSectionSuperList.AddRange(vagueSectionList);
                 elements.AddRange(newElements);
                 // set the last index to the last index of the new elements, or the last index of the previous page if no new elements, or 0 if no previous pages.
@@ -176,30 +178,33 @@ namespace Dash
             StringBuilder sb = new StringBuilder(elements.Count);
             var elemIndex = 0;
             var prevIndex = 0;
-            var prevElement = elements.First();
-            prevElement.Index = 0;
-            var elemClone = new List<SelectableElement>(elements);
-            foreach (var element in elemClone.Skip(1))
+            var prevElement = elements.FirstOrDefault();
+            if (prevElement != null)
             {
-                var nchar = ((string)element.Contents).First();
-                if (prevIndex > 0 && sb.Length > 0 &&
-                    (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height
-                     || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
-                     (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
-                      !char.IsLower(sb[sb.Length - 1]))) &&
-                    element.Bounds.Top >
-                    prevElement.Bounds.Bottom)
+                prevElement.Index = 0;
+                var elemClone = new List<SelectableElement>(elements);
+                foreach (var element in elemClone.Skip(1))
                 {
-                    elements.Insert(prevIndex,
-                        new SelectableElement(++prevIndex, "\n",
-                            new Rect(prevElement.Bounds.Right, prevElement.Bounds.Top, prevElement.Bounds.Width,
-                                prevElement.Bounds.Height), prevElement.FontFamily, prevElement.AvgWidth));
-                    sb.Append("\n");
-                }
+                    var nchar = ((string)element.Contents).First();
+                    if (prevIndex > 0 && sb.Length > 0 &&
+                        (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height
+                         || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
+                         (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
+                          !char.IsLower(sb[sb.Length - 1]))) &&
+                        element.Bounds.Top >
+                        prevElement.Bounds.Bottom)
+                    {
+                        elements.Insert(prevIndex,
+                            new SelectableElement(++prevIndex, "\n",
+                                new Rect(prevElement.Bounds.Right, prevElement.Bounds.Top, prevElement.Bounds.Width,
+                                    prevElement.Bounds.Height), prevElement.FontFamily, prevElement.AvgWidth));
+                        sb.Append("\n");
+                    }
 
-                sb.Append((string)element.Contents);
-                element.Index = ++prevIndex;
-                prevElement = element;
+                    sb.Append((string)element.Contents);
+                    element.Index = ++prevIndex;
+                    prevElement = element;
+                }
             }
 
             return (elements, sb.ToString(), pages, vagueSectionSuperList);
@@ -214,7 +219,7 @@ namespace Dash
             // initialize lines with the first item in the page
             var lines = new List<List<SelectableElement>> { new List<SelectableElement> { page.First() } };
             var element = page.First();
-
+             
             // loop through every element
             foreach (var selectableElement in page.Skip(1))
             {
@@ -503,7 +508,7 @@ namespace Dash
                 prevLine = line;
             }
 
-            return lineSpacings.Median();
+            return lineSpacings.Count > 1 ? lineSpacings.Median() : 0;
         }
 
         private List<PDFSection> SplitIntoSections(double charSpacing, double wordSpacing, double lineSpacing, List<List<SelectableElement>> lines)
@@ -624,6 +629,8 @@ namespace Dash
 
         private (List<SelectableElement>, List<List<PDFSection>>) GetSortedSelectableElements(List<SelectableElement> page, int elementCount)
         {
+            if (page.Count == 0)
+                return (null, null);
             // sort the elements in a page vertically
             page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
             var elements = new List<SelectableElement>();

@@ -632,7 +632,7 @@ namespace Dash
             {
                 var ann = new AnnotationManager(doc);
                 if (doc.ViewModel != null)
-                    ann.FollowRegion(doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
+                    ann.FollowRegion(doc, doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
                         e.GetPosition(doc));
             }
         }
