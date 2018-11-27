@@ -177,6 +177,15 @@ namespace Dash
         {
             var originalDoc = CurrentPage.DocumentController.GetDereferencedField<DocumentController>(KeyStore.SearchOriginKey,null);
             SplitFrame.HighlightDoc(originalDoc, SplitFrame.HighlightMode.Highlight);
+            var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != SplitFrame.ActiveFrame).ToList();
+            // split if pageview is still in active frame with other documents
+            if (frames.Count == 0)
+            {
+                SplitFrame.ActiveFrame.Split(SplitDirection.Right, ViewModel.ContainerDocument, true);
+                SplitFrame.ActiveFrame.UpdateLayout();
+                frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != SplitFrame.ActiveFrame).ToList();
+                SplitFrame.ActiveFrame = frames[0];
+            }
             var tree = DocumentTree.MainPageTree;
             var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(originalDoc));
             if (node?.Parent == null)
@@ -184,7 +193,7 @@ namespace Dash
                 SplitFrame.OpenInActiveFrame(originalDoc);
                 return;
             }
-            SplitFrame.OpenDocumentInWorkspace(originalDoc, node.Parent.ViewDocument);
+            SplitFrame.OpenInInactiveWorkspace(originalDoc, node.Parent.ViewDocument);
         }
 
         private TextBox _renameBox;
@@ -315,7 +324,7 @@ namespace Dash
         }
 
         private void Thumb_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
+        { 
             e.Handled = true;
         }
 
