@@ -948,6 +948,7 @@ namespace Dash
                 }
 
                 var dragDocs = dm.DraggedDocuments;
+                DocumentController lastLinkDoc = null;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
                     var dragDoc = dragDocs[index];
@@ -962,7 +963,7 @@ namespace Dash
                         dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? e.GetPosition(this) : (Point?) null);
                     }
 
-                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
+                    lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
                     //MainPage.Instance.AddFloatingDoc(linkDoc);
                 
 
@@ -970,10 +971,10 @@ namespace Dash
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
                 MainPage.Instance.XDocumentDecorations.SetPositionAndSize(true);
-                MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType);
+                MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType, lastLinkDoc);
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
-                    : e.DataView.RequestedOperation;
+                    : e.DataView.RequestedOperation; 
             }
         }
 

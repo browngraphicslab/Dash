@@ -211,7 +211,7 @@ namespace Dash
                         EventManager.EventOccured(eventDoc, displayXaml);
                     }
                 }
-
+                else
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
 
             }

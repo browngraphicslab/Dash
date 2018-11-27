@@ -89,7 +89,8 @@ namespace Dash
         public void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
 
-            OpenFlyout(sender as FrameworkElement);
+            OpenFlyout(sender as FrameworkElement, null);
+            this.xLinkList.SelectedItem = null;
             e.Handled = true;   
 
             //_docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
@@ -107,8 +108,21 @@ namespace Dash
             //    }
         }
 
-        public void OpenFlyout(FrameworkElement fwe)
+        public void OpenFlyout(FrameworkElement fwe, DocumentController linkDoc)
         {
+            if (_overrideBehavior == LinkBehavior.Annotate) xOverrideAnnotate.IsChecked = true;
+            if (_overrideBehavior == LinkBehavior.Dock) xOverrideDock.IsChecked = true;
+            if (_overrideBehavior == LinkBehavior.Float) xOverrideFloat.IsChecked = true;
+            if (_overrideBehavior == LinkBehavior.Follow) xOverrideFollow.IsChecked = true;
+            if (_overrideBehavior == null) xOverrideDefault.IsChecked = true;
+            xLinkList.SelectedItem = linkDoc;
+            xLinkBehaviorOverride.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;    
+            xLinkList.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xLinkMenu.Visibility = linkDoc != null ? Visibility.Visible : Visibility.Collapsed;
+            if (xLinkList.SelectedIndex != -1)
+            {
+                xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(xLinkList.SelectedIndex));
+            }
             FlyoutBase.ShowAttachedFlyout(fwe);
             _tooltip.IsOpen = false;
 
@@ -130,7 +144,7 @@ namespace Dash
             var textBox = (sender as TextBox);
             if (textBox != null)
             {
-                DocumentController linkDoc = (textBox.DataContext as DocumentController);
+                var linkDoc = (textBox.DataContext as DocumentController);
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,
@@ -142,14 +156,81 @@ namespace Dash
             }
         }
 
+        private static LinkBehavior? _overrideBehavior = null;
         private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int index = xLinkList.SelectedIndex;
-            if (_allKeys != null)
+            if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
             {
-                xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
+                var link = _allKeys.ElementAt(index);
+                var linkedFrom = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
+                new AnnotationManager(_documentView).FollowLink(_documentView, link,
+                    linkedFrom.Equals(_documentView.ViewModel.DataDocument)  ? LinkDirection.ToDestination : LinkDirection.ToSource, 
+                    _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
-            
+            xFlyout.Hide();
+        }
+
+        private void RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (xLinkBehaviorOverride.Visibility == Visibility.Collapsed)
+                return;
+
+            if (sender != xOverrideAnnotate) xOverrideAnnotate.IsChecked = false;
+            if (sender != xOverrideDock) xOverrideDock.IsChecked = false;
+            if (sender != xOverrideFloat) xOverrideFloat.IsChecked = false;
+            if (sender != xOverrideFollow) xOverrideFollow.IsChecked = false;
+            if (sender != xOverrideDefault) xOverrideDefault.IsChecked = false;
+            _overrideBehavior = xOverrideAnnotate.IsChecked == true ? LinkBehavior.Annotate :
+                                (xOverrideDock.IsChecked == true ? LinkBehavior.Dock :
+                                (xOverrideFloat.IsChecked == true ? LinkBehavior.Float :
+                                (xOverrideFollow.IsChecked == true ? (LinkBehavior?)LinkBehavior.Follow : null)));
+        }
+
+        private void SymbolIcon_SettingsTapped(object sender, TappedRoutedEventArgs e)
+        {
+            xLinkBehaviorOverride.Visibility = Visibility.Collapsed;
+            var index = xLinkList.Items.IndexOf((sender as SymbolIcon).DataContext);
+            xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
+            xLinkMenu.Visibility = Visibility.Visible;
+            xLinkList.Visibility = Visibility.Collapsed;
+        }
+
+        private void SymbolIcon_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
+        }
+
+        private void SymbolIcon_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
+            xLinkList.SelectionChanged += XLinkList_OnSelectionChanged;
+        }
+
+        private void xLinkList_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        {
+            var index = -1;
+            var pt = MainPage.Instance.PointerPos();
+            var itemNum = 0;
+            foreach (var item in xLinkList.ItemsPanelRoot.Children.OfType<ListViewItem>())
+            {
+                var ip = item.GetFirstDescendantOfType<StackPanel>();
+                var xf = ip.TransformToVisual(MainPage.Instance);
+                var rect = new Windows.Foundation.Rect(xf.TransformPoint(new Windows.Foundation.Point()),
+                    new Windows.Foundation.Size(ip.ActualWidth, ip.ActualHeight));
+                if (rect.Contains(pt))
+                {
+                    index = itemNum;
+                    break;
+                }
+                itemNum++;
+            }
+            if (index != -1)
+            {
+                var linkdoc = _allKeys.ElementAt(index);
+                args.Data.SetDragModel(new DragDocumentModel(linkdoc) { });
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+            }
         }
     }
 }

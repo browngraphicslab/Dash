@@ -419,7 +419,7 @@ namespace Dash
             
         }
 
-        public void OpenNewLinkMenu(String text)
+        public void OpenNewLinkMenu(String text, DocumentController linkDoc)
         {
 
             if (text == null)
@@ -430,7 +430,7 @@ namespace Dash
             {
                 if (lb.Text.Equals(text))
                 {
-                    lb.OpenFlyout(lb);
+                    lb.OpenFlyout(lb, linkDoc);
                 }
             }
         }
@@ -645,18 +645,10 @@ namespace Dash
 
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.All;
-            }
         }
 
         private void XAnnotateEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocs)
-            {
-                doc.ManipulationMode = ManipulationModes.None;
-            }
         }
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
