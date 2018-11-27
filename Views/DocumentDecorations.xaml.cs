@@ -363,6 +363,7 @@ namespace Dash
             xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             xScrollNavStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
             xPageButtonStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
+            xSearchStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && _selectedDocs.First().ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
 
@@ -1231,11 +1232,12 @@ namespace Dash
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            foreach (var documentView in SelectedDocs)
-            {
-                documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
-                    sender.Text, true);
-            }
+            XNextOccur_OnPointerPressed(sender, null);
+            //foreach (var documentView in SelectedDocs)
+            //{
+            //    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+            //        sender.Text, true);
+            //}
         }
 
         // try dropping the Xaml style below onto the blue frame of one or more selected text documents:

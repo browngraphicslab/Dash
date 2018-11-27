@@ -23,6 +23,10 @@ namespace Dash
             string beforeHtml = html.Substring(0, htmlStartIndex);
 
             var introParts = beforeHtml.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (introParts.Count == 1)
+            {
+                introParts = beforeHtml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
             var uri = packageView.AvailableFormats.Contains("UniformResourceLocator") ? (await packageView.GetWebLinkAsync())?.AbsoluteUri : null;
             uri = uri ?? introParts.LastOrDefault()?.Substring(10);
             

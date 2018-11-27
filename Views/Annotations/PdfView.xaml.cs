@@ -159,10 +159,10 @@ namespace Dash
 
         private void SearchIndexUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
+            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey)?.Data.ToLower();
             int i = 0;
 
-            // if (searchIndex + 1 > prevIndex)
+            if (!string.IsNullOrEmpty(searchString))
             {
                 for (var index = _searchEnd; index < _botPdf.AnnotationOverlay.TextSelectableElements.Count; index++)
                 {
