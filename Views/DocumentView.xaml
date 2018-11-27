@@ -29,7 +29,12 @@
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
         </Grid.ContextFlyout>
         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
-        <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False" />
+        <Rectangle 
+            x:Name="xDocumentBackground" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch"
+            Fill="Transparent"  
+            IsHitTestVisible="False"/>
         <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">
             <Grid.Clip>
                 <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>

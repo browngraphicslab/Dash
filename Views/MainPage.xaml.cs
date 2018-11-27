@@ -27,6 +27,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using Dash.Converters;
 using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 
@@ -358,7 +359,7 @@ namespace Dash
 
         private async Task InitToolbar(DocumentController toolbar)
         {
-            toolbar.SetBackgroundColor(Colors.SkyBlue);
+            toolbar.SetBackgroundColor(ColorConverter.HexToColor("#6DA8DE"));
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
             var buttons = new List<(string icon, string name, bool rotate, string function)>
