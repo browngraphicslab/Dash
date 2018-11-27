@@ -51,10 +51,10 @@ namespace Dash
                 _currAnnotationType = value;
                 OnPropertyChanged();
 
-                if (XInkCanvas != null)
+                if (this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas != null)
                 {
-                    XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
-                    XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
+                    this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.InkPresenter.IsInputEnabled = _currAnnotationType == AnnotationType.Ink;
+                    this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.IsHitTestVisible = _currAnnotationType == AnnotationType.Ink;
                 }
             }
         }
@@ -62,7 +62,7 @@ namespace Dash
         public List<int> PageEndIndices { get; set; }
 
 
-        //private InkCanvas XInkCanvas { get; }
+        //private InkCanvas this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas { get; }
 
         public AnnotationOverlayEmbeddings AnnotationOverlayEmbeddings { get; set; }
         public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
@@ -78,12 +78,16 @@ namespace Dash
            
             //if (MainPage.Instance.xSettingsView.UseInkCanvas)
             //{
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen; //| CoreInputDeviceTypes.Touch;
-                XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
-                XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-                XInkCanvas.InkPresenter.IsInputEnabled = false;
-                XInkCanvas.IsHitTestVisible = false;
-               // XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            if (this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas != null)
+            {
+                this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen; //| CoreInputDeviceTypes.Touch;
+                this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.InkPresenter.StrokesCollected += InkPresenter_StrokesCollected;
+                this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+                this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.InkPresenter.IsInputEnabled = false;
+                this.GetFirstAncestorOfType<PdfAnnotationView>().XInkCanvas.IsHitTestVisible = false;
+            }
+            
+               // this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
           //  }
 
             RegionDocsList = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey);
@@ -293,7 +297,7 @@ namespace Dash
         void onLoaded(object o, RoutedEventArgs routedEventArgs)
         {
             _inkController = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
-            XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+            this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
            // _inkController.FieldModelUpdated += inkController_FieldModelUpdated;
         }
 
@@ -320,10 +324,10 @@ namespace Dash
 
         private void inkController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args)
         {
-            if (!_maskInkUpdates && XInkCanvas != null)
+            if (!_maskInkUpdates && this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas != null)
             {
-                XInkCanvas.InkPresenter.StrokeContainer.Clear();
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
+                this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
         }
 
@@ -476,20 +480,20 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter inkPresenter, InkStrokesErasedEventArgs inkStrokesErasedEventArgs)
         {
-            if (XInkCanvas != null)
+            if (this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas != null)
             {
                 _maskInkUpdates = true;
-                _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                _inkController.UpdateStrokesFromList(this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
                 _maskInkUpdates = false;
             }
         }
 
         private void InkPresenter_StrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            if (XInkCanvas != null)
+            if (this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas != null)
             {
                 _maskInkUpdates = true;
-                _inkController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                _inkController.UpdateStrokesFromList(this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
                 _maskInkUpdates = false;
             }
         }

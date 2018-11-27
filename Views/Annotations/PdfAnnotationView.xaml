@@ -109,12 +109,13 @@
 
             <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" PointerEntered="ScrollViewer_OnPointerEntered">
                 <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
-                    <Grid AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                    <Grid x:Name="XParentPdfGrid" AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
                         <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" >
                             <!-- ItemsControl that stores the page images -->
                             <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
                         </Grid>
                         <Canvas x:Name="xPdfGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
+
                     </Grid>
                 </Viewbox>
             </ScrollViewer>
