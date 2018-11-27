@@ -263,7 +263,7 @@ namespace Dash
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
             var dc = ((PresentationItemViewModel)e.ClickedItem).Document;
-            BoolController zoomContext = dc.GetField(KeyStore.PresTextRenamedKey) as BoolController;
+            BoolController zoomContext = dc.GetField(KeyStore.PresContextZoomKey) as BoolController;
             NavigateToDocument(dc, zoomContext?.Data ?? false);
         }
 
@@ -318,8 +318,8 @@ namespace Dash
                        source.GetFirstAncestorOfType<PresentationViewTextBox>();
             _document = (((FrameworkElement)e.OriginalSource).DataContext as PresentationItemViewModel)?.Document;
 
-            BoolController zoomContext = _document.GetField(KeyStore.PresTextRenamedKey) as BoolController;
-            Fullscreen.Background = zoomContext.Data ? new SolidColorBrush(Colors.LightSteelBlue) : new SolidColorBrush(Colors.Transparent);
+            var zoomContext = ((BoolController) _document.GetField(KeyStore.PresContextZoomKey))?.Data ?? false;
+            Fullscreen.Background = zoomContext ? new SolidColorBrush(Colors.LightSteelBlue) : new SolidColorBrush(Colors.Transparent);
 
         }
 
@@ -329,18 +329,8 @@ namespace Dash
 
         private void Fullscreen_OnClick(object sender, RoutedEventArgs e)
         {
-            BoolController zoomContext = _document.GetField(KeyStore.PresTextRenamedKey) as BoolController;
-            if (zoomContext == null)
-            {
-                _document.SetField(KeyStore.PresTextRenamedKey, new BoolController(true), true);
-            }
-            else
-            {
-                var newZoomContext = zoomContext.Data;
-                _document.SetField(KeyStore.PresTextRenamedKey, new BoolController(!newZoomContext), true);
-            }
-
-         
+            BoolController zoomContext = _document.GetFieldOrCreateDefault<BoolController>(KeyStore.PresContextZoomKey);
+            zoomContext.Data = !zoomContext.Data;
         }
 
         private void Flyout_Closed(object sender, object e)
@@ -446,10 +436,10 @@ namespace Dash
             }
 
             //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-            startPoint     = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
-            endPoint       = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
+            startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
+            endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
             startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
-            endControlPt   = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
+            endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
 
             return new List<Point>()
             {
@@ -846,7 +836,7 @@ namespace Dash
         private void XTitleBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             ViewModel.RenamePres(ViewModel.CurrPres, xTitle.Text);
-            
+
         }
 
         private void XDropGrid_OnDragEnter(object sender, DragEventArgs e)
@@ -883,7 +873,8 @@ namespace Dash
             if (dragModel.DraggedDocuments.Count == 1 && dragModel.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) is var list)
             {
                 docs = list;
-            } else if (dragModel.DraggedDocuments.Count > 1)
+            }
+            else if (dragModel.DraggedDocuments.Count > 1)
             {
                 docs = dragModel.DraggedDocuments;
             }
