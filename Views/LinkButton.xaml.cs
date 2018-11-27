@@ -100,22 +100,8 @@ namespace Dash
         {
 
             OpenFlyout(sender as FrameworkElement, null);
-            this.xLinkList.SelectedItem = null;
+            xLinkList.SelectedItem = null;
             e.Handled = true;   
-
-            //_docdecs.ToggleTagEditor(_docdecs._tagNameDict[_text], sender as FrameworkElement);
-            //if (_docdecs.CurrentLinks.Count == 1)
-            //    foreach (var actualchild in _docdecs.XTagContainer.Children.OfType<Tag>())
-            //    {
-            //        if (actualchild.Text == _text)
-            //        {
-            //            actualchild.Select();
-            //        }
-            //        else
-            //        {
-            //            actualchild.Deselect();
-            //        }
-            //    }
         }
 
         public void OpenFlyout(FrameworkElement fwe, DocumentController linkDoc)
@@ -135,8 +121,6 @@ namespace Dash
             }
             FlyoutBase.ShowAttachedFlyout(fwe);
             _tooltip.IsOpen = false;
-
-            _docdecs.CurrentLinks = _docdecs.TagMap[_text];
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)

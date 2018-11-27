@@ -181,6 +181,10 @@ namespace Dash
                         eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
                         eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                             view.ParentCollection.ViewModel.ContainerDocument, true);
+                        eventDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                        eventDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
+                        eventDoc.SetWidth(double.NaN);
+                        eventDoc.SetHeight(double.NaN);
                         eventDoc.Link(dragDoc, LinkBehavior.Overlay, "Travelog");
                         eventDoc.SetField(KeyStore.EventDisplay1Key, dragDoc, true);
                         eventDoc.SetField(KeyStore.EventDisplay2Key, anno, true);
@@ -193,19 +197,14 @@ namespace Dash
                             <Grid.RowDefinitions>
                                 <RowDefinition Height=""Auto""></RowDefinition>
                                 <RowDefinition Height=""*""></RowDefinition>
-                                <RowDefinition Height=""*""></RowDefinition>
                             </Grid.RowDefinitions>
                             <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
                                 <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
                             </Border>
-                            <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Center"" />
-                                <TextBlock FontFamily=""{StaticResource FontAwesome}"" VerticalAlignment=""Center"" FontSize=""20"" Foreground=""White"" Text=""{StaticResource RightArrowIcon}""></TextBlock>
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Center"" />
+                            <StackPanel Orientation=""Horizontal"" Grid.Row=""1"" Background=""Transparent"">
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Center"" />
+                                <TextBlock FontFamily=""{StaticResource FontAwesome}"" VerticalAlignment=""Center"" FontSize=""20"" Foreground=""Blue"" Text=""{StaticResource RightArrowIcon}""/>
+                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Center"" />
                             </StackPanel>
                             </Grid>";
                         EventManager.EventOccured(eventDoc, displayXaml);

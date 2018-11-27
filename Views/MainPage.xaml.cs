@@ -988,8 +988,11 @@ function (d) {
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
             var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
-            docCopy.SetWidth(size?.X ?? 150);
-            docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            if (!doc.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                docCopy.SetWidth(size?.X ?? 150);
+                docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            }
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
