@@ -457,7 +457,7 @@
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
             </StackPanel.RenderTransform>
-            <Grid Background="{StaticResource DashToolBarBrush}">
+            <Grid>
                 <dash:DocumentView x:Name="XDocumentView" MinWidth="60" MinHeight="60"/>
             </Grid>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
