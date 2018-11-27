@@ -209,25 +209,9 @@ namespace Dash
 
         private void xLinkList_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
-            var index = -1;
-            var pt = MainPage.Instance.PointerPos();
-            var itemNum = 0;
-            foreach (var item in xLinkList.ItemsPanelRoot.Children.OfType<ListViewItem>())
+            if (args.Items.Count == 1)
             {
-                var ip = item.GetFirstDescendantOfType<StackPanel>();
-                var xf = ip.TransformToVisual(MainPage.Instance);
-                var rect = new Windows.Foundation.Rect(xf.TransformPoint(new Windows.Foundation.Point()),
-                    new Windows.Foundation.Size(ip.ActualWidth, ip.ActualHeight));
-                if (rect.Contains(pt))
-                {
-                    index = itemNum;
-                    break;
-                }
-                itemNum++;
-            }
-            if (index != -1)
-            {
-                var linkdoc = _allKeys.ElementAt(index);
+                var linkdoc = (DocumentController)args.Items[0];
                 args.Data.SetDragModel(new DragDocumentModel(linkdoc) { });
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }

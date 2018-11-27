@@ -38,11 +38,11 @@
                         <ColumnDefinition MaxWidth="25"></ColumnDefinition>
                         <ColumnDefinition MaxWidth="25"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <RadioButton  x:Name="xOverrideDefault"  Content="None" Grid.Column="0" Checked="RadioButton_Checked"/>
-                    <RadioButton  x:Name="xOverrideFollow"   Content="Goto"  Grid.Column="1" Checked="RadioButton_Checked"/>
-                    <RadioButton  x:Name="xOverrideDock"     Content="Dock"  Grid.Column="2" Checked="RadioButton_Checked"/>
-                    <RadioButton  x:Name="xOverrideAnnotate" Content="Show"  Grid.Column="3" Checked="RadioButton_Checked"/>
-                    <RadioButton  x:Name="xOverrideFloat"    Content="Float"  Grid.Column="4" Checked="RadioButton_Checked"/>
+                    <RadioButton x:Name="xOverrideDefault"  Content="None"  Grid.Column="0" Checked="RadioButton_Checked"/>
+                    <RadioButton x:Name="xOverrideFollow"   Content="Goto"  Grid.Column="1" Checked="RadioButton_Checked"/>
+                    <RadioButton x:Name="xOverrideDock"     Content="Dock"  Grid.Column="2" Checked="RadioButton_Checked"/>
+                    <RadioButton x:Name="xOverrideAnnotate" Content="Show"  Grid.Column="3" Checked="RadioButton_Checked"/>
+                    <RadioButton x:Name="xOverrideFloat"    Content="Float" Grid.Column="4" Checked="RadioButton_Checked"/>
                 </Grid>
             </StackPanel>
             
