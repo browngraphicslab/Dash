@@ -39,6 +39,11 @@ namespace Dash.Popups
             return _tcs.Task;
         }
 
+        private void CloseButton_Click(object sender, object e)
+        {
+
+        }
+
         
 
         private void Popup_OnOpened(object sender, object e)

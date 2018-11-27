@@ -16,25 +16,28 @@
                         BorderBrush="{StaticResource AccentGreenLight}"
                         Background="White"
                         BorderThickness="2 40 2 2" Width="600"  Height="500"
-                        Margin="-100 0 0 0"
+                        Margin="-100 -100 0 0"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Left">
                     <Grid>
+                        <Button Name="CloseButton" Click="CloseButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 -35 5 0" Background="Transparent">
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE711;" FontSize="30" Foreground="DarkGreen"/>
+                        </Button>
                         <TextBlock FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0">Choose a template</TextBlock>
                         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20 40 0 0">
 
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="xCitation" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >Citation</TextBlock>
+                                    <TextBlock FontSize="14" Foreground="White">Citation</TextBlock>
                                 </Button>
                                 <Button x:Name="xNote" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >Note</TextBlock>
+                                    <TextBlock FontSize="14" Foreground="White">Note</TextBlock>
                                 </Button>
                                 <Button x:Name="xCard" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >Card</TextBlock>
+                                    <TextBlock FontSize="14" Foreground="White">Card</TextBlock>
                                 </Button>
                                 <Button x:Name="xTemplate17" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                    <TextBlock FontSize="14" Foreground="White">I</TextBlock>
                                 </Button>
                             </StackPanel>
 
