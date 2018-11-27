@@ -101,7 +101,10 @@ namespace Dash
                         Focus(FocusState.Keyboard);
                         MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
                     }
-                       
+
+                    TouchInteractions.NumFingers++;
+                    if (TouchInteractions.HeldDocument == null)
+                        TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
                     SelectionManager.TryInitiateDragDrop(docView, e, null);
                 }
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
@@ -112,7 +115,8 @@ namespace Dash
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
             AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) =>
             {
-                _manipulator = null;
+                
+_manipulator = null;
             }), true);
 
             AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
