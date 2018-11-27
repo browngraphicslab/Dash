@@ -258,7 +258,7 @@ namespace Dash
 
         public static void ToggleButton(this DocumentController document)
         {
-            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.TappedScriptKey);
+            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.LeftTappedOpsKey);
             int i = 0;
 
             for(; i < scripts.Count; ++i)

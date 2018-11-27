@@ -350,7 +350,7 @@ namespace Dash
 </Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
             doc.SetField<TextController>(KeyStore.TitleKey, name, true);
-            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> { op }, true);
+            doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
 
             return doc;
         }
