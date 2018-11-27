@@ -1139,7 +1139,7 @@ namespace Dash
             //Add the Layout Template Popup
            xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = "Document Layouts",
+                Text = "Apply Template",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;

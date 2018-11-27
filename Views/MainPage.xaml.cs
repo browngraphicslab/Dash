@@ -837,7 +837,8 @@ function (d) {
 
             var fields = 
                 docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
-                Aggregate((a, b) => a.Intersect(b));
+                Aggregate((a, b) => a.Intersect(b)).ToList();
+            fields.Insert(0, "");
 
             ICustomTemplate templatePopup;
             switch (templateType)

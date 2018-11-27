@@ -160,7 +160,7 @@ namespace Dash
             <RowDefinition Height=""Auto""></RowDefinition>
             <RowDefinition Height=""*""></RowDefinition>
         </Grid.RowDefinitions>
-        <StackPanel>
+        <StackPanel Background=""White"">
             <TextBlock x:Name=""xTextField0"" FontWeight=""Bold"" FontSize=""25"" TextAlignment=""Center"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
             <TextBlock x:Name=""xTextField1"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
             <TextBlock x:Name=""xTextField2"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
