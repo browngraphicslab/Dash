@@ -437,6 +437,7 @@ namespace Dash
 
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             string text = searchBox.Text; //.ToLower();
+            if (string.IsNullOrWhiteSpace(text)) return;
 
             var itemsSource = (ObservableCollection<SearchResultViewModel>)searchBox.ItemsSource;
             itemsSource?.Clear();
@@ -445,7 +446,7 @@ namespace Dash
             try
             {
 
-                searchRes = Search.Parse(text,options:_options).ToList();
+                searchRes = Search.Parse(text, options:_options).ToList();
             }
             catch (Exception)
             {
@@ -480,7 +481,6 @@ namespace Dash
                 }
             }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
-            if (string.IsNullOrWhiteSpace(text)) return;
 
             //highlight doc results
             HighlightSearchResults(docs);
@@ -546,7 +546,7 @@ namespace Dash
             }
 
             var first = vmGroups
-                .Where(doc => !doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+                .Where(doc => doc.DocumentCollection?.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) != true)
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
