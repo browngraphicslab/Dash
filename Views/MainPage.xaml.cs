@@ -500,9 +500,7 @@ function (d) {
 
         private void LoadSettings()
         {
-            var settingsDoc = GetAppropriateSettingsDoc();
-            xSettingsView.LoadSettings(settingsDoc);
-            XDocumentDecorations.LoadTags(settingsDoc);
+            xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
         }
 
         private DocumentController GetAppropriateSettingsDoc()

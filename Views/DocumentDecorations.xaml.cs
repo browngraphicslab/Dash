@@ -278,36 +278,6 @@ namespace Dash
 
         }
 
-        //this method retrieves the saved recent tags and saved tags from their respective keys and repopulates the RecentTags and Tags lists 
-        public void LoadTags(DocumentController settingsdoc)
-        {
-            //RecentTagsSave =
-            //    settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
-            //TagsSave = settingsdoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
-            //foreach (var documentController in RecentTagsSave)
-            //{
-            //    //RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-            //    //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
-            //    xRecentTagsDivider.Visibility = Visibility.Visible;
-            //}
-
-            //foreach (var documentController in TagsSave)
-            //{
-            //    //var tag = new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).Data,
-            //    //    documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data);
-            //    //Tags.Add(tag);
-            //    //_tagNameDict.Add(tag.Text, tag);
-            //    ////possibly repopulate the TagMap here??
-            //    //xRecentTagsDivider.Visibility = Visibility.Visible;
-            //}
-
-            ////graphically displays the reloaded recent tags
-            //foreach (var tag in RecentTags)
-            //{
-            //    xTagContainer.Children.Add(tag);
-            //}
-        }
-
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             SuggestGrid.Visibility = Visibility.Collapsed;
