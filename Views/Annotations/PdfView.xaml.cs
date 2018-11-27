@@ -1,38 +1,25 @@
-﻿using Dash.Annotations;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.Input;
-using Windows.Foundation;
-using Windows.Graphics.Display;
-using Windows.Storage;
-using Windows.System;
-using Windows.UI;
-using Windows.UI.Input;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using Dash.Annotations;
 using iText.Kernel.Crypto;
-using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using Windows.Foundation;
+using Windows.Storage;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -74,7 +61,20 @@ namespace Dash
         {
             InitializeComponent();
             _topPdf.Visibility = Visibility.Collapsed;
-            Loaded += (s, e) => LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
+            Unloaded += (s, e) =>
+            {
+                SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
+
+            };
+            Loaded += (s, e) =>
+            {
+                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+                LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
+                if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
+                {
+                    GoToUpdatedFieldChanged(LayoutDocument, null);
+                }
+            };
             SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
@@ -99,8 +99,7 @@ namespace Dash
                 }
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
-
-            SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+            
 
             //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
@@ -332,6 +331,16 @@ namespace Dash
             _topPdf.Bind();
 
             this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
+            try
+            {
+                if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
+                {
+                    GoToUpdatedFieldChanged(LayoutDocument, null);
+                }
+            } catch (Exception ex)
+            {
+
+            }
         }
 
         private double CalculateMaxPDFWidth(PdfDocument pdfDocument)
@@ -452,13 +461,14 @@ namespace Dash
 
         private void GoToUpdatedFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.NewValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
+            var newValue = args?.NewValue != null ? args.NewValue as DocumentController : sender.GetField<DocumentController>(KeyStore.GoToRegionKey);
+            if (newValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
             {
-                ScrollToRegion(args.NewValue as DocumentController);
-                _botPdf.AnnotationOverlay.SelectRegion(args.NewValue as DocumentController);
+                ScrollToRegion(newValue);
+                _botPdf.AnnotationOverlay.SelectRegion(newValue);
 
-                sender.RemoveField(KeyStore.GoToRegionKey);
-                sender.RemoveField(KeyStore.GoToRegionLinkKey);
+                //sender.RemoveField(KeyStore.GoToRegionKey);
+                //sender.RemoveField(KeyStore.GoToRegionLinkKey);
             }
         }
 
@@ -487,7 +497,7 @@ namespace Dash
         public void ScrollToRegion(DocumentController target, DocumentController source = null, PdfAnnotationView activeView = null)
         {
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            if (absoluteOffsets != null)
+            if (absoluteOffsets != null && PdfMaxWidth > 0)
             {
                 var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xTBotPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
                 var maxOffset       = _botPdf.ScrollViewer.ViewportHeight;

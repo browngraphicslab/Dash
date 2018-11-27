@@ -151,7 +151,7 @@ namespace Dash
             {
                 _annotationOverlay.SelectRegion(args.NewValue as DocumentController);
 
-                sender.RemoveField(KeyStore.GoToRegionKey);
+               // sender.RemoveField(KeyStore.GoToRegionKey);
             }
         }
 
