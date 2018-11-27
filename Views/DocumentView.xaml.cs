@@ -170,7 +170,7 @@ namespace Dash
             InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
-            Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+            //Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             // set bounds
             MinWidth = 25;
             MinHeight = 10;
@@ -208,24 +208,22 @@ namespace Dash
             };
             PointerPressed += (sender, e) =>
             {
-                Debug.WriteLine("Pointer Pressed: " + TouchInteractions.NumFingers);
                 bool right = e.IsRightPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
-
+                
+                //IMPORTANT TOUCH INTERACTION SUPPORT
                 if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null &&
                     !TouchInteractions.handledTouch.Contains(e))
                 {
+                    //record touch data
                     TouchInteractions.handledTouch.Add(e);
-       
-                    if (!(sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
-                    {
-                        TouchInteractions.NumFingers++;
-                    }
+                    if (!(sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType)) TouchInteractions.NumFingers++;
                     TouchInteractions.HeldDocument = this;
 
+                    //initiate drag drop (as long as it's not a pdf)
                     if (!SelectionManager.IsSelected(this))
                         SelectionManager.Select(this, false);
                     if (!((sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType) && e.Pointer.PointerDeviceType == PointerDeviceType.Touch))
@@ -448,7 +446,7 @@ namespace Dash
                           ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
 
             double extraOffsetX = 0;
-            if (!Double.IsNaN(Width))
+            if (!double.IsNaN(Width))
             {
                 extraOffsetX = ActualWidth - Width;
             }
@@ -456,7 +454,7 @@ namespace Dash
 
             double extraOffsetY = 0;
 
-            if (!Double.IsNaN(Height))
+            if (!double.IsNaN(Height))
             {
                 extraOffsetY = ActualHeight - Height;
             }
@@ -614,7 +612,7 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument()
         {
-            if (this.GetFirstAncestorOfType<AnnotationOverlay>() != null)
+            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() != null)
             {
                 // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
                 //      but it would still be in the list of pinned annotations.  That means the document would reappear
@@ -634,26 +632,26 @@ namespace Dash
         /// <summary>
         /// Copies the Document.
         /// </summary>
-        public void CopyDocument()
+        public void CopyDocument(Point? where = null)
         {
             using (UndoManager.GetBatchHandle())
             {
                 // will this screw things up?
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                var doc = ViewModel.DocumentController.GetCopy(null);
+                var doc = ViewModel.DocumentController.GetCopy(where);
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
         /// <summary>
         /// Copies the Document.
         /// </summary>
-        public void MakeInstance()
+        public void MakeInstance(Point? where = null)
         {
             using (UndoManager.GetBatchHandle())
             {
                 // will this screw things up?
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                var doc = ViewModel.DocumentController.GetDataInstance(null);
+                var doc = ViewModel.DocumentController.GetDataInstance(where);
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
@@ -747,10 +745,10 @@ namespace Dash
                     using (UndoManager.GetBatchHandle())
                     {
                         var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
-                        var tasks = new List<Task>(scripts.Count);
+                        var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
                         foreach (var operatorController in scripts)
                         {
-                            tasks.Add(OperatorScript.Run(operatorController, args, new Scope()));
+                            tasks.Add(ExecutionEnvironment.Run(operatorController, args, new Scope()));
                         }
 
                         if (tasks.Any())
@@ -1030,13 +1028,13 @@ namespace Dash
                     var dragDoc = dragDocs[index];
                     if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
                     {
-                        dragDoc = creatorFunc(dm.DraggedDocumentViews[index]);
+                        dragDoc = await creatorFunc(dm.DraggedDocumentViews[index]);
                     }
                     //add link description to doc and if it isn't empty, have flag to show as popup when links followed
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this);
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
@@ -1055,10 +1053,38 @@ namespace Dash
         {
             return this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         }
-
+        private void MenuFlyoutItemCaption_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                if (ViewModel.LayoutDocument != null)
+                {
+                    ViewModel.LayoutDocument.SetField<TextController>(KeyStore.XamlKey,
+                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                 xmlns:dash=""using:Dash""
+                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height=""Auto"" ></RowDefinition>
+                                <RowDefinition Height=""*"" ></RowDefinition>
+                            </Grid.RowDefinitions>
+                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
+                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
+                                </Border>
+                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
+                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
+                                </Border>
+                        </Grid>",
+                        true);
+                }
+            }
+        }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (IsTopLevel()) return;
+            if (IsTopLevel())
+            {
+                return;
+            }
 
             using (UndoManager.GetBatchHandle())
             {
@@ -1199,6 +1225,12 @@ namespace Dash
 
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Add Caption",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.FileText }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCaption_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Add to Presentation",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
             });
@@ -1232,7 +1264,7 @@ namespace Dash
             var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
             {
-                await OperatorScript.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+                await ExecutionEnvironment.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
             };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {

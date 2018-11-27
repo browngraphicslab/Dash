@@ -51,7 +51,7 @@ namespace Dash
             }
         }
 
-        public async System.Threading.Tasks.Task HideMenuAsync()
+        public async void HideMenuAsync()
         {
             
             _doc = null;
@@ -88,7 +88,9 @@ namespace Dash
 
         private void XCopy_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            _doc?.CopyDocument();
+            Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, 0));
+            _doc?.CopyDocument(pos);
+            //HideMenuAsync();
         }
 
         private void XKVP_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)

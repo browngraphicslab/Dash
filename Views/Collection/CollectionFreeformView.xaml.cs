@@ -242,7 +242,7 @@ namespace Dash
 
                 var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
                 var adornFormPoint = colPoint;
-                var adorn = Util.AdornmentWithPosandColor(Colors.LightGray, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
+                var adorn = Util.AdornmentWithPosandColor(Colors.White, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
                 ViewModel.AddDocument(adorn);
 
                 int counter = 0;
@@ -323,7 +323,6 @@ namespace Dash
                         </Grid>",
                         true);
                     var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-                    var caption = new RichTextNote(docController.Title).Document;
                     docController.SetWidth(docController.GetWidth());
                     docController.SetHeight(double.NaN);
                     docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);

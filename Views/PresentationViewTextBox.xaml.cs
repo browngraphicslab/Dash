@@ -10,10 +10,12 @@ namespace Dash
 {
     public sealed partial class PresentationViewTextBox : UserControl
     {
+        private PresentationItemViewModel ViewModel => (PresentationItemViewModel)DataContext;
+
         public bool HasBeenCustomRenamed
         {
-            get => ((DocumentController)DataContext).GetField<BoolController>(KeyStore.PresTextRenamedKey)?.Data ?? false;
-            set => ((DocumentController)DataContext).SetField<BoolController>(KeyStore.PresTextRenamedKey, value, true);
+            get => ViewModel.Document.GetField<BoolController>(KeyStore.PresTextRenamedKey)?.Data ?? false;
+            set => ViewModel.Document.SetField<BoolController>(KeyStore.PresTextRenamedKey, value, true);
         }
 
         public PresentationViewTextBox()
@@ -33,7 +35,7 @@ namespace Dash
 
         private void AddPresTitleListener(object sender, RoutedEventArgs e)
         {
-            ((DocumentController) DataContext)?.AddFieldUpdatedListener(KeyStore.PresentationTitleKey, OnPresTitleKeyUpdated);
+            ViewModel?.Document.AddFieldUpdatedListener(KeyStore.PresentationTitleKey, OnPresTitleKeyUpdated);
         }
 
         private void OnPresTitleKeyUpdated(DocumentController dc, DocumentController.DocumentFieldUpdatedEventArgs dArgs)
@@ -59,7 +61,7 @@ namespace Dash
             if (!HasBeenCustomRenamed)
             {
                 HasBeenCustomRenamed = true;
-                var dc = (DocumentController) DataContext;
+                var dc = ViewModel.Document;
                 dc.SetField<TextController>(KeyStore.PresentationTitleKey, Textbox.Text, true);
                 SetCustomTitleBinding(dc);
             }
@@ -77,7 +79,8 @@ namespace Dash
         // binding to the title of the corresponding document
         private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (!(args.NewValue is DocumentController dc)) return;
+            if (!(args.NewValue is PresentationItemViewModel vm)) return;
+            var dc = vm.Document;
 
             string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null)?.GetValue(null).ToString();
 
@@ -93,7 +96,7 @@ namespace Dash
         public void ResetTitle()
         {
             HasBeenCustomRenamed = false;
-            SetTitleBinding((DocumentController) DataContext);
+            SetTitleBinding(ViewModel.Document);
         }
 
         private void SetTitleBinding(DocumentController dc)

@@ -153,6 +153,7 @@
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\changeImage.png" />
     <Content Include="Assets\loading.png" />
+    <Content Include="Assets\PublishStyle.css" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="ChromeExt2\background.js" />
@@ -191,6 +192,9 @@
     <Compile Include="Controllers\Functions\DocumentationFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\Functions\DocumentFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\ListFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
@@ -200,9 +204,12 @@
     <Compile Include="Controllers\Functions\OperatorGeneration.cs" />
     <Compile Include="Controllers\Functions\Operators\ConstructorFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\DocumentationFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\DocumentFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\ListFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\MathFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\SearchFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\SplitFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
@@ -210,7 +217,13 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\Functions\SearchFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Functions\SelectionFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\SplitFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
@@ -246,6 +259,12 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TraveloguePopup.xaml.cs">
+      <DependentUpon>TraveloguePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Rest\Endpoints\LocalPDFEndpoint.cs" />
+    <Compile Include="Util\EventManager.cs" />
+    <Compile Include="Util\KMeansCluster.cs" />
     <Compile Include="Popups\TextInputPopup.xaml.cs">
       <DependentUpon>TextInputPopup.xaml</DependentUpon>
     </Compile>
@@ -267,6 +286,7 @@
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\Pie.xaml.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\PieSlice.xaml.cs" />
     <Compile Include="Util\DashRadialMenu\RadialMenuControl\UserControl\RadialMenu.xaml.cs" />
+    <Compile Include="Util\DSL\ExecutionEnvironment.cs" />
     <Compile Include="Util\DSL\TernaryExpression.cs" />
     <Compile Include="Util\NoteDocuments\DiscussionNote.cs" />
     <Compile Include="Util\Parser2\DashSearchGrammarKvVisitor.cs" />
@@ -304,6 +324,10 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Views\Annotations\PDFSection.cs" />
+    <Compile Include="Views\Annotations\AnnotationOverlayEmbeddings.xaml.cs">
+      <DependentUpon>AnnotationOverlayEmbeddings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
       <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
     </Compile>
@@ -371,6 +395,9 @@
     </Compile>
     <Compile Include="Popups\ImportVideoPopup.xaml.cs">
       <DependentUpon>ImportVideoPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\PublishSelectDocumentsPopup.xaml.cs">
+      <DependentUpon>PublishSelectDocumentsPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\PushpinTypePopup.xaml.cs">
       <DependentUpon>PushpinTypePopup.xaml</DependentUpon>
@@ -559,6 +586,7 @@
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
+    <Compile Include="Util\Publisher.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
     <Compile Include="Util\Search\Search.cs" />
@@ -755,6 +783,9 @@
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\HierarchicalText.xaml.cs">
+      <DependentUpon>HierarchicalText.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ILinkHandler.cs" />
     <Compile Include="Views\ImageNode.xaml.cs">
       <DependentUpon>ImageNode.xaml</DependentUpon>
@@ -864,7 +895,7 @@
     <Compile Include="Views\CustomGroupGeometries\GeometryDesigner.xaml.cs">
       <DependentUpon>GeometryDesigner.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PresentationNumberViewModel.cs" />
+    <Compile Include="Views\PresentationItemViewModel.cs" />
     <Compile Include="Views\PresentationView.xaml.cs">
       <DependentUpon>PresentationView.xaml</DependentUpon>
     </Compile>
@@ -1168,6 +1199,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\RadialMenu.xaml">
+        <SubType>Designer</SubType>
+        <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TraveloguePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1203,11 +1238,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\PublishSelectDocumentsPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\PushpinTypePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\YouTubeLinkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Annotations\AnnotationOverlayEmbeddings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1396,6 +1439,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FormattingMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HierarchicalText.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1614,6 +1661,9 @@
     <Folder Include="Util\Parser\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommonMark.NET">
+      <Version>0.15.1</Version>
+    </PackageReference>
     <PackageReference Include="Antlr4.Runtime.Standard">
       <Version>4.7.1.1</Version>
     </PackageReference>
