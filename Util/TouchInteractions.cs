@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml.Input;
@@ -79,6 +80,20 @@ namespace Dash
                 HeldDocument.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
         }
 
+        public static bool HoldingRichEdit()
+        {
+            return HeldDocument == null ? false :
+                HeldDocument.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
+        }
 
+        public static void DropCompleted(DocumentView droppedDoc)
+        {
+            NumFingers = 0;
+            //inform pdf of drop (if holding pdf
+            if (HoldingPDF()) droppedDoc.GetFirstDescendantOfType<PdfAnnotationView>()?.PdfOnDrop();
+            if (HoldingRichEdit()) NumFingers--;
+            if (HeldDocument == droppedDoc) HeldDocument = null;
+            CurrInteraction = TouchInteraction.None;
+        }
     }
 }

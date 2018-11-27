@@ -317,11 +317,7 @@ namespace Dash
             DragStarting += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) =>
             {
-                TouchInteractions.NumFingers = 0;
-                //inform pdf of drop (if holding pdf
-                if(TouchInteractions.HoldingPDF()) this.GetFirstDescendantOfType<PdfAnnotationView>()?.PdfOnDrop();
-                if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
+               TouchInteractions.DropCompleted(this);
                 SelectionManager.DropCompleted(this, s, e);
             };
             RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);

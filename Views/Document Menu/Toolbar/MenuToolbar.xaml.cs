@@ -1234,6 +1234,7 @@ namespace Dash
             SplitFrame.ActiveFrame.GoForward();
         }
         
+        /*
         private void XEnableInk_OnChecked(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.InkManager.ShowToolbar();
@@ -1243,5 +1244,6 @@ namespace Dash
         {
             MainPage.Instance.InkManager.HideToolbar();
         }
+        */
     }
 }
