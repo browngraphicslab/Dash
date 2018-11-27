@@ -39,6 +39,8 @@ namespace Dash
                 _activeFrame.SetActive(true);
 
                 OnActiveDocumentChanged(_activeFrame);
+
+                MainPage.Instance.xDocPathView.Document = (_activeFrame.DataContext as DocumentViewModel)?.LayoutDocument;
             }
         }
 
@@ -61,6 +63,7 @@ namespace Dash
             }
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true, ResizersVisible = false };
+            
             return doc;
         }
 
@@ -108,8 +111,6 @@ namespace Dash
             {
                 ActiveFrame = this;
             }
-
-            XPathView.UseDataDocument = true;
 
             _pointerMoved = UserControl_PointerMoved;
             _draggedOver = UserControl_DragOver;
@@ -394,8 +395,6 @@ namespace Dash
                 return;
             }
 
-            XPathView.Document = DocumentController;
-
             if (this == ActiveFrame)//If we are the active frame, our document just changed, so the active document changed
             {
                 OnActiveDocumentChanged(this);
@@ -445,6 +444,8 @@ namespace Dash
         private static void OnActiveDocumentChanged(SplitFrame frame)
         {
             ActiveDocumentChanged?.Invoke(frame);
+            if (frame == ActiveFrame)
+            MainPage.Instance.xDocPathView.Document = (frame.DataContext as DocumentViewModel)?.DocumentController;
         }
 
         private readonly PointerEventHandler _pointerMoved;
