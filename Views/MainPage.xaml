@@ -144,7 +144,7 @@
 
             <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public"  CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
         </Grid>
-        <Grid x:Name="customTitleBar" VerticalAlignment="Top" Height="32" Background="White">
+        <Grid x:Name="customTitleBar" VerticalAlignment="Top" Height="42" Background="White">
 
             <Grid.Resources>
                 <Style TargetType="TextBlock">

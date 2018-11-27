@@ -453,7 +453,7 @@
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
     <dash:Floating x:Name="xFloating" IsBoundByParent="False" IsBoundByScreen="True">
-        <StackPanel Name="xStackPanel" Orientation="Vertical">
+        <StackPanel Name="xStackPanel" x:FieldModifier="public" Orientation="Vertical">
             <StackPanel.RenderTransform>
                 <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
             </StackPanel.RenderTransform>
@@ -468,7 +468,7 @@
                 <dash:DocumentView x:Name="XDocumentView" Grid.Column="1" MinHeight="60"/>
             </Grid>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
-            <StackPanel x:Name="xSubtoolbarStackPanel">
+            <StackPanel x:Name="xSubtoolbarStackPanel" x:FieldModifier="public">
                 <dash:RichTextSubtoolbar x:Name="xRichTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:PlainTextSubtoolbar x:Name="xPlainTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />

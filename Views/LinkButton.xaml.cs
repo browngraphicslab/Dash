@@ -51,9 +51,10 @@ namespace Dash
             xEllipse.Fill = new SolidColorBrush(_color);
             xLinkType.Text = text.Substring(0, 1);
 
-            var toKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey)?.ToList() ?? new List<DocumentController>();
-            var fromKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey) ?? (IEnumerable<DocumentController>)new List<DocumentController>();
-            toKeys.AddRange(fromKeys);
+            var toKeys     = documentView.ViewModel.DataDocument.GetLinks(null)?.ToList() ?? new List<DocumentController>();
+            var regionKeys = documentView.ViewModel.DataDocument.GetRegions()?.SelectMany((region) =>
+                region.GetDataDocument().GetLinks(null)?.ToList() ?? new List<DocumentController>() )  ?? new List<DocumentController>();
+            toKeys.AddRange(regionKeys);
             var matchingLinkDocs = toKeys.Where((k) => {
                 var tagName =  k.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data;
                 return tagName == text;
@@ -139,8 +140,10 @@ namespace Dash
             if (textBox != null)
             {
                 var linkDoc = (textBox.DataContext as DocumentController).GetDataDocument();
-                var linkedFrom = linkDoc.GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
-                var displayDoc = linkDoc.GetDereferencedField<DocumentController>(linkedFrom.Equals(_documentView.ViewModel.DataDocument) ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
+                var srcLinkDoc = linkDoc.GetLinkedDocument(LinkDirection.ToSource);
+                var linkedFrom = srcLinkDoc?.GetDataDocument();
+                var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
+                var displayDoc = linkDoc.GetDereferencedField<DocumentController>(matches ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,

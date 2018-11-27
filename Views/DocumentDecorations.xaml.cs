@@ -339,11 +339,6 @@ namespace Dash
                         {
                             unique = false;
                         }
-
-                        if ((lb as LinkButton).AllKeys.Count == 0)
-                        {
-                            xButtonsPanel.Children.Remove(lb);
-                        }
                     }
 
                     if (unique)
@@ -385,9 +380,11 @@ namespace Dash
             //check each relevant tag name & create the tag graphic & button for it
 
 
-            var allLinks = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument
-                .GetLinks(null) ?? new ListController<DocumentController>();
-
+            var allLinks = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetLinks(null)?.ToList() ?? new List<DocumentController>();
+            var allRegions = SelectedDocs.FirstOrDefault()?.ViewModel.DataDocument.GetRegions()?.SelectMany((region) =>
+                region.GetDataDocument().GetLinks(null)?.ToList() ?? new List<DocumentController>()
+            ) ?? new List<DocumentController>();  
+            allLinks.AddRange(allRegions);
             foreach (var link in allLinks)
             {
                 AddLinkTypeButton(link?.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data);

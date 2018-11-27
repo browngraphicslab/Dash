@@ -228,7 +228,6 @@ namespace Dash
             }
             if (regionDoc != null)
             {
-                AnnotationOverlay.RegionDocsList.Add(regionDoc);
                 return regionDoc;
             }
             return LayoutDocument;

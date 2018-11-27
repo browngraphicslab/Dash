@@ -10,7 +10,7 @@
     d:DesignWidth="600">
 
         <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
-    <Grid Height="40">
+    <Grid Height="32">
         <Grid.Resources>
             <!--Button style set here-->
             <Style x:Key="xButtonStyle" TargetType="Button">
@@ -34,6 +34,7 @@
                 PlaceholderText="Choose a font..." 
                 Style="{StaticResource ComboBoxStyler}" 
                 Height="30" 
+                Foreground="Black"
                 HorizontalAlignment="Stretch" 
                 Margin="6,0,9.5,0" 
                 Grid.Column="0" 
