@@ -86,6 +86,7 @@ namespace Dash
                     Converter = new TransformGroupMultiConverter(),
                     Context = new Context(doc),
                     Mode = BindingMode.OneWay,
+                    CanBeNull = true,
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
@@ -1062,7 +1063,7 @@ namespace Dash
                     Converter = new StringToBrushConverter(),
                     Mode = BindingMode.TwoWay,
                     Context = new Context(),
-                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.White)
+                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.Transparent)
                 };
                 xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }
