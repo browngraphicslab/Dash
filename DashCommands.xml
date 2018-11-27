@@ -28,14 +28,17 @@
             <Navigate />
         </Command>
 
-        <PhraseList Label="destination">
+        <!--<PhraseList Label="destination">
             <Item>London</Item>
             <Item>Las Vegas</Item>
             <Item>Melbourne</Item>
             <Item>Yosemite National Park</Item>
-        </PhraseList>
-        
-        
+        </PhraseList>-->
+
+        <PhraseTopic Label="destination" Scenario="Search">
+            <Subject>City/State</Subject>
+        </PhraseTopic>
+
     </CommandSet>
 
 </VoiceCommands>

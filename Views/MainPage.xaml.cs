@@ -256,7 +256,7 @@ namespace Dash
                         xMainSearchBox.Focus(FocusState.Programmatic);
                     }
 
-                    String searchTerm = command.textSpoken.Substring(", search for ".Length);
+                    string searchTerm = command.searchTerm;
                     xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
                     MainSearchBox.ExecuteDishSearch(xMainSearchBox.xAutoSuggestBox);
                 break;
