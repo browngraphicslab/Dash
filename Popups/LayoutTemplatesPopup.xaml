@@ -20,7 +20,7 @@
                         VerticalAlignment="Center"
                         HorizontalAlignment="Left">
                     <Grid>
-                        <Button Name="CloseButton" Click="CloseButton_Click" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 -35 5 0" Background="Transparent">
+                        <Button Name="xCloseButton" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 -35 5 0" Background="Transparent">
                             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE711;" FontSize="30" Foreground="DarkGreen"/>
                         </Button>
                         <TextBlock FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0">Choose a template</TextBlock>
@@ -36,38 +36,23 @@
                                 <Button x:Name="xCard" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
                                     <TextBlock FontSize="14" Foreground="White">Card</TextBlock>
                                 </Button>
-                                <Button x:Name="xTemplate17" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White">I</TextBlock>
+                                <Button x:Name="xTitle" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White">Title</TextBlock>
                                 </Button>
                             </StackPanel>
 
                             <StackPanel Orientation="Horizontal">
-                                <Button x:Name="xTemplate2" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                <Button x:Name="xProfile" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Profile</TextBlock>
                                 </Button>
-                                <Button x:Name="xTemplate25" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                <Button x:Name="xArticle" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Article</TextBlock>
                                 </Button>
-                                <Button x:Name="xTemplate26" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                <Button x:Name="xBiography" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Biography</TextBlock>
                                 </Button>
-                                <Button x:Name="xTemplate27" Margin="0 0 0 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
-                                </Button>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Button x:Name="xTemplate3" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
-                                </Button>
-                                <Button x:Name="xTemplate35" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
-                                </Button>
-                                <Button x:Name="xTemplate36" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
-                                </Button>
-                                <Button x:Name="xTemplate37" Margin="0 0 0 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
-                                    <TextBlock FontSize="14" Foreground="White" >I</TextBlock>
+                                <Button x:Name="xFlashcard" Margin="0 0 0 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Flashcard</TextBlock>
                                 </Button>
                             </StackPanel>
                         </StackPanel>

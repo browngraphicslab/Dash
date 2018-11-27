@@ -257,6 +257,12 @@
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TemplatePopups\ArticlePopup.xaml.cs">
+      <DependentUpon>ArticlePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\BiographyPopup.xaml.cs">
+      <DependentUpon>BiographyPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\TemplatePopups\CardPopup.xaml.cs">
       <DependentUpon>CardPopup.xaml</DependentUpon>
     </Compile>
@@ -264,8 +270,17 @@
       <DependentUpon>CitationPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\TemplatePopups\CustomTemplate.cs" />
+    <Compile Include="Popups\TemplatePopups\FlashcardPopup.xaml.cs">
+      <DependentUpon>FlashcardPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\TemplatePopups\NotePopup.xaml.cs">
       <DependentUpon>NotePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\ProfilePopup.xaml.cs">
+      <DependentUpon>ProfilePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\TitlePopup.xaml.cs">
+      <DependentUpon>TitlePopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\TraveloguePopup.xaml.cs">
       <DependentUpon>TraveloguePopup.xaml</DependentUpon>
@@ -1153,6 +1168,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TemplatePopups\ArticlePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\BiographyPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\TemplatePopups\CardPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1161,7 +1184,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TemplatePopups\FlashcardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\FlashcardTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\TemplatePopups\NotePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\ProfilePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\TitlePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1597,6 +1636,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Templates\ArticleTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\BiographyTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Templates\CardTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1608,6 +1655,14 @@
     <Page Include="Views\Templates\NoteTemplate.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Templates\ProfileTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\TitleTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TreeView\TreeView.xaml">
       <SubType>Designer</SubType>

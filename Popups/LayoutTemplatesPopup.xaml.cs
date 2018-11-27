@@ -26,6 +26,7 @@ namespace Dash.Popups
             this.InitializeComponent();
             HorizontalAlignment = HorizontalAlignment.Left;
             VerticalAlignment = VerticalAlignment.Top;
+            xCloseButton.Tapped += XCloseButton_Click;
         }
 
         public Task<TemplateList.TemplateType> GetTemplate()
@@ -35,13 +36,20 @@ namespace Dash.Popups
             xCitation.Tapped += XCitation_OnClick;
             xNote.Tapped += XNote_OnClick;
             xCard.Tapped += XCard_OnClick;
+            xTitle.Tapped += XTitle_OnClick;
+            xProfile.Tapped += XProfile_OnClick;
+            xArticle.Tapped += XArticle_OnClick;
+            xBiography.Tapped += XBiography_OnClick;
+            xFlashcard.Tapped += XFlashcard_OnClick;
 
             return _tcs.Task;
         }
 
-        private void CloseButton_Click(object sender, object e)
+        private void XCloseButton_Click(object sender, object e)
         {
-
+            _tcs.SetResult(TemplateList.TemplateType.None);
+            xLayoutPopup.IsOpen = false;
+            xCloseButton.Tapped -= XCloseButton_Click;
         }
 
         
@@ -81,7 +89,42 @@ namespace Dash.Popups
         {
             _tcs.SetResult(TemplateList.TemplateType.Card);
             xLayoutPopup.IsOpen = false;
-            xNote.Tapped -= XCard_OnClick;
+            xCard.Tapped -= XCard_OnClick;
+        }
+
+        void XTitle_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Title);
+            xLayoutPopup.IsOpen = false;
+            xTitle.Tapped -= XTitle_OnClick;
+        }
+
+        void XProfile_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Profile);
+            xLayoutPopup.IsOpen = false;
+            xProfile.Tapped -= XProfile_OnClick;
+        }
+
+        void XArticle_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Article);
+            xLayoutPopup.IsOpen = false;
+            xArticle.Tapped -= XArticle_OnClick;
+        }
+
+        void XBiography_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Biography);
+            xLayoutPopup.IsOpen = false;
+            xBiography.Tapped -= XBiography_OnClick;
+        }
+
+        void XFlashcard_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.Flashcard);
+            xLayoutPopup.IsOpen = false;
+            xFlashcard.Tapped -= XFlashcard_OnClick;
         }
 
     }

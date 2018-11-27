@@ -607,6 +607,9 @@ namespace Dash
             var templateType = await popup.GetTemplate();
             UnsetPopup();
 
+            if (templateType == TemplateList.TemplateType.None)
+                return null;
+
             var fields = 
                 docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
                 Aggregate((a, b) => a.Intersect(b));
@@ -622,6 +625,21 @@ namespace Dash
                 break;
             case TemplateList.TemplateType.Card:
                 templatePopup = new CardPopup(fields);
+                break;
+            case TemplateList.TemplateType.Title:
+                templatePopup = new TitlePopup(fields);
+                break;
+            case TemplateList.TemplateType.Profile:
+                templatePopup = new ProfilePopup(fields);
+                break;
+            case TemplateList.TemplateType.Article:
+                templatePopup = new ArticlePopup(fields);
+                break;
+            case TemplateList.TemplateType.Biography:
+                templatePopup = new BiographyPopup(fields);
+                break;
+            case TemplateList.TemplateType.Flashcard:
+                templatePopup = new FlashcardPopup(fields);
                 break;
             default:
                 //templatePopup = new LayoutTemplatesPopup();
@@ -642,7 +660,12 @@ namespace Dash
                     if (splitXaml[j].Contains("Field" + i))
                     {
                         splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
-                        var test = splitXaml[j];
+                        break;
+                    }
+                    if (splitXaml[j].Contains("PlaceHolderText" + i))
+                    {
+                        splitXaml[j] = splitXaml[j].Replace("PlaceHolderText" + i, customLayout[i]);
+                        break;
                     }
                 }
             }
