@@ -95,7 +95,7 @@ namespace Dash
 
         private void XKVP_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, ActualHeight + 1));
+            Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, 0));
            _doc?.ParentCollection?.ViewModel.AddDocument(TouchInteractions.HeldDocument.ViewModel.DocumentController.GetKeyValueAlias(pos));
         }
 
@@ -103,7 +103,8 @@ namespace Dash
 
         private void XInstance_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            _doc?.MakeInstance();
+            Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, 0));
+            _doc?.MakeInstance(pos);
         }
 
         private void XPin_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)

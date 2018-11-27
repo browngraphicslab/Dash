@@ -10,13 +10,12 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="LayoutRoot" PointerPressed="OnPointerPressed"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
-        <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public">
+    <Grid x:Name="LayoutRoot" PointerPressed="OnPointerPressed"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" Width="Auto">
+        <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public" Background="Transparent">
             <Grid x:Name="XPreviewRect" IsHitTestVisible="False" Visibility="Collapsed"  x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />
-        <InkCanvas x:Name="XInkCanvas" x:FieldModifier="public"/>
-       
+        <InkCanvas  x:Name="XInkCanvas" x:FieldModifier="public"/>
     </Grid>
 </UserControl>
