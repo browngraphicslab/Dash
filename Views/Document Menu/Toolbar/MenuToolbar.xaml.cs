@@ -321,9 +321,9 @@ namespace Dash
                     AdjustComboBoxes();
                     //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
                     //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
-                    Thickness margin = xSubtoolbarStackPanel.Margin;
-                    margin.Top = 7;
-                    xSubtoolbarStackPanel.Margin = margin;
+                    //Thickness margin = xSubtoolbarStackPanel.Margin;
+                    //margin.Top = 7;
+                    //xSubtoolbarStackPanel.Margin = margin;
                     //xPadding.Visibility = Visibility.Collapsed;
 
                 }
@@ -331,9 +331,9 @@ namespace Dash
                 {
                     //If nothing is selected, open/label the main menu toolbar
                     //update margin
-                    Thickness margin = xSubtoolbarStackPanel.Margin;
-                    margin.Top = 7;
-                    xSubtoolbarStackPanel.Margin = margin;
+                    //Thickness margin = xSubtoolbarStackPanel.Margin;
+                    //margin.Top = 7;
+                    //xSubtoolbarStackPanel.Margin = margin;
                 }
 
             }

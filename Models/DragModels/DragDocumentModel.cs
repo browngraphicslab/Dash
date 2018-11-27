@@ -179,8 +179,11 @@ namespace Dash
                         var eventDoc = new RichTextNote(text).Document;
                         var tags = "annotation, pdf, link, " + region.Title;
                         eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
-                        eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                            view.ParentCollection.ViewModel.ContainerDocument, true);
+                        if (view.ParentCollection != null)
+                        {
+                            eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                                view.ParentCollection.ViewModel.ContainerDocument, true);
+                        }
                         eventDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                         eventDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
                         eventDoc.SetWidth(double.NaN);
