@@ -220,8 +220,14 @@ namespace Dash
             frame_history_forward,
             undo,
             redo,
+            split,
+            main_document,
+            clear,
+            global_export,
             alias_of,
-            split
+            sort,
+            toggle_presentation,
+            export_workspace
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

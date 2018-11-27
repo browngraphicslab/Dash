@@ -77,26 +77,7 @@ namespace Dash
 
         public static DocumentController OpenDocumentInWorkspace(DocumentController document, DocumentController workspace)
         {
-            Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Contains(document) ?? false);
-
-            if (ActiveFrame.ViewModel.DataDocument.Equals(workspace.GetDataDocument())) //Collection is already open, so we need to animate to it
-            {
-                ActiveFrame.AnimateToDocument(document);
-                return ActiveFrame.ViewModel.DocumentController;
-            }
-            else
-            {
-                var center = document.GetPosition() ?? new Point();
-                var size = document.GetActualSize() ?? new Point();
-                center.X += (size.X - ActiveFrame.ActualWidth) / 2;
-                center.Y += (size.Y - ActiveFrame.ActualHeight) / 2;
-                center.X = -center.X;
-                center.Y = -center.Y;
-                workspace = ActiveFrame.OpenDocument(workspace);
-                workspace.SetField<PointController>(KeyStore.PanPositionKey, center, true);
-                workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(1, 1), true);
-                return workspace;
-            }
+            return ActiveFrame.OpenDocument(document, workspace);
         }
 
         public static bool TryNavigateToDocument(DocumentController document, bool useDataDoc = false)

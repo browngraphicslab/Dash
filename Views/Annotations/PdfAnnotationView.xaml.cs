@@ -55,8 +55,8 @@ namespace Dash
         private AnnotationOverlay _annotationOverlay;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
-        public DocumentController                 DataDocument => ViewModel.DataDocument;
-        public DocumentController                 LayoutDocument => ViewModel.LayoutDocument;
+        public DocumentController                 DataDocument => ViewModel?.DataDocument;
+        public DocumentController                 LayoutDocument => ViewModel?.LayoutDocument;
         public DataVirtualizationSource           Pages { get; set; }
         public WPdf.PdfDocument                   PDFdoc { get; set; }
         public ObservableCollection<DocumentView> Annotations
@@ -256,9 +256,19 @@ namespace Dash
                     PageNext();
                     args.Handled = true;
                 }
-                if (args.Key == VirtualKey.PageUp)
+                else if (args.Key == VirtualKey.PageUp)
                 {
                     PagePrev();
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Down)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset + 20, null);
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Up)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset - 20, null);
                     args.Handled = true;
                 }
             }

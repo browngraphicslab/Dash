@@ -20,7 +20,7 @@
                         <!-- ItemsControl that stores the page images -->
                         <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
                     </Grid>
-                    <Canvas x:Name="xPdfGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                    <Canvas x:Name="xPdfGridWithEmbeddings" x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
                 </Grid>
             </Viewbox>
         </ScrollViewer>

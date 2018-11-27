@@ -43,7 +43,7 @@ namespace Dash
             var exp = TypescriptToOperatorParser.ParseToExpression(func);
             try
             {
-                var field = exp.Execute(new Scope()).GetAwaiter().GetResult().Item1; //TODO This probably shouldn't access Result
+                var field = exp.Execute(new DictionaryScope()).GetAwaiter().GetResult().Item1; //TODO This probably shouldn't access Result
 
                 if (field is ListController<DocumentController> list)
                 {
@@ -75,8 +75,10 @@ namespace Dash
                             return new Result();
                         }
 
-                        var scope = new Scope();
-                        scope.DeclareVariable("doc", document);
+                        var scope = new DictionaryScope()
+                        {
+                            ["doc"] = document
+                        };
                         var result = exp.Execute(scope).GetAwaiter().GetResult().Item1;
                         if (result is BoolController b && b.Data)
                         {

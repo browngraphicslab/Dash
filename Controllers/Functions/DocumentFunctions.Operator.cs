@@ -90,4 +90,46 @@ public sealed class ViewCopyOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.copy)]
+public sealed class DocumentCopyOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController DocKey = KeyController.Get("Doc");
+
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public DocumentCopyOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public DocumentCopyOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("DocumentCopyOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new DocumentCopyOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(DocKey, new IOInfo(DashShared.TypeInfo.Document, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.Document,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var doc = (DocumentController)inputs[DocKey];
+        var output0 = Dash.Controllers.Functions.Operators.DocumentFunctions.DocumentCopy(doc);
+        outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
 }
