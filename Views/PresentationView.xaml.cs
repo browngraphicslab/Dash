@@ -314,9 +314,11 @@ namespace Dash
             _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ??
                        source.GetFirstAncestorOfType<PresentationViewTextBox>();
             _document = (((FrameworkElement)e.OriginalSource).DataContext as PresentationItemViewModel)?.Document;
-       
-       
-    }
+
+            BoolController zoomContext = _document.GetField(KeyStore.PresTextRenamedKey) as BoolController;
+            Fullscreen.Background = zoomContext.Data ? new SolidColorBrush(Colors.LightSteelBlue) : new SolidColorBrush(Colors.Transparent);
+
+        }
 
         private void Edit_OnClick(object sender, RoutedEventArgs e) => _giveTextBoxFocusUponFlyoutClosing = true;
 
@@ -324,7 +326,6 @@ namespace Dash
 
         private void Fullscreen_OnClick(object sender, RoutedEventArgs e)
         {
-            //TODO: set something in document
             BoolController zoomContext = _document.GetField(KeyStore.PresTextRenamedKey) as BoolController;
             if (zoomContext == null)
             {
@@ -336,7 +337,7 @@ namespace Dash
                 _document.SetField(KeyStore.PresTextRenamedKey, new BoolController(!newZoomContext), true);
             }
 
-            
+         
         }
 
         private void Flyout_Closed(object sender, object e)
