@@ -23,7 +23,7 @@ using WPdf = Windows.Data.Pdf;
 
 namespace Dash
 {
-    public sealed partial class PdfView : UserControl, INotifyPropertyChanged
+    public sealed partial class PdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(

@@ -342,17 +342,47 @@ function (d) {
     }
 }
 "),
-                ("\uE16F", "Pin", @"
+                ("\uE840", "Pin", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = false;
+    }
+}
+"),
+                ("\uE77A", "Unpin", @"
 function (d) {
     for(var doc in get_selected_docs()) {
         doc.Document.AreContentsHitTestVisible = true;
     }
 }
 "),
-                ("\uE16F", "Unpin", @"
+                ("\uE76C", "Fit Width", @"
 function (d) {
     for(var doc in get_selected_docs()) {
-        doc.Document.AreContentsHitTestVisible = false;
+        if(doc.Document.get_field(""Horizontal Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Horizontal Alignment"", ""Left"");
+            doc.Document.Width = doc.Document._StoredWidth;
+            doc.Document._StoredWidth = null;
+        } else {
+            doc.Document.set_field(""Horizontal Alignment"", ""Stretch"");
+            doc.Document._StoredWidth = doc.Document.Width;
+            doc.Document.Width = NaN;
+        }
+    }
+}
+"),
+                ("\uEC8F", "Fit Height", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Vertical Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Vertical Alignment"", ""Top"");
+            doc.Document.Height = doc.Document._StoredHeight;
+            doc.Document._StoredHeight = null;
+        } else {
+            doc.Document.set_field(""Vertical Alignment"", ""Stretch"");
+            doc.Document._StoredHeight = doc.Document.Height;
+            doc.Document.Height = NaN;
+        }
     }
 }
 "),
@@ -371,7 +401,7 @@ function (d) {
     split_horizontal();
 }
 "),
-                ("\uF57D", "Split Vertical", @"
+                ("\uE985", "Split Vertical", @"
 function (d) {
     split_vertical();
 }
