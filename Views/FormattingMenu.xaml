@@ -34,7 +34,6 @@
                 PlaceholderText="Choose a font..." 
                 Style="{StaticResource ComboBoxStyler}" 
                 Height="30" 
-                Foreground="Black"
                 HorizontalAlignment="Stretch" 
                 Margin="6,0,9.5,0" 
                 Grid.Column="0" 
