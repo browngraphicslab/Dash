@@ -65,7 +65,7 @@ namespace Dash
             }
             if (_documentView != null)
             {
-                new AnnotationManager(_documentView).FollowRegion(_documentView.ViewModel.DocumentController,
+                new AnnotationManager(_documentView).FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
             }
             args.Handled = true;

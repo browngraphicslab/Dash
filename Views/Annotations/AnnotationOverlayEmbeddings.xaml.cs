@@ -25,7 +25,7 @@ using Windows.UI.Xaml.Input;
 
 namespace Dash
 {
-    public sealed partial class AnnotationOverlayEmbeddings : UserControl
+    public sealed partial class AnnotationOverlayEmbeddings : UserControl, ILinkHandler
     {
         public readonly DocumentController MainDocument;
         public AnnotationOverlay AnnotationOverlay;
@@ -41,6 +41,31 @@ namespace Dash
             embeddedDocsListOnFieldModelUpdated(null,
                 new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Update, null,
                new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, EmbeddedDocsList.ToList(), new List<DocumentController>(), 0), false));
+        }
+        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
+        {
+            if (linkDoc.GetDataDocument().GetLinkBehavior() == LinkBehavior.Overlay) {
+                DocumentView target = null;
+                if (EmbeddedDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey)))
+                {
+                    var dest = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
+                    target = this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DataDocument.Equals(dest.GetDataDocument()));
+                }
+                if (EmbeddedDocsList.Contains(linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey)))
+                {
+                    var src = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+                    target = this.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DataDocument.Equals(src.GetDataDocument()));
+                }
+                if (target != null)
+                {
+                    target.ViewModel.LayoutDocument.ToggleHidden();
+                    return LinkHandledResult.HandledClose;
+                }
+                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ToggleHighlight();
+                return LinkHandledResult.HandledClose;
+            }
+
+            return LinkHandledResult.Unhandled;
         }
         private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {

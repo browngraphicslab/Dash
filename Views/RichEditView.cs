@@ -310,7 +310,7 @@ namespace Dash
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
-                        _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        _annotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
                 else if (target.StartsWith("http"))
