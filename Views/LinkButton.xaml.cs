@@ -54,13 +54,17 @@ namespace Dash
             var toKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey)?.ToList() ?? new List<DocumentController>();
             var fromKeys = documentView.ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey) ?? (IEnumerable<DocumentController>)new List<DocumentController>();
             toKeys.AddRange(fromKeys);
-            xLinkList.ItemsSource = toKeys;
-            if (toKeys.Count != 0)
+            var matchingLinkDocs = toKeys.Where((k) => {
+                var tagName =  k.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data;
+                return tagName == text;
+                });
+            xLinkList.ItemsSource = matchingLinkDocs;
+            if (matchingLinkDocs.Count() != 0)
             {
-                xLinkMenu.DataContext = new DocumentViewModel(toKeys.First());
-                xLinkList.SelectedItem = toKeys.First();
+                xLinkMenu.DataContext = new DocumentViewModel(matchingLinkDocs.First());
+                xLinkList.SelectedItem = matchingLinkDocs.First();
             }
-            _allKeys = toKeys;
+            _allKeys = matchingLinkDocs.ToList();
         }
 
         private void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)

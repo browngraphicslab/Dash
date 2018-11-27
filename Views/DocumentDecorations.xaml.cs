@@ -405,9 +405,10 @@ namespace Dash
             {
                 linkName = "Annotation";
             }
+            
 
             //set button color to tag color
-                var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
+            var btnColorOrig = LinkMenu.GetTagColor(linkName);
                 var btnColorFinal = btnColorOrig != null
                     ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
                     : Color.FromArgb(255, 64, 123, 177);
@@ -557,7 +558,7 @@ namespace Dash
 
             foreach (var link in allLinks)
             {
-                AddLinkTypeButton(link?.GetField<TextController>(KeyStore.LinkTagKey)?.Data);
+                AddLinkTypeButton(link?.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data);
             }
             
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);

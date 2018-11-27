@@ -181,7 +181,7 @@ namespace Dash
                         eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
                         eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
                             view.ParentCollection.ViewModel.ContainerDocument, true);
-                        eventDoc.Link(dragDoc, LinkBehavior.Overlay);
+                        eventDoc.Link(dragDoc, LinkBehavior.Overlay, "Travelog");
                         eventDoc.SetField(KeyStore.EventDisplay1Key, dragDoc, true);
                         eventDoc.SetField(KeyStore.EventDisplay2Key, anno, true);
                         var displayXaml =
@@ -211,7 +211,6 @@ namespace Dash
                         EventManager.EventOccured(eventDoc, displayXaml);
                     }
                 }
-                else
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
 
             }

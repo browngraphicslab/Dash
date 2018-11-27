@@ -54,6 +54,21 @@ namespace Dash
 
         }
 
+        public static Color? GetTagColor(string name)
+        {
+            var settingsDoc = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
+
+            foreach (var documentController in settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey))
+            {
+                var tagName = documentController.GetField<TextController>(KeyStore.DataKey).ToString();
+                if (tagName == name)
+                {
+                    return  documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data;
+                }
+            }
+            return null;
+        }
+
         private void LinkMenu_DataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             //if (LinkDoc == null || !this.IsInVisualTree())
