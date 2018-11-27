@@ -261,7 +261,7 @@ namespace Dash.Views.TreeView
             else
             {
                 _tapped = true;
-                await Task.Delay(100);//Delay to allow for double tapped
+                await Task.Delay(200);//Delay to allow for double tapped
                 if (_tapped)
                 {
                     IsEditing = true;
