@@ -133,8 +133,8 @@ namespace Dash
         {
             XDocumentView.DataContext = new DocumentViewModel(collection)
             {
-                //IsDimensionless = true,
-                //ResizersVisible = false,
+                IsDimensionless = true,
+                ResizersVisible = false,
                 //Undecorated = true,
             };
         }

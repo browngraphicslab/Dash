@@ -342,6 +342,20 @@ function (d) {
     }
 }
 "),
+                ("\uE16F", "Pin", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = true;
+    }
+}
+"),
+                ("\uE16F", "Unpin", @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = false;
+    }
+}
+"),
                 ("\uE10E", "Undo", @"
 function(d) {
     undo();
