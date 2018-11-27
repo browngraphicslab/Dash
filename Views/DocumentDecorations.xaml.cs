@@ -120,12 +120,17 @@ namespace Dash
                 }
 
                 _visibilityLock = false;
+                xButtonsCanvas.Margin = new Thickness(0, 0, 0, 0);
                 foreach (var docView in value)
                 {
+                    //if (docView.ViewModel?.Undecorated == true)
+                    //{
+                    //    _visibilityLock = true;
+                    //    VisibilityState = Visibility.Collapsed;
+                    //}
                     if (docView.ViewModel?.Undecorated == true)
                     {
-                        _visibilityLock = true;
-                        VisibilityState = Visibility.Collapsed;
+                        xButtonsCanvas.Margin = new Thickness(-10, 0, 0, 0);
                     }
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
