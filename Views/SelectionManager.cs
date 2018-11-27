@@ -249,7 +249,6 @@ namespace Dash
                 e.Complete();
             }
 
-            Debug.WriteLine("DragViews in initiate");
             _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs.ToArray().ToList() : new List<DocumentView>(new[] { draggedView });
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment())
@@ -308,7 +307,6 @@ namespace Dash
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset));
             var type = docView.ViewModel.DocumentController.GetDocType();
-            Debug.WriteLine("DOCUMENT TYPE:" + type);
             switch (type)
             {
             case "Image Box":
