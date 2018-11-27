@@ -214,15 +214,6 @@ namespace Dash
             {
                 if (!this.Text.Equals("Annotation"))
                 {
-                    //if (_docdecs.TagMap.TryGetValue(Text, out var list))
-                    //{
-                    //    var newlinks = list;
-                    //    _docdecs.TagMap.Remove(Text);
-                    //    var oldlinks = _docdecs.TagMap["Annotation"];
-                    //    oldlinks.AddRange(newlinks);
-                    //    _docdecs.TagMap["Annotation"] = oldlinks;
-                    //}
-
                     _linkMenu.TagNameDict.Remove(Text);
                     _linkMenu.XTagContainer.Children.Remove(this as UIElement);
                     DocumentController tempTag = new DocumentController();
@@ -246,6 +237,13 @@ namespace Dash
                     }
 
                     _linkMenu.RecentTagsSave.Remove(tempRecent);
+
+                    if (_linkMenu.LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkTagKey).Data.Equals(Text))
+                    {
+                        _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, "Annotation",
+                            true);
+                        MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+                    }
                 }
             }
         }
