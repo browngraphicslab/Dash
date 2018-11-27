@@ -1,0 +1,34 @@
+﻿<Page
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dash="using:Dash"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+
+    <Grid Padding="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="1" BorderBrush="CadetBlue" Padding="10">
+            <TextBlock x:Name="xTextField0" FontWeight="Bold" FontSize="25" TextAlignment="Center" Text="NESS (EARTHBOUND)" HorizontalAlignment="Stretch" VerticalAlignment="Top"></TextBlock>
+        </Border>
+
+        <dash:EditableImage x:Name="xImageField1" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto"
+                    Margin="0 10"/>
+        
+        <StackPanel Grid.Row="1" Grid.Column="1" Padding="10">
+            <!--FontSize="18" FontWeight="Bold"-->
+            <TextBox x:Name="xFirstHeader"  Text="PlaceHolderText2" TextWrapping="Wrap"/>
+            <TextBlock x:Name="xTextField3" Text="Ness is the silent main protagonist of EarthBound and is analogous to Ninten and Lucas in their respective games. He greatly enjoys baseball; not only are most of his weapons various types of baseball bats, but he can also equip several baseball caps." TextWrapping="Wrap"/>
+            <!--FontSize="18" FontWeight="Bold"-->
+            <TextBox x:Name="xSecondHeader"  Text="PlaceHolderText4" TextWrapping="Wrap"/>
+            <TextBlock x:Name="xTextField5" Text="At the beginning of EarthBound, Ness is awoken from a sound sleep by the impact of a meteorite north of his house in Onett. " TextWrapping="Wrap"/>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -158,9 +158,9 @@ namespace Dash
 
             var pres = parentPres ?? CurrPres;
             var docs = pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            bool removed = false;
+            bool removed = true;
             // ReSharper disable once AssignmentInConditionalExpression
-            while (removed |= docs.Remove(dc)) ;//TODO This should be RemoveAll
+            while (removed &= docs.Remove(dc)) ;//TODO This should be RemoveAll
             if (dc == CurrPres)
             {
                 PinnedNodes.Remove(PinnedNodes.First(vm => vm.Document == dc));

@@ -279,55 +279,6 @@ namespace Dash
             }
         }
 
-        private void ToggleAnnotationVisibility_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (!(sender is MenuFlyoutItem item)) return;
-
-            var linkDocs = MainPage.Instance.XDocumentDecorations.TagMap.Values;
-
-            bool allVisible = linkDocs.All(l =>
-                l.All(doc => doc.GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false));
-
-            foreach (var docs in linkDocs)
-            {
-                foreach (DocumentController l in docs)
-                {
-                    l.SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
-                    l.SetHidden(allVisible);
-                }
-            }
-        }
-
-        //public void ToggleTemplateEditor()
-        //{
-        //    if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
-        //    {
-        //        var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
-        //            (RenderTransform as MatrixTransform).Matrix.OffsetY);
-        //        if (_templateEditor != null)
-        //        {
-        //            Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-
-        //            _templateEditor.SetHidden(!_templateEditor.GetHidden());
-        //            ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-        //            return;
-        //        }
-
-        //        _templateEditor = new TemplateEditorBox(ViewModel.DocumentController, where, new Size(1000, 540))
-        //            .Document;
-
-        //        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-        //        //creates a doc controller for the image(s)
-        //        Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-        //    }
-        //    else
-        //    {
-        //        _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-        //        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-        //        _templateEditor.SetHidden(!_templateEditor.GetHidden());
-        //    }
-        //}
-
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.
         /// If the document is marked as being an adornment, we want to place it below all other documents
@@ -858,6 +809,7 @@ namespace Dash
             }
         }
 
+
         private void MenuFlyoutItemCopyPath_Click(object sender, RoutedEventArgs e)
         {
             var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
@@ -960,6 +912,7 @@ namespace Dash
                 }
 
                 var dragDocs = dm.DraggedDocuments;
+                DocumentController lastLinkDoc = null;
                 for (var index = 0; index < dragDocs.Count; index++)
                 {
                     var dragDoc = dragDocs[index];
@@ -974,14 +927,18 @@ namespace Dash
                         dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? e.GetPosition(this) : (Point?) null);
                     }
 
-                    var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
-                    MainPage.Instance.AddFloatingDoc(linkDoc);
+                    lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
+                    //MainPage.Instance.AddFloatingDoc(linkDoc);
+                
+
                     //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                     dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
                 }
+                MainPage.Instance.XDocumentDecorations.SetPositionAndSize(true);
+                MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType, lastLinkDoc);
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
-                    : e.DataView.RequestedOperation;
+                    : e.DataView.RequestedOperation; 
             }
         }
 
@@ -1179,6 +1136,13 @@ namespace Dash
             {
                 await UIFunctions.ManageBehaviors(ViewModel.DocumentController);
             };
+            //Add the Layout Template Popup
+           xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Document Layouts",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1197,6 +1161,7 @@ namespace Dash
                 });
                 (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemMakeDefaultTextBox_Click;
             }
+
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
@@ -1267,6 +1232,23 @@ namespace Dash
                 else
                 {
                     SplitFrame.OpenInInactiveFrame(ViewModel.DocumentController);
+                }
+            }
+        }
+
+        private async void MenuFlyoutItemLayoutTemplates_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                var docs = SelectionManager.GetSelectedSiblings(this).Select(doc => doc.ViewModel.DocumentController);
+                var template = await MainPage.Instance.GetLayoutTemplate(docs);
+
+                if (template == null)
+                    return;
+
+                foreach (var doc in docs)
+                {
+                    doc.SetField<TextController>(KeyStore.XamlKey, template, true);
                 }
             }
         }

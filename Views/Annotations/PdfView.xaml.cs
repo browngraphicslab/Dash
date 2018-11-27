@@ -79,6 +79,8 @@ namespace Dash
                         (view, controller, arg3) => view.SearchStringUpdated(controller, arg3));
                     LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchPreviousIndexKey,
                         (view, controller, arg3) => view.SearchPreviousPressed(controller, arg3));
+                    LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey,
+                        (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
 
                     initialized = true;
                 }
@@ -159,14 +161,16 @@ namespace Dash
 
         private void SearchIndexUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
+            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey)?.Data.ToLower();
             int i = 0;
 
-            // if (searchIndex + 1 > prevIndex)
+            if (!string.IsNullOrEmpty(searchString))
             {
                 for (var index = _searchEnd; index < _botPdf.AnnotationOverlay.TextSelectableElements.Count; index++)
                 {
                     var elem = _botPdf.AnnotationOverlay.TextSelectableElements[index];
+                    if (string.IsNullOrEmpty((string)elem.Contents))
+                        continue;
                     if (i >= searchString.Length || (elem.Contents as string).ToLower()[0].Equals(searchString[i]))
                     {
                         i++;
@@ -239,7 +243,7 @@ namespace Dash
 
         private async void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && PdfUri != null)
             {
                 var uri = PdfUri;
                 string textToSet = null;
@@ -603,7 +607,7 @@ namespace Dash
             if (newValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
             {
                 ScrollToRegion(newValue);
-                _botPdf.AnnotationOverlay.SelectRegion(newValue);
+                _botPdf.AnnotationOverlay?.SelectRegion(newValue);
 
                 //sender.RemoveField(KeyStore.GoToRegionKey);
                 //sender.RemoveField(KeyStore.GoToRegionLinkKey);

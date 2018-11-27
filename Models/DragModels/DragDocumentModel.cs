@@ -179,9 +179,16 @@ namespace Dash
                         var eventDoc = new RichTextNote(text).Document;
                         var tags = "annotation, pdf, link, " + region.Title;
                         eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
-                        eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                            view.ParentCollection.ViewModel.ContainerDocument, true);
-                        eventDoc.Link(dragDoc, LinkBehavior.Overlay);
+                        if (view.ParentCollection != null)
+                        {
+                            eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
+                                view.ParentCollection.ViewModel.ContainerDocument, true);
+                        }
+                        eventDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                        eventDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
+                        eventDoc.SetWidth(double.NaN);
+                        eventDoc.SetHeight(double.NaN);
+                        eventDoc.Link(dragDoc, LinkBehavior.Overlay, "Travelog");
                         eventDoc.SetField(KeyStore.EventDisplay1Key, dragDoc, true);
                         eventDoc.SetField(KeyStore.EventDisplay2Key, anno, true);
                         var displayXaml =
@@ -190,28 +197,27 @@ namespace Dash
                             xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
                             xmlns:dash=""using:Dash""
                             xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height=""Auto""></RowDefinition>
-                                <RowDefinition Height=""*""></RowDefinition>
-                                <RowDefinition Height=""*""></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
-                                <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
-                            </Border>
-                            <StackPanel Orientation=""Horizontal"" Grid.Row=""2"">
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Center"" />
-                                <TextBlock FontFamily=""{StaticResource FontAwesome}"" VerticalAlignment=""Center"" FontSize=""20"" Foreground=""White"" Text=""{StaticResource RightArrowIcon}""></TextBlock>
-                                <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key""
-                                    Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""2""
-                                    VerticalAlignment=""Center"" />
-                            </StackPanel>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height=""Auto""></RowDefinition>
+                                    <RowDefinition Height=""*""></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+                                    <TextBlock x:Name=""xTextFieldData"" HorizontalAlignment=""Stretch"" Height=""Auto"" VerticalAlignment=""Top""/>
+                                </Border>
+                                <Grid Grid.Row=""1"" Background=""Transparent"">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width=""*""></ColumnDefinition>
+                                        <ColumnDefinition Width=""25""></ColumnDefinition>
+                                        <ColumnDefinition Width=""*""></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <dash:DocumentView x:Name=""xDocumentField_EventDisplay1Key"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Center"" Grid.Column=""0"" />
+                                    <TextBlock FontFamily=""{StaticResource FontAwesome}"" VerticalAlignment=""Center"" FontSize=""20"" Foreground=""Blue"" Grid.Column=""1"" Text=""{StaticResource RightArrowIcon}""/>
+                                    <dash:DocumentView x:Name=""xDocumentField_EventDisplay2Key"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Center"" Grid.Column=""2"" />
+                                </Grid>
                             </Grid>";
                         EventManager.EventOccured(eventDoc, displayXaml);
                     }
                 }
-
                 dragDoc?.Link(anno, LinkBehavior.Annotate, DraggedLinkType);
 
             }

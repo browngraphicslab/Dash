@@ -13,7 +13,7 @@ using Window = Windows.UI.Xaml.Window;
 
 namespace Dash
 {
-    public sealed partial class Tag : IComparable, IComparer<Tag>
+    public sealed partial class Tag
     {
 	   
 
@@ -30,20 +30,20 @@ namespace Dash
 	    }
         private string _text;
         private Color _color;
-        private DocumentDecorations _docdecs;
+        private LinkMenu _linkMenu;
         public Grid XTagContainer
         {
             get => xTagContainer;
             set { xTagContainer = value; }
         }
 
-		public Tag(DocumentDecorations docdecs, String text, Color color)
+		public Tag(LinkMenu linkMenu, String text, Color color)
         {
             this.InitializeComponent();
             xTagContainer.Background = new SolidColorBrush(color);
             xTagText.Text = text;
             _text = text;
-            _docdecs = docdecs;
+            _linkMenu = linkMenu;
             _color = color;
         }
 
@@ -61,39 +61,20 @@ namespace Dash
             }
         }
 
-        //      //temporary method for telling all links associated with this tag that an additional tag has been added
-        //      public void UpdateOtherTags()
-        //      {
-        //          //get active links from doc dec based on last-pressed btn & add this tag to them
-        //          _docdecs.UpdateAllTags(this);
 
-        //      }
+        //public int Compare(Tag x, Tag y)
+        //{
+        //    return x.Text.CompareTo(y.Text);
+        //}
 
-        public void AddTag(DocumentController link)
-        {
-            link.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, Text, true);
-        }
-
-        private void RemoveTag(DocumentController link)
-        {
-            link.GetDataDocument().RemoveField(KeyStore.LinkTagKey);
-            //link.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, "Annotation", true);
-        }
-
-        public int Compare(Tag x, Tag y)
-        {
-            return x.Text.CompareTo(y.Text);
-        }
-
-        public int CompareTo(object obj)
-        {
-            if (obj is Tag tag)
-            {
-                return Compare(this, tag);
-            }
-
-            return 0;
-        }
+        //public int CompareTo(object obj)
+        //{
+        //    if (obj is Tag tag)
+        //    {
+        //        return Compare(this, tag);
+        //    }
+        //    return 0;
+        //}
 
         public void Deselect()
         {
@@ -102,29 +83,27 @@ namespace Dash
             xTagContainer.Padding = new Thickness(4, 0, 4, 6);
         }
 
+        public void fakeSelect()
+        {
+            xTagContainer.BorderThickness = new Thickness(2);
+            xTagContainer.Padding = new Thickness(4, -2, 4, 6);
+        }
+
         public void Select()
         {
 
-            foreach (var tag in _docdecs._tagNameDict)
-            {
-                tag.Value.Deselect();
-            }
+            
 
-            foreach (var tag in _docdecs.RecentTags)
+            foreach (var tag in _linkMenu.RecentTags)
             {
                 tag.Deselect();
             }
 
-
             xTagContainer.BorderThickness = new Thickness(2);
             xTagContainer.Padding = new Thickness(4, -2, 4, 6);
 
-
-            //tell doc decs to change currently activated buttons 
-
-
             bool unique = true;
-            foreach (var recent in _docdecs.RecentTags)
+            foreach (var recent in _linkMenu.RecentTags)
             {
                 if (recent.Text == _text)
                 {
@@ -132,53 +111,28 @@ namespace Dash
                 }
             }
 
-            //var doc = new DocumentController();
-            //doc.SetField<TextController>(KeyStore.DataKey, _text, true);
-            //doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
-
             if (unique)
             {
-                if (_docdecs.RecentTags.Count < 5)
+                var doc = new DocumentController();
+                doc.SetField<TextController>(KeyStore.DataKey, Text, true);
+                doc.SetField<ColorController>(KeyStore.BackgroundColorKey, Color, true);
+
+                if (_linkMenu.RecentTags.Count < 5)
                 {
-                    _docdecs.RecentTags.Enqueue(this);
-                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
+                    _linkMenu.RecentTags.Enqueue(this);
+                    _linkMenu.RecentTagsSave.Add(doc);
                 }
                 else
                 {
-                    _docdecs.RecentTags.Dequeue();
-                    _docdecs.RecentTagsSave.RemoveAt(0);
-                    _docdecs.RecentTags.Enqueue(this);
-                    _docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
+                    _linkMenu.RecentTags.Dequeue();
+                    _linkMenu.RecentTagsSave.RemoveAt(0);
+                    _linkMenu.RecentTags.Enqueue(this);
+                    _linkMenu.RecentTagsSave.Add(doc);
                 }
             }
 
-            var firstDoc = _docdecs.SelectedDocs.FirstOrDefault();
-            if (_docdecs.SelectedDocs.Count == 1)
-            {
-                //foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-                    foreach (var link in _docdecs.CurrentLinks)
-                    {
-                        if (link.GetDataDocument().GetLinkTag() != null)
-                        {
-                            AddTag(link);
-                            break;
-                        }
-                    }
-            }
-
-
-            _docdecs.SetPositionAndSize();
-        }
-
-        public void RidSelectionBorder()
-        {
-            xTagContainer.BorderThickness = new Thickness(0);
-
-        }
-
-        public void AddSelectionBorder()
-        {
-            xTagContainer.BorderThickness = new Thickness(2);
+            _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, Text, true);
+            MainPage.Instance.XDocumentDecorations.AddLinkTypeButton(Text);
 
         }
 
@@ -200,12 +154,12 @@ namespace Dash
             List<string> childList = new List<string>();
             List<string> recentList = new List<string>();
 
-            foreach (var tag in _docdecs.XTagContainer.Children)
+            foreach (var tag in _linkMenu.XTagContainer.Children)
             {
                 childList.Add((tag as Tag).Text);
             }
 
-            foreach (var tag in _docdecs.RecentTags)
+            foreach (var tag in _linkMenu.RecentTags)
             {
                 recentList.Add(tag.Text);
             }
@@ -214,55 +168,31 @@ namespace Dash
 
 
             DeleteTag();
-            if (_docdecs.RecentTags.Contains(this))
+
+            if (_linkMenu.RecentTags.Contains(this))
             {
 
-                _docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
                 var temp = new List<Tag>();
-                while (_docdecs.RecentTags.Any())
+                while (_linkMenu.RecentTags.Any())
                 {
-                    var currtag = _docdecs.RecentTags.Dequeue();
+                    var currtag = _linkMenu.RecentTags.Dequeue();
                     if (currtag.Text != Text)
                     {
                         temp.Add(currtag);
                     }
-                    _docdecs.Tags.Remove(currtag);
+                    _linkMenu.TagNameDict.Remove(currtag.Text);
                     
 
 
                 }
 
-                _docdecs.RecentTags.Clear();
+                _linkMenu.RecentTags.Clear();
+              
                 foreach (var tag in temp)
                 {
-                    _docdecs.RecentTags.Enqueue(tag);
-                    _docdecs.Tags.Add(tag);
-                    _docdecs.RecentTags.Enqueue(tag);
-                    _docdecs.RecentTagsSave.Remove(_docdecs.RecentTagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == tag.Text));
-                }
-
-                if (_docdecs.InLineTags.Any())
-                {
-                    var pop = _docdecs.InLineTags.Pop();
-
-                    _docdecs.RecentTags.Enqueue(pop);
-                    var doc = new DocumentController();
-                    doc.SetField<TextController>(KeyStore.DataKey, pop.Text, true);
-                    doc.SetField<ColorController>(KeyStore.BackgroundColorKey, pop.Color, true);
-
-                    _docdecs.RecentTagsSave.Add(doc);
-
-                    var tags = new List<Tag>();
-                    foreach (var tag in _docdecs.XTagContainer.Children)
-                    {
-                        tags.Add((tag as Tag));
-                    }
-                    _docdecs.XTagContainer.Children.Clear();
-                    _docdecs.XTagContainer.Children.Add(pop);
-                    foreach (var tag in tags)
-                    {
-                        _docdecs.XTagContainer.Children.Add(tag);
-                    }
+                    _linkMenu.RecentTags.Enqueue(tag);
+                    _linkMenu.TagNameDict.Add(tag.Text, tag);
+                  
                 }
 
                 temp.Reverse();
@@ -272,35 +202,49 @@ namespace Dash
                     var doc = new DocumentController();
                     doc.SetField<TextController>(KeyStore.DataKey, tag.Text, true);
                     doc.SetField<ColorController>(KeyStore.BackgroundColorKey, tag.Color, true);
-                    _docdecs.RecentTagsSave.Add(doc);
-                }
-                
-            }
 
+                }
+            }
         }
 
         private void DeleteTag()
         {
-            if (_docdecs.Tags.Count > 1 && _docdecs.Tags.Contains(this))
+            if (_linkMenu.TagNameDict.Count > 1 && _linkMenu.TagNameDict.ContainsKey(Text))
             {
                 if (!this.Text.Equals("Annotation"))
                 {
-                    if (_docdecs.TagMap.TryGetValue(Text, out var list))
+                    //if (_docdecs.TagMap.TryGetValue(Text, out var list))
+                    //{
+                    //    var newlinks = list;
+                    //    _docdecs.TagMap.Remove(Text);
+                    //    var oldlinks = _docdecs.TagMap["Annotation"];
+                    //    oldlinks.AddRange(newlinks);
+                    //    _docdecs.TagMap["Annotation"] = oldlinks;
+                    //}
+
+                    _linkMenu.TagNameDict.Remove(Text);
+                    _linkMenu.XTagContainer.Children.Remove(this as UIElement);
+                    DocumentController tempTag = new DocumentController();
+                    DocumentController tempRecent = new DocumentController();
+                    foreach (var doc in _linkMenu.TagsSave)
                     {
-                        var newlinks = list;
-                        _docdecs.TagMap.Remove(Text);
-                        var oldlinks = _docdecs.TagMap["Annotation"];
-                        oldlinks.AddRange(newlinks);
-                        _docdecs.TagMap["Annotation"] = oldlinks;
+                        if (doc.GetField<TextController>(KeyStore.DataKey).ToString().Equals(Text))
+                        {
+                            tempTag = doc;
+                        }
                     }
 
-                    _docdecs.Tags.Remove(this);
-                    _docdecs.TagsSave.Remove(_docdecs.TagsSave.FirstOrDefault(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text));
-                    _docdecs._tagNameDict.Remove(Text);
+                    _linkMenu.TagsSave.Remove(tempTag);
 
+                    foreach (var doc in _linkMenu.RecentTagsSave)
+                    {
+                        if (doc.GetField<TextController>(KeyStore.DataKey).ToString().Equals(Text))
+                        {
+                            tempRecent = doc;
+                        }
+                    }
 
-
-                    _docdecs.XTagContainer.Children.Remove(this as UIElement);
+                    _linkMenu.RecentTagsSave.Remove(tempRecent);
                 }
             }
         }

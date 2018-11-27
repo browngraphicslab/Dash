@@ -1,0 +1,36 @@
+﻿<Grid
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dash="using:Dash"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+
+    <Grid  HorizontalAlignment="Stretch" BorderBrush="CadetBlue" BorderThickness="3">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"></ColumnDefinition>
+            <ColumnDefinition Width="1"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <dash:EditableTextBlock x:Name="xTextField0" Grid.Row="0" Text="Title" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Grid  Grid.Row="1" >
+                <Grid Background="CadetBlue" Opacity="0.2"/>
+                <dash:EditableImage x:Name="xImageField1"/>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1" Background="CadetBlue" />
+        <Grid Grid.Column="2">
+            <Grid Background="CadetBlue" Opacity="0.4"></Grid>
+            <StackPanel >
+                <dash:EditableTextBlock x:Name="xTextField2" Text="Default1" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 10 0 0" />
+                <dash:EditableTextBlock x:Name="xTextField3" Text="Default2" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
+                <dash:EditableTextBlock x:Name="xTextField4" Text="Default3" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
+                <dash:EditableTextBlock x:Name="xTextField5" Text="Default4" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
+                <dash:EditableTextBlock x:Name="xTextField6" Text="Default5" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Grid>
