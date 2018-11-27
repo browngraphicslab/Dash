@@ -15,6 +15,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
@@ -55,37 +56,36 @@ namespace Dash
 
         private static LocalPDFEndpoint _pdfEndpoint = RESTClient.Instance.GetPDFEndpoint();
         private int _searchEnd = 0;
+        private WeakEventListener<PdfView, DocumentController, DocumentController.DocumentFieldUpdatedEventArgs> SearchIndexHandler;
 
         public PdfView()
         {
             InitializeComponent();
             _topPdf.Visibility = Visibility.Collapsed;
-            Loaded += (s, e) =>
-            {
-                LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey,
-                        (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchIndexKey, SearchIndexUpdated);
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchStringKey, SearchStringUpdated);
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchPreviousIndexKey, SearchPreviousPressed);
-            };
-            Unloaded += (s, e) =>
-            {
-                LayoutDocument.RemoveFieldUpdatedListener(KeyStore.SearchIndexKey, SearchIndexUpdated);
-                LayoutDocument.RemoveFieldUpdatedListener(KeyStore.SearchStringKey, SearchStringUpdated);
-                LayoutDocument.RemoveFieldUpdatedListener(KeyStore.SearchPreviousIndexKey, SearchPreviousPressed);
-                SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
-            };
+            bool initialized = false;
             Loaded += (s, e) =>
             {
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-                LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
                 if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
                 {
                     GoToUpdatedFieldChanged(LayoutDocument, null);
                 }
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchIndexKey, SearchIndexUpdated);
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchStringKey, SearchStringUpdated);
-                LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchPreviousIndexKey, SearchPreviousPressed);
+
+                if (!initialized)
+                {
+                    SearchIndexHandler = LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchIndexKey,
+                        (view, controller, arg3) => view.SearchIndexUpdated(controller, arg3));
+                    LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchStringKey,
+                        (view, controller, arg3) => view.SearchStringUpdated(controller, arg3));
+                    LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchPreviousIndexKey,
+                        (view, controller, arg3) => view.SearchPreviousPressed(controller, arg3));
+
+                    initialized = true;
+                }
+            };
+            Unloaded += (s, e) =>
+            {
+                SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
             };
             SizeChanged += (ss, ee) =>
             {
@@ -111,7 +111,7 @@ namespace Dash
                 }
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
-            
+
 
             //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
         }
@@ -135,8 +135,9 @@ namespace Dash
                     _botPdf.AnnotationOverlay.SelectIndex(_searchEnd - i);
                 }
 
-                _botPdf.ScrollViewer.ChangeView(null,
-                    _botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top + _botPdf.ScrollViewer.ViewportHeight / 2, null, true);
+                _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top);
+                //_botPdf.ScrollViewer.ChangeView(null,
+                //    _botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top + _botPdf.ScrollViewer.ViewportHeight / 2, null, true);
                 //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds
                 //    .Top);
                 LayoutDocument.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, false, true);
@@ -145,12 +146,12 @@ namespace Dash
 
         private void SearchStringUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.SearchIndexKey, SearchIndexUpdated);
+            SearchIndexHandler?.Detach();
             _previousSelections.Clear();
+            _searchEnd = 0;
             LayoutDocument.SetField<NumberController>(KeyStore.SearchIndexKey, 0, true);
             prevIndex = -1;
-            _searchEnd = 0;
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.SearchIndexKey, SearchIndexUpdated);
+            SearchIndexHandler = LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchIndexKey, (view, collection, arg3) => view.SearchIndexUpdated(collection, arg3));
         }
 
         private int prevIndex = -1;
@@ -181,8 +182,9 @@ namespace Dash
 
                             prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
 
-                            _botPdf.ScrollViewer.ChangeView(null,
-                                _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top + _botPdf.ScrollViewer.ViewportHeight / 2, null, true);
+                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top);
+                            //_botPdf.ScrollViewer.ChangeView(null,
+                            //    _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top, null, true);
                             //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
                             //    .Top);
                             _previousSelections.Add(index - i);
@@ -462,20 +464,17 @@ namespace Dash
             _topPdf.Bind();
 
             this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
-<<<<<<< HEAD
-
-=======
             try
             {
                 if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
                 {
                     GoToUpdatedFieldChanged(LayoutDocument, null);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
 
             }
->>>>>>> 2cd243cf4b6ddc321d08120b236e81be51f9bb2a
         }
 
         private double CalculateMaxPDFWidth(PdfDocument pdfDocument)
