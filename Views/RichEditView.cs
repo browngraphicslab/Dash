@@ -894,7 +894,7 @@ namespace Dash
         }
 
         public const string HyperlinkMarker = "<hyperlink marker>";
-        public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
+        public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         { 
@@ -919,7 +919,7 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
             {
-                Document.Selection.FindText(HyperlinkText, getRtfText().Length, FindOptions.Case);
+                Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
                 if (Document.Selection.StartPosition != Document.Selection.EndPosition)
                 {
                     var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;

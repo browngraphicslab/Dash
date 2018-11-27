@@ -409,6 +409,8 @@ namespace Dash
                         prevIndex = index;
                     }
 
+                    //sb.Append("}");
+
                     var dataPackage = new DataPackage();
                     dataPackage.SetRtf(sb.ToString());
                     dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
