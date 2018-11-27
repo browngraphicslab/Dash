@@ -220,6 +220,7 @@ namespace Dash
             frame_history_forward,
             undo,
             redo,
+            split,
             main_document,
             clear,
             global_export,

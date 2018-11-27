@@ -152,18 +152,9 @@ namespace Dash
 
         public void ScrollToPosition(double pos)
         {
-            var sizes = Pages.PageSizes;
-            var botOffset = 0.0;
-            foreach (var size in sizes)
-            {
-                var scale = ScrollViewer.ViewportWidth / size.Width;
-                if (botOffset + (size.Height * scale) - pos > 1)
-                {
-                    break;
-                }
-
-                botOffset += (size.Height * scale) + 15;
-            }
+            var offset = pos * pageScaling(Pages.PageSizes.First().Width);
+            var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2) * pageScaling(Pages.PageSizes.First().Width),
+                0);
 
             ScrollViewer.ChangeView(null, botOffset, null);
         }
@@ -417,16 +408,18 @@ namespace Dash
                             }
                             else if (char.IsNumber(contents.First()))
                             {
-                                sb.Append("\\" + (string)selectableElement.Contents);
+                                sb.Append("\\" + contents);
                             }
                             else
                             {
-                                sb.Append((string)selectableElement.Contents);
+                                sb.Append(contents);
                             }
                         }
 
                         prevIndex = index;
                     }
+
+                    //sb.Append("}");
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetRtf(sb.ToString());

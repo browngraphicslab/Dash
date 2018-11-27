@@ -482,6 +482,13 @@ namespace Dash
             }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
 
+            //highlight doc results
+            HighlightSearchResults(docs);
+            foreach (var doc in docs)
+            {
+                doc.SetField<TextController>(KeyStore.SearchStringKey, text, true);
+            }
+
             var vmGroups = new List<SearchResultViewModel>();
 
             Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
