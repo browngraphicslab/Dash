@@ -23,7 +23,7 @@
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBox x:Name="xTextBox" Loaded="TextBoxLoaded" BorderBrush="Transparent" Background="Transparent" IsEnabled="False" Margin="-5"/>
-                                <SymbolIcon Symbol="Setting" Tapped="SymbolIcon_SettingsTapped"  PointerEntered="SymbolIcon_PointerEntered" PointerExited="SymbolIcon_PointerExited"></SymbolIcon>
+                                <SymbolIcon Symbol="Setting" Tapped="SymbolIcon_SettingsTapped"  PointerEntered="SymbolIcon_PointerEntered" PointerExited="SymbolIcon_PointerExited"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>

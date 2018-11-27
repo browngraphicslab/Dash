@@ -154,11 +154,13 @@ namespace Dash
             var textBox = (sender as TextBox);
             if (textBox != null)
             {
-                var linkDoc = (textBox.DataContext as DocumentController);
+                var linkDoc = (textBox.DataContext as DocumentController).GetDataDocument();
+                var linkedFrom = linkDoc.GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
+                var displayDoc = linkDoc.GetDereferencedField<DocumentController>(linkedFrom.Equals(_documentView.ViewModel.DataDocument) ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,
-                    Document = linkDoc,
+                    Document = displayDoc,
                     Mode = BindingMode.OneWay,
                     Context = null
                 };
