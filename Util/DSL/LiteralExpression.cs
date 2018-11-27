@@ -9,7 +9,7 @@ namespace Dash
 
         public LiteralExpression(FieldControllerBase field)
         {
-            this._field = field;
+            _field = field;
         }
 
         public override Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)

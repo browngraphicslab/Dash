@@ -15,12 +15,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash.Controllers.Operators;
-using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.FontIcons;
 using Dash.Converters;
 using DashShared;
-using Dash.Views.Collection;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -154,8 +151,8 @@ namespace Dash
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch;
                 VerticalAlignment = VerticalAlignment.Stretch;
-                this.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, null);
-                this.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, null);
+                this.AddFieldBinding(HorizontalAlignmentProperty, null);
+                this.AddFieldBinding(VerticalAlignmentProperty, null);
             }
             else
             {
@@ -191,7 +188,7 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 PointerWheelChanged += wheelChangedHandler;
 
-                this.UpdateAlignmentBindings();
+                UpdateAlignmentBindings();
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
                 var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
@@ -241,7 +238,7 @@ namespace Dash
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (s, e) =>
             {
-                if (this.IsRightBtnPressed() && this.ViewModel.AreContentsHitTestVisible)
+                if (this.IsRightBtnPressed() && ViewModel.AreContentsHitTestVisible)
                 {
                     if (SelectionManager.TryInitiateDragDrop(this, null, e))
                         e.Handled = true;
@@ -251,6 +248,8 @@ namespace Dash
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, true);
             Tapped += async (s, e) => e.Handled = await TappedHandler(e.Handled, false);
+            DoubleTapped += async (sender, args) => await ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
+            RightTapped += async (sender, args) => await ExhibitBehaviors(KeyStore.RightTappedOpsKey);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
@@ -262,7 +261,7 @@ namespace Dash
             UpdateVisibilityBinding();
             UpdateAlignmentBindings();
 
-            this.BindBackgroundColor();
+            BindBackgroundColor();
             ViewModel?.Load();
         }
 
@@ -550,7 +549,7 @@ namespace Dash
                 //      but it would still be in the list of pinned annotations.  That means the document would reappear
                 //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
                 //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
-                this.ViewModel.DocumentController.SetHidden(true);
+                ViewModel.DocumentController.SetHidden(true);
             }
             else if (ParentCollection != null)
             {
@@ -669,33 +668,9 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (!wasHandled && !wasRightTapped)
-            {
-                var scripts = ViewModel.DocumentController.GetScripts(KeyStore.TappedScriptKey);
-                if (scripts != null)
-                {
-                    using (UndoManager.GetBatchHandle())
-                    {
-                        var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
-                        var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
-                        foreach (var operatorController in scripts)
-                        {
-                            tasks.Add(ExecutionEnvironment.Run(operatorController, args, new DictionaryScope()));
-                        }
-
-                        if (tasks.Any())
-                        {
-                            await Task.WhenAll(tasks);
-                        }
-                    }
-
-                    return true;
-                }
-            }
-            if (!wasHandled)
-            {
-                FocusedDocument = this;
-            }
+            if (!wasHandled && await ExhibitBehaviors(wasRightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey)) return true;
+            
+            if (!wasHandled) FocusedDocument = this;
 
             if (!(FocusManager.GetFocusedElement() is FrameworkElement focused) || !focused.GetAncestorsOfType<DocumentView>().Contains(this))
             {
@@ -721,6 +696,36 @@ namespace Dash
                 {
                     // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     cfview?.Focus(FocusState.Programmatic);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<bool> ExhibitBehaviors(KeyController behaviorKey)
+        {
+            var scripts = ViewModel.DocumentController.GetBehaviors(behaviorKey);
+            if (scripts != null && scripts.Any())
+            {
+                using (UndoManager.GetBatchHandle())
+                {
+                    var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                    var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
+                    foreach (var operatorController in scripts)
+                    {
+                        var task = ExecutionEnvironment.Run(operatorController, args, new DictionaryScope());
+                        if (!task.IsCompleted)
+                        {
+                            tasks.Add(task);
+                        }
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
                 }
 
                 return true;
@@ -1064,7 +1069,7 @@ namespace Dash
                     Converter = new StringToBrushConverter(),
                     Mode = BindingMode.TwoWay,
                     Context = new Context(),
-                    FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.Transparent)
+                    FallbackValue = new SolidColorBrush(Colors.Transparent)
                 };
                 xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
             }
@@ -1167,28 +1172,12 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsAdornment_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = ViewModel.LayoutDocument.GetScripts(KeyStore.TappedScriptKey)?.Any(op => op is FollowLinksOperator) ?? false ? "Remove Button Behavior" : "Add Button Behavior",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.AddressBook }
+                Text = AnyBehaviors() ? "Manage Behaviors" : "Add Behaviors",
+                Icon = new FontIcons.FontAwesome { Icon = AnyBehaviors() ? FontAwesomeIcon.AddressBook : FontAwesomeIcon.Plus }
             });
-            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemToggleAsButton_Click;
-            xMenuFlyout.Items.Add(new MenuFlyoutItem()
-            {
-                Text = "Add Tapped Behavior",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Plus }
-            });
-            var script = "function(doc) {" +
-                         "  var funcText = text_input();" +
-                         "  var op = exec(funcText);" +
-                         "  if(doc.TappedEvent == null) {" +
-                         "     doc.TappedEvent = [op];" +
-                         "  } else {" +
-                         "      doc.TappedEvent = doc.TappedEvent + op;" +
-                         "  }" +
-                         "}";
-            var addOp = await new DSL().Run(script, true) as OperatorController;
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
             {
-                await ExecutionEnvironment.Run(addOp, new List<FieldControllerBase> { ViewModel.DocumentController });
+                await UIFunctions.ManageBehaviors(ViewModel.DocumentController);
             };
             if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
@@ -1224,14 +1213,16 @@ namespace Dash
             }
             else if (ViewModel.Content.GetFirstDescendantOfType<CollectionView>() is CollectionView cView)
             {
-                cView.SetupContextMenu(this.xMenuFlyout);
+                cView.SetupContextMenu(xMenuFlyout);
             }
             if ((ViewModel.Content is ContentPresenter cpresent) &&
                 (cpresent.Content is CollectionView collectionView2))
             {
-                collectionView2.SetupContextMenu(this.xMenuFlyout);
+                collectionView2.SetupContextMenu(xMenuFlyout);
             }
         }
+
+        private bool AnyBehaviors() => ViewModel.LayoutDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
 
         private void Cut(bool delete)
         {
@@ -1260,15 +1251,9 @@ namespace Dash
 
         }
 
-        private void MenuFlyoutItemClipboardCopy_Click(object sender, RoutedEventArgs e)
-        {
-            Cut(false);
-        }
+        private void MenuFlyoutItemClipboardCopy_Click(object sender, RoutedEventArgs e) => Cut(false);
 
-        private void MenuFlyoutItemCut_Click(object sender, RoutedEventArgs e)
-        {
-            Cut(true);
-        }
+        private void MenuFlyoutItemCut_Click(object sender, RoutedEventArgs e) => Cut(true);
 
         private void MenuFlyoutItemOpenCollapsed_OnClick(object sender, RoutedEventArgs e)
         {

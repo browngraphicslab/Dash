@@ -643,8 +643,7 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //bcz: fix this -- it dies for multiple document selections
-            var dragDocOffset  = args.GetPosition(this);
+            var dragDocOffset  = args.GetPosition(sender);
             var relDocOffsets  = SelectedDocs.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
             var parCollections = SelectedDocs.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(SelectedDocs, parCollections, relDocOffsets, dragDocOffset) { DraggingLinkButton = true });

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
@@ -94,6 +95,14 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public Timer LowPriorityTimer = new Timer(3600000);     // every hour
+        public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
+        public Timer HighPriorityTimer = new Timer(5000);      // every 15 seconds
+
+        public ListController<DocumentController> LowPriorityOps;
+        public ListController<DocumentController> ModeratePriorityOps;
+        public ListController<DocumentController> HighPriorityOps;
+
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
@@ -107,6 +116,7 @@ namespace Dash
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
+            
 
             SetUpToolTips();
 
@@ -251,6 +261,18 @@ namespace Dash
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
 
+            LowPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.LowPriorityOpsKey);
+            ModeratePriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey);
+            HighPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey);
+
+            LowPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, LowPriorityOps);
+            ModeratePriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, ModeratePriorityOps);
+            HighPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, HighPriorityOps);
+
+            LowPriorityTimer.Start();
+            ModeratePriorityTimer.Start();
+            HighPriorityTimer.Start();
+
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
@@ -271,6 +293,38 @@ namespace Dash
 
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
         }
+
+        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,
+            ListController<DocumentController> opList)
+        {
+            if (opList.Any())
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    var tasks = new List<Task>(opList.Count);
+                    foreach (var opDoc in opList)
+                    {
+                        var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
+                        var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
+                        var task = OperatorScript.Run(op, new List<FieldControllerBase>() {layoutDoc}, new DictionaryScope());
+                        if (!task.IsFaulted) tasks.Add(task);
+                        else Debug.WriteLine("TASK FAULTED!");
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                });
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
+
 
         private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
@@ -296,7 +350,7 @@ namespace Dash
 </Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
             doc.SetField<TextController>(KeyStore.TitleKey, name, true);
-            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> { op }, true);
+            doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
 
             return doc;
         }
@@ -829,7 +883,7 @@ function (d) {
         /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
         /// </summary>
         /// <param name="popup"></param>
-        private void SetUpPopup(DashPopup popup)
+        public void SetUpPopup(DashPopup popup)
         {
             ActivePopup = popup;
             xOverlay.Visibility = Visibility.Visible;
@@ -842,7 +896,7 @@ function (d) {
         /// <summary>
         /// This method is called after a popup closes, to remove it from the page.
         /// </summary>
-        private void UnsetPopup()
+        public void UnsetPopup()
         {
             xOverlay.Visibility = Visibility.Collapsed;
             if (ActivePopup != null)
