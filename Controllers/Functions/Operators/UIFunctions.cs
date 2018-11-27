@@ -15,8 +15,8 @@ namespace Dash
         public static async Task<ListController<DocumentController>> ManageBehaviors(DocumentController layoutDoc)
         {
             var dataDoc = layoutDoc.GetDataDocument();
-            var behaviors = new ObservableCollection<DocumentController>(dataDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey));
-            var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel(behaviors) };
+            //var behaviors = new ObservableCollection<DocumentController>(dataDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey));
+            var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel() };
             var updatedBehaviors = await manageBehaviors.OpenAsync(layoutDoc);
 
             dataDoc.SetField(KeyStore.DocumentBehaviorsKey, updatedBehaviors, true);

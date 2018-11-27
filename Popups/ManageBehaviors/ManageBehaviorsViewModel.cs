@@ -18,13 +18,13 @@ namespace Dash.Popups
         public ManageBehaviorsViewModel()
         {
             Behaviors = new ObservableCollection<DocumentController>();
-            _behaviors.CollectionChanged += BehaviorsChanged;
+            //_behaviors.CollectionChanged += BehaviorsChanged;
         }
 
         public ManageBehaviorsViewModel(ObservableCollection<DocumentController> behaviors)
         {
             Behaviors = behaviors;
-            _behaviors.CollectionChanged += BehaviorsChanged;
+            //_behaviors.CollectionChanged += BehaviorsChanged;
         }
 
         public void RemoveBehavior(DocumentController behavior) => Behaviors.Remove(behavior);

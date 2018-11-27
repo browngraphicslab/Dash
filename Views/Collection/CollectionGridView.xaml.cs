@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dash.FontIcons;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using static Dash.CollectionView;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 

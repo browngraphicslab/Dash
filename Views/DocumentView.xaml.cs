@@ -711,7 +711,7 @@ namespace Dash
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                    var args = new List<FieldControllerBase> {ViewModel.DocumentController};
                     var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
                     foreach (var operatorController in scripts)
                     {
