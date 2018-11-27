@@ -14,7 +14,7 @@ namespace Dash
 
         private readonly DocumentController _viewDoc;
         private readonly DocumentController _dataDoc;
-        private OuterReplScope _scope;
+        private DocumentScope _scope;
 
         private static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         private readonly List<char> _takenLetters = new List<char>();
@@ -33,7 +33,7 @@ namespace Dash
         {
             _viewDoc = doc;
             _dataDoc = doc.GetDataDocument();
-            _scope = new OuterReplScope();
+            _scope = new DocumentScope();
             InitializeComponent();
 
             //intialize lists to save data
@@ -110,7 +110,7 @@ namespace Dash
             var commands = new ListController<TextController>();
              textToCommands(_currentText.ToCharArray(), "", commands);
 
-            _scope = new OuterReplScope();
+            _scope = new DocumentScope();
             _dsl = new DSL(_scope);
             var results = new ListController<FieldControllerBase>();
             foreach (var command in commands)
@@ -146,7 +146,7 @@ namespace Dash
         private async void XRun_OnClick(object sender, RoutedEventArgs e)
         {
             //make new scope
-            _scope = new OuterReplScope();
+            _scope = new DocumentScope();
             _dsl = new DSL(_scope);
 
             FieldControllerBase returnValue;

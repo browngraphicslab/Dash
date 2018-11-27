@@ -99,7 +99,10 @@ namespace Dash
         }
 
         private void PinnedNodes_CollectionChanged(object sender,
-            System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => DrawLinesWithNewDocs();
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            DrawLinesWithNewDocs();
+        }
 
         private void PlayStopButton_Click(object sender, RoutedEventArgs e) => PlayStopClick();
 
@@ -819,6 +822,7 @@ namespace Dash
         private void XPresentations_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //update CurrPres accordingly
+            ViewModel.CurrPres.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.DataKey, ViewModel.PinnedNodes.Select(pn => pn.Document), true);
             ViewModel.CurrPres = (xPresentations.SelectedItem as DocumentController);
             if (ViewModel?.CurrPres != null) xTitle.Text = ViewModel.CurrPres.Title;
         }

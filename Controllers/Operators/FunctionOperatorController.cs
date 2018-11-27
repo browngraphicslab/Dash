@@ -12,19 +12,54 @@ namespace Dash
     [OperatorType(Op.Name.function)]
     public sealed class FunctionOperatorController : OperatorController
     {
+        private FunctionOperatorModel FunctionModel => Model as FunctionOperatorModel;
+
+        private bool _initialized = true;
         public FunctionOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
+            _initialized = false;
             Debug.Assert(operatorFieldModel is FunctionOperatorModel);
             var model = (FunctionOperatorModel)operatorFieldModel;
 
             InitFunc(model.Parameters, TypescriptToOperatorParser.ParseToExpression(model.FunctionCode), model.ReturnType);
         }
 
-        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel)) { }
-
-        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, Scope scope = null) : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel))
+        public override async Task InitializeAsync()
         {
-            _funcScope = scope;
+            if (_initialized) return;
+
+            _initialized = true;
+
+            if (FunctionModel.CaptureDocumentId != null)
+            {
+                _documentScope = await RESTClient.Instance.Fields.GetControllerAsync<DocumentController>(FunctionModel.CaptureDocumentId);
+                _funcScope = Scope.FromDocument(_documentScope);
+            }
+        }
+
+        protected override void RefInit()
+        {
+            base.RefInit();
+            ReferenceField(_documentScope);
+        }
+
+        protected override void RefDestroy()
+        {
+            base.RefDestroy();
+            ReleaseField(_documentScope);
+        }
+
+        public FunctionOperatorController() : base(new FunctionOperatorModel("", new List<KeyValuePair<string, TypeInfo>>(), TypeInfo.None, TypeKey.KeyModel, null)) { }
+
+        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, Scope scope = null) : this(functionCode, paramss, block, returnType, scope?.ToDocument(true))
+        {
+        }
+
+        public FunctionOperatorController(string functionCode, List<KeyValuePair<string, TypeInfo>> paramss, ScriptExpression block, TypeInfo returnType, DocumentController scopeDocument)
+            : base(new FunctionOperatorModel(functionCode, paramss, returnType, TypeKey.KeyModel, scopeDocument.Id))
+        {
+            _funcScope = Scope.FromDocument(scopeDocument);
+            _documentScope = scopeDocument;
             InitFunc(paramss, block, returnType);
         }
 
@@ -41,21 +76,45 @@ namespace Dash
 
         }
 
+        public string FunctionCode => FunctionModel.FunctionCode;
+
+        public bool TrySetFunctionCode(string code)
+        {
+            var exp = TypescriptToOperatorParser.ParseToExpression(code);
+            if (exp == null)
+            {
+                return false;
+            }
+            var functionCode = FunctionModel.FunctionCode;
+            FunctionModel.FunctionCode = code;
+            _block = exp;
+            UpdateOnServer(new UndoCommand(() => TrySetFunctionCode(code), () => TrySetFunctionCode(functionCode)));
+            return true;
+        }
+
+        public override string ToScriptString(DocumentController thisDoc)
+        {
+            string args = string.Join(", ",
+                Inputs.Select(kvp =>
+                    kvp.Value.Type == TypeInfo.Any ? kvp.Key.Name : $"{kvp.Key.Name} : {kvp.Value.Type}"));
+            var fString = $"function({args}){{\n\t\n}}";
+            return fString;
+        }
+
         private readonly List<string> _inputNames = new List<string>();
         private ScriptExpression _block;
         private TypeInfo _returnType;
+
         private Scope _funcScope;
+        private DocumentController _documentScope;
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = KeyController.Get("Function");
 
-
         //Output keys
         public static readonly KeyController ResultKey = KeyController.Get("Result");
 
-        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
-        {
-        };
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>();
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -66,24 +125,10 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            scope = new Scope(scope);
+            scope = new DictionaryScope(_funcScope);
             for (var i = 0; i < _inputNames.Count; i++)
             {
-                FieldControllerBase value = inputs[Inputs[i].Key];
-
-                TypeInfo expectedType = Inputs[i].Value.Type;
-
-                //if not expected type , don't run
-                if (expectedType != TypeInfo.Any && value.TypeInfo != expectedType)
-                {
-                    throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType + ". Potentially other mismatched parameters."));
-                }
-                scope.DeclareVariable(_inputNames[i], value);
-            }
-
-            if (_funcScope != null)
-            {
-                scope = scope.Merge(_funcScope);
+                scope.DeclareVariable(_inputNames[i], inputs[Inputs[i].Key]);
             }
 
             var (result, _) = await _block.Execute(scope);

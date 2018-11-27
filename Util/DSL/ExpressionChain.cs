@@ -19,10 +19,10 @@ namespace Dash
 
         public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            var newScope = _newScope ? new Scope(scope) : scope;
+            var newScope = _newScope ? new DictionaryScope(scope) : scope;
 
             var exps = _expressions.ToArray();
-            var length = exps.Count();
+            var length = exps.Length;
             FieldControllerBase retVal = null;
             for (var i = 0; i < length; i++)
             {

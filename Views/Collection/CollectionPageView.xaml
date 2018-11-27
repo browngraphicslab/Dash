@@ -31,13 +31,14 @@
                       DragItemsStarting="XThumbs_DragItemsStarting">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock DataContextChanged="FrameworkElement_OnDataContextChanged">
-                            <FlyoutBase.AttachedFlyout>
+                        <TextBlock DataContextChanged="FrameworkElement_OnDataContextChanged" RightTapped="Thumb_RightTapped">
+                            <TextBlock.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Text="Rename" Click="Rename_OnClicked"></MenuFlyoutItem>
-                                    <MenuFlyoutItem Text="Delete" Click="Delete_OnClicked"></MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Rename" Click="Rename_OnClicked"/>
+                                    <MenuFlyoutItem Text="Delete" Click="Delete_OnClicked"/>
+                                    <MenuFlyoutItem Text="Navigate to context" Click="Navigate_OnClicked" Visibility="Collapsed" Loaded="Navigate_OnLoaded"/>
                                 </MenuFlyout>
-                            </FlyoutBase.AttachedFlyout>
+                            </TextBlock.ContextFlyout>
                         </TextBlock>
                     </DataTemplate>
                 </ListView.ItemTemplate>

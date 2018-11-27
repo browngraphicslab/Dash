@@ -194,7 +194,7 @@ namespace Dash
             help,
             print,
             get_selected_docs,
-            text_input,
+            manage_behaviors,
             copy,
             video,
             audio,
@@ -220,7 +220,14 @@ namespace Dash
             frame_history_forward,
             undo,
             redo,
-            alias_of
+            main_document,
+            clear,
+            global_export,
+            alias_of,
+            split,
+            sort,
+            toggle_presentation,
+            export_workspace
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

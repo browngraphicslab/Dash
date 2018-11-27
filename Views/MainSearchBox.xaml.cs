@@ -386,7 +386,7 @@ namespace Dash
                 var script = "for (var doc in docs){ \r" + code + "\r }";
 
                 //run script
-                var scope = new OuterReplScope();
+                var scope = new DocumentScope();
                 scope.DeclareVariable("docs", new ListController<DocumentController>(docs));
                 var dsl = new DSL(scope);
                 dsl.Run(script, true);
@@ -489,11 +489,14 @@ namespace Dash
             }
             var docs = searchRes.Select(f => f.ViewDocument).ToList();
 
-            var vmGroups = new List<SearchResultViewModel>();
+            //highlight doc results
+            HighlightSearchResults(docs);
+            foreach (var doc in docs)
+            {
+                doc.SetField<TextController>(KeyStore.SearchStringKey, text, true);
+            }
 
-            Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
-            Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
-            Debug.WriteLine("OPTIONS:"+_options.Count);
+            var vmGroups = new List<SearchResultViewModel>();
 
             foreach (var resList in map)
             {
@@ -550,8 +553,6 @@ namespace Dash
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
-
-            Debug.WriteLine("First length: "+first.Length);
 
             foreach (var searchResultViewModel in first)
             {
@@ -679,8 +680,6 @@ namespace Dash
             var index = itemsSource.IndexOf(viewModel);
             var count = itemsSource.Count;
             var numCopies = viewModel.Copies;
-            Debug.WriteLine(numCopies);
-            //Debug.WriteLine(index);
             if (viewModel?.DropDownText == ">")
             {
                 viewModel.DropDownText = "v";
@@ -723,11 +722,6 @@ namespace Dash
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
-        {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-        }
-
-        private void Options_Tapped(object sender, RoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }
