@@ -194,7 +194,7 @@ namespace Dash
             help,
             print,
             get_selected_docs,
-            text_input,
+            manage_behaviors,
             copy,
             video,
             audio,
@@ -224,6 +224,7 @@ namespace Dash
             clear,
             global_export,
             alias_of,
+            split,
             sort,
             toggle_presentation,
             export_workspace

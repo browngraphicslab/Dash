@@ -26,8 +26,8 @@ namespace Dash
             return _errorDoc;
         }
 
-        private string Exception() => $"<{VariableName}> is not currently defined.";
+        private string Exception() => $"Variable \'{VariableName}\' is not currently defined.";
 
-        private string Feedback() => $"Declare definition with <var {VariableName} = ____> syntax or convert to string.";
+        private string Feedback() => $"Declare definition with 'var {VariableName} = ____' syntax or convert to string.";
     }
 }

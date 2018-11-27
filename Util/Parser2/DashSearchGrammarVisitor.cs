@@ -75,10 +75,9 @@ namespace Dash
                             return new Result();
                         }
 
-                        var scope = new DictionaryScope()
-                        {
-                            ["doc"] = document
-                        };
+                        var scope = new DictionaryScope();
+                        scope.DeclareVariable("doc", document);
+
                         var result = exp.Execute(scope).GetAwaiter().GetResult().Item1;
                         if (result is BoolController b && b.Data)
                         {

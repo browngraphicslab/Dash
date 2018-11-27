@@ -22,7 +22,7 @@ namespace Dash
             var newScope = _newScope ? new DictionaryScope(scope) : scope;
 
             var exps = _expressions.ToArray();
-            var length = exps.Count();
+            var length = exps.Length;
             FieldControllerBase retVal = null;
             for (var i = 0; i < length; i++)
             {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
@@ -94,6 +95,14 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public Timer LowPriorityTimer = new Timer(3600000);     // every hour
+        public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
+        public Timer HighPriorityTimer = new Timer(5000);      // every 15 seconds
+
+        public ListController<DocumentController> LowPriorityOps;
+        public ListController<DocumentController> ModeratePriorityOps;
+        public ListController<DocumentController> HighPriorityOps;
+
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
@@ -107,6 +116,7 @@ namespace Dash
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
+            
 
             SetUpToolTips();
 
@@ -251,6 +261,18 @@ namespace Dash
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
 
+            LowPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.LowPriorityOpsKey);
+            ModeratePriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey);
+            HighPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey);
+
+            LowPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, LowPriorityOps);
+            ModeratePriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, ModeratePriorityOps);
+            HighPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, HighPriorityOps);
+
+            LowPriorityTimer.Start();
+            ModeratePriorityTimer.Start();
+            HighPriorityTimer.Start();
+
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
@@ -272,7 +294,39 @@ namespace Dash
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
         }
 
-        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name)
+        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,
+            ListController<DocumentController> opList)
+        {
+            if (opList.Any())
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    var tasks = new List<Task>(opList.Count);
+                    foreach (var opDoc in opList)
+                    {
+                        var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
+                        var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
+                        var task = OperatorScript.Run(op, new List<FieldControllerBase>() {layoutDoc}, new DictionaryScope());
+                        if (!task.IsFaulted) tasks.Add(task);
+                        else Debug.WriteLine("TASK FAULTED!");
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                });
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
+
+
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
             var op = await new DSL().Run(tappedHandler, true) as OperatorController;
             if (op == null)
@@ -286,11 +340,17 @@ namespace Dash
       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
       xmlns:dash='using:Dash'
       xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
-    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center' />
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center'>
+" + (rotate ? @"
+        <TextBlock.RenderTransform>
+            <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
+        </TextBlock.RenderTransform>
+" : "") +  @"
+    </TextBlock>
 </Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
             doc.SetField<TextController>(KeyStore.TitleKey, name, true);
-            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> { op }, true);
+            doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
 
             return doc;
         }
@@ -300,9 +360,9 @@ namespace Dash
             toolbar.SetBackgroundColor(Colors.SkyBlue);
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
-            var buttons = new List<(string icon, string name, string function)>
+            var buttons = new List<(string icon, string name, bool rotate, string function)>
             {
-                ("\uE107", "Delete", @"
+                ("\uE107", "Delete", false, @"
 function(d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -312,7 +372,7 @@ function(d) {
     }
 }
 "),
-                ("\uE923", "Make Instance", @"
+                ("\uE923", "Make Instance", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -322,7 +382,7 @@ function (d) {
     }
 }
 "),
-                ("\uE924", "Make View Copy", @"
+                ("\uF571", "Make View Copy", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -332,7 +392,7 @@ function (d) {
     }
 }
 "),
-                ("\uE16F", "Make Copy", @"
+                ("\uE16F", "Make Copy", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -342,54 +402,98 @@ function (d) {
     }
 }
 "),
-                ("\uE10E", "Undo", @"
+                ("\uE840", "Pin", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = false;
+    }
+}
+"),
+                ("\uE77A", "Unpin", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = true;
+    }
+}
+"),
+                ("\uEC8F", "Fit Width", true, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Horizontal Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Horizontal Alignment"", ""Left"");
+            doc.Document.Width = doc.Document._StoredWidth;
+            doc.Document._StoredWidth = null;
+        } else {
+            doc.Document.set_field(""Horizontal Alignment"", ""Stretch"");
+            doc.Document._StoredWidth = doc.Document.Width;
+            doc.Document.Width = NaN;
+        }
+    }
+}
+"),
+                ("\uEC8F", "Fit Height", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Vertical Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Vertical Alignment"", ""Top"");
+            doc.Document.Height = doc.Document._StoredHeight;
+            doc.Document._StoredHeight = null;
+        } else {
+            doc.Document.set_field(""Vertical Alignment"", ""Stretch"");
+            doc.Document._StoredHeight = doc.Document.Height;
+            doc.Document.Height = NaN;
+        }
+    }
+}
+"),
+                ("\uE10E", "Undo", false, @"
 function(d) {
     undo();
 }
 "),
-                ("\uE10D", "Redo", @"
+                ("\uE10D", "Redo", false, @"
 function(d) {
     redo();
 }
 "),
-                ("\uF57C", "Split Horizontal", @"
+                ("\uF57C", "Split Horizontal", false, @"
 function (d) {
     split_horizontal();
 }
 "),
-                ("\uF57D", "Split Vertical", @"
+                ("\uE985", "Split Vertical", false, @"
 function (d) {
     split_vertical();
 }
 "),
-                ("\uE8BB", "Close Split", @"
+                ("\uE8BB", "Close Split", false, @"
 function (d) {
     close_split();
 }
 "),
-                ("\uE72B", "Back", @"
+                ("\uE72B", "Back", false, @"
 function (d) {
     frame_history_back();
 }
 "),
-                ("\uE72A", "Forward", @"
+                ("\uE72A", "Forward", false, @"
 function (d) {
     frame_history_forward();
 }
 "),
-                ("\uE898", "Export", @"
+                ("\uE898", "Export", false, @"
 function (d) {
     export_workspace();
 }
 "),
-                ("\uE768", "Toggle Presentation", @"
+                ("\uE768", "Toggle Presentation", false, @"
 function (d) {
     toggle_presentation();
 }
 "),
             };
 
-            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name))));
+            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name, item.rotate))));
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -779,7 +883,7 @@ function (d) {
         /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
         /// </summary>
         /// <param name="popup"></param>
-        private void SetUpPopup(DashPopup popup)
+        public void SetUpPopup(DashPopup popup)
         {
             ActivePopup = popup;
             xOverlay.Visibility = Visibility.Visible;
@@ -792,7 +896,7 @@ function (d) {
         /// <summary>
         /// This method is called after a popup closes, to remove it from the page.
         /// </summary>
-        private void UnsetPopup()
+        public void UnsetPopup()
         {
             xOverlay.Visibility = Visibility.Collapsed;
             if (ActivePopup != null)
@@ -952,17 +1056,26 @@ function (d) {
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SetHighlight(true);
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                     //AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
                     //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                  
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
                     onScreenView.ViewModel.LayoutDocument.SetHidden(false);
+                }
+                if (onScreenView.Visibility == Visibility.Visible)
+                {
+                    onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
+                    onScreenView.ViewModel.SetHighlight(true);
+                } else
+                {
+                    onScreenView.ViewModel.SetHighlight(false);
+                    onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegion());
                 }
             }
             else
@@ -970,9 +1083,8 @@ function (d) {
                 //Dock_Link(linkDoc, direction);
                 //target.SetHidden(false);
                 ToggleFloatingDoc(target);
+                target.GotoRegion(region, linkDoc);
             }
-
-            target.GotoRegion(region, linkDoc);
 
             return LinkHandledResult.HandledRemainOpen;
         }

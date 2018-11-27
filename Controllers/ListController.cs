@@ -308,7 +308,7 @@ namespace Dash
 
         public override bool TrySetValue(object value)
         {
-            if (value is List<T> list)
+            if (value is IEnumerable<T> list)
             {
                 Set(list);
                 //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, _typedData, prevList));
@@ -486,10 +486,13 @@ namespace Dash
 
         private bool RemoveHelper(T element)
         {
-            ReleaseContainedField(element);
 
             var removed = _typedData.Remove(element);
-            ListModel.Data.Remove(element.Id);
+            if (removed)
+            {
+                ReleaseContainedField(element);
+                ListModel.Data.Remove(element.Id);
+            }
 
             return removed;
         }

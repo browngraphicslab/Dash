@@ -106,8 +106,6 @@ namespace Dash
         {
             InitializeComponent();
 
-            SetUpToolTips();
-
             MenuToolbar.Instance = this;
             //set enum defaults
             //pinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/pinned.png"));
@@ -133,8 +131,8 @@ namespace Dash
         {
             XDocumentView.DataContext = new DocumentViewModel(collection)
             {
-                //IsDimensionless = true,
-                //ResizersVisible = false,
+                IsDimensionless = true,
+                ResizersVisible = false,
                 //Undecorated = true,
             };
         }
@@ -152,11 +150,17 @@ namespace Dash
         /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
         /// </summary>
         /// <param name="docs"></param>
-        public void Update(IEnumerable<DocumentView> docs)
+        private void Update(IEnumerable<DocumentView> docs)
         {
             if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
             subtoolbarElement = null;
+
+            if (!ToolbarColumn.Width.IsStar)
+            {
+                return;
+            }
+
             docs = docs.ToList();
 
             // just single select
@@ -349,8 +353,6 @@ namespace Dash
                 xGroupToolbar.TryMakeGroupEditable(false);
             }
 
-            //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
-            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
             //set proper subtoolbar to visible
             if (subtoolbarElement != null)
             {
@@ -367,84 +369,6 @@ namespace Dash
 
                 subtoolbarElement.Visibility = Visibility.Visible;
                 //xFloating.Floating_SizeChanged(null, null);
-            }
-        }
-
-        private void FitWidth(object sender, RoutedEventArgs e)
-        {
-            foreach (var d in SelectionManager.GetSelectedDocs())
-            {
-                if (d.ViewModel.LayoutDocument.GetHorizontalAlignment() == HorizontalAlignment.Stretch)
-                {
-                    d.ViewModel.LayoutDocument.SetWidth(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenWidthKey, null)?.Data ??
-                        (!double.IsNaN(d.ViewModel.LayoutDocument.GetWidth()) ? d.ViewModel.LayoutDocument.GetWidth() :
-                           d.ViewModel.LayoutDocument.GetActualSize().Value.X));
-                    d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
-                }
-                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView) || d.ViewModel.LayoutDocument.DocumentType.Equals(RichTextBox.DocumentType))
-                {
-                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenWidthKey, d.ViewModel.LayoutDocument.GetWidth(), true);
-                    d.ViewModel.LayoutDocument.SetWidth(double.NaN);
-                    d.ViewModel.LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                }
-            }
-        }
-        private void FitHeight(object sender, RoutedEventArgs e)
-        {
-            foreach (var d in SelectionManager.GetSelectedDocs())
-            {
-                if (d.ViewModel.LayoutDocument.GetVerticalAlignment() == VerticalAlignment.Stretch)
-                {
-                    d.ViewModel.LayoutDocument.SetHeight(d.ViewModel.LayoutDocument.GetDereferencedField<NumberController>(KeyStore.CollectionOpenHeightKey, null)?.Data ??
-                        (!double.IsNaN(d.ViewModel.LayoutDocument.GetHeight()) ? d.ViewModel.LayoutDocument.GetHeight() :
-                           d.ViewModel.LayoutDocument.GetActualSize().Value.Y));
-                    d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
-                }
-                else if (!(d.GetFirstAncestorOfType<CollectionView>()?.CurrentView is CollectionFreeformView) || d.ViewModel.LayoutDocument.DocumentType.Equals(RichTextBox.DocumentType))
-                {
-                    d.ViewModel.LayoutDocument.SetField<NumberController>(KeyStore.CollectionOpenHeightKey, d.ViewModel.LayoutDocument.GetHeight(), true);
-                    d.ViewModel.LayoutDocument.SetHeight(double.NaN);
-                    d.ViewModel.LayoutDocument.SetVerticalAlignment(VerticalAlignment.Stretch);
-                }
-            }
-        }
-        private void FreezeContents(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                foreach (var d in SelectionManager.GetSelectedDocs())
-                {
-                    d.AreContentsHitTestVisible = !d.AreContentsHitTestVisible;
-                    //xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
-                }
-            }
-        }
-        private void Copy(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                SelectionManager.GetSelectedDocs().ForEach((d) => d.CopyDocument());
-            }
-        }
-        private void MakeInstance(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                foreach (var d in SelectionManager.GetSelectedDocs())
-                {
-                    d.MakeInstance();
-                }
-            }
-        }
-
-        private void Delete(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                foreach (DocumentView d in SelectionManager.GetSelectedDocs())
-                {
-                    d.DeleteDocument();
-                }
             }
         }
 
@@ -495,308 +419,11 @@ namespace Dash
         }
 
         /// <summary>
-        /// Used to check if the toolbar is currently located at the top of screen, for UI purposes.
-        /// </summary>
-        public bool IsAtTop()
-        {
-            return (int)xFloating.GetCurrentTop() == 0;
-        }
-
-        /// <summary>
-        /// When the "Add Video" btn is clicked, this launches a file picker & adds selected video(s) to the workspace.
-        /// </summary>
-        private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
-        {
-            //instantiates a file picker, set to open in user's video library
-            var picker = new FileOpenPicker
-            {
-                ViewMode = PickerViewMode.Thumbnail,
-                SuggestedStartLocation = PickerLocationId.VideosLibrary
-            };
-
-            picker.FileTypeFilter.Add(".avi");
-            picker.FileTypeFilter.Add(".mp4");
-            picker.FileTypeFilter.Add(".wmv");
-
-            //awaits user upload of video 
-            var files = await picker.PickMultipleFilesAsync();
-
-            //TODO just add new images to docs list instead of going through mainPageCollectionView
-            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            if (files != null)
-            {
-                foreach (var file in files)
-                {
-                    //create a doc controller for the video, set position, and add to canvas
-                    var docController = await new VideoToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
-                    docController.GetPositionField().Data = where;
-                    docController.GetDataDocument().SetTitle(file.Name);
-                    mainPageCollectionView.ViewModel.AddDocument(docController);
-                }
-
-                //add error message for null file?
-            }
-        }
-
-        /// <summary>
-        /// When the "Add Audio" btn is clicked, this launches a file picker & adds selected audio files to the workspace
-        /// </summary>
-        private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
-        {
-            //instantiates a file picker, set to open in user's audio library
-            var picker = new FileOpenPicker
-            {
-                ViewMode = PickerViewMode.Thumbnail,
-                SuggestedStartLocation = PickerLocationId.MusicLibrary
-            };
-
-            picker.FileTypeFilter.Add(".mp3");
-
-
-            //awaits user upload of audio 
-            var files = await picker.PickMultipleFilesAsync();
-
-            //TODO just add new images to docs list instead of going through mainPageCollectionView
-            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            if (files != null)
-            {
-                foreach (var file in files)
-                {
-                    //create a doc controller for the audio, set position, and add to canvas
-                    var docController = await new AudioToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
-                    docController.GetPositionField().Data = where;
-                    docController.GetDataDocument().SetTitle(file.Name);
-                    mainPageCollectionView.ViewModel.AddDocument(docController);
-                }
-                //add error message for null file?
-            }
-
-        }
-
-        private void Add_Group_On_Click(object sender, RoutedEventArgs e)
-        {
-            //create and add group to workspace
-            var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
-            var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
-
-            mainPageCollectionView.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, 500, 500));
-        }
-
-        /// <summary>
-        /// Inverts toolbar orientation, currently inactive.
-        /// </summary>
-        private class OrientationInverter : SafeDataToXamlConverter<Orientation, Orientation>
-        {
-            public override Orientation ConvertDataToXaml(Orientation data, object parameter = null)
-            {
-                return data == Orientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
-            }
-
-            public override Orientation ConvertXamlToData(Orientation xaml, object parameter = null)
-            {
-                return xaml == Orientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
-            }
-        }
-
-        /// <summary>
         /// Toggles orientation of any combo boxes on any subtoolbar.
         /// </summary>
         private void AdjustComboBoxes()
         {
             if (subtoolbarElement is ICommandBarBased cmd) cmd.SetComboBoxVisibility(Orientation == Orientation.Horizontal ? Visibility.Visible : Visibility.Collapsed);
-        }
-
-
-        //private ToolTip _pin;
-        //private ToolTip _collapse;
-        //private ToolTip _select;
-        //private ToolTip _ink;
-        //private ToolTip _quickPan;
-        //private ToolTip _addGroup;
-        //private ToolTip _addImage;
-        //private ToolTip _addVideo;
-        //private ToolTip _addAudio;
-        //private ToolTip _copy;
-        //private ToolTip _instance;
-        //private ToolTip _freeze;
-        //private ToolTip _fitWidth;
-        //private ToolTip _fitHeight;
-        //private ToolTip _delete;
-        //private ToolTip _undo;
-        //private ToolTip _redo;
-        //private ToolTip _presentation;
-        //private ToolTip _export;
-
-        private void SetUpToolTips()
-        {
-            //var placementMode = PlacementMode.Top;
-            //const int offset = 5;
-
-            //_pin = new ToolTip()
-            //{
-            //    Content = "Pin Toolbar",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xPin, _pin);
-
-            //_collapse = new ToolTip()
-            //{
-            //    Content = "Collapse Toolbar",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xCollapse, _collapse);
-
-            //_select = new ToolTip()
-            //{
-            //    Content = "Select",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xTouch, _select);
-
-            //_ink = new ToolTip()
-            //{
-            //    Content = "Ink",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xInk, _ink);
-
-            //_quickPan = new ToolTip()
-            //{
-            //    Content = "Quick Pan",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xGroup, _quickPan);
-
-            //_addGroup = new ToolTip()
-            //{
-            //    Content = "Add Group",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xAddGroup, _addGroup);
-
-            //_addImage = new ToolTip()
-            //{
-            //    Content = "Add Image",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xAddImage, _addImage);
-
-            //_addVideo = new ToolTip()
-            //{
-            //    Content = "Add Video",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xAddVideo, _addVideo);
-
-            //_addAudio = new ToolTip()
-            //{
-            //    Content = "Add Audio",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xAddAudio, _addAudio);
-
-            //_instance = new ToolTip()
-            //{
-            //    Content = "Instance",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xMakeInstance, _instance);
-
-            //_freeze = new ToolTip()
-            //{
-            //    Content = "Freeze Contents",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xAreContentsHitTestVisibleIcon, _freeze); 
-
-            // _fitWidth = new ToolTip()
-            //{
-            //    Content = "Fit Width",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-
-            //ToolTipService.SetToolTip(xFitWidth, _fitWidth);
-            //_fitHeight = new ToolTip()
-            //{
-            //    Content = "Fit Height",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xFitHeight, _fitHeight);
-
-            //_copy = new ToolTip()
-            //{
-            //    Content = "Copy",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xCopy, _copy);
-
-            //_delete = new ToolTip()
-            //{
-            //    Content = "Delete",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xDelete, _delete);
-
-            //_undo = new ToolTip()
-            //{
-            //    Content = "Undo",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xUndo, _undo);
-
-            //_redo = new ToolTip()
-            //{
-            //    Content = "Redo",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xRedo, _redo);
-
-            //_export = new ToolTip()
-            //{
-            //    Content = "Export Workspace",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xExport, _export);
-
-            //_presentation = new ToolTip()
-            //{
-            //    Content = "Presentation Mode",
-            //    Placement = placementMode,
-            //    VerticalOffset = offset
-            //};
-            //ToolTipService.SetToolTip(xPresentationMode, _presentation);
-        }
-
-        private void xRedo_Click(object sender, RoutedEventArgs e)
-        {
-            UndoManager.RedoOccured();
-        }
-
-        private void xUndo_Click(object sender, RoutedEventArgs e)
-        {
-            UndoManager.UndoOccured();
         }
 
         private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
@@ -811,41 +438,6 @@ namespace Dash
             else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
 
-        private void XExport_OnClick(object sender, RoutedEventArgs e)
-        {
-            MainPage.Instance.Publish_OnTapped(sender, null);
-        }
-
-        private void XPresentationMode_OnClick(object sender, RoutedEventArgs e)
-        {
-            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
-        }
-
-        private void XSplitVertical_OnClick(object sender, RoutedEventArgs e)
-        {
-            SplitFrame.ActiveFrame.Split(SplitDirection.Right, autosize: true);
-        }
-
-        private void XSplitHorizontal_OnClick(object sender, RoutedEventArgs e)
-        {
-            SplitFrame.ActiveFrame.Split(SplitDirection.Down, autosize: true);
-        }
-
-        private void XCloseSplit_OnClick(object sender, RoutedEventArgs e)
-        {
-            SplitFrame.ActiveFrame.Delete();
-        }
-
-        private void XGoBack_OnClick(object sender, RoutedEventArgs e)
-        {
-            SplitFrame.ActiveFrame.GoBack();
-        }
-
-        private void XGoForward_OnClick(object sender, RoutedEventArgs e)
-        {
-            SplitFrame.ActiveFrame.GoForward();
-        }
-
         private void XEnableInk_OnChecked(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.InkManager.ShowToolbar();
@@ -854,6 +446,24 @@ namespace Dash
         private void XEnableInk_OnUnchecked(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.InkManager.HideToolbar();
+        }
+
+        private void XCollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ToolbarColumn.Width.IsStar)
+            {
+                ToolbarColumn.Width = new GridLength(0);
+                XDocumentView.Visibility = Visibility.Collapsed;
+                XCollapseBox.Text = "\uE740";
+            }
+            else
+            {
+                ToolbarColumn.Width = new GridLength(1, GridUnitType.Star);
+                XDocumentView.Visibility = Visibility.Visible;
+                XCollapseBox.Text = "\uE73F";
+            }
+
+            Update(SelectionManager.GetSelectedDocs());
         }
     }
 }
