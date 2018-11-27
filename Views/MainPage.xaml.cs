@@ -272,7 +272,7 @@ namespace Dash
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
         }
 
-        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name)
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
             var op = await new DSL().Run(tappedHandler, true) as OperatorController;
             if (op == null)
@@ -286,7 +286,13 @@ namespace Dash
       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
       xmlns:dash='using:Dash'
       xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
-    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center' />
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center'>
+" + (rotate ? @"
+        <TextBlock.RenderTransform>
+            <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
+        </TextBlock.RenderTransform>
+" : "") +  @"
+    </TextBlock>
 </Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
             doc.SetField<TextController>(KeyStore.TitleKey, name, true);
@@ -300,9 +306,9 @@ namespace Dash
             toolbar.SetBackgroundColor(Colors.SkyBlue);
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
-            var buttons = new List<(string icon, string name, string function)>
+            var buttons = new List<(string icon, string name, bool rotate, string function)>
             {
-                ("\uE107", "Delete", @"
+                ("\uE107", "Delete", false, @"
 function(d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -312,7 +318,7 @@ function(d) {
     }
 }
 "),
-                ("\uE923", "Make Instance", @"
+                ("\uE923", "Make Instance", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -322,7 +328,7 @@ function (d) {
     }
 }
 "),
-                ("\uE924", "Make View Copy", @"
+                ("\uF571", "Make View Copy", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -332,7 +338,7 @@ function (d) {
     }
 }
 "),
-                ("\uE16F", "Make Copy", @"
+                ("\uE16F", "Make Copy", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -342,21 +348,21 @@ function (d) {
     }
 }
 "),
-                ("\uE840", "Pin", @"
+                ("\uE840", "Pin", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         doc.Document.AreContentsHitTestVisible = false;
     }
 }
 "),
-                ("\uE77A", "Unpin", @"
+                ("\uE77A", "Unpin", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         doc.Document.AreContentsHitTestVisible = true;
     }
 }
 "),
-                ("\uE76C", "Fit Width", @"
+                ("\uEC8F", "Fit Width", true, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Document.get_field(""Horizontal Alignment"") == ""Stretch"") {
@@ -371,7 +377,7 @@ function (d) {
     }
 }
 "),
-                ("\uEC8F", "Fit Height", @"
+                ("\uEC8F", "Fit Height", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
         if(doc.Document.get_field(""Vertical Alignment"") == ""Stretch"") {
@@ -386,54 +392,54 @@ function (d) {
     }
 }
 "),
-                ("\uE10E", "Undo", @"
+                ("\uE10E", "Undo", false, @"
 function(d) {
     undo();
 }
 "),
-                ("\uE10D", "Redo", @"
+                ("\uE10D", "Redo", false, @"
 function(d) {
     redo();
 }
 "),
-                ("\uF57C", "Split Horizontal", @"
+                ("\uF57C", "Split Horizontal", false, @"
 function (d) {
     split_horizontal();
 }
 "),
-                ("\uE985", "Split Vertical", @"
+                ("\uE985", "Split Vertical", false, @"
 function (d) {
     split_vertical();
 }
 "),
-                ("\uE8BB", "Close Split", @"
+                ("\uE8BB", "Close Split", false, @"
 function (d) {
     close_split();
 }
 "),
-                ("\uE72B", "Back", @"
+                ("\uE72B", "Back", false, @"
 function (d) {
     frame_history_back();
 }
 "),
-                ("\uE72A", "Forward", @"
+                ("\uE72A", "Forward", false, @"
 function (d) {
     frame_history_forward();
 }
 "),
-                ("\uE898", "Export", @"
+                ("\uE898", "Export", false, @"
 function (d) {
     export_workspace();
 }
 "),
-                ("\uE768", "Toggle Presentation", @"
+                ("\uE768", "Toggle Presentation", false, @"
 function (d) {
     toggle_presentation();
 }
 "),
             };
 
-            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name))));
+            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name, item.rotate))));
         }
 
         #region LOAD AND UPDATE SETTINGS

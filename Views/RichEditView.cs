@@ -99,7 +99,6 @@ namespace Dash
                         selection.StartPosition = lenght;
                         selection.EndPosition = lenght;
                         Focus(FocusState.Keyboard);
-                        MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
                     }
                        
                     SelectionManager.TryInitiateDragDrop(docView, e, null);
