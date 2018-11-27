@@ -218,8 +218,7 @@ namespace Dash
                     break;
                 case "searchForTerm":
                     // Access the value of {destination} in the voice command.
-                   // string term = this.SemanticInterpretation("destination", speechRecognitionResult);
-                    string term = textSpoken.Substring("Dash search for ".Length);
+                   string term = this.SemanticInterpretation("destination", speechRecognitionResult);
 
                     // Create a navigation command object to pass to the page. 
                     navigationCommand = new DashVoiceCommand(
