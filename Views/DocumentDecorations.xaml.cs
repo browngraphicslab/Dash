@@ -392,31 +392,54 @@ namespace Dash
         }
 
         //adds a button for a link type to appear underneath the link button
-        private void AddLinkTypeButton(string linkName)
+        public void AddLinkTypeButton(string linkName)
         {
-            //set button color to tag color
-            var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
-            var btnColorFinal = btnColorOrig != null
-                ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
-                : Color.FromArgb(255, 64, 123, 177);
-
-            var toolTip = new ToolTip
+            if (linkName == null)
             {
-                Content = linkName,
-                HorizontalOffset = 5,
-                Placement = PlacementMode.Right
-            };
-
-            if (SelectedDocs.Count != 0)
-            {
-                var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
-                xButtonsPanel.Children.Add(button);
-                LinkButtons.Add(button);
-
-                //adds tooltip with link tag name inside
-                ToolTipService.SetToolTip(button, toolTip);
+                linkName = "Annotation";
             }
-            
+
+            //set button color to tag color
+                var btnColorOrig = _tagNameDict.ContainsKey(linkName) ? _tagNameDict[linkName]?.Color : null;
+                var btnColorFinal = btnColorOrig != null
+                    ? Color.FromArgb(200, btnColorOrig.Value.R, btnColorOrig.Value.G, btnColorOrig.Value.B)
+                    : Color.FromArgb(255, 64, 123, 177);
+
+                var toolTip = new ToolTip
+                {
+                    Content = linkName,
+                    HorizontalOffset = 5,
+                    Placement = PlacementMode.Right
+                };
+
+                if (SelectedDocs.Count != 0)
+                {
+                    
+                    bool unique = true;
+                    foreach (var lb in xButtonsPanel.Children)
+                    {
+                        if ((lb as LinkButton).Text.Equals(linkName))
+                        {
+                            unique = false;
+                        }
+
+                        if ((lb as LinkButton).AllKeys.Count == 0)
+                        {
+                            xButtonsPanel.Children.Remove(lb);
+                        }
+                    }
+
+                    if (unique)
+                    {
+                        var button = new LinkButton(this, btnColorFinal, linkName, toolTip, SelectedDocs.FirstOrDefault());
+                        xButtonsPanel.Children.Add(button);
+                        LinkButtons.Add(button);
+                        //adds tooltip with link tag name inside
+                        ToolTipService.SetToolTip(button, toolTip);
+                    }
+                    
+                }
+
         }
 
         public void OpenNewLinkMenu(String text, DocumentController linkDoc)
@@ -520,12 +543,16 @@ namespace Dash
             xButtonsPanel.Children.Clear();
             LinkButtons.Clear();
             //check each relevant tag name & create the tag graphic & button for it
-            foreach (var name in TagMap.Keys.Where((k) => k != null))
+
+
+            var allLinks = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument
+                .GetLinks(null) ?? new ListController<DocumentController>();
+
+            foreach (var link in allLinks)
             {
-                //adds the tag box & link button that connects the name of the tag to all link docs included in the list
-                AddLinkTypeButton(name);
-                AddTag(name, TagMap[name]);
+                AddLinkTypeButton(link?.GetField<TextController>(KeyStore.LinkTagKey)?.Data);
             }
+            
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
             var htmlAddress = SelectedDocs.FirstOrDefault()?.ViewModel?.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
@@ -851,7 +878,7 @@ namespace Dash
                 if (!TagMap.ContainsKey(entry))
                     TagMap.Add(entry, new List<DocumentController>());
 
-                newtag.Select();
+                
 
                 box.Text = "";
             }

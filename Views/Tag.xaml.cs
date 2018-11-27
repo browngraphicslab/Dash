@@ -13,7 +13,7 @@ using Window = Windows.UI.Xaml.Window;
 
 namespace Dash
 {
-    public sealed partial class Tag : IComparable, IComparer<Tag>
+    public sealed partial class Tag
     {
 	   
 
@@ -61,29 +61,20 @@ namespace Dash
             }
         }
 
-        public void AddTag(DocumentController link)
-        {
-            link.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, Text, true);
-        }
 
-        private void RemoveTag(DocumentController link)
-        {
-            link.GetDataDocument().RemoveField(KeyStore.LinkTagKey);
-        }
+        //public int Compare(Tag x, Tag y)
+        //{
+        //    return x.Text.CompareTo(y.Text);
+        //}
 
-        public int Compare(Tag x, Tag y)
-        {
-            return x.Text.CompareTo(y.Text);
-        }
-
-        public int CompareTo(object obj)
-        {
-            if (obj is Tag tag)
-            {
-                return Compare(this, tag);
-            }
-            return 0;
-        }
+        //public int CompareTo(object obj)
+        //{
+        //    if (obj is Tag tag)
+        //    {
+        //        return Compare(this, tag);
+        //    }
+        //    return 0;
+        //}
 
         public void Deselect()
         {
@@ -92,25 +83,24 @@ namespace Dash
             xTagContainer.Padding = new Thickness(4, 0, 4, 6);
         }
 
+        public void fakeSelect()
+        {
+            xTagContainer.BorderThickness = new Thickness(2);
+            xTagContainer.Padding = new Thickness(4, -2, 4, 6);
+        }
+
         public void Select()
         {
 
-            foreach (var tag in _linkMenu.TagNameDict)
-            {
-                tag.Value.Deselect();
-            }
+            
 
             foreach (var tag in _linkMenu.RecentTags)
             {
                 tag.Deselect();
             }
-            
+
             xTagContainer.BorderThickness = new Thickness(2);
             xTagContainer.Padding = new Thickness(4, -2, 4, 6);
-
-
-            //tell doc decs to change currently activated buttons 
-
 
             bool unique = true;
             foreach (var recent in _linkMenu.RecentTags)
@@ -121,40 +111,29 @@ namespace Dash
                 }
             }
 
-            //var doc = new DocumentController();
-            //doc.SetField<TextController>(KeyStore.DataKey, _text, true);
-            //doc.SetField<ColorController>(KeyStore.BackgroundColorKey, _color, true);
-
             if (unique)
             {
+                var doc = new DocumentController();
+                doc.SetField<TextController>(KeyStore.DataKey, Text, true);
+                doc.SetField<ColorController>(KeyStore.BackgroundColorKey, Color, true);
+
                 if (_linkMenu.RecentTags.Count < 5)
                 {
                     _linkMenu.RecentTags.Enqueue(this);
-                    //_docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
+                    _linkMenu.RecentTagsSave.Add(doc);
                 }
                 else
                 {
                     _linkMenu.RecentTags.Dequeue();
-                    //_linkMenu.RecentTagsSave.RemoveAt(0);
+                    _linkMenu.RecentTagsSave.RemoveAt(0);
                     _linkMenu.RecentTags.Enqueue(this);
-                    //_docdecs.RecentTagsSave.Add(_docdecs.TagsSave.Where(t => t.GetField<TextController>(KeyStore.DataKey).Data == Text).First());
+                    _linkMenu.RecentTagsSave.Add(doc);
                 }
             }
 
+            _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, Text, true);
+            MainPage.Instance.XDocumentDecorations.AddLinkTypeButton(Text);
 
-            //var firstDoc = _linkMenu.SelectedDocs.FirstOrDefault();
-            //if (_linkMenu.SelectedDocs.Count == 1)
-            //{
-            //    //foreach (var direction in new LinkDirection[] { LinkDirection.ToSource, LinkDirection.ToDestination })
-            //        foreach (var link in _linkMenu.CurrentLinks)
-            //        {
-            //            //if (LinkActivationManager.ActivatedDocs.Any(dv => dv.ViewModel.DocumentController.Equals(link.GetLinkedDocument(direction))))
-            //            //{
-            //            //    AddTag(link);
-            //            //    break;
-            //            //}
-
-          
         }
 
         private void DeleteButton_PointerEntered(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)

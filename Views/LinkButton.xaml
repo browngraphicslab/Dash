@@ -31,18 +31,14 @@
                 </ListView>
                 <local:LinkMenu Visibility="Collapsed" x:Name="xLinkMenu"/>
                 <Grid x:Name="xLinkBehaviorOverride" Visibility="Collapsed">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition MaxWidth="25"></ColumnDefinition>
-                        <ColumnDefinition MaxWidth="25"></ColumnDefinition>
-                        <ColumnDefinition MaxWidth="25"></ColumnDefinition>
-                        <ColumnDefinition MaxWidth="25"></ColumnDefinition>
-                        <ColumnDefinition MaxWidth="25"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <RadioButton x:Name="xOverrideDefault"  Content="None"  Grid.Column="0" Checked="RadioButton_Checked"/>
-                    <RadioButton x:Name="xOverrideFollow"   Content="Goto"  Grid.Column="1" Checked="RadioButton_Checked"/>
-                    <RadioButton x:Name="xOverrideDock"     Content="Dock"  Grid.Column="2" Checked="RadioButton_Checked"/>
-                    <RadioButton x:Name="xOverrideAnnotate" Content="Show"  Grid.Column="3" Checked="RadioButton_Checked"/>
-                    <RadioButton x:Name="xOverrideFloat"    Content="Float" Grid.Column="4" Checked="RadioButton_Checked"/>
+                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 10">
+                        <RadioButton x:Name="xOverrideDefault"  HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="None"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideFollow"   HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Goto"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideDock"     HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Dock"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideAnnotate" HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Show"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideFloat"    HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Float" Checked="RadioButton_Checked"/>
+                    </StackPanel>
+                    
                 </Grid>
             </StackPanel>
             

@@ -71,6 +71,16 @@ namespace Dash
             var settingsDoc = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
             RecentTagsSave = settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RecentTagsKey);
             TagsSave = settingsDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TagsKey);
+
+            if (TagsSave.Count == 0 || RecentTagsSave.Count == 0)
+            {
+                var doc = new DocumentController();
+                doc.SetField<TextController>(KeyStore.DataKey, "Annotation", true);
+                doc.SetField<ColorController>(KeyStore.BackgroundColorKey, Colors.DarkSlateGray, true);
+                if(!TagsSave.Any()) TagsSave.Add(doc);
+                if(!RecentTagsSave.Any()) RecentTagsSave.Add(doc);
+            }
+
             foreach (var documentController in RecentTagsSave.Reverse())
             {
                 RecentTags.Enqueue(new Tag(this, documentController.GetField<TextController>(KeyStore.DataKey).ToString(), documentController.GetField<ColorController>(KeyStore.BackgroundColorKey).Data));
@@ -101,6 +111,14 @@ namespace Dash
             };
             xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
             String text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey).Data;
+
+            foreach (var tag in xTagContainer.Children)
+            {
+                if ((tag as Tag).Text.Equals(LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkTagKey).Data))
+                {
+                    (tag as Tag).fakeSelect();
+                }
+            }
 
             if (!this.IsInVisualTree())
             {

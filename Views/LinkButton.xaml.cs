@@ -34,6 +34,12 @@ namespace Dash
         private DocumentView _documentView;
         private List<DocumentController> _allKeys;
 
+        public List<DocumentController> AllKeys
+        {
+            get => _allKeys;
+            set { _allKeys = value; }
+        }
+
         public LinkButton(DocumentDecorations docdecs, Color color, string text, ToolTip tooltip, DocumentView documentView)
         {
             InitializeComponent();
