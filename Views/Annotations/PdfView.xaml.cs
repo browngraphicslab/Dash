@@ -607,7 +607,7 @@ namespace Dash
             if (newValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
             {
                 ScrollToRegion(newValue);
-                _botPdf.AnnotationOverlay.SelectRegion(newValue);
+                _botPdf.AnnotationOverlay?.SelectRegion(newValue);
 
                 //sender.RemoveField(KeyStore.GoToRegionKey);
                 //sender.RemoveField(KeyStore.GoToRegionLinkKey);

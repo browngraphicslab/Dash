@@ -246,7 +246,7 @@
             </AppBarButton>
 
         </StackPanel>
-        <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Margin="0 -3 0 0" Grid.Column="1" />
+        <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Margin="0 -6 0 0" Grid.Column="1" />
     </Grid>
 
 </UserControl>
