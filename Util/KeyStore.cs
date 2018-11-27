@@ -134,7 +134,8 @@ namespace Dash
 		public static KeyController PresLinesVisibleKey                  = KeyController.Get("_Presentation Lines Visible");
 		public static KeyController PresLoopOnKey                        = KeyController.Get("_Presentation Loop Engaged");
 		public static KeyController PresTextRenamedKey                   = KeyController.Get("_Presentation Textbox Renamed");
-		public static KeyController EmbeddedDocumentsKey                 = KeyController.Get("_EmbeddedDocuments");
+	    public static KeyController PresContextZoomKey                   = KeyController.Get("_Presentation Context Zoom");
+        public static KeyController EmbeddedDocumentsKey                 = KeyController.Get("_EmbeddedDocuments");
 		public static KeyController AnonymousGroupsKey                   = KeyController.Get("Anonymous Groups");
 		public static KeyController TitleMatchKey                        = KeyController.Get("Title Match");
 		public static KeyController TagsKey                              = KeyController.Get("Tags");
