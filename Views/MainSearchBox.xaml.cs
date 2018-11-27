@@ -261,9 +261,7 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var srs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).ToList();
-            //var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
-            var docs = srs.Select(sr => sr.ViewDocument).ToList();
+            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
 
             var searchString = xAutoSuggestBox.Text;
             args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection =>
