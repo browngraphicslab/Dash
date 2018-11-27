@@ -27,6 +27,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 
 
@@ -500,9 +501,7 @@ function (d) {
 
         private void LoadSettings()
         {
-            var settingsDoc = GetAppropriateSettingsDoc();
-            xSettingsView.LoadSettings(settingsDoc);
-            XDocumentDecorations.LoadTags(settingsDoc);
+            xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
         }
 
         private DocumentController GetAppropriateSettingsDoc()
@@ -825,6 +824,81 @@ function (d) {
             return mode;
         }
 
+        public async Task<string> GetLayoutTemplate(IEnumerable<DocumentController> docs)
+        {
+            var popup = new LayoutTemplatesPopup();
+            SetUpPopup(popup);
+            //TODO: Eventually unset this popup after templatePopup, so that user can exit back
+            var templateType = await popup.GetTemplate();
+            UnsetPopup();
+
+            if (templateType == TemplateList.TemplateType.None)
+                return null;
+
+            var fields = 
+                docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
+                Aggregate((a, b) => a.Intersect(b));
+
+            ICustomTemplate templatePopup;
+            switch (templateType)
+            {
+            case TemplateList.TemplateType.Citation:
+                templatePopup = new CitationPopup(fields);
+                break;
+            case TemplateList.TemplateType.Note:
+                templatePopup = new NotePopup(fields);
+                break;
+            case TemplateList.TemplateType.Card:
+                templatePopup = new CardPopup(fields);
+                break;
+            case TemplateList.TemplateType.Title:
+                templatePopup = new TitlePopup(fields);
+                break;
+            case TemplateList.TemplateType.Profile:
+                templatePopup = new ProfilePopup(fields);
+                break;
+            case TemplateList.TemplateType.Article:
+                templatePopup = new ArticlePopup(fields);
+                break;
+            case TemplateList.TemplateType.Biography:
+                templatePopup = new BiographyPopup(fields);
+                break;
+            case TemplateList.TemplateType.Flashcard:
+                templatePopup = new FlashcardPopup(fields);
+                break;
+            default:
+                //templatePopup = new LayoutTemplatesPopup();
+                templatePopup = null;
+                break;
+            }
+            SetUpPopup(templatePopup);
+            var customLayout = await templatePopup.GetLayout();
+            UnsetPopup();
+
+            var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
+
+            var splitXaml = templateXaml.Split(" ", StringSplitOptions.None);
+            for (int i = 0; i < customLayout.Count; i++)
+            {
+                for(int j=0; j<splitXaml.Length;j++)
+                {
+                    if (splitXaml[j].Contains("Field" + i))
+                    {
+                        splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
+                        break;
+                    }
+                    if (splitXaml[j].Contains("PlaceHolderText" + i))
+                    {
+                        splitXaml[j] = splitXaml[j].Replace("PlaceHolderText" + i, customLayout[i]);
+                        break;
+                    }
+                }
+            }
+
+            var stringXaml = string.Join(" ", splitXaml);
+            return stringXaml;
+        }
+
         public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
             var importPopup = new HTMLRTFPopup();
@@ -990,8 +1064,11 @@ function (d) {
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
             var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
-            docCopy.SetWidth(size?.X ?? 150);
-            docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            if (!doc.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                docCopy.SetWidth(size?.X ?? 150);
+                docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            }
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);

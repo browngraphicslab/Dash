@@ -304,8 +304,11 @@ namespace Dash
                     else
                     {
                         var thisCollection = selection.GetFirstDescendantOfType<CollectionView>();
-                        xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
-                        subtoolbarElement = xCollectionToolbar;
+                        if (thisCollection != null)
+                        {
+                            xCollectionToolbar.SetCollectionBinding(thisCollection, selection.ViewModel.DocumentController);
+                            subtoolbarElement = xCollectionToolbar;
+                        }
                     }
                     xGroupToolbar.TryMakeGroupEditable(false);
                 }

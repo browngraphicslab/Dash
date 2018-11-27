@@ -124,20 +124,20 @@ namespace Dash
 			}
 	    }
 
-	    public void FollowLink(DocumentView originatingView, DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers)
+	    public void FollowLink(DocumentView originatingView, DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers, LinkBehavior? overrideBehavior = null)
 	    {
             //show link description floating doc if operator output is true
-	        var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
-	        if (linkOperator?.Data ?? false)
-	        {
-	            MainPage.Instance.ToggleFloatingDoc(link);
-            }
+	        //var linkOperator = link.GetDataDocument().GetDereferencedField<BoolController>(LinkDescriptionTextOperator.ShowDescription, null);
+	        //if (linkOperator?.Data ?? false)
+	        //{
+	        //    MainPage.Instance.ToggleFloatingDoc(link);
+         //   }
             
             var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;
 
             var document = link.GetLinkedDocument(direction);
 
-            switch (link.GetDataDocument().GetLinkBehavior())
+            switch (overrideBehavior ?? link.GetDataDocument().GetLinkBehavior())
             {
                 case LinkBehavior.Follow:
                     //navigate to link

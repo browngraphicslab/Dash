@@ -159,10 +159,10 @@ namespace Dash
 
         private void SearchIndexUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
+            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey)?.Data.ToLower();
             int i = 0;
 
-            // if (searchIndex + 1 > prevIndex)
+            if (!string.IsNullOrEmpty(searchString))
             {
                 for (var index = _searchEnd; index < _botPdf.AnnotationOverlay.TextSelectableElements.Count; index++)
                 {
@@ -239,7 +239,7 @@ namespace Dash
 
         private async void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && PdfUri != null)
             {
                 var uri = PdfUri;
                 string textToSet = null;

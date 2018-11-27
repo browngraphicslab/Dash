@@ -1088,9 +1088,14 @@ namespace Dash
             }
 
             //if (needsToExecute)
+            try
             {
                 // execute the operator
                 await opField.Execute(inputs, outputs, updatedArgs);
+            }
+            catch (ScriptExecutionException e)
+            {
+                return;
             }
 
             // pass the updates along 

@@ -77,7 +77,8 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 GetConverter = FieldConversion.GetFieldtoStringConverter,
-                FallbackValue = "<null>",
+                //changed fallbackvalue from "<null>" to ""
+                FallbackValue = "",
                 Tag = "TextingBox SetupTextBinding"
             };
             element.AddFieldBinding(element is EditableTextBlock ? EditableTextBlock.TextProperty:

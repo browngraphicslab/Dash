@@ -82,10 +82,10 @@ namespace Dash
             var doc = operatorReference.GetDocumentController(context);
             if (doc == null)
                 return "<nodoc>";  // bcz: make a PageView, set the Script to be:  this.data_doc().Caption, then select the main body of the PageView and drag off the link icon to get a KeyValue pane.  This will fire for the Title field.
-            var op = doc.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
+            var op = doc?.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
 
             if (op == null)
-                return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
+                return $"doc(\"{doc?.Id}\").{operatorReference.FieldKey}";
             var opCont = op.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey));
             if (opCont == null)
             {

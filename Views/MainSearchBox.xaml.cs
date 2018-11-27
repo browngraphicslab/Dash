@@ -36,6 +36,7 @@ namespace Dash
         private HashSet<string> _options;
         private HashSet<string> _documentFilters;
         private HashSet<string> _authorFilters;
+        private bool _searchAll = false;
 
 
         #region Definition and Initilization
@@ -84,6 +85,7 @@ namespace Dash
             {
                 [XCaseSensButton] = "Case sensitive",
                 [XMatchWordButton] = "Match whole word",
+                [XSearchAllButton] = "Search all documents",
                 [XRegexButton] = "Regex"
             };
 
@@ -118,6 +120,12 @@ namespace Dash
                 Placement = placementMode
             };
             ToolTipService.SetToolTip(XClearFiltersButton,t4);
+            var t5 = new ToolTip
+            {
+                Content = "Search all documents",
+                Placement = placementMode
+            };
+            ToolTipService.SetToolTip(XSearchAllButton, t5);
 
         }
 
@@ -445,8 +453,7 @@ namespace Dash
             IEnumerable<SearchResult> searchRes;
             try
             {
-
-                searchRes = Search.Parse(text, options:_options).ToList();
+                searchRes = Search.Parse(text, useAll:_searchAll, options:_options).ToList();
             }
             catch (Exception)
             {
@@ -490,10 +497,6 @@ namespace Dash
             }
 
             var vmGroups = new List<SearchResultViewModel>();
-
-            Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
-            Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
-            Debug.WriteLine("OPTIONS:"+_options.Count);
 
             foreach (var resList in map)
             {
@@ -550,8 +553,6 @@ namespace Dash
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
-
-            Debug.WriteLine("First length: "+first.Length);
 
             foreach (var searchResultViewModel in first)
             {
@@ -679,8 +680,6 @@ namespace Dash
             var index = itemsSource.IndexOf(viewModel);
             var count = itemsSource.Count;
             var numCopies = viewModel.Copies;
-            Debug.WriteLine(numCopies);
-            //Debug.WriteLine(index);
             if (viewModel?.DropDownText == ">")
             {
                 viewModel.DropDownText = "v";
@@ -723,11 +722,6 @@ namespace Dash
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
-        {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-        }
-
-        private void Options_Tapped(object sender, RoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }
@@ -853,6 +847,7 @@ namespace Dash
 
             }
             _options.Clear();
+            _searchAll = false;
         }
 
         #endregion
@@ -864,6 +859,12 @@ namespace Dash
             {
                 XOptionButton_OnClick(sender,e);
             }
+        }
+
+        private void XSearchAllButton_OnClick(object sender, RoutedEventArgs e)
+        {
+                _searchAll = !_searchAll;
+                XOptionButton_OnClick(sender, e);
         }
 
         private void XClearFiltersButton_OnClick(object sender, RoutedEventArgs e)
@@ -889,6 +890,8 @@ namespace Dash
                 }
             }
         }
+
+
     }
 }
 

@@ -176,6 +176,7 @@
                             <MenuFlyout.Items>
                                 <MenuFlyoutItem x:Name="Edit" Text="Edit Name" Click="Edit_OnClick"/>
                                 <MenuFlyoutItem x:Name="Reset" Text="Reset Name" Click="Reset_OnClick"/>
+                                <MenuFlyoutItem x:Name="Fullscreen" Text="Show Fullscreen" Click="Fullscreen_OnClick"/>
                             </MenuFlyout.Items>
                         </MenuFlyout>
                     </ListView.Resources>
@@ -183,12 +184,12 @@
                         <DataTemplate x:DataType="dash:PresentationItemViewModel">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="30"/>
                                     <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
-                                <local:PresentationViewTextBox FontSize="16" Grid.Column="1" HorizontalAlignment="Stretch"/>
+                                <local:PresentationViewTextBox FontSize="16" Grid.Column="1" HorizontalAlignment="Stretch" />
                                 <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="3">
                                     <SymbolIcon Symbol="Delete"/>
                                 </Button>

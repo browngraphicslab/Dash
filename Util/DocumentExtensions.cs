@@ -276,6 +276,10 @@ namespace Dash
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
+            if (doc == null)
+            {
+                return;
+            }
             DocumentController dataDocument = doc.GetDataDocument();
             dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
 
