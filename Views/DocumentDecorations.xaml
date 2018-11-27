@@ -39,7 +39,7 @@
                 </ToolTipService.ToolTip>
             </Grid>
         </StackPanel>
-        <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
+        <StackPanel Visibility="Collapsed"  x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                 <Ellipse />
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
@@ -55,7 +55,7 @@
                 </ToolTipService.ToolTip>
             </Grid>
         </StackPanel>
-        <StackPanel x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <StackPanel Visibility="Collapsed" x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom">
             <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                 <Ellipse />
                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
