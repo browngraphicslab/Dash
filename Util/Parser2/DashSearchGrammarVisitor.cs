@@ -10,10 +10,12 @@ namespace Dash
     using SearchPair = KeyValuePair<KeyController, StringSearchModel>;
     using Result = List<KeyValuePair<KeyController, StringSearchModel>>;
 
+
     public delegate Result SearchPredicate(DocumentController document);
 
     public class DashSearchGrammarVisitor : SearchGrammarBaseVisitor<SearchPredicate>
     {
+        public Search.SearchOptions Options { get; set; }
         public DocumentController SearchRoot { get; private set; }
         public override SearchPredicate VisitAnd([NotNull] SearchGrammarParser.AndContext context)
         {
@@ -75,6 +77,7 @@ namespace Dash
 
                         var scope = new DictionaryScope();
                         scope.DeclareVariable("doc", document);
+
                         var result = exp.Execute(scope).GetAwaiter().GetResult().Item1;
                         if (result is BoolController b && b.Data)
                         {
@@ -110,9 +113,10 @@ namespace Dash
                 if (doc != null)
                 {
                     SearchRoot = doc;
-                    return document => new Result {new SearchPair(keys.First(), new StringSearchModel("In path"))};
+                    return document => new Result { new SearchPair(keys.First(), new StringSearchModel("In path")) };
                 }
             }
+            var matcher = Options?.CreateMatcher(value) ?? new Search.SearchMatcher(value, false);
             return doc =>
             {
                 var result = new Result();
@@ -124,7 +128,7 @@ namespace Dash
                         {
                             continue;
                         }
-                        var res = field.Value.SearchForString(value);
+                        var res = field.Value.SearchForString(matcher);
                         if (res.StringFound)
                         {
                             result.Add(new SearchPair(field.Key, res));
@@ -135,7 +139,7 @@ namespace Dash
                 {
                     foreach (var key in keys)
                     {
-                        var res = doc.GetDereferencedField(key, null)?.SearchForString(value);
+                        var res = doc.GetDereferencedField(key, null)?.SearchForString(matcher);
                         if (res?.StringFound ?? false)
                         {
                             result.Add(new SearchPair(key, res));
@@ -192,12 +196,13 @@ namespace Dash
         public override SearchPredicate VisitValue([NotNull] SearchGrammarParser.ValueContext context)
         {
             string textToSearch = context.WORD()?.Symbol.Text ?? context.STRING().Symbol.Text.Trim('"');
+            var matcher = Options?.CreateMatcher(textToSearch) ?? new Search.SearchMatcher(textToSearch, false);
             return doc =>
             {
                 var result = new Result();
                 foreach (var field in doc.EnumDisplayableFields())
                 {
-                    var res = field.Value.SearchForString(textToSearch);
+                    var res = field.Value.SearchForString(matcher);
                     if (res.StringFound)
                     {
                         result.Add(new SearchPair(field.Key, res));

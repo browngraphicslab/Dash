@@ -61,7 +61,7 @@ namespace Dash
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

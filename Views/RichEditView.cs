@@ -43,7 +43,7 @@ namespace Dash
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
             {
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = DesiredSize.Height; });
+                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = double.NaN; });
                 return base.MeasureOverride(availableSize);
             }
 
@@ -60,7 +60,7 @@ namespace Dash
                 _lastSizeRTFText = text;
                 _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; fe.Height = rtb.DesiredSize.Height; });
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; });
             } 
             return _lastDesiredSize;
         }
@@ -99,7 +99,6 @@ namespace Dash
                         selection.StartPosition = lenght;
                         selection.EndPosition = lenght;
                         Focus(FocusState.Keyboard);
-                        MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
                     }
                        
                     SelectionManager.TryInitiateDragDrop(docView, e, null);
@@ -310,7 +309,7 @@ namespace Dash
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
-                        _annotationManager.FollowRegion(theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        _annotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
                 else if (target.StartsWith("http"))
@@ -402,12 +401,12 @@ namespace Dash
             cfv?.AddToMenu(menu);
 
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC", new ActionViewModel("Title",  "Add title",           MakeTitleAction,  source));
-            menu.AddAction("BASIC", new ActionViewModel("Center", "Align text to center",SetCenterAction,  source));
-            menu.AddAction("BASIC", new ActionViewModel("To-Do",  "Create a todo note",  CreateTodoAction, source));
-            menu.AddAction("BASIC", new ActionViewModel("Google", "Google Clip",         GoogleClip,       source));
-            menu.AddAction("BASIC", new ActionViewModel("Bio",    "Google Bio",          GoogleBio,       source));
-            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue", CreateTravelogue, source));
+            menu.AddAction("BASIC",      new ActionViewModel("Title",      "Add title",            MakeTitleAction,  source));
+            menu.AddAction("BASIC",      new ActionViewModel("Center",     "Align text to center", SetCenterAction,  source));
+            menu.AddAction("BASIC",      new ActionViewModel("To-Do",      "Create a todo note",   CreateTodoAction, source));
+            menu.AddAction("BASIC",      new ActionViewModel("Google",     "Google Clip",          GoogleClip,       source));
+            menu.AddAction("BASIC",      new ActionViewModel("Bio",        "Google Bio",           GoogleBio,        source));
+            menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue",    CreateTravelogue, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
         }
 
@@ -420,6 +419,7 @@ namespace Dash
                 return true;
             }
 
+            bool useAll = tags.Contains("INCLUDE ALL TAGS");
             var events = EventManager.GetEvents();
 
             var eventDocs = new List<DocumentController>();
@@ -430,7 +430,7 @@ namespace Dash
                 {
                     var eventTags = eventDoc.GetDataDocument().GetField<TextController>(KeyStore.EventTagsKey).Data.ToUpper()
                         .Split(", ");
-                    if (tags.Any(t => eventTags.Contains(t)))
+                    if (useAll || tags.Any(t => eventTags.Contains(t)))
                     {
                         eventDocs.Add(eventDoc);
                     }
@@ -893,7 +893,7 @@ namespace Dash
         }
 
         public const string HyperlinkMarker = "<hyperlink marker>";
-        public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
+        public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         { 
@@ -918,7 +918,7 @@ namespace Dash
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
             {
-                Document.Selection.FindText(HyperlinkText, getRtfText().Length, FindOptions.Case);
+                Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
                 if (Document.Selection.StartPosition != Document.Selection.EndPosition)
                 {
                     var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;

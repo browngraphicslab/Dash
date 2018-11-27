@@ -24,9 +24,10 @@ namespace Dash
             var realPos = pos ?? new Point();
             if (_copy)
             {
+                var fullCopy = MainPage.Instance.IsShiftPressed();
                 foreach (var documentController in _documents)
                 {
-                    results.Add(documentController.GetViewCopy(realPos));
+                    results.Add(fullCopy ? documentController.GetCopy(realPos) : documentController.GetViewCopy(realPos));
                     realPos.X += documentController.GetActualSize()?.X ?? 50 + 10;
                 }
             }

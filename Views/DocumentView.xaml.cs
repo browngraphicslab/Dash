@@ -83,6 +83,7 @@ namespace Dash
                     Converter = new TransformGroupMultiConverter(),
                     Context = new Context(doc),
                     Mode = BindingMode.OneWay,
+                    CanBeNull = true,
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
@@ -667,7 +668,7 @@ namespace Dash
         /// <returns>Whether the calling tapped event should be handled</returns>
         public async Task<bool> TappedHandler(bool wasHandled, bool wasRightTapped)
         {
-            if (await ExhibitBehaviors(wasRightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey)) return true;
+            if (!wasHandled && await ExhibitBehaviors(wasRightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey)) return true;
             
             if (!wasHandled) FocusedDocument = this;
 
@@ -705,17 +706,20 @@ namespace Dash
 
         private async Task<bool> ExhibitBehaviors(KeyController behaviorKey)
         {
-            var behaviors = ViewModel.DocumentController.GetBehaviors(behaviorKey);
-            if (behaviors != null && behaviors.Any())
+            var scripts = ViewModel.DocumentController.GetBehaviors(behaviorKey);
+            if (scripts != null && scripts.Any())
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    var args = new List<FieldControllerBase>() { ViewModel.DocumentController };
-                    var tasks = new List<Task>(behaviors.Count);
-                    foreach (var operatorController in behaviors)
+                    var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                    var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
+                    foreach (var operatorController in scripts)
                     {
-                        var task = OperatorScript.Run(operatorController, args, new DictionaryScope());
-                        if (!task.IsFaulted) tasks.Add(task);
+                        var task = ExecutionEnvironment.Run(operatorController, args, new DictionaryScope());
+                        if (!task.IsCompleted)
+                        {
+                            tasks.Add(task);
+                        }
                     }
 
                     if (tasks.Any())
@@ -933,6 +937,7 @@ namespace Dash
             if (dragModel != null)
             {
                 if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
+                e.Handled = true;
 
                 if (MainPage.Instance.IsAltPressed())
                 {
@@ -951,7 +956,6 @@ namespace Dash
                     curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
                     curLayout.DocumentType = draggedLayout.DocumentType;
                     UpdateBindings();
-                    e.Handled = true;
                     return;
                 }
 
@@ -967,7 +971,7 @@ namespace Dash
                     var dropDoc = ViewModel.DocumentController;
                     if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
                     {
-                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this);
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? e.GetPosition(this) : (Point?) null);
                     }
 
                     var linkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
@@ -978,7 +982,6 @@ namespace Dash
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
                     ? DataPackageOperation.Link
                     : e.DataView.RequestedOperation;
-                e.Handled = true;
             }
         }
 
@@ -1031,9 +1034,7 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-            var ann = new AnnotationManager(this);
-            ann.FollowRegion(ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(),
-                e.GetPosition(this));
+            new AnnotationManager(this).FollowRegion(this, ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)

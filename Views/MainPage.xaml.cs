@@ -70,7 +70,7 @@ namespace Dash
         }
 
         private Point? _forceFocusPoint;
-        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
+        public Point? ForceFocusPoint { get => _forceFocusPoint; }
         public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
             _forceFocusPoint = where;
@@ -146,14 +146,14 @@ namespace Dash
                 }
             };
 
-            xToolbar.SetValue(Canvas.ZIndexProperty, 20);
+            Canvas.SetZIndex(xToolbar, 20);
 
             SplitFrame.ActiveDocumentChanged += frame =>
             {
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
-         
+
 
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
@@ -172,7 +172,7 @@ namespace Dash
                     misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
                     misc.SetTitle("Miscellaneous");
                     MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
-                   // folders.Add(misc);
+                    // folders.Add(misc);
                 }
                 return misc;
             }
@@ -198,6 +198,8 @@ namespace Dash
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             await DotNetRPC.Init();
+
+            await DocumentScope.InitGlobalScope();
 
             var docs = await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType));
@@ -234,7 +236,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-            
+
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -243,7 +245,7 @@ namespace Dash
             var toolbar = MainDocument.GetField<DocumentController>(KeyStore.ToolbarKey);
             if (toolbar == null)
             {
-                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid, double.NaN, 70).Document;
                 await InitToolbar(toolbar);
                 MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
             }
@@ -324,7 +326,7 @@ namespace Dash
         public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
 
 
-        private async Task<DocumentController> GetButton(string icon, string tappedHandler)
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
             var op = await new DSL().Run(tappedHandler, true) as OperatorController;
             if (op == null)
@@ -338,10 +340,17 @@ namespace Dash
       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
       xmlns:dash='using:Dash'
       xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
-    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center' />
-</Grid>" , true);
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center'>
+" + (rotate ? @"
+        <TextBlock.RenderTransform>
+            <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
+        </TextBlock.RenderTransform>
+" : "") +  @"
+    </TextBlock>
+</Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
-            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> {op}, true);
+            doc.SetField<TextController>(KeyStore.TitleKey, name, true);
+            doc.SetField(KeyStore.TappedScriptKey, new ListController<OperatorController> { op }, true);
 
             return doc;
         }
@@ -351,7 +360,9 @@ namespace Dash
             toolbar.SetBackgroundColor(Colors.SkyBlue);
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
-            data.Add(await GetButton("\uE107", @"
+            var buttons = new List<(string icon, string name, bool rotate, string function)>
+            {
+                ("\uE107", "Delete", false, @"
 function(d) {
     for(var doc in get_selected_docs()) {
         if(doc.Parent == null) {
@@ -360,17 +371,129 @@ function(d) {
         doc.Parent.remove(doc.Document);
     }
 }
-"));
-            data.Add(await GetButton("\uE10E", @"
+"),
+                ("\uE923", "Make Instance", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.instance());
+    }
+}
+"),
+                ("\uF571", "Make View Copy", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.view_copy());
+    }
+}
+"),
+                ("\uE16F", "Make Copy", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.copy());
+    }
+}
+"),
+                ("\uE840", "Pin", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = false;
+    }
+}
+"),
+                ("\uE77A", "Unpin", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = true;
+    }
+}
+"),
+                ("\uEC8F", "Fit Width", true, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Horizontal Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Horizontal Alignment"", ""Left"");
+            doc.Document.Width = doc.Document._StoredWidth;
+            doc.Document._StoredWidth = null;
+        } else {
+            doc.Document.set_field(""Horizontal Alignment"", ""Stretch"");
+            doc.Document._StoredWidth = doc.Document.Width;
+            doc.Document.Width = NaN;
+        }
+    }
+}
+"),
+                ("\uEC8F", "Fit Height", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Vertical Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Vertical Alignment"", ""Top"");
+            doc.Document.Height = doc.Document._StoredHeight;
+            doc.Document._StoredHeight = null;
+        } else {
+            doc.Document.set_field(""Vertical Alignment"", ""Stretch"");
+            doc.Document._StoredHeight = doc.Document.Height;
+            doc.Document.Height = NaN;
+        }
+    }
+}
+"),
+                ("\uE10E", "Undo", false, @"
 function(d) {
     undo();
 }
-"));
-            data.Add(await GetButton("\uE10D", @"
+"),
+                ("\uE10D", "Redo", false, @"
 function(d) {
     redo();
 }
-"));
+"),
+                ("\uF57C", "Split Horizontal", false, @"
+function (d) {
+    split_horizontal();
+}
+"),
+                ("\uE985", "Split Vertical", false, @"
+function (d) {
+    split_vertical();
+}
+"),
+                ("\uE8BB", "Close Split", false, @"
+function (d) {
+    close_split();
+}
+"),
+                ("\uE72B", "Back", false, @"
+function (d) {
+    frame_history_back();
+}
+"),
+                ("\uE72A", "Forward", false, @"
+function (d) {
+    frame_history_forward();
+}
+"),
+                ("\uE898", "Export", false, @"
+function (d) {
+    export_workspace();
+}
+"),
+                ("\uE768", "Toggle Presentation", false, @"
+function (d) {
+    toggle_presentation();
+}
+"),
+            };
+
+            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name, item.rotate))));
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -473,11 +596,11 @@ function(d) {
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {
-               
+
                 var docs = SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>();
                 SelectionManager.SelectDocuments(docs, this.IsShiftPressed());
             }
-            
+
             e.Handled = true;
         }
 
@@ -531,7 +654,7 @@ function(d) {
             //xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Clicked (object sender, RoutedEventArgs tappedRoutedEventArgs)
+        private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
@@ -577,7 +700,7 @@ function(d) {
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-            } 
+            }
 
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
@@ -933,17 +1056,26 @@ function(d) {
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SetHighlight(true);
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                     //AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
                     //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
+                  
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
                     onScreenView.ViewModel.LayoutDocument.SetHidden(false);
+                }
+                if (onScreenView.Visibility == Visibility.Visible)
+                {
+                    onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
+                    onScreenView.ViewModel.SetHighlight(true);
+                } else
+                {
+                    onScreenView.ViewModel.SetHighlight(false);
+                    onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegion());
                 }
             }
             else
@@ -951,9 +1083,8 @@ function(d) {
                 //Dock_Link(linkDoc, direction);
                 //target.SetHidden(false);
                 ToggleFloatingDoc(target);
+                target.GotoRegion(region, linkDoc);
             }
-
-            target.GotoRegion(region, linkDoc);
 
             return LinkHandledResult.HandledRemainOpen;
         }
@@ -1052,7 +1183,7 @@ function(d) {
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
-        
+
         public async Task<(string, string)> PromptNewTemplate()
         {
             var templatePopup = new NewTemplatePopup();
@@ -1063,16 +1194,16 @@ function(d) {
 
             return results;
         }
-        
-	    public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
-	    {
-			// TODO: do the following eventually; for now it will just export everything you have
-		    // var documentList = await GetDocumentsToPublish();
 
-		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
-		    allDocuments.Remove(MainDocument.GetDataDocument());
-			
-		    await new Publisher().StartPublication(allDocuments);
+        public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            // TODO: do the following eventually; for now it will just export everything you have
+            // var documentList = await GetDocumentsToPublish();
+
+            var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+            allDocuments.Remove(MainDocument.GetDataDocument());
+
+            await new Publisher().StartPublication(allDocuments);
         }
 
         public async Task<(List<DocumentController>, List<string>)> PromptTravelogue()

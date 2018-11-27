@@ -74,7 +74,7 @@ namespace Dash
             return new RectController(Data);
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
             return StringSearchModel.False;
         }

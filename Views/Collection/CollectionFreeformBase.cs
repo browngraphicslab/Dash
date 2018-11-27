@@ -1226,7 +1226,7 @@ namespace Dash
                 if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
                 {
                     e.Handled = true;
-                    convertPreviewToRealText(this.IsCtrlPressed() && text == "v" ? null : text);
+                    convertPreviewToRealText(this.IsCtrlPressed() && e.Key == VirtualKey.V ? null : text);
                 }
             }
         }

@@ -276,15 +276,11 @@ namespace Dash
         /*
          * Recursive search of list for Dash's search functionality
          */
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            if (string.IsNullOrEmpty(searchString))
-            {
-                return new StringSearchModel(ToString());
-            }
             //TODO We should cache the result instead of calling Search for string on the same controller twice, 
             //and also we should probably figure out how many things in TypedData match, and use that for ranking
-            return _typedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
+            return _typedData.FirstOrDefault(controller => controller.SearchForString(matcher).StringFound)?.SearchForString(matcher) ?? StringSearchModel.False;
         }
 
         public override string ToScriptString(DocumentController thisDoc)
@@ -490,10 +486,13 @@ namespace Dash
 
         private bool RemoveHelper(T element)
         {
-            ReleaseContainedField(element);
 
             var removed = _typedData.Remove(element);
-            ListModel.Data.Remove(element.Id);
+            if (removed)
+            {
+                ReleaseContainedField(element);
+                ListModel.Data.Remove(element.Id);
+            }
 
             return removed;
         }

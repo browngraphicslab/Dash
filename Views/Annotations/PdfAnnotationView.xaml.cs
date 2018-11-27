@@ -55,8 +55,8 @@ namespace Dash
         private AnnotationOverlay _annotationOverlay;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
-        public DocumentController                 DataDocument => ViewModel.DataDocument;
-        public DocumentController                 LayoutDocument => ViewModel.LayoutDocument;
+        public DocumentController                 DataDocument => ViewModel?.DataDocument;
+        public DocumentController                 LayoutDocument => ViewModel?.LayoutDocument;
         public DataVirtualizationSource           Pages { get; set; }
         public WPdf.PdfDocument                   PDFdoc { get; set; }
         public ObservableCollection<DocumentView> Annotations
@@ -152,18 +152,9 @@ namespace Dash
 
         public void ScrollToPosition(double pos)
         {
-            var sizes = Pages.PageSizes;
-            var botOffset = 0.0;
-            foreach (var size in sizes)
-            {
-                var scale = ScrollViewer.ViewportWidth / size.Width;
-                if (botOffset + (size.Height * scale) - pos > 1)
-                {
-                    break;
-                }
-
-                botOffset += (size.Height * scale) + 15;
-            }
+            var offset = pos * pageScaling(Pages.PageSizes.First().Width);
+            var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2) * pageScaling(Pages.PageSizes.First().Width),
+                0);
 
             ScrollViewer.ChangeView(null, botOffset, null);
         }
@@ -265,9 +256,19 @@ namespace Dash
                     PageNext();
                     args.Handled = true;
                 }
-                if (args.Key == VirtualKey.PageUp)
+                else if (args.Key == VirtualKey.PageUp)
                 {
                     PagePrev();
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Down)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset + 20, null);
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Up)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset - 20, null);
                     args.Handled = true;
                 }
             }
@@ -407,16 +408,18 @@ namespace Dash
                             }
                             else if (char.IsNumber(contents.First()))
                             {
-                                sb.Append("\\" + (string)selectableElement.Contents);
+                                sb.Append("\\" + contents);
                             }
                             else
                             {
-                                sb.Append((string)selectableElement.Contents);
+                                sb.Append(contents);
                             }
                         }
 
                         prevIndex = index;
                     }
+
+                    //sb.Append("}");
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetRtf(sb.ToString());
@@ -437,8 +440,6 @@ namespace Dash
                 xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
-            var cvm = new CollectionViewModel(DataDocument, KeyController.Get("PDFSideAnnotations"));
-            cvm.DocumentAdded += Cvm_DocumentAdded;
             if (Pages.PageSizes.Count != 0)
             {
                 Pages.Initialize();
@@ -461,7 +462,7 @@ namespace Dash
 
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
-            _annotationOverlay.TextSelectableElements?.Clear();
+            _annotationOverlay?.TextSelectableElements?.Clear();
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -505,7 +506,7 @@ namespace Dash
                     SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
                 }
 
-                this.Focus(FocusState.Pointer);
+                Focus(FocusState.Pointer);
             }
         }
 
