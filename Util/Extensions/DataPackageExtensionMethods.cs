@@ -80,8 +80,14 @@ namespace Dash
             // and return the list of these collected documents
 
             // Storage Items
+            // Internal Dash Document or Field
 
-            if (transferType.HasFlag(FileSystem) && packageView.Contains(StandardDataFormats.StorageItems))
+            if (transferType.HasFlag(Internal))
+            {
+                dropDocs.AddRange(await packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
+            }
+
+            else if (transferType.HasFlag(FileSystem) && packageView.Contains(StandardDataFormats.StorageItems))
             {
                 DocumentController documentController = await FileDropHelper.HandleDrop(packageView, where ?? new Point());
                 if (documentController != null) dropDocs.Add(documentController);
@@ -124,12 +130,6 @@ namespace Dash
                 dropDocs.Add(await ConvertBitmapData(packageView, where ?? new Point()));
             }
 
-            // Internal Dash Document or Field
-
-            else if (transferType.HasFlag(Internal))
-            {
-                dropDocs.AddRange(await packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
-            }
 
             return dropDocs;
         }

@@ -491,10 +491,6 @@ namespace Dash
 
             var vmGroups = new List<SearchResultViewModel>();
 
-            Debug.WriteLine("AUTHOR FILTERS: "+_authorFilters.Count);
-            Debug.WriteLine("DOCUMENT FILTERS:"+_documentFilters.Count);
-            Debug.WriteLine("OPTIONS:"+_options.Count);
-
             foreach (var resList in map)
             {
                 var res = resList.Value.First();
@@ -550,8 +546,6 @@ namespace Dash
                 .Take(MaxSearchResultSize).ToArray();
 
             var docsToHighlight = new List<DocumentController>();
-
-            Debug.WriteLine("First length: "+first.Length);
 
             foreach (var searchResultViewModel in first)
             {
@@ -679,8 +673,6 @@ namespace Dash
             var index = itemsSource.IndexOf(viewModel);
             var count = itemsSource.Count;
             var numCopies = viewModel.Copies;
-            Debug.WriteLine(numCopies);
-            //Debug.WriteLine(index);
             if (viewModel?.DropDownText == ">")
             {
                 viewModel.DropDownText = "v";
@@ -723,11 +715,6 @@ namespace Dash
         }
 
         private void Filter_Tapped(object sender, RoutedEventArgs e)
-        {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-        }
-
-        private void Options_Tapped(object sender, RoutedEventArgs e)
         {
             FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
         }

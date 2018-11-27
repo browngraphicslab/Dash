@@ -57,12 +57,12 @@ namespace Dash
         {
             var center = document.GetPosition() ?? new Point();
             var size = document.GetActualSize() ?? new Point();
-            center.X += (size.X - ActiveFrame.ActualWidth) / 2;
-            center.Y += (size.Y - ActiveFrame.ActualHeight) / 2;
+            center.X += (size.X - ActualWidth) / 2;
+            center.Y += (size.Y - ActualHeight) / 2;
             center.X = -center.X;
             center.Y = -center.Y;
 
-            var col = ActiveFrame.ViewModel.Content as CollectionView;
+            var col = ViewModel.Content as CollectionView;
             var ffv = col?.CurrentView as CollectionFreeformBase;
             ffv?.SetTransformAnimated(new TranslateTransform
             {
@@ -73,6 +73,38 @@ namespace Dash
                 ScaleX = 1,
                 ScaleY = 1
             });
+        }
+
+        public static DocumentController OpenInInactiveWorkspace(DocumentController doc, DocumentController workspace)
+        {
+            var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
+            if (frames.Count == 0)
+            {
+                return ActiveFrame.Split(SplitDirection.Right, doc, true);
+            }
+                var frame = frames[0];
+                var area = frame.ActualWidth * frame.ActualHeight;
+                for (var i = 1; i < frames.Count; ++i)
+                {
+                    // TODO: prioritize frames with workspace already open
+                    var curFrame = frames[i];
+                    var curArea = curFrame.ActualWidth * curFrame.ActualHeight;
+                    if (curArea > area)
+                    {
+                        area = curArea;
+                        frame = curFrame;
+                    }
+                }
+
+                //if (frame.ActualWidth < MainPage.Instance.ActualWidth / 2)
+                //{
+                //    var columns = frame.GetFirstAncestorOfType<SplitManager>().GetFirstAncestorOfType<SplitManager>().Columns;
+                //    var frameCol = Grid.GetColumn(frame.GetFirstAncestorOfType<SplitManager>());
+                //    columns[frameCol].Width = new GridLength(1, GridUnitType.Star);
+                //    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
+                //}
+
+                return frame.OpenDocument(doc,workspace);
         }
 
         public static DocumentController OpenDocumentInWorkspace(DocumentController document, DocumentController workspace)
