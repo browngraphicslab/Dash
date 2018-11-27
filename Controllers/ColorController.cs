@@ -53,10 +53,9 @@ namespace Dash
 
         public override string ToString() => Data.ToString();
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            return (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) : StringSearchModel.False;
+            return matcher.Matches(Data.ToString());
         }
 
         public override string ToScriptString(DocumentController thisDoc)

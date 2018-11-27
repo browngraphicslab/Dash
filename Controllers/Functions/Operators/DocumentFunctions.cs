@@ -17,5 +17,11 @@ namespace Dash.Controllers.Functions.Operators
         {
             return doc.GetViewCopy();
         }
+
+        [OperatorFunctionName("copy")]
+        public static DocumentController DocumentCopy(DocumentController doc)
+        {
+            return doc.GetCopy();
+        }
     }
 }

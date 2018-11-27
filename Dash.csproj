@@ -206,6 +206,7 @@
     <Compile Include="Controllers\Functions\Operators\SearchFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SplitFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\StringFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
@@ -220,6 +221,9 @@
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\SplitFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\StringFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">

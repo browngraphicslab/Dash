@@ -131,7 +131,8 @@ namespace Dash
                 Document = docController,
                 Converter = new StringToBrushConverter(),
                 Mode = BindingMode.TwoWay,
-                Context = context
+                Context = context,
+                CanBeNull = true
             };
             if (element is EditableTextBlock edBlock)
                 edBlock.TextBackground.AddFieldBinding(Grid.BackgroundProperty, backgroundBinding);
@@ -147,7 +148,8 @@ namespace Dash
                 Document = docController,
                 Converter = new DoubleToFontWeightConverter(),
                 Mode = BindingMode.TwoWay,
-                Context = context
+                Context = context,
+                CanBeNull = true
             };
             element.AddFieldBinding(element is EditableTextBlock ? Control.FontWeightProperty :
                                     element is TextBlock ? TextBlock.FontWeightProperty :
@@ -161,7 +163,8 @@ namespace Dash
                 Key = KeyStore.FontSizeKey,
                 Document = docController,
                 Mode = BindingMode.TwoWay,
-                Context = context
+                Context = context,
+                CanBeNull = true
             };
             element.AddFieldBinding(element is EditableTextBlock ? Control.FontSizeProperty :
                                     element is TextBlock ? TextBlock.FontSizeProperty :

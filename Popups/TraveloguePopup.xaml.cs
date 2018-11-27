@@ -30,7 +30,7 @@ namespace Dash
 
             var events = EventManager.GetEvents();
 
-            var tags = new List<string>();
+            var tags = new List<string> {"INCLUDE ALL TAGS"};
             var collections = new List<DocumentController>();
 
             foreach (var eventDoc in events)

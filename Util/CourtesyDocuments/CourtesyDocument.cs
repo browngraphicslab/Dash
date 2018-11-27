@@ -258,7 +258,7 @@ namespace Dash
 
         public static void ToggleButton(this DocumentController document)
         {
-            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.TappedScriptKey);
+            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.LeftTappedOpsKey);
             int i = 0;
 
             for(; i < scripts.Count; ++i)
@@ -484,6 +484,15 @@ namespace Dash
         {
             return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
-        
+
+        public static string GetDocType(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.DocumentTypeKey, null)?.Data;
+        }
+
+        public static string GetAuthor(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.AuthorKey, null)?.Data;
+        }
     }
 }

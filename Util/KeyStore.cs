@@ -123,13 +123,13 @@ namespace Dash
 	    public static KeyController BehaviorIndicesKey                   = KeyController.Get("_Selected UI Indices");
         public static KeyController DocBehaviorNameKey                   = KeyController.Get("_Document Behavior Name");
         public static KeyController TriggerKey                           = KeyController.Get("_Trigger Text");
-	    public static KeyController LeftTappedOpsKey                     = KeyController.Get("Left Tapped");
-	    public static KeyController RightTappedOpsKey                    = KeyController.Get("Right Tapped");
-	    public static KeyController DoubleTappedOpsKey                   = KeyController.Get("Double Tapped");
-	    public static KeyController FieldUpdatedOpsKey                   = KeyController.Get("Field Updated");
-	    public static KeyController LowPriorityOpsKey                    = KeyController.Get("Low Priority");
-	    public static KeyController ModeratePriorityOpsKey               = KeyController.Get("Moderate Priority");
-	    public static KeyController HighPriorityOpsKey                   = KeyController.Get("High Priority");
+	    public static KeyController LeftTappedOpsKey                     = KeyController.Get("LeftTapped");
+	    public static KeyController RightTappedOpsKey                    = KeyController.Get("RightTapped");
+	    public static KeyController DoubleTappedOpsKey                   = KeyController.Get("DoubleTapped");
+	    public static KeyController FieldUpdatedOpsKey                   = KeyController.Get("FieldUpdated");
+	    public static KeyController LowPriorityOpsKey                    = KeyController.Get("LowPriority");
+	    public static KeyController ModeratePriorityOpsKey               = KeyController.Get("ModeratePriority");
+	    public static KeyController HighPriorityOpsKey                   = KeyController.Get("HighPriority");
 	    public static KeyController ScheduledOpKey                       = KeyController.Get("_Operator in pair");
 	    public static KeyController ScheduledDocKey                      = KeyController.Get("_Document in pair");
         public static KeyController WatchFieldKey                        = KeyController.Get("_Watched Fields");
@@ -161,7 +161,6 @@ namespace Dash
 	    public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");
 	    public static KeyController AreContentsHitTestVisibleKey         = KeyController.Get("AreContentsHitTestVisible");
         public static KeyController ImageStretchKey                      = KeyController.Get("ImageStretch");
-        public static KeyController TappedScriptKey                      = KeyController.Get("TappedEvent");
         public static KeyController FolderPreviewKey                     = KeyController.Get("FolderPreview");
         public static KeyController FolderPreviewDataBoxKey              = KeyController.Get("_FolderPreviewDataBox");
         public static KeyController FolderIconKey                        = KeyController.Get("FolderIcon");
@@ -183,6 +182,8 @@ namespace Dash
         public static KeyController YouTubeUrlKey                        = KeyController.Get("_YouTubeUrl");
         public static KeyController SearchStringKey                      = KeyController.Get("SearchStringOrigin");
         public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
+        public static KeyController SearchIndexKey                       = KeyController.Get("SearchIndex");
+        public static KeyController SearchPreviousIndexKey               = KeyController.Get("SearchPreviousIndex");
 
 	    public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
 		{

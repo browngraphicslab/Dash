@@ -120,11 +120,9 @@ namespace Dash
             return Name;
         }
 
-        public override StringSearchModel SearchForString(string searchString)
+        public override StringSearchModel SearchForString(Search.SearchMatcher matcher)
         {
-            var reg = new System.Text.RegularExpressions.Regex(searchString);
-            return searchString == null || (Name.ToLower().Contains(searchString.ToLower()) ||
-               reg.IsMatch(Name)) ? new StringSearchModel(Name) : StringSearchModel.False;
+            return matcher.Matches(Name);
         }
 
         public override string ToScriptString(DocumentController thisDoc)
