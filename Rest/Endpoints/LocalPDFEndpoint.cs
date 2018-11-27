@@ -268,6 +268,7 @@ namespace Dash
 
                 selectables.Add(new SelectableElement(index, data, new Rect(left, top, right - left, bottom - top), "Times New Roman", 14));
             }
+            pages.Add(selectables.Last().Index);
             reader.Close();
             reader.Dispose();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,12 +20,12 @@ namespace Dash
             _incrementExp = incrementExp;
             _forBody = forBody;
         }
-
         public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
             bool timeout = false;
             var timer = new Timer(state => timeout = true, null, 5000, Timeout.Infinite);
 
+            // Declare counter variable
             await _countDeclaration.Execute(scope);
 
             while (!timeout)

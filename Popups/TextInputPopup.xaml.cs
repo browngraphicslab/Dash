@@ -22,7 +22,7 @@ namespace Dash
     {
         public TextInputPopup()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         private TaskCompletionSource<(string, string)> _tcs;

@@ -1,43 +1,30 @@
-﻿using Dash.Annotations;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Graphics.Display;
-using Windows.Storage;
-using Windows.System;
-using Windows.UI;
-using Windows.UI.Input;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using Dash.Annotations;
 using iText.Kernel.Crypto;
-using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using Windows.Foundation;
+using Windows.Storage;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class PdfView : UserControl, INotifyPropertyChanged
+    public sealed partial class PdfView : UserControl, INotifyPropertyChanged, ILinkHandler
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public static readonly DependencyProperty PdfUriProperty = DependencyProperty.Register(
@@ -68,12 +55,38 @@ namespace Dash
         public AnnotationType CurrentAnnotationType => _botPdf.AnnotationOverlay.CurrentAnnotationType;
 
         private static LocalPDFEndpoint _pdfEndpoint = RESTClient.Instance.GetPDFEndpoint();
+        private int _searchEnd = 0;
+        private WeakEventListener<PdfView, DocumentController, DocumentController.DocumentFieldUpdatedEventArgs> SearchIndexHandler;
 
         public PdfView()
         {
             InitializeComponent();
             _topPdf.Visibility = Visibility.Collapsed;
-            Loaded += (s, e) => LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdatedFieldChanged(controller, arg3));
+            bool initialized = false;
+            Loaded += (s, e) =>
+            {
+                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+                if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
+                {
+                    GoToUpdatedFieldChanged(LayoutDocument, null);
+                }
+
+                if (!initialized)
+                {
+                    SearchIndexHandler = LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchIndexKey,
+                        (view, controller, arg3) => view.SearchIndexUpdated(controller, arg3));
+                    LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchStringKey,
+                        (view, controller, arg3) => view.SearchStringUpdated(controller, arg3));
+                    LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchPreviousIndexKey,
+                        (view, controller, arg3) => view.SearchPreviousPressed(controller, arg3));
+
+                    initialized = true;
+                }
+            };
+            Unloaded += (s, e) =>
+            {
+                SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
+            };
             SizeChanged += (ss, ee) =>
             {
                 if (xBar.Width != 0)
@@ -99,9 +112,129 @@ namespace Dash
                 xFirstPanelRow.MaxHeight = xPdfContainer.ActualHeight;
             };
 
-            SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
 
             //_botPdf.CanSetAnnotationVisibilityOnScroll = true;
+        }
+
+        private void SearchPreviousPressed(DocumentController sender,
+            DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            if (LayoutDocument.GetField<BoolController>(KeyStore.SearchPreviousIndexKey).Data)
+            {
+                if (_previousSelections.Count < 2)
+                {
+                    LayoutDocument.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, false, true);
+                    return;
+                }
+                var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
+                _previousSelections.Remove(_previousSelections.Last());
+                _botPdf.AnnotationOverlay.ClearSelection();
+                _searchEnd = _previousSelections.Last() + searchString.Length;
+                for (int i = 0; i < searchString.Length; i++)
+                {
+                    _botPdf.AnnotationOverlay.SelectIndex(_searchEnd - i);
+                }
+
+                _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top);
+                //_botPdf.ScrollViewer.ChangeView(null,
+                //    _botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds.Top + _botPdf.ScrollViewer.ViewportHeight / 2, null, true);
+                //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[_searchEnd].Bounds
+                //    .Top);
+                LayoutDocument.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, false, true);
+            }
+        }
+
+        private void SearchStringUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            SearchIndexHandler?.Detach();
+            _previousSelections.Clear();
+            _searchEnd = 0;
+            LayoutDocument.SetField<NumberController>(KeyStore.SearchIndexKey, 0, true);
+            prevIndex = -1;
+            SearchIndexHandler = LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchIndexKey, (view, collection, arg3) => view.SearchIndexUpdated(collection, arg3));
+        }
+
+        private int prevIndex = -1;
+        private readonly List<int> _previousSelections = new List<int>();
+
+        private void SearchIndexUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
+            int i = 0;
+
+            // if (searchIndex + 1 > prevIndex)
+            {
+                for (var index = _searchEnd; index < _botPdf.AnnotationOverlay.TextSelectableElements.Count; index++)
+                {
+                    var elem = _botPdf.AnnotationOverlay.TextSelectableElements[index];
+                    if (i >= searchString.Length || (elem.Contents as string).ToLower()[0].Equals(searchString[i]))
+                    {
+                        i++;
+                        if (searchString.Length == i)
+                        {
+                            _botPdf.AnnotationOverlay.ClearSelection();
+
+                            _searchEnd = index;
+                            for (int j = 0; j < i; j++)
+                            {
+                                _botPdf.AnnotationOverlay.SelectIndex(index - j);
+                            }
+
+                            prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
+
+                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top);
+                            //_botPdf.ScrollViewer.ChangeView(null,
+                            //    _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top, null, true);
+                            //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
+                            //    .Top);
+                            _previousSelections.Add(index - i);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        i = 0;
+                    }
+                }
+
+                //sender.SetField<NumberController>(KeyStore.SearchIndexKey, 0, true);
+            }
+            /*else
+            {
+                if (searchIndex < 1)
+                {
+                    _searchEnd = _botPdf.AnnotationOverlay.TextSelectableElements.Count;
+                }
+                var reversedString = searchString.Reverse().ToList();
+                for (var index = _searchEnd - searchString.Length; index >= 0; index--)
+                {
+                    var elem = _botPdf.AnnotationOverlay.TextSelectableElements[index];
+                    if (i >= searchString.Length || (elem.Contents as string).ToLower()[0].Equals(reversedString[i]))
+                    {
+                        i++;
+                        if (searchString.Length == i)
+                        {
+                            _botPdf.AnnotationOverlay.ClearSelection();
+
+                            _searchEnd = index;
+                            for (int j = 0; j < i; j++)
+                            {
+                                _botPdf.AnnotationOverlay.SelectIndex(index + j);
+                            }
+
+                            prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
+
+                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top);
+                            sender.SetField<NumberController>(KeyStore.SearchIndexKey, searchIndex - 1, true);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        i = 0;
+                    }
+                }
+            }*/
         }
 
         private async void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -230,7 +363,7 @@ namespace Dash
             _botPdf.AnnotationOverlay.Visibility = Visibility.Collapsed;
             _botPdf.xPdfGridWithEmbeddings.Visibility = Visibility.Collapsed;
         }
-        public int PageNum() { return _botPdf.PageNum();  }
+        public int PageNum() { return _botPdf.PageNum(); }
         public bool AreAnnotationsVisible()
         {
             //This makes the assumption that both overlays are kept in sync
@@ -254,7 +387,7 @@ namespace Dash
                     return LinkHandledResult.HandledClose;
                 }
             }
-            var target = linkDoc.GetLinkedDocument(direction); 
+            var target = linkDoc.GetLinkedDocument(direction);
             var tgts = activePdf.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel.DataDocument.Equals(target?.GetDataDocument()));
             if (tgts.Count() > 0)
             {
@@ -330,11 +463,22 @@ namespace Dash
             }
             reader.Close();
             pdfDocument.Close();
-            
+
             _botPdf.Bind();
             _topPdf.Bind();
 
             this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
+            try
+            {
+                if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
+                {
+                    GoToUpdatedFieldChanged(LayoutDocument, null);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private double CalculateMaxPDFWidth(PdfDocument pdfDocument)
@@ -349,7 +493,7 @@ namespace Dash
             }
             return maxWidth;
         }
-        
+
         private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument)
         {
             var pdfTotalHeight = 0.0;
@@ -455,13 +599,14 @@ namespace Dash
 
         private void GoToUpdatedFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.NewValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
+            var newValue = args?.NewValue != null ? args.NewValue as DocumentController : sender.GetField<DocumentController>(KeyStore.GoToRegionKey);
+            if (newValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
             {
-                ScrollToRegion(args.NewValue as DocumentController);
-                _botPdf.AnnotationOverlay.SelectRegion(args.NewValue as DocumentController);
+                ScrollToRegion(newValue);
+                _botPdf.AnnotationOverlay.SelectRegion(newValue);
 
-                sender.RemoveField(KeyStore.GoToRegionKey);
-                sender.RemoveField(KeyStore.GoToRegionLinkKey);
+                //sender.RemoveField(KeyStore.GoToRegionKey);
+                //sender.RemoveField(KeyStore.GoToRegionLinkKey);
             }
         }
 
@@ -489,11 +634,11 @@ namespace Dash
         public void ScrollToRegion(DocumentController target, DocumentController source = null, PdfAnnotationView activeView = null)
         {
             var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
-            if (absoluteOffsets != null)
+            if (absoluteOffsets != null && PdfMaxWidth > 0)
             {
                 var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xTBotPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
-                var maxOffset       = _botPdf.ScrollViewer.ViewportHeight;
-                var firstSplit      = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
+                var maxOffset = _botPdf.ScrollViewer.ViewportHeight;
+                var firstSplit = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
 
                 if (firstSplit != 0)
                 {
@@ -553,7 +698,7 @@ namespace Dash
             _topPdf.Visibility = Visibility.Collapsed;
             xFirstPanelRow.Height = new GridLength(0);
         }
-        
+
         private void xRightMarginPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             xRightMargin.PointerMoved += xRightMarginPointerMoved;
@@ -563,8 +708,8 @@ namespace Dash
 
         private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0,xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X);
-            xRightMargin.Margin = new Thickness(0, 0, margin-2.5, 0);
+            var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X);
+            xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
         }
         private void xRightMarginPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -581,7 +726,7 @@ namespace Dash
         }
         private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0,e.GetCurrentPoint(xPdfContainer).Position.X);
+            var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X);
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
         }

@@ -14,12 +14,12 @@ namespace Dash
 
         public static MatrixTransform ConvertDataToXamlHelper(List<object> data, object parameter = null)
         {
-            if (data.Count < 2 || !(data[0] is Point) || !(data[1] is Point))
+            if (data.Count < 2 || !(data[0] is Point))
             {
                 return null;
             }
             var pos = (Point)data[0];
-            var scale = (Point)data[1];
+            var scale = (Point?)data[1] ?? new Point(1, 1);
             TransformGroup group = new TransformGroup();
             group.Children.Add(new ScaleTransform()
             {

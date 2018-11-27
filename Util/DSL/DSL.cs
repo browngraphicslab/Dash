@@ -42,8 +42,15 @@ namespace Dash
             {
                 if (!catchErrors) return null;
 
-                if (e is ScriptExecutionException exception) return exception.Error.GetErrorDoc(); 
-                return new TextController(e.GetHelpfulString());
+                switch (e)
+                {
+                    case ScriptExecutionException execution:
+                        return execution.Error.GetErrorDoc();
+                    case UserPromptException prompt:
+                        return prompt.GetPrompt();
+                    default:
+                        return new TextController(e.GetHelpfulString());
+                }
             }
         }
 
