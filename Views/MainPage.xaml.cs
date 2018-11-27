@@ -291,8 +291,12 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
-
+            
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
+            MenuToolbar.Instance.xStackPanel.Children.Remove(MenuToolbar.Instance.xSubtoolbarStackPanel);
+            customTitleBar.Children.Add(MenuToolbar.Instance.xSubtoolbarStackPanel);
+            MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
+            MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
         }
 
         private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,

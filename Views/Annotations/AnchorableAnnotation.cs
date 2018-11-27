@@ -123,6 +123,7 @@ namespace Dash
                 else SelectRegionFromParent(ViewModel, args.GetPosition(this));
                 args.Handled = true;
             };
+            shape.DoubleTapped += (sender, args) => args.Handled = true;
             //TOOLTIP TO SHOW TAGS
             var tip = new ToolTip { Placement = mode  };
             ToolTipService.SetToolTip(shape, tip);
@@ -203,8 +204,8 @@ namespace Dash
                 SolidColorBrush unselectedBrush=null)
             {
                 RegionDocument = region;
-                _unselectedBrush = unselectedBrush ?? new SolidColorBrush(Color.FromArgb(100, 0xff, 0xff, 0));
-                _selectedBrush   = selectedBrush   ?? new SolidColorBrush(Color.FromArgb(0x30, 0xff, 0, 0));
+                _unselectedBrush = unselectedBrush ?? new SolidColorBrush(Colors.Transparent);
+                _selectedBrush   = selectedBrush   ?? new SolidColorBrush(Color.FromArgb(22, 0, 0, 0));
             }
 
             public DocumentController RegionDocument { get; }

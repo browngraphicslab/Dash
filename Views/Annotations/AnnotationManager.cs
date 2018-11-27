@@ -24,11 +24,11 @@ namespace Dash
 		}
 
         //TODO This can be made static and can take in a framework element instead of IEnumerable<ILinkHandler>
-	    public void FollowRegion(DocumentView originatingView, DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType=null)
+        public void FollowRegion(DocumentView originatingView, DocumentController region, IEnumerable<ILinkHandler> linkHandlers, Point flyoutPosition, string linkType = null)
         {
             _linkFlyout.Items?.Clear();
-            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey);
-	        var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey);
+            var linksTo = region.GetDataDocument().GetLinks(KeyStore.LinkToKey).Where((l) => l.GetDataDocument().GetLinkTag()?.Data.Equals("Travelog") != true || linkType == "Travelog").ToList();
+            var linksFrom = region.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Where((l) => l.GetDataDocument().GetLinkTag()?.Data.Equals("Travelog") != true|| linkType == "Travelog").ToList();
             var subregions = region.GetDataDocument().GetRegions();
             if (subregions != null)
             {
