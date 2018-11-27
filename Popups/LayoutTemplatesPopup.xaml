@@ -1,0 +1,64 @@
+﻿<UserControl
+    x:Class="Dash.Popups.LayoutTemplatesPopup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Popups"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid HorizontalAlignment= "Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto">
+            <Popup x:Name="xLayoutPopup" LightDismissOverlayMode="On" Opened="Popup_OnOpened" Width ="400" Height ="300" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border x:Name="xBorder"
+                        BorderBrush="{StaticResource AccentGreenLight}"
+                        Background="White"
+                        BorderThickness="2 40 2 2" Width="600"  Height="500"
+                        Margin="-100 -100 0 0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left">
+                    <Grid>
+                        <Button Name="xCloseButton" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0 -35 5 0" Background="Transparent">
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE711;" FontSize="30" Foreground="DarkGreen"/>
+                        </Button>
+                        <TextBlock FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0">Choose a template</TextBlock>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="20 40 0 0">
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="xCitation" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White">Citation</TextBlock>
+                                </Button>
+                                <Button x:Name="xNote" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White">Note</TextBlock>
+                                </Button>
+                                <Button x:Name="xCard" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White">Card</TextBlock>
+                                </Button>
+                                <Button x:Name="xTitle" Margin="0 20 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White">Title</TextBlock>
+                                </Button>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="xProfile" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Profile</TextBlock>
+                                </Button>
+                                <Button x:Name="xArticle" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Article</TextBlock>
+                                </Button>
+                                <Button x:Name="xBiography" Margin="0 0 20 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Biography</TextBlock>
+                                </Button>
+                                <Button x:Name="xFlashcard" Margin="0 0 0 20" HorizontalAlignment="Left" VerticalAlignment="Top" Height="100" Width="100" Background="#334f43">
+                                    <TextBlock FontSize="14" Foreground="White" >Flashcard</TextBlock>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Popup>
+        </Grid>
+    </Grid>
+</UserControl>

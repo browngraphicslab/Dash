@@ -465,18 +465,24 @@ namespace Dash
 
         public void ShowRegions()
         {
-            _annotationOverlay.Visibility = Visibility.Visible;
+            if (_annotationOverlay != null)
+            {
+                _annotationOverlay.Visibility = Visibility.Visible;
+            }
         }
 
         public void HideRegions()
         {
-            _annotationOverlay.Visibility = Visibility.Collapsed;
+            if (_annotationOverlay != null)
+            {
+                _annotationOverlay.Visibility = Visibility.Collapsed;
+            }
         }
 
 
         public bool AreAnnotationsVisible()
         {
-            return _annotationOverlay.Visibility == Visibility.Visible;
+            return _annotationOverlay?.Visibility == Visibility.Visible;
         }
     }
 }

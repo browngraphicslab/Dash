@@ -649,6 +649,10 @@ namespace Dash
 
             double[] spacingData = ProcessXSpacing(lines);
 
+            if (!spacingData.Any())
+            {
+                return (null, null);
+            }
             (int[] clusters, double[] spaceMeans) = KMeansCluster.Cluster(spacingData, 2);
             lines.Sort((l1, l2) => Math.Sign(l1.First().Bounds.Y - l2.First().Bounds.Y));
             double lineSpacing = Math.Max(0, GetLineSpacing(lines));
