@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using iText.Layout.Element;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -27,6 +28,7 @@ namespace Dash
 
         public bool IsPresentationPlaying = false;
         private PresentationViewTextBox _textbox;
+        private DocumentController _document;
         private bool _giveTextBoxFocusUponFlyoutClosing = false;
         private bool _repeat = false;
         private List<UIElement> _paths = new List<UIElement>();
@@ -261,24 +263,33 @@ namespace Dash
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
             var dc = ((PresentationItemViewModel)e.ClickedItem).Document;
-            NavigateToDocument(dc);
+            BoolController zoomContext = dc.GetField(KeyStore.PresContextZoomKey) as BoolController;
+            NavigateToDocument(dc, zoomContext?.Data ?? false);
         }
 
         // helper method for moving the mainpage screen
-        private static void NavigateToDocument(DocumentController dc)
+        private static void NavigateToDocument(DocumentController dc, bool zoom = false)
         {
-            //if navigation failed, it wasn't in current workspace or something
-            if (!SplitFrame.TryNavigateToDocument(dc))
+            if (zoom)
             {
-                var tree = DocumentTree.MainPageTree;
-                var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(dc));
-                if (docNode != null)//TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
+                SplitFrame.OpenInActiveFrame(dc);
+            }
+            else
+            {
+                //if navigation failed, it wasn't in current workspace or something
+                if (!SplitFrame.TryNavigateToDocument(dc))
                 {
-                    SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
-                }
-                else
-                {
-                    SplitFrame.OpenInActiveFrame(dc);
+                    var tree = DocumentTree.MainPageTree;
+                    var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(dc));
+                    if (docNode != null
+                    ) //TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
+                    {
+                        SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
+                    }
+                    else
+                    {
+                        SplitFrame.OpenInActiveFrame(dc);
+                    }
                 }
             }
         }
@@ -305,11 +316,22 @@ namespace Dash
             var source = (FrameworkElement)e.OriginalSource;
             _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ??
                        source.GetFirstAncestorOfType<PresentationViewTextBox>();
+            _document = (((FrameworkElement)e.OriginalSource).DataContext as PresentationItemViewModel)?.Document;
+
+            var zoomContext = ((BoolController) _document.GetField(KeyStore.PresContextZoomKey))?.Data ?? false;
+            Fullscreen.Background = zoomContext ? new SolidColorBrush(Colors.LightSteelBlue) : new SolidColorBrush(Colors.Transparent);
+
         }
 
         private void Edit_OnClick(object sender, RoutedEventArgs e) => _giveTextBoxFocusUponFlyoutClosing = true;
 
         private void Reset_OnClick(object sender, RoutedEventArgs e) => _textbox.ResetTitle();
+
+        private void Fullscreen_OnClick(object sender, RoutedEventArgs e)
+        {
+            BoolController zoomContext = _document.GetFieldOrCreateDefault<BoolController>(KeyStore.PresContextZoomKey);
+            zoomContext.Data = !zoomContext.Data;
+        }
 
         private void Flyout_Closed(object sender, object e)
         {
@@ -414,10 +436,10 @@ namespace Dash
             }
 
             //TransformToVisual gets a transform that can transform coords from background to xCanvas coord system
-            startPoint     = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
-            endPoint       = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
+            startPoint = docViewA.TransformToVisual(canvas).TransformPoint(startPoint);
+            endPoint = docViewB.TransformToVisual(canvas).TransformPoint(endPoint);
             startControlPt = docViewA.TransformToVisual(canvas).TransformPoint(startControlPt);
-            endControlPt   = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
+            endControlPt = docViewB.TransformToVisual(canvas).TransformPoint(endControlPt);
 
             return new List<Point>()
             {
@@ -814,7 +836,7 @@ namespace Dash
         private void XTitleBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             ViewModel.RenamePres(ViewModel.CurrPres, xTitle.Text);
-            
+
         }
 
         private void XDropGrid_OnDragEnter(object sender, DragEventArgs e)
@@ -851,7 +873,8 @@ namespace Dash
             if (dragModel.DraggedDocuments.Count == 1 && dragModel.DraggedDocuments[0].GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) is var list)
             {
                 docs = list;
-            } else if (dragModel.DraggedDocuments.Count > 1)
+            }
+            else if (dragModel.DraggedDocuments.Count > 1)
             {
                 docs = dragModel.DraggedDocuments;
             }
@@ -869,5 +892,7 @@ namespace Dash
         {
             ViewModel.DeletePresentation(ViewModel.CurrPres);
         }
+
+
     }
 }

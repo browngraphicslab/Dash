@@ -82,7 +82,7 @@ namespace Dash
             // Storage Items
             // Internal Dash Document or Field
 
-            if (transferType.HasFlag(Internal))
+            if (transferType.HasFlag(Internal) && packageView.HasDragModel())
             {
                 dropDocs.AddRange(await packageView.GetAllInternalDroppableDocuments(where, targetElement, dontMove));
             }

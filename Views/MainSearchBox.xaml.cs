@@ -36,6 +36,7 @@ namespace Dash
         private HashSet<string> _options;
         private HashSet<string> _documentFilters;
         private HashSet<string> _authorFilters;
+        private bool _searchAll = false;
 
 
         #region Definition and Initilization
@@ -84,6 +85,7 @@ namespace Dash
             {
                 [XCaseSensButton] = "Case sensitive",
                 [XMatchWordButton] = "Match whole word",
+                [XSearchAllButton] = "Search all documents",
                 [XRegexButton] = "Regex"
             };
 
@@ -118,6 +120,12 @@ namespace Dash
                 Placement = placementMode
             };
             ToolTipService.SetToolTip(XClearFiltersButton,t4);
+            var t5 = new ToolTip
+            {
+                Content = "Search all documents",
+                Placement = placementMode
+            };
+            ToolTipService.SetToolTip(XSearchAllButton, t5);
 
         }
 
@@ -445,8 +453,7 @@ namespace Dash
             IEnumerable<SearchResult> searchRes;
             try
             {
-
-                searchRes = Search.Parse(text, options:_options).ToList();
+                searchRes = Search.Parse(text, useAll:_searchAll, options:_options).ToList();
             }
             catch (Exception)
             {
@@ -840,6 +847,7 @@ namespace Dash
 
             }
             _options.Clear();
+            _searchAll = false;
         }
 
         #endregion
@@ -851,6 +859,12 @@ namespace Dash
             {
                 XOptionButton_OnClick(sender,e);
             }
+        }
+
+        private void XSearchAllButton_OnClick(object sender, RoutedEventArgs e)
+        {
+                _searchAll = !_searchAll;
+                XOptionButton_OnClick(sender, e);
         }
 
         private void XClearFiltersButton_OnClick(object sender, RoutedEventArgs e)
@@ -876,6 +890,8 @@ namespace Dash
                 }
             }
         }
+
+
     }
 }
 
