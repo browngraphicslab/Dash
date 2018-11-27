@@ -398,11 +398,11 @@ namespace Dash
                             }
                             else if (char.IsNumber(contents.First()))
                             {
-                                sb.Append("\\" + (string)selectableElement.Contents);
+                                sb.Append("\\" + contents);
                             }
                             else
                             {
-                                sb.Append((string)selectableElement.Contents);
+                                sb.Append(contents);
                             }
                         }
 
