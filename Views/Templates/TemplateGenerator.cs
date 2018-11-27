@@ -175,9 +175,9 @@ namespace Dash
 
         <ScrollViewer Grid.Row=""1"" Grid.ColumnSpan=""2"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
             <StackPanel>
-                <TextBlock FontFamily=""Segoe UI"" FontSize=""6"" FontWeight=""Bold"">ABSTRACT:</TextBlock>
+                <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">ABSTRACT:</TextBlock>
                 <TextBlock x:Name=""xTextField4"" HorizontalAlignment=""Stretch"" FontSize=""6"" Margin=""0 5 0 0"" Text=""ABSTRACT: The Legend of Zelda: Breath of the Wild[a] is an action-adventure game developed and published by Nintendo. An entry in the longrunning The Legend of Zelda series, it was released for the Nintendo Switch and Wii U consoles on March 3, 2017."" TextWrapping=""Wrap""/>
-                <TextBlock FontFamily=""Segoe UI"" FontSize=""6"" FontWeight=""Bold"">KEYWORDS:</TextBlock>
+                <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">KEYWORDS:</TextBlock>
                 <TextBlock x:Name=""xTextField5"" FontSize=""6"" TextWrapping=""Wrap"" Margin=""0 5 0 5"" Text=""KEYWORDS, ANOTHER KEYWORD, MORE"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
             </StackPanel>
         </ScrollViewer>
