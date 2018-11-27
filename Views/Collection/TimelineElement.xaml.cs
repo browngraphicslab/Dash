@@ -62,8 +62,8 @@ namespace Dash
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
 
             // get the sort key value and display it
-            var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
-                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null).Data;
+            var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()?
+                .GetDereferencedField<DateTimeController>(ViewModel.SortKey, null)?.Data ?? System.DateTime.Now;
             xTimeBlock.Text = date.ToShortDateString();
             xDateBlock.Text = date.ToShortTimeString();
 

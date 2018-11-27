@@ -232,7 +232,7 @@ namespace Dash
             // gets the value of the sort key (currently modified time) and turns it into ticks to order increasingly by
             // PositionElement only works when elements are passed in in an increasing order
             var sortedElements = _contextList.OrderBy(vm =>
-                vm.DocumentViewModel.DocumentController.GetDataDocument().GetDereferencedField<DateTimeController>(SortKey,null).Data.Ticks).ToList();
+                vm.DocumentViewModel.DocumentController.GetDataDocument()?.GetDereferencedField<DateTimeController>(SortKey,null)?.Data.Ticks ?? 0).ToList();
             foreach (var element in sortedElements)
             {
                 PositionElement(element);
@@ -304,7 +304,7 @@ namespace Dash
             if (totalTime == 0) totalTime = 10;
 
             var normOffset =
-                (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetDereferencedField<DateTimeController>(SortKey, null).Data.Ticks - Metadata.MinTime) / totalTime;
+                (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument()?.GetDereferencedField<DateTimeController>(SortKey, null)?.Data.Ticks ?? 0 - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
         }
@@ -353,7 +353,7 @@ namespace Dash
             {
                 // lambda f(x) that retrieves value of key from viewmodel
                 Func<TimelineElementViewModel, long> getValues = vm =>
-                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetDereferencedField<DateTimeController>(SortKey, null).Data.Ticks;
+                    vm.DocumentViewModel.DocumentController.GetDataDocument()?.GetDereferencedField<DateTimeController>(SortKey, null)?.Data.Ticks ?? 0;
                 // find the earliest and latest modified times in document
                 Metadata.MinTime = _contextList.Min(getValues);
                 Metadata.MaxTime = _contextList.Max(getValues);

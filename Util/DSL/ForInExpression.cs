@@ -18,7 +18,7 @@ namespace Dash
 
         public override async Task<(FieldControllerBase, ControlFlowFlag)> Execute(Scope scope)
         {
-            scope = new Scope(scope);
+            scope = new DictionaryScope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
             var (field, _) = await _listToExecute.Execute(scope);
             if (!(field is IListController list))

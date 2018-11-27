@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -61,6 +62,30 @@ namespace Dash
 
             DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true, ResizersVisible = false };
             return doc;
+        }
+
+        public DocumentController OpenDocument(DocumentController document, DocumentController workspace)
+        {
+            Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Contains(document) ?? false);
+
+            if (ViewModel.DataDocument.Equals(workspace.GetDataDocument())) //Collection is already open, so we need to animate to it
+            {
+                AnimateToDocument(document);
+                return ViewModel.DocumentController;
+            }
+            else
+            {
+                var center = document.GetPosition() ?? new Point();
+                var size = document.GetActualSize() ?? new Point();
+                center.X += (size.X - ActualWidth) / 2;
+                center.Y += (size.Y - ActualHeight) / 2;
+                center.X = -center.X;
+                center.Y = -center.Y;
+                workspace = OpenDocument(workspace);
+                workspace.SetField<PointController>(KeyStore.PanPositionKey, center, true);
+                workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(1, 1), true);
+                return workspace;
+            }
         }
 
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;

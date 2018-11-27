@@ -199,13 +199,13 @@ namespace Dash
             //else 
             if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
-                   (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
-                     largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
-                     largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))
-                    ;
-                else
-                    Content = null; // forces layout to be recomputed by listeners who will access Content
+                //if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                //   (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
+                //     largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
+                //     largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))
+                //    ;
+                //else
+                //    Content = null; // forces layout to be recomputed by listeners who will access Content
             }
         }
         /// <summary>

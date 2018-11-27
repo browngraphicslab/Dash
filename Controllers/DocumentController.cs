@@ -31,6 +31,18 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
+        private static readonly List<KeyController> BehaviorKeys = new List<KeyController>
+        {
+            // tapped events
+            KeyStore.LeftTappedOpsKey,
+            KeyStore.RightTappedOpsKey,
+            KeyStore.DoubleTappedOpsKey,
+            KeyStore.FieldUpdatedOpsKey,
+            KeyStore.LowPriorityOpsKey,
+            KeyStore.ModeratePriorityOpsKey,
+            KeyStore.HighPriorityOpsKey
+        };
+
         public override string ToString()
         {
             string prefix = GetField<TextController>(KeyStore.CollectionViewTypeKey) == null ? "@" : "#";
@@ -51,6 +63,19 @@ namespace Dash
         public static DocumentController CreateFromServer(DocumentModel model)
         {
             return new DocumentController(model);
+        }
+
+        internal void AddBehavior(KeyController triggerKey, OperatorController op)
+        {
+            var existingOps = GetField<ListController<OperatorController>>(triggerKey);
+            if (existingOps == null)
+            {
+                var ops = new ListController<OperatorController> { op };
+                SetField(triggerKey, ops, true);
+                return;
+            }
+
+            existingOps.Add(op);
         }
 
         public override async Task InitializeAsync()
@@ -1004,6 +1029,8 @@ namespace Dash
         /// </summary>
         public void ShouldExecute(KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update = true)
         {
+            if (args.NewValue?.DereferenceToRoot(null) is DocumentController) return;
+
             var ops           = new List<OperatorController>();
             var remOps        = new HashSet<OperatorController>();
             for (var proto = this; proto != null; proto = proto.GetPrototype())
@@ -1061,9 +1088,14 @@ namespace Dash
             }
 
             //if (needsToExecute)
+            try
             {
                 // execute the operator
                 await opField.Execute(inputs, outputs, updatedArgs);
+            }
+            catch (ScriptExecutionException e)
+            {
+                return;
             }
 
             // pass the updates along 
@@ -1389,5 +1421,28 @@ namespace Dash
 
         #endregion
 
+        public void ClearBehaviors()
+        {
+            var fieldUpdatedBehaviors = GetField<ListController<DocumentController>>(KeyStore.FieldUpdatedOpsKey);
+            if (fieldUpdatedBehaviors != null)
+            {
+                foreach (var behave in fieldUpdatedBehaviors)
+                {
+                    var ops = behave.GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
+                    behave.RemoveField(KeyStore.OperatorKey);
+                    foreach (var operatorController in ops)
+                    {
+                        foreach (var operatorControllerInput in operatorController.Inputs)
+                        {
+                            behave.RemoveField(operatorControllerInput.Key);
+                        }
+                    }
+                }
+            }
+            GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.LowPriorityOpsKey).ToList().ForEach(opDoc => MainPage.Instance.LowPriorityOps.Remove(opDoc));
+            GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey).ToList().ForEach(opDoc => MainPage.Instance.ModeratePriorityOps.Remove(opDoc));
+            GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey).ToList().ForEach(opDoc => MainPage.Instance.HighPriorityOps.Remove(opDoc));
+            BehaviorKeys.ForEach(k => RemoveField(k));
+        }
     }
 }

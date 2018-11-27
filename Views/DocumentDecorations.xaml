@@ -46,6 +46,16 @@
             </Storyboard>
         </Grid.Resources>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
+        <StackPanel Background="White" BorderBrush="#55000000" BorderThickness="1"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
+            <AutoSuggestBox x:Name="xSearchBox" Foreground="White" MinWidth="150" MaxWidth="250" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
+                            QuerySubmitted="AutoSuggestBox_QuerySubmitted"  />
+            <Grid x:Name="xPrevOccur" PointerPressed="XPrevOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72B;" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="5 0 0 0"  Margin="0 0 0 0" Foreground="Black" />
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Previous Occurrence" Placement="Bottom" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
+        </StackPanel>
         <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                 <Ellipse />
