@@ -149,8 +149,11 @@ namespace Dash
                 return;
             }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
+            var boundsList =
+                RegionDocumentController.GetDataDocument().GetFieldOrCreateDefault<ListController<ListController<PointController>>>(
+                    KeyStore.SelectionBoundsKey);
 
-            if (ParentOverlay.TextSelectableElements?.Count() > 0 && indexList.Any() && _selectionViewModel != null)
+            if (indexList.Any() && boundsList.Any() && _selectionViewModel != null)
             {
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
@@ -158,15 +161,17 @@ namespace Dash
                 foreach (var t in indexList)
                 {
                     var range = t.Data;
+                    var bounds = boundsList.Where(b => b.First().Data.X == range.X && b.First().Data.Y == range.Y).ToList();
                     for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
                     {
-                        var rect = ParentOverlay.TextSelectableElements[ind].Bounds;
-                        topLeft.X = Math.Min(topLeft.X, rect.Left);
-                        topLeft.Y = Math.Min(topLeft.Y, rect.Y);
-                        if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
-                            lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, rect.X + rect.Width - lastRect.Rect.X, rect.Y + rect.Height - lastRect.Rect.Y);
+                        var pos = bounds[(int)(ind - range.X)][1].Data;
+                        var size = bounds[(int)(ind - range.X)][2].Data;
+                        topLeft.X = Math.Min(topLeft.X, pos.X);
+                        topLeft.Y = Math.Min(topLeft.Y, pos.Y);
+                        if (lastRect != null && Math.Abs(lastRect.Rect.Right - pos.X) < 7 && Math.Abs(lastRect.Rect.Y - pos.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
+                            lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, pos.X + size.X - lastRect.Rect.X, pos.Y + size.Y - lastRect.Rect.Y);
                         else
-                            geometryGroup.Children.Add(lastRect = new RectangleGeometry { Rect = rect });
+                            geometryGroup.Children.Add(lastRect = new RectangleGeometry { Rect = new Rect(pos.X, pos.Y, size.X, size.Y) });
                     }
                 }
                 foreach (var rect in geometryGroup.Children.OfType<RectangleGeometry>())
@@ -202,6 +207,8 @@ namespace Dash
                             new PointController(prevStartIndex, prevUsedIndex));
 						region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey,
 							new PointController(prevStartIndex, prevUsedIndex));
+                        region.GetDataDocument()
+                            .AddToListField(KeyStore.SelectionBoundsKey, new RectController(elem.Bounds));
 						prevStartIndex = i;
                     }
 
@@ -220,6 +227,22 @@ namespace Dash
 			{
 				region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
 				region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
+                for (var i = StartIndex; i <= EndIndex; i++)
+                {
+                    region.GetDataDocument()
+                        .AddToListField(KeyStore.SelectionBoundsKey,
+                            new ListController<PointController>
+                            {
+                                // store range
+                                new PointController(StartIndex, EndIndex),
+                                // store position
+                                new PointController(ParentOverlay.TextSelectableElements[i].Bounds.X,
+                                    ParentOverlay.TextSelectableElements[i].Bounds.Y),
+                                // store size
+                                new PointController(ParentOverlay.TextSelectableElements[i].Bounds.Width,
+                                    ParentOverlay.TextSelectableElements[i].Bounds.Height)
+                            });
+                }
 			}
 
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(0, YPos));

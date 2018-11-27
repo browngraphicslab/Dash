@@ -112,6 +112,7 @@ namespace Dash
         public static KeyController SelectionRegionTopLeftKey            = KeyController.Get("_Selection Top Left");
         public static KeyController SelectionRegionSizeKey               = KeyController.Get("_Selection Size");
         public static KeyController SelectionIndicesListKey              = KeyController.Get("_Selected Indices");
+        public static KeyController SelectionBoundsKey                   = KeyController.Get("_Selection Bounds");
         public static KeyController IsAnnotationScrollVisibleKey         = KeyController.Get("Is the annotation pinned");
         public static KeyController ReplLineTextKey                      = KeyController.Get("_Repl Inputs");
         public static KeyController ReplValuesKey                        = KeyController.Get("_Repl Outputs");
