@@ -195,6 +195,7 @@ namespace Dash
                 var maxZ = parentCanvas.Children.Aggregate(int.MinValue, (agg, val) => Math.Max(Canvas.GetZIndex(val), agg));
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
                 SetZLayer();
+                SetUpToolTips();
             };
 
             Unloaded += (sender, args) =>
@@ -253,6 +254,20 @@ namespace Dash
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
+        }
+
+        private void SetUpToolTips()
+        {
+            var text = ViewModel?.DocumentController?.GetField(KeyStore.ToolbarButtonNameKey);
+            if (!(text is TextController t)) return;
+
+            var label = new ToolTip()
+            {
+                Content = t.Data,
+                Placement = PlacementMode.Bottom,
+                VerticalOffset = 10
+            };
+            ToolTipService.SetToolTip(xMasterStack, label);
         }
 
         private void UpdateBindings()
@@ -1391,6 +1406,16 @@ namespace Dash
         private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
         {
             xMenuFlyout_Opening(sender, e);
+        }
+
+        private void MasterStackShowTooltip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = true;
+        }
+
+        private void MasterStackHideTooltip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = false;
         }
     }
 }

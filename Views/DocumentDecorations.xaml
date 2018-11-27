@@ -29,7 +29,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
-        <StackPanel Background="White" BorderBrush="#55000000" BorderThickness="1"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
+        <StackPanel Visibility="Collapsed"  Background="White" BorderBrush="#55000000" BorderThickness="1"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
             <AutoSuggestBox x:Name="xSearchBox" Foreground="White" MinWidth="150" MaxWidth="250" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
                             QuerySubmitted="AutoSuggestBox_QuerySubmitted"  />
             <Grid x:Name="xPrevOccur" PointerPressed="XPrevOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">

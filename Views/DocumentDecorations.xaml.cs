@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.System;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
-using Windows.System;
-using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.Xaml.Shapes;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Media.Animation;
-using DashShared;
-using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,7 +29,7 @@ namespace Dash
 
         public List<LinkButton> LinkButtons = new List<LinkButton>();
         
-        public bool touchActivated = false;
+        public bool touchActivated;
 
         public Visibility VisibilityState
         {
@@ -72,7 +68,7 @@ namespace Dash
 
         public List<DocumentView> SelectedDocs
         {
-            get => _selectedDocs.Where((s) => s.IsInVisualTree()).ToList();
+            get => _selectedDocs.Where(s => s.IsInVisualTree()).ToList();
             set
             {
                 foreach (var docView in _selectedDocs)
@@ -131,9 +127,9 @@ namespace Dash
             }
         }
 
-        private object ptrhdlr = null, taphdlr = null, keyhdlr = null;
+        private object ptrhdlr, taphdlr, keyhdlr;
 
-        private ToolTip _titleTip = new ToolTip() { Placement = PlacementMode.Top };
+        private ToolTip _titleTip = new ToolTip { Placement = PlacementMode.Top };
         public DocumentDecorations()
         {
             if (ptrhdlr == null)
@@ -142,19 +138,19 @@ namespace Dash
                 taphdlr = new TappedEventHandler(tapHdlr);
                 keyhdlr = new KeyEventHandler(keyHdlr);
             }
-            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerMovedEvent, ptrhdlr);
-            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerMovedEvent, ptrhdlr, true);
-            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerReleasedEvent, ptrhdlr);
-            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerReleasedEvent, ptrhdlr, true);
-            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.PointerWheelChangedEvent, ptrhdlr);
-            MainPage.Instance.xOuterGrid.AddHandler(UIElement.PointerWheelChangedEvent, ptrhdlr, true);
-            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.TappedEvent, taphdlr);
-            MainPage.Instance.xOuterGrid.AddHandler(UIElement.TappedEvent, taphdlr, true);
-            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyDownEvent, keyhdlr);
-            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyDownEvent, keyhdlr, true);
-            MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.KeyUpEvent, keyhdlr);
-            MainPage.Instance.xOuterGrid.AddHandler(UIElement.KeyUpEvent, keyhdlr, true);
-            this.InitializeComponent();
+            MainPage.Instance.xOuterGrid.RemoveHandler(PointerMovedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(PointerMovedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(PointerReleasedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(PointerReleasedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(PointerWheelChangedEvent, ptrhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(PointerWheelChangedEvent, ptrhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(TappedEvent, taphdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(TappedEvent, taphdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(KeyDownEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(KeyDownEvent, keyhdlr, true);
+            MainPage.Instance.xOuterGrid.RemoveHandler(KeyUpEvent, keyhdlr);
+            MainPage.Instance.xOuterGrid.AddHandler(KeyUpEvent, keyhdlr, true);
+            InitializeComponent();
             _visibilityState = Visibility.Collapsed;
             _selectedDocs = new List<DocumentView>();
             _titleTip.Content = HeaderFieldKey.Name;
@@ -193,7 +189,7 @@ namespace Dash
                 e.Handled = true;
             }
 
-            foreach (var handle in new Rectangle[] {
+            foreach (var handle in new[] {
                 xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
                 xLeftResizeControl, xRightResizeControl,
                 xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
@@ -228,7 +224,6 @@ namespace Dash
         private void DocumentDecorations_Loaded(object sender, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-
         }
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
@@ -279,6 +274,21 @@ namespace Dash
             xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             xScrollNavStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
             xPageButtonStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
+
+            showPDFControls = false;
+            foreach (var doc in _selectedDocs)
+            {
+                if (doc.GetFirstDescendantOfType<PdfView>() != null)
+                {
+                    showPDFControls = true;
+                }
+            }
+
+            if (_selectedDocs.Count > 1)
+            {
+                showPDFControls = false;
+            }
+
             xSearchStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && _selectedDocs.First().ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
@@ -402,8 +412,8 @@ namespace Dash
                 xURISource.Text = "From:";
                 try
                 {
-                    var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
-                    hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
+                    var hyperlink = new Hyperlink { NavigateUri = new Uri(htmlAddress) };
+                    hyperlink.Inlines.Add(new Run { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
 
                     xURISource.Inlines.Add(hyperlink);
                 }
@@ -436,7 +446,7 @@ namespace Dash
         private void SelectedDocView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
-            if (e.Pointer.PointerDeviceType.Equals(Windows.Devices.Input.PointerDeviceType.Touch))
+            if (e.Pointer.PointerDeviceType.Equals(PointerDeviceType.Touch))
                 touchActivated = true;
             if (doc.ViewModel != null)
             {
@@ -447,7 +457,7 @@ namespace Dash
         private void SelectedDocView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             var doc = sender as DocumentView;
-            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed() && !e.Pointer.PointerDeviceType.Equals(Windows.Devices.Input.PointerDeviceType.Touch)))
+            if (e == null || (!e.IsRightPressed() && !e.IsRightPressed() && !e.Pointer.PointerDeviceType.Equals(PointerDeviceType.Touch)))
             {
                 VisibilityState = Visibility.Collapsed;
             }
@@ -519,28 +529,28 @@ namespace Dash
 
         public void XNextPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+            SelectedDocs.SelectMany(v => new[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach(pv =>
              pv?.NextPage());
             e.Handled = true;
         }
 
         public void XPreviousPageButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+            SelectedDocs.SelectMany(v => new[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach(pv =>
              pv?.PrevPage());
             e.Handled = true;
         }
 
         public void XScrollBack_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+            SelectedDocs.SelectMany(v => new[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach(pv =>
              pv?.ScrollBack());
             e.Handled = true;
         }
 
         public void XScrollForward_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            SelectedDocs.SelectMany((v) => new PdfView[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach((pv) =>
+            SelectedDocs.SelectMany(v => new[] { v.GetFirstDescendantOfType<PdfView>() }.ToList()).ToList().ForEach(pv =>
              pv?.ScrollForward());
             e.Handled = true;
         }
@@ -585,13 +595,13 @@ namespace Dash
                 VisibilityState = Visibility.Collapsed;
         }
         
-        void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, true, true)); }
-        void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, true)); }
-        void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, true)); }
-        void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, true)); }
-        void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
-        void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
-        void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach((dv) => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
+        void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, true, true, true)); }
+        void ResizeRTaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, true, false, true)); }
+        void ResizeBLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, false, true, true)); }
+        void ResizeBRaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, false, false, true)); }
+        void ResizeRTunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, true, false, false)); }
+        void ResizeBLunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, false, true, false)); }
+        void ResizeBRunconstrained(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, false, false, false)); }
 
         private void xTitle_KeyUp(object sender, KeyRoutedEventArgs e)
         {
@@ -621,9 +631,9 @@ namespace Dash
         private void ChooseNextHeaderKey(bool prev = false)
         {
             var keys = new List<KeyController>();
-            foreach (var d in SelectedDocs.Select((sd) => sd.ViewModel?.DataDocument))
+            foreach (var d in SelectedDocs.Select(sd => sd.ViewModel?.DataDocument))
             {
-                keys.AddRange(d.EnumDisplayableFields().Select((pair) => pair.Key));
+                keys.AddRange(d.EnumDisplayableFields().Select(pair => pair.Key));
             }
             keys = keys.ToHashSet().ToList();
             keys.Sort((dv1, dv2) => string.Compare(dv1.Name, dv2.Name));
@@ -637,7 +647,7 @@ namespace Dash
 
         private void CommitHeaderText()
         {
-            foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DocumentController))
+            foreach (var doc in SelectedDocs.Select(sd => sd.ViewModel?.DocumentController))
             {
                 var targetDoc = doc.GetField<TextController>(HeaderFieldKey)?.Data != null ? doc : doc.GetDataDocument();
 
@@ -678,7 +688,7 @@ namespace Dash
         private void Ellipse_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var activeDoc = SelectedDocs.FirstOrDefault()?.ViewModel.DocumentController;
-            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeDoc.GetDataDocument(), DocumentDecorations.HeaderFieldKey)));
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeDoc.GetDataDocument(), HeaderFieldKey)));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }

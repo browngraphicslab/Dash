@@ -20,6 +20,8 @@
                 ManipulationMode="All"
                 IsHitTestVisible="{Binding IsSelected}"
                 SelectionMode="Single"
+                Height="44"
+                  Padding="7 0 7 0"
                 ShowsScrollingPlaceholders="False" 
                 >
 
