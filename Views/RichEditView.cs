@@ -110,7 +110,10 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(this_Tapped), true);
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
-            AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) => _manipulator = null), true);
+            AddHandler(PointerReleasedEvent, new PointerEventHandler((s, e) =>
+            {
+                _manipulator = null;
+            }), true);
 
             AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
             AddHandler(KeyUpEvent, new KeyEventHandler(XRichEditBox_OnKeyUp), true);

@@ -632,26 +632,26 @@ namespace Dash
         /// <summary>
         /// Copies the Document.
         /// </summary>
-        public void CopyDocument()
+        public void CopyDocument(Point? where = null)
         {
             using (UndoManager.GetBatchHandle())
             {
                 // will this screw things up?
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                var doc = ViewModel.DocumentController.GetCopy(null);
+                var doc = ViewModel.DocumentController.GetCopy(where);
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }
         /// <summary>
         /// Copies the Document.
         /// </summary>
-        public void MakeInstance()
+        public void MakeInstance(Point? where = null)
         {
             using (UndoManager.GetBatchHandle())
             {
                 // will this screw things up?
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                var doc = ViewModel.DocumentController.GetDataInstance(null);
+                var doc = ViewModel.DocumentController.GetDataInstance(where);
                 ParentCollection?.ViewModel.AddDocument(doc);
             }
         }

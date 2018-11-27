@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -428,7 +429,7 @@ namespace Dash
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
             }
             _downPt = e.GetCurrentPoint(this).Position;
-            e.Handled = true;
+           if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse) e.Handled = true;
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

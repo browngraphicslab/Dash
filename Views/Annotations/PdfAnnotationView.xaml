@@ -92,23 +92,32 @@
         </Grid>
 </UserControl>-->
 
-    <Grid x:Name="xPdfContainer" MinWidth="50" Background="white" VerticalAlignment="Top">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
         <InkToolbar x:Name="xInkToolbar" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed" x:FieldModifier="public">
             <InkToolbarEraserButton/>
             <InkToolbarBallpointPenButton/>
             <InkToolbarPencilButton/>
             <InkToolbarHighlighterButton/>
         </InkToolbar>
-        <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" PointerEntered="ScrollViewer_OnPointerEntered">
-            <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
-                <Grid AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
-                    <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" >
-                        <!-- ItemsControl that stores the page images -->
-                        <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+
+        <Grid x:Name="xPdfContainer" MinWidth="50" Background="white" VerticalAlignment="Top" Grid.Row="1">
+
+            <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging" PointerEntered="ScrollViewer_OnPointerEntered">
+                <Viewbox Stretch="UniformToFill"  SizeChanged="xPdfGrid_SizeChanged">
+                    <Grid AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                        <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" >
+                            <!-- ItemsControl that stores the page images -->
+                            <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>
+                        </Grid>
+                        <Canvas x:Name="xPdfGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     </Grid>
-                    <Canvas x:Name="xPdfGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                </Grid>
-            </Viewbox>
-        </ScrollViewer>
+                </Viewbox>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>
