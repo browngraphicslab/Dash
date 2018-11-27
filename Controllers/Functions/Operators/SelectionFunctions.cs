@@ -20,7 +20,7 @@ namespace Dash
                 new Dictionary<KeyController, FieldControllerBase>
                 {
                     [docKey] = doc.ViewModel.DocumentController,
-                    [parentKey] = parent.ViewModel.DocumentController
+                    [parentKey] = parent?.ViewModel.DocumentController
                 }, DocumentType.DefaultType));
             return result.ToListController();
         }

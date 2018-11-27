@@ -12,6 +12,7 @@ namespace Dash
         bool Remove(FieldControllerBase fmc);
         void AddBase(FieldControllerBase fmc);
         void AddRange(IEnumerable<FieldControllerBase> fmcs);
+        void Clear();
 
         void Set(IEnumerable<FieldControllerBase> fmcs);
 

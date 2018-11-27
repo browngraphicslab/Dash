@@ -182,7 +182,11 @@ namespace Dash
         <TextBlock x:Name=""xTextField0"" Text=""DOC TITLE"" HorizontalAlignment=""Stretch"" Height=""25"" VerticalAlignment=""Top""/>
     </Border>
     <Border Grid.Row=""1"" Background=""CadetBlue"" >
+<<<<<<< HEAD
         <dash:RichEditView x:Name=""xRichTextField1"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
+=======
+        <dash:RichEditView x:Name=""xRichTextFieldData"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
+>>>>>>> 9a761d7359006deb405b4d1921897b6d2698da28
     </Border>
     <StackPanel Orientation=""Horizontal""  Grid.Row=""2"" Height=""30"" Background=""White"" >
         <!--<TextBlock Text=""Author:"" HorizontalAlignment=""Stretch"" FontStyle=""Italic"" FontSize=""9"" VerticalAlignment=""Center"" Margin=""0 5 0 0"" Padding=""0 0 5 0"" />-->

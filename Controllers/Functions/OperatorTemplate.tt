@@ -114,6 +114,8 @@ public sealed class <#= className #> : OperatorController
             var typeName = "None";
             if(type == "FieldControllerBase") {
                 typeName = "Any";
+            } else if(type == "IListController") {
+                typeName = "List";
             } else if(type.EndsWith("Controller")) {
                 typeName = type.Substring(0, type.Length - "Controller".Length);
             } else if(type.StartsWith("List")) {
@@ -135,14 +137,15 @@ public sealed class <#= className #> : OperatorController
         var outputNames = new List<(string, string)>();
         foreach(var (name, type, required) in inputs) {
             var keyName = ToPascalCase(name);
-            inputNames.Add(name);
+            var paramName = ToCamelCase(name);
+            inputNames.Add(paramName);
             if(required) {
 #>
-        var <#= ToCamelCase(name) #> = (<#= type #>)inputs[<#= keyName #>Key];
+        var <#= paramName #> = (<#= type #>)inputs[<#= keyName #>Key];
 <#+
             } else {
 #>
-        var <#= ToCamelCase(name) #> = inputs[<#= keyName #>Key] as <#= type #>;
+        var <#= paramName #> = inputs[<#= keyName #>Key] as <#= type #>;
 <#+
             }
         }
@@ -333,13 +336,16 @@ namespace Dash
             foreach (var parameter in parameterList.Parameters)
             {
                 var t = parameter.Type;
-                if (!(t is IdentifierNameSyntax ident))
+                if (t is IdentifierNameSyntax ident)
                 {
-                    return null;
+                    var name = parameter.Identifier.ValueText;
+                    inputs.Add((name, ident.Identifier.ValueText, parameter.Default == null));
                 }
-
-                var name = parameter.Identifier.ValueText;
-                inputs.Add((name, ident.Identifier.ValueText, parameter.Default == null));
+                else if (t is GenericNameSyntax generic)
+                {
+                    var name = generic.Identifier.ValueText;
+                    inputs.Add((name, generic.ToString(), parameter.Default == null));
+                }
             }
 
             return inputs;

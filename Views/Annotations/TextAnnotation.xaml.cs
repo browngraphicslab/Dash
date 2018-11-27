@@ -58,6 +58,10 @@ namespace Dash
             double closestDist = double.PositiveInfinity;
 
             var startPage = ParentOverlay.GetPageOf(p.Y);
+            if (startPage >= ParentOverlay.PageEndIndices.Count)
+            {
+                return null;
+            }
             // startIndex is either 0 or the last page's end index + 1
             var startIndex = startPage > 0 ? ParentOverlay.PageEndIndices[startPage - 1] + 1 : 0;
             var endIndex = ParentOverlay.PageEndIndices[startPage];

@@ -10,7 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True" >
-    <Grid x:Name="Grid" Background="White">
+    <Grid x:Name="Grid" >
         <GridView x:Name="xGridView"
                 ScrollViewer.VerticalScrollMode="Enabled"
                 VirtualizingStackPanel.VirtualizationMode="Standard"
@@ -26,7 +26,7 @@
 
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <local:DocumentView IsHitTestVisible="False" />
+                    <local:DocumentView />
                 </DataTemplate>
             </GridView.ItemTemplate>
 

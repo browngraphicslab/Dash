@@ -46,6 +46,24 @@
             </Storyboard>
         </Grid.Resources>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
+        <StackPanel Background="White"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="5">
+            <AutoSuggestBox x:Name="xSearchBox" Foreground="White" Width="150" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
+                            QuerySubmitted="AutoSuggestBox_QuerySubmitted"></AutoSuggestBox>
+            <Grid x:Name="xNextOccur" PointerPressed="XNextOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0" Foreground="White"></TextBlock>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Next Occurrence" Placement="Bottom" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
+            <Grid x:Name="xPrevOccur" PointerPressed="XPrevOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Ellipse />
+                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0" Foreground="White"></TextBlock>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Previous Occurrence" Placement="Bottom" VerticalOffset="0" />
+                </ToolTipService.ToolTip>
+            </Grid>
+        </StackPanel>
         <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                 <Ellipse />

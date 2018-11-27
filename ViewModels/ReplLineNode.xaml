@@ -18,7 +18,7 @@
             </MenuFlyout>
         </StackPanel.ContextFlyout>
         <StackPanel.Resources>
-            <x:Double  x:Key="dataSizing">13</x:Double>
+            <x:Double  x:Key="dataSizing">15</x:Double>
         </StackPanel.Resources>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -29,7 +29,7 @@
             <TextBlock 
                 Grid.Column="0"
                 x:Name="xArrowBlock" 
-                Margin="5, 6, 0, 4" 
+                Margin="7, 5, 0, 4" 
                 Height="15"
                 FontSize="{StaticResource dataSizing}" 
                 FontFamily="{StaticResource FontAwesome}" 
@@ -38,13 +38,13 @@
                 Foreground="{x:Bind Foreground, Mode=OneWay}"/>
             <TextBlock 
                 x:Name="xSnapshotArrowBlock" 
-                Margin="0, 5, 5, 5"
+                Margin="1, 5, 5, 5"
                 Width="Auto"
                 Height="Auto"
                 HorizontalAlignment="Left"
                 FontSize="{StaticResource dataSizing}" 
                 Grid.Column="1" 
-                FontFamily="Lucida Sans Typewriter"
+                FontFamily="Consolas"
                 Style="{StaticResource xMenuItemExpandRight}" 
                 Tapped="XArrowBlock_OnTapped" 
                 RightTapped="XSnapshotArrowBlock_OnRightTapped"

@@ -206,6 +206,7 @@
     <Compile Include="Controllers\Functions\Operators\SearchFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SplitFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\StringFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
@@ -220,6 +221,9 @@
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\SplitFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\StringFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
@@ -252,6 +256,13 @@
     <Compile Include="Popups\LayoutTemplatesPopup.xaml.cs">
       <DependentUpon>LayoutTemplatesPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\ManageBehaviors\BehaviorTextbox.xaml.cs">
+      <DependentUpon>BehaviorTextbox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml.cs">
+      <DependentUpon>ManageBehaviorsPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ManageBehaviors\ManageBehaviorsViewModel.cs" />
     <Compile Include="Popups\NewTemplatePopup.xaml.cs">
       <DependentUpon>NewTemplatePopup.xaml</DependentUpon>
     </Compile>
@@ -282,6 +293,8 @@
     <Compile Include="Popups\TemplatePopups\TitlePopup.xaml.cs">
       <DependentUpon>TitlePopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\DSL\Error Models\IncompleteVariableDeclarationErrorModel.cs" />
+    <Compile Include="Util\DSL\UserPromptException.cs" />
     <Compile Include="Popups\TraveloguePopup.xaml.cs">
       <DependentUpon>TraveloguePopup.xaml</DependentUpon>
     </Compile>
@@ -514,7 +527,7 @@
     <Compile Include="Util\DSL\FunctionExpression.cs" />
     <Compile Include="Util\DSL\FunctionSuggestion.cs" />
     <Compile Include="Util\DSL\ObjectExpression.cs" />
-    <Compile Include="Util\DSL\OuterReplScope.cs" />
+    <Compile Include="Util\DSL\DocumentScope.cs" />
     <Compile Include="Util\DSL\Error Models\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
@@ -1161,6 +1174,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\LayoutTemplatesPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ManageBehaviors\BehaviorTextbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

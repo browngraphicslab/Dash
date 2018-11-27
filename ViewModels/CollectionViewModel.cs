@@ -209,9 +209,24 @@ namespace Dash
                 RemoveViewModels(args.OldItems, args.StartingChangeIndex);
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-                DocumentViewModels.Clear();
-                AddViewModels(args.NewItems, 0);
+                NewViewModels(args.NewItems);
                 break;
+            }
+        }
+
+        private void NewViewModels(IList<DocumentController> docs)
+        {
+            var removed = DocumentViewModels.Select(dvm => dvm.DocumentController).Except(docs).ToList();
+            var added   = docs.Except(DocumentViewModels.Select(dvm => dvm.DocumentController)).ToList();
+
+            if (removed.Any())
+            {
+                RemoveViewModels(removed, -1);
+            }
+
+            if (added.Any())
+            {
+                AddViewModels(added, -1);
             }
         }
 
@@ -545,13 +560,37 @@ namespace Dash
                     {
                         if (SettingsView.Instance.MarkdownEditOn)
                         {
-                            var postitNote = new MarkdownNote(text: text, size: new Size(300, double.NaN)).Document;
+                            DocumentController postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
                             Actions.DisplayDocument(this, postitNote, where);
                             return postitNote;
                         }
                         else
                         {
-                            var postitNote = new RichTextNote(text, size: new Size(300, double.NaN)).Document;
+                            DocumentController postitNote;
+                            if (Clipboard.GetContent().Properties[nameof(DocumentController)] is DocumentController sourceDoc)
+                            {
+                                var region = new RichTextNote("Rich text region").Document;
+
+                                //add link to region of sourceDoc
+                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
+                                postitNote = postitView.Document;
+                                postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
+                                    sourceDoc.Title, true);
+                                postitNote.GetDataDocument()
+                                    .SetField<TextController>(KeyStore.SourceUriKey, region.Id, true);
+                                postitNote.GetDataDocument().AddToRegions(new List<DocumentController> { region });
+
+                                region.SetRegionDefinition(sourceDoc);
+                                region.SetAnnotationType(AnnotationType.Selection);
+
+                                region.Link(sourceDoc, LinkBehavior.Annotate);
+
+                            }
+                            else
+                            {
+                                var region = new RichTextNote("Rich text region").Document;
+                                postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                            }
                             Actions.DisplayDocument(this, postitNote, where);
                             return postitNote;
                         }
@@ -617,7 +656,7 @@ namespace Dash
                                     sourceDoc.Title, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController> { region });
 
-                                region.SetRegionDefinition(postitNote);
+                                region.SetRegionDefinition(sourceDoc);
                                 region.SetAnnotationType(AnnotationType.Selection);
 
                                 region.Link(sourceDoc, LinkBehavior.Annotate);
@@ -780,6 +819,7 @@ namespace Dash
                         docsToAdd[i].SetFitToParent(true);
                 }
             }
+
             if (collectionViewModel?.IsTemplate ?? false)
             {
                 RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);

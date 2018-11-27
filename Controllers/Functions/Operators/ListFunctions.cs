@@ -8,9 +8,19 @@ namespace Dash
 {
     public static class ListFunctions
     {
+        public static void Add(IListController list, FieldControllerBase item)
+        {
+            list.AddBase(item);
+        }
+
         public static BoolController Remove(IListController list, FieldControllerBase item)
         {
             return new BoolController(list.Remove(item));
+        }
+
+        public static void Clear(IListController list)
+        {
+            list.Clear();
         }
 
         [OperatorFunctionName("remove")]

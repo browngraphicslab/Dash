@@ -120,12 +120,17 @@ namespace Dash
                 }
 
                 _visibilityLock = false;
+                xButtonsCanvas.Margin = new Thickness(0, 0, 0, 0);
                 foreach (var docView in value)
                 {
+                    //if (docView.ViewModel?.Undecorated == true)
+                    //{
+                    //    _visibilityLock = true;
+                    //    VisibilityState = Visibility.Collapsed;
+                    //}
                     if (docView.ViewModel?.Undecorated == true)
                     {
-                        _visibilityLock = true;
-                        VisibilityState = Visibility.Collapsed;
+                        xButtonsCanvas.Margin = new Thickness(-10, 0, 0, 0);
                     }
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
@@ -312,6 +317,12 @@ namespace Dash
 
             ResetHeader(); // force header field to update
             VisibilityState = (SelectedDocs.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
+
+            if (SelectedDocs.Count == 1)
+            {
+                xSearchBox.Text = SelectedDocs.First().ViewModel.DocumentController
+                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+            }
         }
 
         public void SetPositionAndSize(bool rebuildMenu = true)
@@ -632,7 +643,6 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //bcz: fix this -- it dies for multiple document selections
             var dragDocOffset  = args.GetPosition(sender);
             var relDocOffsets  = SelectedDocs.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
             var parCollections = SelectedDocs.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
@@ -1076,6 +1086,7 @@ namespace Dash
                 ResetHeader(keys[ind].Name);
             } while (xHeaderText.Text == "<empty>");
         }
+
         private void CommitHeaderText()
         {
             foreach (var doc in SelectedDocs.Select((sd) => sd.ViewModel?.DocumentController))
@@ -1087,6 +1098,7 @@ namespace Dash
             xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
             ResetHeader();
         }
+
         private void ResetHeader(string newkey = null)
         {
             if (SelectedDocs.Count > 0)
@@ -1158,6 +1170,71 @@ namespace Dash
                     var xml = txt.Replace("\"", "'");
                     d.ViewModel.DocumentController.SetField<TextController>(KeyStore.XamlKey, xml, true);
                 }
+            }
+        }
+
+        private void XPrevOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchString = documentView.ViewModel.DocumentController
+                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+                if (!searchString.Equals(xSearchBox.Text))
+                {
+                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                        xSearchBox.Text, true);
+                }
+            }
+
+            foreach (var documentView in SelectedDocs)
+            {
+                documentView.ViewModel.DocumentController.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, true, true);
+            }
+
+            //foreach (var documentView in SelectedDocs)
+            //{
+            //    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+            //        xSearchBox.Text, true);
+            //}
+            //foreach (var documentView in SelectedDocs)
+            //{
+            //    var searchIndex =
+            //        documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -2;
+
+            //    documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey,
+            //        searchIndex, true);
+            //}
+        }
+
+        private void XNextOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchString = documentView.ViewModel.DocumentController
+                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+                if (!searchString.Equals(xSearchBox.Text))
+                {
+                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                        xSearchBox.Text, true);
+                }
+            }
+
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchIndex =
+                    documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -1;
+
+                documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey,
+                    searchIndex + 1, true);
+            }
+        }
+
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
+                    sender.Text, true);
             }
         }
 

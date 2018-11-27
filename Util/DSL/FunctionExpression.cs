@@ -65,7 +65,7 @@ namespace Dash
 
             try
             {
-                scope = new Scope();
+                scope = new DictionaryScope();
 
                 var output = op != null ? await OperatorScript.Run(op, inputs, scope) : await OperatorScript.Run(opName, inputs, scope);
                 return (output, ControlFlowFlag.None);

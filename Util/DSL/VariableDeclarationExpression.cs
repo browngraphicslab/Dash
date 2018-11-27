@@ -30,7 +30,7 @@ namespace Dash
                 return (null, ControlFlowFlag.None);
             }
 
-            if (!scope.CanDeclareVariable(_variableName)) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, scope[_variableName]));
+            if (scope.HasVariable(_variableName)) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, scope[_variableName]));
             var (val, _) = await _value.Execute(scope);
             scope.DeclareVariable(_variableName, val);
 
