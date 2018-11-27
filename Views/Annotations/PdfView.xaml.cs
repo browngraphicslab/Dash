@@ -239,7 +239,7 @@ namespace Dash
 
         private async void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()))
+            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && PdfUri != null)
             {
                 var uri = PdfUri;
                 string textToSet = null;

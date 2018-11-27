@@ -88,25 +88,35 @@ namespace Dash
     xmlns:dash=""using:Dash""
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
 
-    <StackPanel Orientation=""Horizontal"" HorizontalAlignment=""Center"">
-        <StackPanel>
-            <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
-                <dash:EditableTextBlock x:Name=""xTextField0"" Text=""Title"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" />
-            </Border>
-            <Border BorderThickness=""10"" BorderBrush=""CadetBlue"" Background=""White"" Margin=""0 0 0 0"" Width=""150"" Height=""160"">
-                <dash:EditableImage x:Name=""xImageField1"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" />
-            </Border>
-        </StackPanel>
-        <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Margin =""0 0 0 0"" Width =""146"">
-            <StackPanel Margin=""0 0 0 0"">
+    <Grid  HorizontalAlignment=""Stretch"" BorderBrush=""CadetBlue"" BorderThickness=""3"">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width=""3*""></ColumnDefinition>
+            <ColumnDefinition Width=""1""></ColumnDefinition>
+            <ColumnDefinition Width=""*""></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column=""0"">
+            <Grid.RowDefinitions>
+                <RowDefinition Height=""30""></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <dash:EditableTextBlock x:Name=""xTextField0"" Grid.Row=""0"" Text=""Title"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" />
+            <Grid  Grid.Row=""1"" >
+                <Grid Background=""CadetBlue"" Opacity=""0.2""/>
+                <dash:EditableImage x:Name=""xImageField1""/>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column=""1"" Background=""CadetBlue"" />
+        <Grid Grid.Column=""2"">
+            <Grid Background=""CadetBlue"" Opacity=""0.4""></Grid>
+            <StackPanel >
                 <dash:EditableTextBlock x:Name=""xTextField2"" Text=""Default1"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" Padding=""0 0 5 0"" Margin=""0 10 0 0"" />
                 <dash:EditableTextBlock x:Name=""xTextField3"" Text=""Default2"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" Padding=""0 0 5 0"" Margin=""0 0 0 0"" />
                 <dash:EditableTextBlock x:Name=""xTextField4"" Text=""Default3"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" Padding=""0 0 5 0"" Margin=""0 0 0 0"" />
                 <dash:EditableTextBlock x:Name=""xTextField5"" Text=""Default4"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" Padding=""0 0 5 0"" Margin=""0 0 0 0"" />
                 <dash:EditableTextBlock x:Name=""xTextField6"" Text=""Default5"" HorizontalAlignment=""Left"" VerticalAlignment=""Center"" Padding=""0 0 5 0"" Margin=""0 0 0 0"" />
             </StackPanel>
-        </Border>
-    </StackPanel>
+        </Grid>
+    </Grid>
 </Grid>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
@@ -151,10 +161,10 @@ namespace Dash
             <RowDefinition Height=""*""></RowDefinition>
         </Grid.RowDefinitions>
         <StackPanel>
-            <TextBlock x:Name=""xTextField0"" FontWeight=""Bold"" FontSize=""25"" TextAlignment=""Left"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField1"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Left"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField2"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Left"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField3"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Left"" Text=""Publication Venue"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField0"" FontWeight=""Bold"" FontSize=""25"" TextAlignment=""Center"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField1"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField2"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField3"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Publication Venue"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
             <TextBlock x:Name=""xTextField4"" Margin=""0 20 0 0"" Text=""ABSTRACT: The Legend of Zelda: Breath of the Wild[a] is an action-adventure game developed and published by Nintendo. An entry in the longrunning The Legend of Zelda series, it was released for the Nintendo Switch and Wii U consoles on March 3, 2017."" TextWrapping=""Wrap""/>
             <TextBlock x:Name=""xTextField5"" Margin=""0 20 0 20"" Text=""KEYWORDS, ANOTHER KEYWORD, MORE"" HorizontalAlignment=""Center"" VerticalAlignment=""Top""/>
         </StackPanel>
@@ -182,11 +192,7 @@ namespace Dash
         <TextBlock x:Name=""xTextField0"" Text=""DOC TITLE"" HorizontalAlignment=""Stretch"" Height=""25"" VerticalAlignment=""Top""/>
     </Border>
     <Border Grid.Row=""1"" Background=""CadetBlue"" >
-<<<<<<< HEAD
         <dash:RichEditView x:Name=""xRichTextField1"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
-=======
-        <dash:RichEditView x:Name=""xRichTextFieldData"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
->>>>>>> 9a761d7359006deb405b4d1921897b6d2698da28
     </Border>
     <StackPanel Orientation=""Horizontal""  Grid.Row=""2"" Height=""30"" Background=""White"" >
         <!--<TextBlock Text=""Author:"" HorizontalAlignment=""Stretch"" FontStyle=""Italic"" FontSize=""9"" VerticalAlignment=""Center"" Margin=""0 5 0 0"" Padding=""0 0 5 0"" />-->

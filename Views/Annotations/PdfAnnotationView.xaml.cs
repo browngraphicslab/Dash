@@ -163,21 +163,27 @@ namespace Dash
         public double LeftMargin { get; set; }
         public void SetRightMargin(double margin)
         {
-            xPdfGrid.Padding = new Thickness(0);
-            PdfMaxWidth -= RightMargin;
-            RightMargin = margin;
-            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
-            PdfMaxWidth += RightMargin;
-            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+            if (Pages.PageSizes.Count > 0)
+            {
+                xPdfGrid.Padding = new Thickness(0);
+                PdfMaxWidth -= RightMargin;
+                RightMargin = margin;
+                xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+                PdfMaxWidth += RightMargin;
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+            }
         }
         public void SetLeftMargin(double margin)
         {
-            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin/pageScaling(Pages.PageSizes[0].Width) };
-            xPdfGrid.Padding = new Thickness(0);
-            PdfMaxWidth -= LeftMargin;
-            LeftMargin = margin;
-            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
-            PdfMaxWidth += LeftMargin;
+            if (Pages.PageSizes.Count > 0)
+            {
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin / pageScaling(Pages.PageSizes[0].Width) };
+                xPdfGrid.Padding = new Thickness(0);
+                PdfMaxWidth -= LeftMargin;
+                LeftMargin = margin;
+                xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+                PdfMaxWidth += LeftMargin;
+            }
         }
 
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)

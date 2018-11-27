@@ -164,7 +164,6 @@ namespace Dash
                     linkedFrom.Equals(_documentView.ViewModel.DataDocument)  ? LinkDirection.ToDestination : LinkDirection.ToSource, 
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
-            xFlyout.Hide();
         }
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)

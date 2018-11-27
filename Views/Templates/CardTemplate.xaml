@@ -4,23 +4,33 @@
     xmlns:dash="using:Dash"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-        <StackPanel>
-            <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
-                <dash:EditableTextBlock x:Name="xTextField0" Text="Title" HorizontalAlignment="Left" VerticalAlignment="Top" />
-            </Border>
-            <Border BorderThickness="10" BorderBrush="CadetBlue" Background="White" Margin="0 0 0 0" Width="150" Height="160">
-                <dash:EditableImage x:Name="xImageField1" HorizontalAlignment="Left" VerticalAlignment="Top" />
-            </Border>
-        </StackPanel>
-        <Border BorderThickness="2" BorderBrush="CadetBlue" Margin ="0 0 0 0" Width ="146">
-            <StackPanel Margin="0 0 0 0">
+    <Grid  HorizontalAlignment="Stretch" BorderBrush="CadetBlue" BorderThickness="3">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"></ColumnDefinition>
+            <ColumnDefinition Width="1"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <dash:EditableTextBlock x:Name="xTextField0" Grid.Row="0" Text="Title" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Grid  Grid.Row="1" >
+                <Grid Background="CadetBlue" Opacity="0.2"/>
+                <dash:EditableImage x:Name="xImageField1"/>
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="1" Background="CadetBlue" />
+        <Grid Grid.Column="2">
+            <Grid Background="CadetBlue" Opacity="0.4"></Grid>
+            <StackPanel >
                 <dash:EditableTextBlock x:Name="xTextField2" Text="Default1" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 10 0 0" />
                 <dash:EditableTextBlock x:Name="xTextField3" Text="Default2" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
                 <dash:EditableTextBlock x:Name="xTextField4" Text="Default3" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
                 <dash:EditableTextBlock x:Name="xTextField5" Text="Default4" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
                 <dash:EditableTextBlock x:Name="xTextField6" Text="Default5" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0 0 5 0" Margin="0 0 0 0" />
             </StackPanel>
-        </Border>
-    </StackPanel>
+        </Grid>
+    </Grid>
 </Grid>
