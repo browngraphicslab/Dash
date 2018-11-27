@@ -5,6 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
@@ -13,6 +14,37 @@
     DragStarting="LinkButton_DragStarting" Tapped="LinkButton_Tapped" RightTapped="LinkButton_RightTapped"
     Width="22" 
     Height="22">
+
+    <FlyoutBase.AttachedFlyout>
+        <Flyout Placement="Right" x:Name="xFlyout">
+            <StackPanel x:Name="xStackPanel" Orientation="Vertical">
+                <ListView x:Name="xLinkList" CanDragItems="True" DragItemsStarting="xLinkList_DragItemsStarting" FontSize="14" Margin="2 0 2 10" Background="White" SelectionChanged="XLinkList_OnSelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="xTextBox" Loaded="TextBoxLoaded" BorderBrush="Transparent" Background="Transparent" IsEnabled="False" Margin="-5"/>
+                                <SymbolIcon Symbol="Setting" Tapped="SymbolIcon_SettingsTapped"  PointerEntered="SymbolIcon_PointerEntered" PointerExited="SymbolIcon_PointerExited"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <x:String>Green</x:String>
+                </ListView>
+                <local:LinkMenu Visibility="Collapsed" x:Name="xLinkMenu"/>
+                <Grid x:Name="xLinkBehaviorOverride" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 10">
+                        <RadioButton x:Name="xOverrideDefault"  HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="None"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideFollow"   HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Goto"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideDock"     HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Dock"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideAnnotate" HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Show"  Checked="RadioButton_Checked"/>
+                        <RadioButton x:Name="xOverrideFloat"    HorizontalAlignment="Center" MinWidth="10" Margin="5 0 5 0" FontSize="14" Content="Float" Checked="RadioButton_Checked"/>
+                    </StackPanel>
+                    
+                </Grid>
+            </StackPanel>
+            
+        </Flyout>
+
+    </FlyoutBase.AttachedFlyout>
 
     <Grid Background="Transparent"
           Width="22" 
