@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
@@ -144,6 +145,7 @@ namespace Dash
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
                 var displayDoc = linkDoc.GetDereferencedField<DocumentController>(matches ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
+                displayDoc.SetTitle(displayDoc.GetRegionDefinition().Title+" region");
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,
