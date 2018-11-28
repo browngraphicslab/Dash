@@ -295,9 +295,11 @@ namespace Dash
             
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
             MenuToolbar.Instance.xStackPanel.Children.Remove(MenuToolbar.Instance.xSubtoolbarStackPanel);
-            customTitleBar.Children.Add(MenuToolbar.Instance.xSubtoolbarStackPanel);
-            MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
-            MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
+            var subPanel = MenuToolbar.Instance.xSubtoolbarStackPanel;
+            customTitleBar.Children.Add(subPanel);
+            //subPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            //MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
+            //MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
         }
 
         private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,

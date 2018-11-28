@@ -26,7 +26,7 @@
                         x:Name="Root"
                         MinWidth="{TemplateBinding MinWidth}"
                         MaxWidth="{TemplateBinding MaxWidth}"
-                        Background="{StaticResource DashToolBarBrush}">
+                        Background="{StaticResource DashDarkDarkBlueBrush}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize"/>
@@ -182,7 +182,7 @@
                             x:Name="Root"
                             MinWidth="{TemplateBinding MinWidth}"
                             MaxWidth="{TemplateBinding MaxWidth}"
-                            Background="{StaticResource DashToolBarBrush}">
+                            Background="{StaticResource DashDarkDarkBlueBrush}">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="ApplicationViewStates">
                                     <VisualState x:Name="FullSize"/>
@@ -378,7 +378,7 @@
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
 
-                            <Rectangle x:Name="CheckedHighlightBackground" Fill="{StaticResource DashDarkBlueBrush}" Opacity="0"/>
+                            <Rectangle x:Name="CheckedHighlightBackground" Fill="{StaticResource DashDarkDarkBlueBrush}" Opacity="0"/>
                             <Rectangle x:Name="AccentOverlayBackground"/>
 
                             <StackPanel x:Name="ContentRoot" MinHeight="{ThemeResource AppBarThemeCompactHeight}">
@@ -673,7 +673,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <StackPanel Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" x:Name="xPdfCommandbar" Height="32">
+        <StackPanel Orientation="Horizontal" Background="{StaticResource DashDarkDarkBlueBrush}" x:Name="xPdfCommandbar" Height="32">
             <!--show-->
             <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xToggleAnnotations" Foreground="White" Checked="ToggleAnnotations_Checked" Unchecked="ToggleAnnotations_Unchecked" PointerEntered="ShowAppBarToolTip"
                                 PointerExited="HideAppBarToolTip">
@@ -718,7 +718,7 @@
 
             <AppBarSeparator Height="45" VerticalAlignment="Center" Foreground="White" Background="White"></AppBarSeparator>
 
-            <TextBox Name="xToPageBox" GotFocus="xToPageBox_GotFocus" Style="{StaticResource TextBoxStyler}" Height="30" FontSize="12" Width="150" PlaceholderText="Go to page..."  HorizontalAlignment="Stretch" Padding="5 5 0 0" Margin="0, 0, 6, 0"  BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" KeyDown="XToPageBox_OnKeyDown" />
+            <TextBox Name="xToPageBox" GotFocus="xToPageBox_GotFocus" Style="{StaticResource TextBoxStyler}" Height="28" FontSize="12" Width="150" PlaceholderText="Go to page..." HorizontalAlignment="Stretch" Padding="6 3 0 0" Margin="0, 0, 6, 0"  BorderBrush="LightGray" VerticalAlignment="Center" Background="White" Opacity="1"  Canvas.ZIndex="2" KeyDown="XToPageBox_OnKeyDown" />
 
         </StackPanel>
     </Grid>

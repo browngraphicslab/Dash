@@ -475,7 +475,7 @@
                 <dash:DocumentView x:Name="XDocumentView" Grid.Column="1" MinHeight="60" Margin="7 0 0 0"/>
             </Grid>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
-            <StackPanel x:Name="xSubtoolbarStackPanel" x:FieldModifier="public">
+            <StackPanel x:Name="xSubtoolbarStackPanel" x:FieldModifier="public" HorizontalAlignment="Center" Margin="0 0 0 0">
                 <dash:RichTextSubtoolbar x:Name="xRichTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:PlainTextSubtoolbar x:Name="xPlainTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />

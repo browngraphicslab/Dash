@@ -159,7 +159,7 @@ namespace Dash
         //TODO: this doesn't account for offsets
         private async Task<List<DocumentController>> GetLinkDocuments(Point where)
         {
-            var anno = new RichTextNote(where: where).Document;
+            var anno = new RichTextNote(text: "Annotation of " + DraggedDocuments.FirstOrDefault().Title, where: where).Document;
             anno.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationKey, true, true);
 
             for (var i = 0; i < DraggedDocuments.Count; i++)

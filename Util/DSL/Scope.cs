@@ -28,7 +28,7 @@ namespace Dash
         public void SetVariable(string variableName, FieldControllerBase value)
         {
             Scope child = this;
-            while (!child.TryGetVariable(variableName, out var _) && child.Parent != null) { child = child.Parent; }
+            while (!child.HasLocalVariable(variableName) && child.Parent != null) { child = child.Parent; }
 
             child.SetLocalVariable(variableName, value);
         }
@@ -113,7 +113,7 @@ namespace Dash
             var scope = new DictionaryScope();
             foreach (var field in doc.EnumDisplayableFields())
             {
-                scope.SetVariable(field.Key.Name, field.Value);
+                scope.DeclareVariable(field.Key.Name, field.Value);
             }
 
             return scope;

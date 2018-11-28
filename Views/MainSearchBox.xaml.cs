@@ -234,16 +234,13 @@ namespace Dash
         private void Grid_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             if (!(sender is Grid outerGrid && outerGrid.DataContext is SearchResultViewModel srvm)) return;
-            if (!(ToolTipService.GetToolTip(outerGrid) is ToolTip tip))
+            var tip = new ToolTip()
             {
-                tip = new ToolTip()
-                {
-                    Content = srvm.Path,
-                    Placement = PlacementMode.Left,
-                    VerticalOffset = 400
-                };
-                ToolTipService.SetToolTip(outerGrid, tip);
-            }
+                Content = srvm.Path,
+                Placement = PlacementMode.Left,
+                VerticalOffset = 400
+            };
+            ToolTipService.SetToolTip(outerGrid, tip);
             tip.IsOpen = true;
             SplitFrame.HighlightDoc(srvm.ViewDocument, SplitFrame.HighlightMode.Highlight);
         }

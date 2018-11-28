@@ -89,7 +89,7 @@ namespace Dash
                     //}
                     if (docView.ViewModel?.Undecorated == true)
                     {
-                        xButtonsCanvas.Margin = new Thickness(-10, 0, 0, 0);
+                        xButtonsCanvas.Margin = new Thickness(-20, 0, 0, 0);
                     }
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
@@ -284,7 +284,7 @@ namespace Dash
                 }
             }
 
-            if (_selectedDocs.Count > 1)
+            if (_selectedDocs.Count > 1 || _selectedDocs.Select(v => v.ViewModel.DocumentController).Contains(MainPage.Instance.MainDocument))
             {
                 showPDFControls = false;
             }

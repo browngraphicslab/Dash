@@ -148,10 +148,10 @@ namespace Dash
 
             subtoolbarElement = null;
 
-            if (!ToolbarColumn.Width.IsStar)
-            {
-                return;
-            }
+            //if (!ToolbarColumn.Width.IsStar)
+            //{
+            //    return;
+            //}
 
             docs = docs.ToList();
 
@@ -457,8 +457,6 @@ namespace Dash
                 XDocumentView.Visibility = Visibility.Visible;
                 XCollapseBox.Text = "\uE73F";
             }
-
-            Update(SelectionManager.GetSelectedDocs());
         }
     }
 }

@@ -356,6 +356,7 @@ namespace Dash
 
         // @IList<T> //
         public void Add(T element)
+        public void Add(T element)
         {
             if (IsReadOnly) return;
             var prevList = new List<T>(_typedData);

@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Background="#22222222">
+    <Grid Background="#00222222" x:Name="LayoutRoot" Margin="0 5 0 0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -18,8 +18,12 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <StackPanel x:Name="XMainPathStackPanel" Grid.Row="0" Grid.Column="0" Orientation="Horizontal"></StackPanel>
+        <StackPanel x:Name="XMainPathStackPanel" Grid.Row="0" Grid.Column="0" Spacing="12" Orientation="Horizontal"></StackPanel>
         <TextBlock x:Name="XExpandTextBlock" Grid.Row="0" Grid.Column="1" Tapped="UIElement_OnTapped"></TextBlock>
-        <StackPanel x:Name="XExtraPathsStackPanel" Grid.Row="1" Grid.Column="0" Orientation="Vertical" Visibility="Collapsed"></StackPanel>
+        <FlyoutBase.AttachedFlyout>
+            <Flyout>
+                <StackPanel x:Name="XExtraPathsStackPanel" Grid.Row="1" Grid.Column="0" Spacing="12" Orientation="Vertical"/>
+            </Flyout>
+        </FlyoutBase.AttachedFlyout>
     </Grid>
 </UserControl>

@@ -22,7 +22,7 @@
         </Grid.Resources>
 
         <!--First row with font family, font size, and clear style-->
-        <Grid  Background="{StaticResource DashToolBarBrush}">
+        <Grid  Background="{StaticResource DashDarkDarkBlueBrush}" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200"/>
                 <ColumnDefinition Width="100"/>
@@ -33,9 +33,10 @@
                 Padding="0, -2, 0, 0" 
                 PlaceholderText="Choose a font..." 
                 Style="{StaticResource ComboBoxStyler}" 
-                Height="30" 
+                Height="28" 
                 HorizontalAlignment="Stretch" 
-                Margin="6,0,9.5,0" 
+                Foreground="Black"
+                Margin="6,5,9.5,0" 
                 Grid.Column="0" 
                 ItemsSource="{x:Bind FontFamilyNames, Mode=OneWay}" 
                 DisplayMemberPath="Source" 
