@@ -147,6 +147,23 @@ namespace Dash
 </Grid>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("ContentTemplate.xaml"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<Page
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
+
+    <Grid>
+        <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+            <ContentPresenter x:Name=""xDataField0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </Border>
+    </Grid>
+</Page>"),
+                    }, DocumentType.DefaultType),
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("FlashcardTemplate.xaml"),
                         [KeyStore.XamlKey] = new TextController(@"
 <Grid
@@ -154,29 +171,29 @@ namespace Dash
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
     xmlns:dash=""using:Dash""
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
-
-    <Grid Padding=""5"" Background=""White"">
-        <Grid.RowDefinitions>
-            <RowDefinition Height=""2*""></RowDefinition>
-            <RowDefinition Height=""5*""></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width=""2*""></ColumnDefinition>
-            <ColumnDefinition Width=""3*""></ColumnDefinition>
+<!--FlashcardTemplate-->
+<Grid Padding=""5"" Background=""White"">
+    <Grid.RowDefinitions>
+        <RowDefinition Height=""2*""></RowDefinition>
+        <RowDefinition Height=""5*""></RowDefinition>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width=""2*""></ColumnDefinition>
+        <ColumnDefinition Width=""3*""></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <ScrollViewer Grid.Column=""0"" Grid.Row=""0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
-            <StackPanel>
-                <TextBlock x:Name=""xTextField0"" TextWrapping=""Wrap"" FontWeight=""Bold"" FontSize=""10"" TextAlignment=""Center"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-                <TextBlock x:Name=""xTextField1"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-                <TextBlock x:Name=""xTextField2"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-                <TextBlock x:Name=""xTextField3"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Publication Venue"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            </StackPanel>
-        </ScrollViewer>
+        <StackPanel>
+            <TextBlock x:Name=""xTextField0"" TextWrapping=""Wrap"" FontWeight=""Bold"" FontSize=""10"" TextAlignment=""Center"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField1"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField2"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField3"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Publication Venue"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </StackPanel>
+    </ScrollViewer>
 
-        <ScrollViewer Grid.Row=""1"" Grid.ColumnSpan=""2"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
-            <StackPanel>
-                <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">ABSTRACT:</TextBlock>
-                <TextBlock x:Name=""xTextField4"" HorizontalAlignment=""Stretch"" FontSize=""6"" Margin=""0 5 0 0"" Text=""ABSTRACT: The Legend of Zelda: Breath of the Wild[a] is an action-adventure game developed and published by Nintendo. An entry in the longrunning The Legend of Zelda series, it was released for the Nintendo Switch and Wii U consoles on March 3, 2017."" TextWrapping=""Wrap""/>
+    <ScrollViewer Grid.Row=""1"" Grid.ColumnSpan=""2"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
+        <StackPanel>
+            <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">ABSTRACT:</TextBlock>
+            <TextBlock x:Name=""xTextField4"" HorizontalAlignment=""Stretch"" FontSize=""6"" Margin=""0 5 0 0"" Text=""ABSTRACT: The Legend of Zelda: Breath of the Wild[a] is an action-adventure game developed and published by Nintendo. An entry in the longrunning The Legend of Zelda series, it was released for the Nintendo Switch and Wii U consoles on March 3, 2017."" TextWrapping=""Wrap""/>
                 <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">KEYWORDS:</TextBlock>
                 <TextBlock x:Name=""xTextField5"" FontSize=""6"" TextWrapping=""Wrap"" Margin=""0 5 0 5"" Text=""KEYWORDS, ANOTHER KEYWORD, MORE"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
             </StackPanel>
@@ -185,9 +202,27 @@ namespace Dash
         <Border Grid.Row=""0"" Grid.Column=""1"" Background=""CadetBlue"" >
             <dash:PdfView x:Name=""xPdfField6"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" Grid.Column=""1"" VerticalAlignment=""Stretch"" />
         </Border>
+        <dash:PdfView x:Name=""xPdfField7"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.RowSpan=""2"" Grid.ColumnSpan=""2"" Visibility=""{Binding ElementName=xViewEntirePdf, Path=IsChecked}"" VerticalAlignment=""Stretch"" />
+        <CheckBox Grid.Row=""0"" Grid.Column=""1"" x:Name=""xViewEntirePdf"" x:FieldModifier=""public"" HorizontalAlignment=""Right"" VerticalAlignment=""Top"" Margin=""0 3 -93 0""/>
     </Grid>
-</Grid>
-"),
+</Grid>"),
+                    }, DocumentType.DefaultType),
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("ImageTemplate.xaml"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<Page
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
+
+    <Grid>
+        <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+            <dash:EditableImage x:Name=""xImageField0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </Border>
+    </Grid>
+</Page>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("NoteTemplate.xaml"),
@@ -277,11 +312,12 @@ namespace Dash
     xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
     xmlns:dash=""using:Dash""
-    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
 
     <Grid>
         <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
-            <TextBlock x:Name=""xTextField0"" Text=""DOC TITLE"" HorizontalAlignment=""Stretch"" Height=""20"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField0"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" TextWrapping=""Wrap""/>
         </Border>
     </Grid>
 </Page>
@@ -299,7 +335,9 @@ namespace Dash
              Biography,
              Card,
              Citation,
+             Content,
              Flashcard,
+             Image,
              Note,
              Profile,
              Title,

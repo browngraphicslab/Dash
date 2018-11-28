@@ -7,7 +7,7 @@
 
     <Grid>
         <Border BorderThickness="2" BorderBrush="CadetBlue" Background="White">
-            <TextBlock x:Name="xTextField0" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="Wrap"/>
+            <ContentPresenter x:Name="xDataField0" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
         </Border>
     </Grid>
 </Page>
