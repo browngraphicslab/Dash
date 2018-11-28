@@ -12,8 +12,8 @@
     <Grid.ColumnDefinitions>
         <ColumnDefinition Width="2*"></ColumnDefinition>
         <ColumnDefinition Width="3*"></ColumnDefinition>
-    </Grid.ColumnDefinitions>
-    <ScrollViewer Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <StackPanel>
             <TextBlock x:Name="xTextField0" TextWrapping="Wrap" FontWeight="Bold" FontSize="10" TextAlignment="Center" Text="Paper Title" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
             <TextBlock x:Name="xTextField1" TextWrapping="Wrap" FontStyle="Italic" FontSize="8" TextAlignment="Center" Text="Paper Author" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
@@ -34,5 +34,7 @@
         <Border Grid.Row="0" Grid.Column="1" Background="CadetBlue" >
             <dash:PdfView x:Name="xPdfField6" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" />
         </Border>
+        <dash:PdfView x:Name="xPdfField7" Foreground="White" HorizontalAlignment="Stretch" Grid.RowSpan="2" Grid.ColumnSpan="2" Visibility="{Binding ElementName=xViewEntirePdf, Path=IsChecked}" VerticalAlignment="Stretch" />
+        <CheckBox Grid.Row="0" Grid.Column="1" x:Name="xViewEntirePdf" x:FieldModifier="public" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 3 -93 0"/>
     </Grid>
 </Grid>

@@ -47,6 +47,7 @@ namespace Dash.Popups.TemplatePopups
                     fields.ElementAtOrDefault(xTextField3.SelectedIndex),
                     fields.ElementAtOrDefault(xTextField4.SelectedIndex),
                     fields.ElementAtOrDefault(xTextField5.SelectedIndex),
+                    fields.ElementAtOrDefault(xTextFieldPdf.SelectedIndex),
                     fields.ElementAtOrDefault(xTextFieldPdf.SelectedIndex)
                 };
 

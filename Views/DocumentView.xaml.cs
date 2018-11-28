@@ -1249,6 +1249,8 @@ namespace Dash
                 foreach (var doc in docs)
                 {
                     doc.SetField<TextController>(KeyStore.XamlKey, template, true);
+                    doc.SetWidth(600);
+                    doc.SetHeight(600);
                 }
             }
         }
