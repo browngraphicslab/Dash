@@ -349,6 +349,7 @@ namespace Dash
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
                     region.SetAnnotationType(AnnotationType.Selection);
                     region.SetRegionDefinition(regionContainerDocument);
+                    region.SetTitle(regionContainerDocument.Title+" region");
 
                     regionContainerDocument.GetDataDocument()
                         .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(region);
