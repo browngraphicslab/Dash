@@ -563,7 +563,7 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch || e.Pointer.PointerDeviceType == PointerDeviceType.Pen)
             {
                 (sender as FrameworkElement).CapturePointer(e.Pointer);
             }
@@ -734,7 +734,7 @@ namespace Dash
 
         private void ScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch || e.Pointer.PointerDeviceType == PointerDeviceType.Pen)
             {
                 if (TouchInteractions.HeldDocument == null)
                     TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
