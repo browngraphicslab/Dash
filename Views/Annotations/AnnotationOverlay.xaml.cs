@@ -332,7 +332,7 @@ namespace Dash
 
         public static void LinkRegion(DocumentController sourceDoc, DocumentController targetDoc,
             double? sStartIndex = null, double? sEndIndex = null, double? tStartIndex = null, double? tEndIndex = null,
-            string linkTag = null)
+            string linkTag = null, string behavior = null)
         {
             Debug.Assert(sourceDoc.GetRegionDefinition() == null);
             var linkSource = sStartIndex is double sStart && sEndIndex is double sEnd
@@ -342,7 +342,7 @@ namespace Dash
                 ? createRegionDoc(targetDoc, tStart, tEnd)
                 : targetDoc;
 
-            linkSource.Link(linkTarget, LinkBehavior.Follow, linkTag);
+            linkSource.Link(linkTarget, Enum.TryParse(behavior, out LinkBehavior behaviorEnum) ? behaviorEnum : LinkBehavior.Annotate, linkTag);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -396,7 +396,7 @@ namespace Dash
                 return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
                     var selInds = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                    return (selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
+                    return (selInds != null && selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
                                                    (int)endIndex == (int)selInds[0].Data.Y));
                 });
             }

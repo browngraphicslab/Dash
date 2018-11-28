@@ -340,7 +340,7 @@ namespace Dash
                 foreach (var anno in annosToAdd)
                 {
 
-                    var range = anno.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey).FirstOrDefault()?.Data ?? new Point(0, -1);
+                    var range = anno.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey)?.FirstOrDefault()?.Data ?? new Point(0, -1);
 
                     for (var i = range.X; i <= range.Y; i++)
                     {
@@ -351,7 +351,7 @@ namespace Dash
                             // store position
                             {
                                 KeyStore.SelectionBoundsKey,
-                                new RectController(_botPdf.AnnotationOverlay.TextSelectableElements[(int) i].Bounds)
+                                new RectController(_botPdf.AnnotationOverlay.TextSelectableElements[(int)i].Bounds)
                             }
                         };
                         anno.GetDataDocument()
@@ -708,10 +708,10 @@ namespace Dash
 
         public void ScrollToRegion(DocumentController target, DocumentController source = null, PdfAnnotationView activeView = null)
         {
-            var absoluteOffsets = target.GetField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
+            var absoluteOffsets = target.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.SelectionBoundsKey);
             if (absoluteOffsets != null && PdfMaxWidth > 0)
             {
-                var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xTBotPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
+                var relativeOffsets = absoluteOffsets.Select(p => p.GetField<RectController>(KeyStore.SelectionBoundsKey).Data.Y * (xTBotPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
                 var maxOffset = _botPdf.ScrollViewer.ViewportHeight;
                 var firstSplit = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
 

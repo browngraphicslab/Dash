@@ -43,6 +43,11 @@ namespace Dash
             return new BoolController(one.Data || two.Data);
         }
 
+        public static BoolController Not(BoolController one)
+        {
+            return new BoolController(!one.Data);
+        }
+
         private static Random r = new Random();
 
         public static NumberController Rand()

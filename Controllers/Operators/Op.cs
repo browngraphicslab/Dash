@@ -230,7 +230,8 @@ namespace Dash
             toggle_presentation,
             export_workspace,
             and,
-            or
+            or,
+            not
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
