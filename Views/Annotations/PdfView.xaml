@@ -38,24 +38,18 @@
             </controls:GridSplitter.Element>
         </controls:GridSplitter>
         
-        <Grid x:Name="xLeftMargin" Width="5" Grid.Row="0" Grid.RowSpan="3"  HorizontalAlignment="Left" Margin="-2.5 0 0 0"  VerticalAlignment="Stretch" PointerPressed="xLeftMarginPointerPressed"  PointerReleased="xLeftMarginPointerReleased">
+        <Grid x:Name="xLeftMargin" Width="5" Grid.Row="0" Grid.RowSpan="3"  HorizontalAlignment="Left" Margin="-2.5 0 0 0"  VerticalAlignment="Stretch" Tapped="xLeftMargin_Tapped" PointerPressed="xLeftMarginPointerPressed"  PointerReleased="xLeftMarginPointerReleased">
             <Canvas>
-                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Left" Margin="-22.5 -25 0 0" VerticalAlignment="Top">
-                    <Grid.Clip>
-                        <RectangleGeometry Rect="25 0 50 25" Transform="1 0  0 1 0 25"/>
-                    </Grid.Clip>
-                </Grid>
+                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="75" Height="5" HorizontalAlignment="Left" Margin="0 0 0 0" VerticalAlignment="Top"/>
+                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="50" Height="45" CornerRadius="20" HorizontalAlignment="Left" Margin="75 -20 0 0" VerticalAlignment="Top"/>
             </Canvas>
             <Line VerticalAlignment="Top" HorizontalAlignment="Center" Y1="2000" Stroke="Black" StrokeDashArray="2 2" StrokeThickness="0.25" />
         </Grid>
 
-        <Grid x:Name="xRightMargin" Width="5" Grid.Row="0" Grid.RowSpan="3"  HorizontalAlignment="Right" Margin="0 0 -2.5 0"  VerticalAlignment="Stretch" PointerPressed="xRightMarginPointerPressed"  PointerReleased="xRightMarginPointerReleased">
+        <Grid x:Name="xRightMargin" Width="5" Grid.Row="0" Grid.RowSpan="3"  HorizontalAlignment="Right" Margin="0 0 -2.5 0"  VerticalAlignment="Stretch" Tapped="xRightMargin_Tapped"  PointerPressed="xRightMarginPointerPressed"  PointerReleased="xRightMarginPointerReleased">
             <Canvas>
-                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" CornerRadius="25" Width="50" Height="50" HorizontalAlignment="Right" Margin="-22.5 -25 0 0" VerticalAlignment="Top">
-                <Grid.Clip>
-                    <RectangleGeometry Rect="0 0 25 25" Transform="1 0  0 1 0 25"/>
-                </Grid.Clip>
-                </Grid>
+                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="75" Height="5" HorizontalAlignment="Left" Margin="-75 0 0 0" VerticalAlignment="Top"/>
+                <Grid Background="{StaticResource DashDarkBlueBrush}" Opacity="0.5" Width="50" Height="45" CornerRadius="20" HorizontalAlignment="Left" Margin="-124 -20 0 0" VerticalAlignment="Top"/>
             </Canvas>
             <Line VerticalAlignment="Top" HorizontalAlignment="Center" Y1="2000" Stroke="Black" StrokeDashArray="2 2" StrokeThickness="0.25" />
         </Grid>

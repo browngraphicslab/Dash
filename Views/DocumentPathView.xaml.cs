@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 
@@ -20,13 +21,11 @@ namespace Dash
             get => _useDataDocument;
             set
             {
-                if (_useDataDocument == value)
+                if (_useDataDocument != value)
                 {
-                    return;
+                    _useDataDocument = value;
+                    UpdatePaths();
                 }
-
-                _useDataDocument = value;
-                UpdatePaths();
             }
         }
 
@@ -72,7 +71,8 @@ namespace Dash
             {
                 var p = new StackPanel
                 {
-                    Orientation = Orientation.Horizontal
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 0
                 };
 
                 InitStackPanelWithPath(p, path);
@@ -117,36 +117,28 @@ namespace Dash
             var tb = (TextBlock) sender;
             var (doc, child) = ((DocumentController, DocumentController)) tb.DataContext;
             Debug.Assert(doc != null);
-
+            var split = this.GetFirstAncestorOfTypeFast<SplitFrame>() ?? SplitFrame.ActiveFrame;
             if (child != null)
             {
-                this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(child, doc);
+                split.OpenDocument(child, doc);
             }
             else
             {
-                this.GetFirstAncestorOfTypeFast<SplitFrame>().OpenDocument(doc);
+                split.OpenDocument(doc);
             }
+            FlyoutBase.GetAttachedFlyout(LayoutRoot).Hide();
         }
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (XExtraPathsStackPanel.Visibility == Visibility.Collapsed)
-            {
-                XExtraPathsStackPanel.Visibility = Visibility.Visible;
-                XExpandTextBlock.Text = "Hide";
-            }
-            else
-            {
-                XExtraPathsStackPanel.Visibility = Visibility.Collapsed;
-                XExpandTextBlock.Text = "+ " + XExtraPathsStackPanel.Children.Count;
-            }
+                FlyoutBase.ShowAttachedFlyout(LayoutRoot);
         }
 
         private void UpdateExpander()
         {
             if (XExtraPathsStackPanel.Children.Count > 0)
             {
-                XExpandTextBlock.Text = XExtraPathsStackPanel.Visibility == Visibility.Visible ? "Hide" : ("+ " + XExtraPathsStackPanel.Children.Count);
+                XExpandTextBlock.Text =  "  + " + XExtraPathsStackPanel.Children.Count;
 
                 XExpandTextBlock.Visibility = Visibility.Visible;
             }

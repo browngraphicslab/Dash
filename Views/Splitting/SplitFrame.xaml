@@ -51,7 +51,6 @@
                  DragLeave="DropTarget_OnDragLeave"
                  Drop="XCenterDropTarget_OnDrop" AllowDrop="True"
                  Margin="0 30 0 0"/>
-        <local:DocumentPathView x:Name="XPathView" Canvas.ZIndex="2" Margin="15 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom"></local:DocumentPathView>
     </Grid>
 
 </UserControl>

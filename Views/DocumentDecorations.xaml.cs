@@ -93,7 +93,7 @@ namespace Dash
                     //}
                     if (docView.ViewModel?.Undecorated == true)
                     {
-                        xButtonsCanvas.Margin = new Thickness(-10, 0, 0, 0);
+                        xButtonsCanvas.Margin = new Thickness(-20, 0, 0, 0);
                     }
 
                     docView.PointerEntered += SelectedDocView_PointerEntered;
