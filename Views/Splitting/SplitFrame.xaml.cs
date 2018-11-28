@@ -53,7 +53,7 @@ namespace Dash
 
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                doc = this.IsShiftPressed() ?  doc.GetViewCopy() : doc;  // bcz: think about this some more.... causes problems when trying to view the same collection twice or because of setting parameters like FitToParent
+                doc = ! this.IsShiftPressed() ?  doc.GetViewCopy() : doc;  // bcz: think about this some more.... causes problems when trying to view the same collection twice or because of setting parameters like FitToParent
                 doc.SetFitToParent(false);
                 var openViewType = doc.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data;
                 if (openViewType != null)
