@@ -205,11 +205,22 @@ namespace Dash
                     {
                         region.AddToListField(KeyStore.SelectionIndicesListKey,
                             new PointController(prevStartIndex, prevUsedIndex));
-						region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey,
-							new PointController(prevStartIndex, prevUsedIndex));
+                        region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey,
+                            new PointController(prevStartIndex, prevUsedIndex));
                         region.GetDataDocument()
-                            .AddToListField(KeyStore.SelectionBoundsKey, new RectController(elem.Bounds));
-						prevStartIndex = i;
+                            .AddToListField(KeyStore.SelectionBoundsKey,
+                                new ListController<PointController>
+                                {
+                                    // store range
+                                    new PointController(StartIndex, EndIndex),
+                                    // store position
+                                    new PointController(elem.Bounds.X,
+                                        elem.Bounds.Y),
+                                    // store size
+                                    new PointController(elem.Bounds.Width,
+                                        elem.Bounds.Height)
+                                });
+                        prevStartIndex = i;
                     }
 
                     prevUsedIndex = i;
@@ -224,9 +235,9 @@ namespace Dash
             }
 
             if (ClipRect == Rect.Empty)
-			{
-				region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
-				region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
+            {
+                region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
+                region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
                 for (var i = StartIndex; i <= EndIndex; i++)
                 {
                     region.GetDataDocument()
@@ -243,10 +254,10 @@ namespace Dash
                                     ParentOverlay.TextSelectableElements[i].Bounds.Height)
                             });
                 }
-			}
+            }
 
             region.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(0, YPos));
-            
+
             return YPos;
         }
 
