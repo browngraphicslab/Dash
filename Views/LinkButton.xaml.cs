@@ -130,6 +130,7 @@ namespace Dash
             }
             FlyoutBase.ShowAttachedFlyout(fwe);
             _tooltip.IsOpen = false;
+            ChangeLinkBehavior(fwe);
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
@@ -166,15 +167,7 @@ namespace Dash
         private static LinkBehavior? _overrideBehavior = null;
         private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            int index = xLinkList.SelectedIndex;
-            if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
-            {
-                var link = _allKeys.ElementAt(index);
-                var linkedFrom = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
-                new AnnotationManager(_documentView).FollowLink(_documentView, link,
-                    linkedFrom.Equals(_documentView.ViewModel.DataDocument)  ? LinkDirection.ToDestination : LinkDirection.ToSource, 
-                    _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
-            }
+            ChangeLinkBehavior(sender);
         }
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
@@ -238,6 +231,24 @@ namespace Dash
             sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
             setLinkKeys();
             //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
+        }
+
+        private void XLinkList_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ChangeLinkBehavior(sender);
+        }
+
+        private void ChangeLinkBehavior(object sender)
+        {
+            int index = xLinkList.SelectedIndex;
+            if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
+            {
+                var link = _allKeys.ElementAt(index);
+                var linkedFrom = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
+                new AnnotationManager(_documentView).FollowLink(_documentView, link,
+                    linkedFrom.Equals(_documentView.ViewModel.DataDocument) ? LinkDirection.ToDestination : LinkDirection.ToSource,
+                    _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
+            }
         }
     }
 }
