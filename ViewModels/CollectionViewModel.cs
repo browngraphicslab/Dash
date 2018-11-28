@@ -718,7 +718,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
-                var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
+                var fromFileSystem = !e.DataView.HasDragModel() && e.DataView.Contains(StandardDataFormats.StorageItems);
 
                 var dragModel        = e.DataView.GetDragModel();
                 var dragDocModel     = dragModel as DragDocumentModel;

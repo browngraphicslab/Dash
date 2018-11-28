@@ -29,7 +29,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
-        <StackPanel Background="White" BorderBrush="#55000000" BorderThickness="1"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
+        <StackPanel Background="White" BorderBrush="#55000000" BorderThickness="1"  Visibility="Collapsed" x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
             <AutoSuggestBox x:Name="xSearchBox" Foreground="White" MinWidth="150" MaxWidth="250" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
                             QuerySubmitted="AutoSuggestBox_QuerySubmitted"  />
             <Grid x:Name="xPrevOccur" PointerPressed="XPrevOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
@@ -113,7 +113,7 @@
                     <RowDefinition Height="26"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
+                <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
                             PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
                             DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                     <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
@@ -123,7 +123,7 @@
                         <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
                     </ToolTipService.ToolTip>
                 </Grid>
-                <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="1" Spacing="2"  CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
+                <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="1" Spacing="2"  Margin="4 -6 0 0" CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
             </Grid>
         </Canvas>
     </Grid>

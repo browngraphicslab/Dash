@@ -172,25 +172,38 @@ namespace Dash
     xmlns:dash=""using:Dash""
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
 
-    <Grid Padding=""20"">
-        <Grid.RowDefinitions>
-            <RowDefinition Height=""Auto""></RowDefinition>
-            <RowDefinition Height=""*""></RowDefinition>
-        </Grid.RowDefinitions>
-        <StackPanel Background=""White"">
-            <TextBlock x:Name=""xTextField0"" FontWeight=""Bold"" FontSize=""25"" TextAlignment=""Center"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField1"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField2"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField3"" FontStyle=""Italic"" FontSize=""18"" TextAlignment=""Center"" Text=""Publication Venue"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-            <TextBlock x:Name=""xTextField4"" Margin=""0 20 0 0"" Text=""ABSTRACT: The Legend of Zelda: Breath of the Wild[a] is an action-adventure game developed and published by Nintendo. An entry in the longrunning The Legend of Zelda series, it was released for the Nintendo Switch and Wii U consoles on March 3, 2017."" TextWrapping=""Wrap""/>
-            <TextBlock x:Name=""xTextField5"" Margin=""0 20 0 20"" Text=""KEYWORDS, ANOTHER KEYWORD, MORE"" HorizontalAlignment=""Center"" VerticalAlignment=""Top""/>
+<Grid Padding=""5"" Background=""White"">
+    <Grid.RowDefinitions>
+        <RowDefinition Height=""2*""></RowDefinition>
+        <RowDefinition Height=""5*""></RowDefinition>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width=""2*""></ColumnDefinition>
+        <ColumnDefinition Width=""3*""></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+    <ScrollViewer Grid.Column=""0"" Grid.Row=""0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
+        <StackPanel>
+            <TextBlock x:Name=""xTextField0"" TextWrapping=""Wrap"" FontWeight=""Bold"" FontSize=""10"" TextAlignment=""Center"" Text=""Paper Title"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField1"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Paper Author"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField2"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Paper Date"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField3"" TextWrapping=""Wrap"" FontStyle=""Italic"" FontSize=""8"" TextAlignment=""Center"" Text=""Publication Venue"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
         </StackPanel>
-        <Border Grid.Row=""1"" Background=""CadetBlue"" >
-            <dash:PdfView x:Name=""xPdfField6"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
+    </ScrollViewer>
+
+    <ScrollViewer Grid.Row=""1"" Grid.ColumnSpan=""2"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
+        <StackPanel>
+            <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">ABSTRACT:</TextBlock>
+            <TextBlock x:Name=""xTextField4"" HorizontalAlignment=""Stretch"" FontSize=""6"" Margin=""0 5 0 0"" Text=""ABSTRACT: The Legend of Zelda: Breath of the Wild[a] is an action-adventure game developed and published by Nintendo. An entry in the longrunning The Legend of Zelda series, it was released for the Nintendo Switch and Wii U consoles on March 3, 2017."" TextWrapping=""Wrap""/>
+                <TextBlock FontFamily=""Segoe UI"" FontSize=""10"" FontWeight=""Bold"">KEYWORDS:</TextBlock>
+                <TextBlock x:Name=""xTextField5"" FontSize=""6"" TextWrapping=""Wrap"" Margin=""0 5 0 5"" Text=""KEYWORDS, ANOTHER KEYWORD, MORE"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row=""0"" Grid.Column=""1"" Background=""CadetBlue"" >
+            <dash:PdfView x:Name=""xPdfField6"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" Grid.Column=""1"" VerticalAlignment=""Stretch"" />
         </Border>
     </Grid>
-</Grid>
-"),
+</Grid>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("ImageTemplate.xaml"),

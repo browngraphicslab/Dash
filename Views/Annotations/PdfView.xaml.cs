@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Dash.Annotations;
 using iText.Kernel.Crypto;
@@ -247,6 +248,7 @@ namespace Dash
             {
                 var uri = PdfUri;
                 string textToSet = null;
+                string authorString = null;
                 await Task.Run(async () =>
                 {
                     bool hasPdf;
@@ -289,8 +291,27 @@ namespace Dash
                             pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
                         }
 
-                        var (selectableElements, text, pages, vagueSections) =
+                        var (selectableElements, authors, text, pages, vagueSections) =
                             newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                        if (authors != null)
+                        {
+                            var sb = new StringBuilder();
+                            foreach (var item in authors)
+                            {
+                                if (item.Contents is string content)
+                                {
+                                    foreach (var chr in content)
+                                    {
+                                        if (!char.IsNumber(chr))
+                                        {
+                                            sb.Append(chr);
+                                        }
+                                    }
+                                }
+                            }
+
+                            authorString = sb.ToString();
+                        }
                         _botPdf.AnnotationOverlay.TextSelectableElements =
                             new List<SelectableElement>(selectableElements);
                         _botPdf.AnnotationOverlay.PageEndIndices = pages;
@@ -298,6 +319,11 @@ namespace Dash
                         await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
                     }
                 });
+                if (authorString != null)
+                {
+                    this.DataDocument.SetField<TextController>(KeyStore.AuthorKey, authorString, true);
+                }
+
                 if (textToSet != null)
                 {
                     _botPdf.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
@@ -712,7 +738,7 @@ namespace Dash
 
         private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X);
+            var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
         }
@@ -730,7 +756,7 @@ namespace Dash
         }
         private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X);
+            var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
         }
@@ -738,6 +764,22 @@ namespace Dash
         {
             xLeftMargin.ReleasePointerCapture(e.Pointer);
             xLeftMargin.PointerMoved -= xLeftMarginPointerMoved;
+        }
+
+        private void xRightMargin_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_botPdf.RightMargin > 0)
+                _botPdf.SetRightMargin(0);
+            else _botPdf.SetRightMargin(ActualWidth / 6);
+            xRightMargin.Margin = new Thickness(0, 0, _botPdf.RightMargin - 2.5, 0);
+        }
+
+        private void xLeftMargin_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_botPdf.LeftMargin > 0)
+                _botPdf.SetLeftMargin(0);
+            else _botPdf.SetLeftMargin(ActualWidth / 6);
+            xLeftMargin.Margin = new Thickness(_botPdf.LeftMargin - 2.5, 0, 0, 0);
         }
     }
 }

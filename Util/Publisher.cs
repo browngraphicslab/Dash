@@ -1001,7 +1001,7 @@ namespace Dash
 			});
 
 			var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
-			_pdfSelectableElements[dc] = selectableElements.Item1;
+			_pdfSelectableElements[dc] = selectableElements.elements;
 
 			for (var i = 0; i < numPages; i++)
 			{

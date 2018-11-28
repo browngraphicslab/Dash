@@ -51,14 +51,19 @@ namespace Dash
             xEllipse.Fill = new SolidColorBrush(_color);
             xLinkType.Text = text.Substring(0, 1);
 
-            var toKeys     = documentView.ViewModel.DataDocument.GetLinks(null)?.ToList() ?? new List<DocumentController>();
-            var regionKeys = documentView.ViewModel.DataDocument.GetRegions()?.SelectMany((region) =>
-                region.GetDataDocument().GetLinks(null)?.ToList() ?? new List<DocumentController>() )  ?? new List<DocumentController>();
+            setLinkKeys();
+        }
+
+        private void setLinkKeys()
+        {
+            var toKeys = _documentView.ViewModel.DataDocument.GetLinks(null)?.ToList() ?? new List<DocumentController>();
+            var regionKeys = _documentView.ViewModel.DataDocument.GetRegions()?.SelectMany((region) =>
+                                 region.GetDataDocument().GetLinks(null)?.ToList() ?? new List<DocumentController>()) ?? new List<DocumentController>();
             toKeys.AddRange(regionKeys);
             var matchingLinkDocs = toKeys.Where((k) => {
-                var tagName =  k.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data;
-                return tagName == text;
-                });
+                var tagName = k.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data;
+                return tagName == _text;
+            });
             xLinkList.ItemsSource = matchingLinkDocs;
             if (matchingLinkDocs.Count() != 0)
             {
@@ -213,6 +218,18 @@ namespace Dash
                 args.Data.SetDragModel(new DragDocumentModel(linkdoc) { });
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
+        }
+
+        private void SymbolIcon_DeleteTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var index = xLinkList.Items.IndexOf((sender as SymbolIcon).DataContext);
+            DocumentController linkDoc = _allKeys.ElementAt(index);
+            DocumentController destinationDoc = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
+            DocumentController sourceDoc = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+            destinationDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Remove(linkDoc);
+            sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
+            setLinkKeys();
+            //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
         }
     }
 }
