@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
@@ -104,7 +105,6 @@ namespace Dash
 
         public void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-
             OpenFlyout(sender as FrameworkElement, null);
             xLinkList.SelectedItem = null;
             e.Handled = true;   
@@ -118,8 +118,11 @@ namespace Dash
             if (_overrideBehavior == LinkBehavior.Follow) xOverrideFollow.IsChecked = true;
             if (_overrideBehavior == null) xOverrideDefault.IsChecked = true;
             xLinkList.SelectedItem = linkDoc;
-            xLinkBehaviorOverride.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;    
+            xLinkBehaviorOverride.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
             xLinkList.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xLinkDivider.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xOverrideBehaviorDivider.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xStackPanel.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
             xLinkMenu.Visibility = linkDoc != null ? Visibility.Visible : Visibility.Collapsed;
             if (xLinkList.SelectedIndex != -1)
             {
@@ -127,6 +130,7 @@ namespace Dash
             }
             FlyoutBase.ShowAttachedFlyout(fwe);
             _tooltip.IsOpen = false;
+            //ChangeLinkBehavior(fwe);
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
@@ -142,13 +146,18 @@ namespace Dash
         private void TextBoxLoaded(object sender, RoutedEventArgs e)
         {
             var textBox = (sender as TextBox);
-            if (textBox != null)
+            if (textBox?.DataContext is DocumentController link)
             {
-                var linkDoc = (textBox.DataContext as DocumentController).GetDataDocument();
+                var linkDoc = link.GetDataDocument();
                 var srcLinkDoc = linkDoc.GetLinkedDocument(LinkDirection.ToSource);
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
                 var displayDoc = linkDoc.GetDereferencedField<DocumentController>(matches ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
+                if (displayDoc.GetRegionDefinition() is DocumentController parent)
+                {
+                    displayDoc.SetTitle(parent.Title + " region");
+                }
+
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,
@@ -161,18 +170,6 @@ namespace Dash
         }
 
         private static LinkBehavior? _overrideBehavior = null;
-        private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            int index = xLinkList.SelectedIndex;
-            if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
-            {
-                var link = _allKeys.ElementAt(index);
-                var linkedFrom = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
-                new AnnotationManager(_documentView).FollowLink(_documentView, link,
-                    linkedFrom.Equals(_documentView.ViewModel.DataDocument)  ? LinkDirection.ToDestination : LinkDirection.ToSource, 
-                    _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
-            }
-        }
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
@@ -197,17 +194,19 @@ namespace Dash
             xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
             xLinkMenu.Visibility = Visibility.Visible;
             xLinkList.Visibility = Visibility.Collapsed;
+            xLinkDivider.Visibility = Visibility.Collapsed;
+            xOverrideBehaviorDivider.Visibility = Visibility.Collapsed;
+            //xStackPanel.Visibility = Visibility.Collapsed;
         }
 
         private void SymbolIcon_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
+            (sender as SymbolIcon).Foreground = new SolidColorBrush(Color.FromArgb(255, 109, 168, 222));
         }
 
         private void SymbolIcon_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
-            xLinkList.SelectionChanged += XLinkList_OnSelectionChanged;
+            (sender as SymbolIcon).Foreground = new SolidColorBrush(Color.FromArgb(255, 64, 123, 177));
         }
 
         private void xLinkList_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
@@ -229,7 +228,33 @@ namespace Dash
             destinationDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Remove(linkDoc);
             sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
             setLinkKeys();
+            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
             //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
+        }
+
+        private void XLinkList_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ChangeLinkBehavior(sender);
+        }
+
+        private void ChangeLinkBehavior(object sender)
+        {
+            int index = xLinkList.SelectedIndex;
+            if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
+            {
+                var link = _allKeys.ElementAt(index);
+                var srcLinkDoc = link.GetLinkedDocument(LinkDirection.ToSource);
+                var linkedFrom = srcLinkDoc?.GetDataDocument();
+                var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
+                new AnnotationManager(_documentView).FollowLink(_documentView, link,
+                    matches ? LinkDirection.ToDestination : LinkDirection.ToSource,
+                    _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
+            }
+        }
+
+        private void XFlyout_OnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        {
+            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
         }
     }
 }

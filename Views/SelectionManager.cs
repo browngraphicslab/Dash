@@ -320,12 +320,20 @@ namespace Dash
                 break;
             case "Video Box":
                 uri = docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
-                sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://")) ?
-                    await StorageFile.GetFileFromApplicationUriAsync(uri) :
-                    await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                sflist = new HashSet<StorageFile>();
-                sflist.Add(sf);
-                args.Data.SetStorageItems(sflist);
+                try
+                {
+                    sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
+                        ? await StorageFile.GetFileFromApplicationUriAsync(uri)
+                        : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
+                    sflist = new HashSet<StorageFile>();
+                    sflist.Add(sf);
+                    args.Data.SetStorageItems(sflist);
+                }
+                catch (Exception ex)
+                {
+
+                }
+
                 break;
             default:
                 break;
