@@ -279,7 +279,7 @@ namespace Dash
                 }
             }
 
-            var point = p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView);
+            var point = p ?? MainPage.PointerRoutedArgsHack?.GetCurrentPoint(draggedView);
             if (point != null)
             {
                 draggedView.StartDragAsync(point);
