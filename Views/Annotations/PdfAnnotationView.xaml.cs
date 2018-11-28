@@ -117,7 +117,11 @@ namespace Dash
                 AddToStack(_BackStack, ScrollViewer);
             };
             PointerEntered += (s, e) => ActiveView = true;
-            PointerExited += (s, e) => ActiveView = false;
+            PointerExited += (s, e) =>
+            {
+
+                ActiveView = false;
+            };
             _scrollTimer.Start();
         }
         ~PdfAnnotationView()
@@ -559,7 +563,10 @@ namespace Dash
 
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine((sender as FrameworkElement).CapturePointer(e.Pointer));
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                (sender as FrameworkElement).CapturePointer(e.Pointer);
+            }
             _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed && e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
