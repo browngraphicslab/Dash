@@ -516,15 +516,9 @@ namespace Dash
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             //TouchInteractions.NumFingers--;
-            if (_localFingers > 1)
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
-                _localFingers -= 2;
-            } else if (_localFingers == 1)
-            {
-                _localFingers--;
-            }
-            if (_localFingers == 0)
-            {
+                _localFingers = 0;
                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
                     TouchInteractions.HeldDocument = null;
@@ -739,11 +733,11 @@ namespace Dash
                     TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
                 if (_localFingers < 2) _localFingers++;
                 // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
-                if (_localFingers >= 2 && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (_localFingers >= 2)
                 {
                     ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
                 }
-                else
+                else 
                 {
                     ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
                 }
@@ -771,6 +765,10 @@ namespace Dash
             Debug.WriteLine("local after PdfOnDrop: " + _localFingers);
         }
 
+        private void ScrollViewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            _localFingers = 0;
+        }
     }
 }
 
