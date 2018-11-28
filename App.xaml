@@ -402,7 +402,7 @@
             <Style TargetType="Slider">
                 <Setter Property="Background" Value="{ThemeResource SystemControlForegroundBaseMediumLowBrush}" />
                 <Setter Property="BorderThickness" Value="{ThemeResource SliderBorderThemeThickness}" />
-                <Setter Property="Foreground" Value="{StaticResource AccentGreenColorLight}" />
+                <Setter Property="Foreground" Value="{StaticResource DashMediumBlueBrush}" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                 <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
                 <Setter Property="ManipulationMode" Value="None" />
@@ -567,7 +567,7 @@
                                                  Grid.Row="2"
                                                  Grid.ColumnSpan="3" />
                                         <Thumb x:Name="HorizontalThumb"
-                                               Background="{StaticResource AccentGreenDark}"
+                                               Background="{StaticResource DashDarkBlueBrush}"
                                                Style="{StaticResource SliderThumbStyle}"
                                                DataContext="{TemplateBinding Value}"
                                                Height="24"
