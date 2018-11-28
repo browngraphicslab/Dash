@@ -113,7 +113,7 @@ namespace Dash
             var scope = new DictionaryScope();
             foreach (var field in doc.EnumDisplayableFields())
             {
-                scope.SetVariable(field.Key.Name, field.Value);
+                scope.DeclareVariable(field.Key.Name, field.Value);
             }
 
             return scope;
