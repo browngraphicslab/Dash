@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Core;
@@ -7,6 +8,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -150,7 +152,7 @@ namespace Dash
             }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
             var boundsList =
-                RegionDocumentController.GetDataDocument().GetFieldOrCreateDefault<ListController<ListController<PointController>>>(
+                RegionDocumentController.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(
                     KeyStore.SelectionBoundsKey);
 
             if (indexList.Any() && boundsList.Any() && _selectionViewModel != null)
@@ -161,17 +163,19 @@ namespace Dash
                 foreach (var t in indexList)
                 {
                     var range = t.Data;
-                    var bounds = boundsList.Where(b => b.First().Data.X == range.X && b.First().Data.Y == range.Y).ToList();
+                    var bounds = boundsList.Where(b =>
+                        b.GetField<PointController>(KeyStore.SelectionIndicesListKey).Data.X == range.X &&
+                        b.GetField<PointController>(KeyStore.SelectionIndicesListKey).Data.Y == range.Y).ToList();
+                    //var bounds = boundsList.Where(b => b.First().Data.X == range.X && b.First().Data.Y == range.Y).ToList();
                     for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
                     {
-                        var pos = bounds[(int)(ind - range.X)][1].Data;
-                        var size = bounds[(int)(ind - range.X)][2].Data;
-                        topLeft.X = Math.Min(topLeft.X, pos.X);
-                        topLeft.Y = Math.Min(topLeft.Y, pos.Y);
-                        if (lastRect != null && Math.Abs(lastRect.Rect.Right - pos.X) < 7 && Math.Abs(lastRect.Rect.Y - pos.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
-                            lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, pos.X + size.X - lastRect.Rect.X, pos.Y + size.Y - lastRect.Rect.Y);
+                        var rect = bounds[(int) (ind - range.X)].GetField<RectController>(KeyStore.SelectionBoundsKey).Data;
+                        topLeft.X = Math.Min(topLeft.X, rect.X);
+                        topLeft.Y = Math.Min(topLeft.Y, rect.Y);
+                        if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
+                            lastRect.Rect = new Rect(lastRect.Rect.X, lastRect.Rect.Y, rect.X + rect.Width - lastRect.Rect.X, rect.Y + rect.Height - lastRect.Rect.Y);
                         else
-                            geometryGroup.Children.Add(lastRect = new RectangleGeometry { Rect = new Rect(pos.X, pos.Y, size.X, size.Y) });
+                            geometryGroup.Children.Add(lastRect = new RectangleGeometry { Rect = rect });
                     }
                 }
                 foreach (var rect in geometryGroup.Children.OfType<RectangleGeometry>())
@@ -207,21 +211,36 @@ namespace Dash
                             new PointController(prevStartIndex, prevUsedIndex));
                         region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey,
                             new PointController(prevStartIndex, prevUsedIndex));
-                        region.GetDataDocument()
-                            .AddToListField(KeyStore.SelectionBoundsKey,
-                                new ListController<PointController>
-                                {
-                                    // store range
-                                    new PointController(StartIndex, EndIndex),
-                                    // store position
-                                    new PointController(elem.Bounds.X,
-                                        elem.Bounds.Y),
-                                    // store size
-                                    new PointController(elem.Bounds.Width,
-                                        elem.Bounds.Height)
-                                });
+                        //region.GetDataDocument()
+                        //    .AddToListField(KeyStore.SelectionBoundsKey,
+                        //        new ListController<PointController>
+                        //        {
+                        //            // store range
+                        //            new PointController(StartIndex, EndIndex),
+                        //            // store position
+                        //            new PointController(elem.Bounds.X,
+                        //                elem.Bounds.Y),
+                        //            // store size
+                        //            new PointController(elem.Bounds.Width,
+                        //                elem.Bounds.Height)
+                        //        });
+
                         prevStartIndex = i;
                     }
+
+                    var dict = new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        // store range
+                        {KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex)},
+                        // store position
+                        {
+                            KeyStore.SelectionBoundsKey,
+                            new RectController(ParentOverlay.TextSelectableElements[i].Bounds)
+                        }
+                    };
+                    region.GetDataDocument()
+                        .AddToListField(KeyStore.SelectionBoundsKey,
+                            new DocumentController(dict, DocumentType.DefaultType));
 
                     prevUsedIndex = i;
 
@@ -240,19 +259,29 @@ namespace Dash
                 region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
                 for (var i = StartIndex; i <= EndIndex; i++)
                 {
+                    var dict = new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        // store range
+                        {KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex)},
+                        // store position
+                        {
+                            KeyStore.SelectionBoundsKey,
+                            new RectController(ParentOverlay.TextSelectableElements[i].Bounds)
+                        }
+                    };
                     region.GetDataDocument()
                         .AddToListField(KeyStore.SelectionBoundsKey,
-                            new ListController<PointController>
-                            {
-                                // store range
-                                new PointController(StartIndex, EndIndex),
-                                // store position
-                                new PointController(ParentOverlay.TextSelectableElements[i].Bounds.X,
-                                    ParentOverlay.TextSelectableElements[i].Bounds.Y),
-                                // store size
-                                new PointController(ParentOverlay.TextSelectableElements[i].Bounds.Width,
-                                    ParentOverlay.TextSelectableElements[i].Bounds.Height)
-                            });
+                            new DocumentController(dict, DocumentType.DefaultType));
+                    /*{
+                        // store range
+                        new PointController(StartIndex, EndIndex),
+                        // store position
+                        new PointController(ParentOverlay.TextSelectableElements[i].Bounds.X,
+                            ParentOverlay.TextSelectableElements[i].Bounds.Y),
+                        // store size
+                        new PointController(ParentOverlay.TextSelectableElements[i].Bounds.Width,
+                            ParentOverlay.TextSelectableElements[i].Bounds.Height)
+                    });*/
                 }
             }
 
