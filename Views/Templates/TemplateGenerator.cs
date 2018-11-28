@@ -203,7 +203,7 @@ namespace Dash
             <dash:PdfView x:Name=""xPdfField6"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" Grid.Column=""1"" VerticalAlignment=""Stretch"" />
         </Border>
         <dash:PdfView x:Name=""xPdfField7"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.RowSpan=""2"" Grid.ColumnSpan=""2"" Visibility=""{Binding ElementName=xViewEntirePdf, Path=IsChecked}"" VerticalAlignment=""Stretch"" />
-        <CheckBox Grid.Row=""0"" Grid.Column=""1"" x:Name=""xViewEntirePdf"" x:FieldModifier=""public"" HorizontalAlignment=""Right"" VerticalAlignment=""Top"" Margin=""0 3 -93 0""/>
+        <CheckBox Grid.Row=""0"" Grid.Column=""1"" x:Name=""xViewEntirePdf"" x:FieldModifier=""public"" HorizontalAlignment=""Right"" VerticalAlignment=""Top"" Margin=""0 3 -53 0"" Width=""50"" Height=""50"" />
     </Grid>
 </Grid>"),
                     }, DocumentType.DefaultType),
