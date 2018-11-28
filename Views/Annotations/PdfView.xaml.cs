@@ -710,6 +710,7 @@ namespace Dash
         private void xRightMarginPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             xRightMargin.PointerMoved += xRightMarginPointerMoved;
+            //TODO: caputre pointer should stop when dots are out of bounds / off pdf
             xRightMargin.CapturePointer(e.Pointer);
             e.Handled = true;
         }
@@ -717,6 +718,10 @@ namespace Dash
         private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X - 90);
+            if (xPdfContainer.ActualWidth - margin - _botPdf.LeftMargin <= 0 || margin > xPdfContainer.ActualWidth || margin <= 0)
+            {
+                return;
+            }
             xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
         }
@@ -729,6 +734,7 @@ namespace Dash
         private void xLeftMarginPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             xLeftMargin.PointerMoved += xLeftMarginPointerMoved;
+            //TODO: caputre pointer should stop when dots are out of bounds / off pdf
             xLeftMargin.CapturePointer(e.Pointer);
             e.Handled = true;
         }
@@ -736,6 +742,10 @@ namespace Dash
         private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X - 90);
+            if (xPdfContainer.ActualWidth - margin - _botPdf.RightMargin <= 0 || margin > xPdfContainer.ActualWidth || margin <= 0)
+            {
+                return;
+            }
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
         }
@@ -747,6 +757,7 @@ namespace Dash
 
         private void xRightMargin_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            //if (xPdfContainer.ActualWidth - _botPdf.LeftMargin - _botPdf.RightMargin <= 0 || _botPdf.RightMargin > PdfMaxWidth || _botPdf.RightMargin <= 0) return;
             if (_botPdf.RightMargin > 0)
                 _botPdf.SetRightMargin(0);
             else _botPdf.SetRightMargin(ActualWidth / 6);
@@ -755,6 +766,7 @@ namespace Dash
 
         private void xLeftMargin_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            //if (xPdfContainer.ActualWidth - _botPdf.LeftMargin - _botPdf.RightMargin <= 0 || _botPdf.LeftMargin > PdfMaxWidth || _botPdf.LeftMargin <= 0) return;
             if (_botPdf.LeftMargin > 0)
                 _botPdf.SetLeftMargin(0);
             else _botPdf.SetLeftMargin(ActualWidth / 6);

@@ -23,7 +23,7 @@
         </Grid>
 
 
-        <Grid x:Name="xTopPdfGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" >
+        <Grid x:Name="xTopPdfGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
 
             <local:PdfAnnotationView x:Name="_topPdf"/>
         </Grid>

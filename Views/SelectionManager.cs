@@ -278,7 +278,12 @@ namespace Dash
                     }
                 }
             }
-            draggedView.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView));
+
+            var point = p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView);
+            if (point != null)
+            {
+                draggedView.StartDragAsync(point);
+            }
         }
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
