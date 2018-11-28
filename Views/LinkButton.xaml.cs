@@ -153,7 +153,11 @@ namespace Dash
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
                 var displayDoc = linkDoc.GetDereferencedField<DocumentController>(matches ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
-                displayDoc.SetTitle(displayDoc.GetRegionDefinition().Title+" region");
+                if (displayDoc.GetRegionDefinition() is DocumentController parent)
+                {
+                    displayDoc.SetTitle(parent.Title + " region");
+                }
+
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,
