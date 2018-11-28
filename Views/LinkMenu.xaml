@@ -92,12 +92,12 @@
                 <ToggleSwitch x:Name="xInContext"  HorizontalAlignment="Center" IsOn="True" Margin="30,0,0,0" Toggled="XInContext_OnToggled"></ToggleSwitch>
             </StackPanel>-->
 
-            <Grid >
+            <!--<Grid >
                 <StackPanel Orientation="Horizontal">
                     <Button HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="30" Margin="15 15 5 15" Background="{StaticResource DashDarkBlueBrush}" Foreground="White">Update</Button>
                     <Button HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="30" Margin="5 15 15 15" Background="{StaticResource DashDarkBlueBrush}" Foreground="White">Delete</Button>
                 </StackPanel>
-            </Grid>
+            </Grid>-->
         </StackPanel>
     </Grid>
 </UserControl>
