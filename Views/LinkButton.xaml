@@ -16,7 +16,7 @@
     Height="22">
 
     <FlyoutBase.AttachedFlyout>
-        <Flyout Placement="Right" x:Name="xFlyout">
+        <Flyout Placement="Right" x:Name="xFlyout" Closing="XFlyout_OnClosing">
             <Flyout.FlyoutPresenterStyle>
                 <Style TargetType="FlyoutPresenter">
                     <Setter Property="MinWidth" Value="410"/>

@@ -235,6 +235,7 @@ namespace Dash
             destinationDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Remove(linkDoc);
             sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
             setLinkKeys();
+            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
             //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
         }
 
@@ -254,6 +255,11 @@ namespace Dash
                     linkedFrom.Equals(_documentView.ViewModel.DataDocument) ? LinkDirection.ToDestination : LinkDirection.ToSource,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
+        }
+
+        private void XFlyout_OnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        {
+            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
         }
     }
 }
