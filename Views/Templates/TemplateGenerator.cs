@@ -171,7 +171,7 @@ namespace Dash
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
     xmlns:dash=""using:Dash""
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
-
+<!--FlashcardTemplate-->
 <Grid Padding=""5"" Background=""White"">
     <Grid.RowDefinitions>
         <RowDefinition Height=""2*""></RowDefinition>

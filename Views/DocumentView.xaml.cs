@@ -1246,11 +1246,18 @@ namespace Dash
                 if (template == null)
                     return;
 
+                bool flashcard = false;
+                if (template.Contains("FlashcardTemplate"))
+                    flashcard = true;
+
                 foreach (var doc in docs)
                 {
                     doc.SetField<TextController>(KeyStore.XamlKey, template, true);
-                    doc.SetWidth(600);
-                    doc.SetHeight(600);
+                    if (flashcard)
+                    {
+                        doc.SetWidth(600);
+                        doc.SetHeight(600);
+                    }
                 }
             }
         }
