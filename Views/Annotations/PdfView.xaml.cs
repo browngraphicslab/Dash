@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Dash.Annotations;
 using iText.Kernel.Crypto;
@@ -247,6 +248,7 @@ namespace Dash
             {
                 var uri = PdfUri;
                 string textToSet = null;
+                string authorString = null;
                 await Task.Run(async () =>
                 {
                     bool hasPdf;
@@ -289,8 +291,27 @@ namespace Dash
                             pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
                         }
 
-                        var (selectableElements, text, pages, vagueSections) =
+                        var (selectableElements, authors, text, pages, vagueSections) =
                             newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                        if (authors != null)
+                        {
+                            var sb = new StringBuilder();
+                            foreach (var item in authors)
+                            {
+                                if (item.Contents is string content)
+                                {
+                                    foreach (var chr in content)
+                                    {
+                                        if (!char.IsNumber(chr))
+                                        {
+                                            sb.Append(chr);
+                                        }
+                                    }
+                                }
+                            }
+
+                            authorString = sb.ToString();
+                        }
                         _botPdf.AnnotationOverlay.TextSelectableElements =
                             new List<SelectableElement>(selectableElements);
                         _botPdf.AnnotationOverlay.PageEndIndices = pages;
@@ -298,6 +319,11 @@ namespace Dash
                         await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
                     }
                 });
+                if (authorString != null)
+                {
+                    this.DataDocument.SetField<TextController>(KeyStore.AuthorKey, authorString, true);
+                }
+
                 if (textToSet != null)
                 {
                     _botPdf.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
