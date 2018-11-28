@@ -118,8 +118,11 @@ namespace Dash
             if (_overrideBehavior == LinkBehavior.Follow) xOverrideFollow.IsChecked = true;
             if (_overrideBehavior == null) xOverrideDefault.IsChecked = true;
             xLinkList.SelectedItem = linkDoc;
-            xLinkBehaviorOverride.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;    
+            xLinkBehaviorOverride.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
             xLinkList.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xLinkDivider.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xOverrideBehaviorDivider.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
+            xStackPanel.Visibility = linkDoc != null ? Visibility.Collapsed : Visibility.Visible;
             xLinkMenu.Visibility = linkDoc != null ? Visibility.Visible : Visibility.Collapsed;
             if (xLinkList.SelectedIndex != -1)
             {
@@ -197,17 +200,22 @@ namespace Dash
             xLinkMenu.DataContext = new DocumentViewModel(_allKeys.ElementAt(index));
             xLinkMenu.Visibility = Visibility.Visible;
             xLinkList.Visibility = Visibility.Collapsed;
+            xLinkDivider.Visibility = Visibility.Collapsed;
+            xOverrideBehaviorDivider.Visibility = Visibility.Collapsed;
+            //xStackPanel.Visibility = Visibility.Collapsed;
         }
 
         private void SymbolIcon_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
+            (sender as SymbolIcon).Foreground = new SolidColorBrush(Color.FromArgb(255, 109, 168, 222));
         }
 
         private void SymbolIcon_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
             xLinkList.SelectionChanged += XLinkList_OnSelectionChanged;
+            (sender as SymbolIcon).Foreground = new SolidColorBrush(Color.FromArgb(255, 64, 123, 177));
         }
 
         private void xLinkList_DragItemsStarting(object sender, DragItemsStartingEventArgs args)

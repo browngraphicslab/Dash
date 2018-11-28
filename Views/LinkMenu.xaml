@@ -55,7 +55,7 @@
             </Grid>
 
             <Grid Margin="0 0 0 0" x:Name="xRecentTagsGrid">
-                <controls:WrapPanel x:Name="xTagContainer" Width="320"  HorizontalAlignment="Center" Margin="0 15 0 0" Padding="0"></controls:WrapPanel>
+                <controls:WrapPanel x:Name="xTagContainer" Width="360"  HorizontalAlignment="Center" Margin="0 15 0 0" Padding="0"></controls:WrapPanel>
             </Grid>
 
 
