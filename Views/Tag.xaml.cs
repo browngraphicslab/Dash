@@ -133,7 +133,7 @@ namespace Dash
 
             _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, Text, true);
             MainPage.Instance.XDocumentDecorations.AddLinkTypeButton(Text);
-            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+            //MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
 
         }
 
