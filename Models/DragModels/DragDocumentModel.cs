@@ -103,7 +103,7 @@ namespace Dash
                 }
             }
             // ...if ALT pressed, create a data instance
-            else if (MainPage.Instance.IsAltPressed() || TouchInteractions.NumFingers != 0)
+            else if (MainPage.Instance.IsAltPressed())
             {
                 Debug.Assert(where.HasValue);
                 docs = await GetLinkDocuments((Point)where);
