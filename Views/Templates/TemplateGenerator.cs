@@ -147,6 +147,23 @@ namespace Dash
 </Grid>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("ContentTemplate.xaml"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<Page
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
+
+    <Grid>
+        <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+            <ContentPresenter x:Name=""xDataField0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </Border>
+    </Grid>
+</Page>"),
+                    }, DocumentType.DefaultType),
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("FlashcardTemplate.xaml"),
                         [KeyStore.XamlKey] = new TextController(@"
 <Grid
@@ -174,6 +191,23 @@ namespace Dash
     </Grid>
 </Grid>
 "),
+                    }, DocumentType.DefaultType),
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("ImageTemplate.xaml"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<Page
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
+
+    <Grid>
+        <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
+            <dash:EditableImage x:Name=""xImageField0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </Border>
+    </Grid>
+</Page>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("NoteTemplate.xaml"),
@@ -263,11 +297,12 @@ namespace Dash
     xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
     xmlns:dash=""using:Dash""
-    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
 
     <Grid>
         <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
-            <TextBlock x:Name=""xTextField0"" Text=""DOC TITLE"" HorizontalAlignment=""Stretch"" Height=""20"" VerticalAlignment=""Top""/>
+            <TextBlock x:Name=""xTextField0"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" TextWrapping=""Wrap""/>
         </Border>
     </Grid>
 </Page>
@@ -285,7 +320,9 @@ namespace Dash
              Biography,
              Card,
              Citation,
+             Content,
              Flashcard,
+             Image,
              Note,
              Profile,
              Title,

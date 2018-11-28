@@ -114,6 +114,11 @@ namespace Dash
             set_template,
             templates,
 
+            //Flash card
+            content_template,
+            image_template,
+            text_template,
+
             // PDFs
             references,
             regex,
