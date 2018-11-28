@@ -442,6 +442,8 @@ namespace Dash
             thisView.DeleteDocument();
         }
 
+
+
         #endregion
     }
 }

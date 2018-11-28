@@ -50,7 +50,7 @@ namespace Dash
             try
             {
                 var script = inputs[ScriptKey] as TextController;
-                var dsl = new DSL(new Scope());
+                var dsl = new DSL(new DictionaryScope());
                 var scriptToRun = (script)?.Data ?? "";
                 var controller = await dsl.Run(scriptToRun, true);
                 if (controller != null)

@@ -84,11 +84,11 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController GetCopy(this DocumentController doc, Point? where = null)
         {
-            var copy = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey } ));
+            var copy = doc.MakeCopy(new List<KeyController>(new[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey } ));
             var positionField = copy.GetPositionField();
             if (positionField != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
-                positionField.Data = new Point((where == null ? positionField.Data.X +15:((Point)where).X), (where == null ? positionField.Data.Y + 15 : ((Point)where).Y));
+                positionField.Data = new Point(where?.X ?? positionField.Data.X + 15, where?.Y ?? positionField.Data.Y + 15);
             }
             
             return copy;
@@ -238,9 +238,9 @@ namespace Dash
                 newDoc = newLayout;
             }
             var oldPosition = doc.GetPositionField();
-            if (oldPosition != null)  // if original had a position field, then delegate needs a new one
+            if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
-                newDoc.SetPosition(new Point((where == null ? oldPosition.Data.X : ((Point)where).X), (where == null ? oldPosition.Data.Y : ((Point)where).Y)));
+                newDoc.SetPosition(new Point(@where?.X ?? oldPosition.Data.X + 15, @where?.Y ?? oldPosition.Data.Y + 15));
             }
 
             return newDoc;
@@ -276,6 +276,10 @@ namespace Dash
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
+            if (doc == null)
+            {
+                return;
+            }
             DocumentController dataDocument = doc.GetDataDocument();
             dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
 

@@ -535,7 +535,7 @@ namespace Dash
         /// <param name="index"></param>
         /// <param name="clipRect"></param>
         /// <param name="endIndex"></param>
-        private void DeselectIndex(int index, Rect? clipRect = null, int endIndex = -1)
+        public void DeselectIndex(int index, Rect? clipRect = null, int endIndex = -1)
         {
             if (_selectedRectangles.ContainsKey(index))
             {
@@ -608,7 +608,7 @@ namespace Dash
 
         private Rectangle _currRect;
 
-        private void SelectIndex(int index, Rect? clipRect = null)
+        public void SelectIndex(int index, Rect? clipRect = null)
         {
             var ele = TextSelectableElements[index];
             var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;

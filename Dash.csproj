@@ -210,6 +210,7 @@
     <Compile Include="Controllers\Functions\Operators\SearchFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SplitFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\StringFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
@@ -224,6 +225,9 @@
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\SplitFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\StringFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
@@ -254,11 +258,48 @@
     <Compile Include="Popups\JoinGroupMenuPopup.xaml.cs">
       <DependentUpon>JoinGroupMenuPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\LayoutTemplatesPopup.xaml.cs">
+      <DependentUpon>LayoutTemplatesPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ManageBehaviors\BehaviorTextbox.xaml.cs">
+      <DependentUpon>BehaviorTextbox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml.cs">
+      <DependentUpon>ManageBehaviorsPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\ManageBehaviors\ManageBehaviorsViewModel.cs" />
     <Compile Include="Popups\NewTemplatePopup.xaml.cs">
       <DependentUpon>NewTemplatePopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\Sum.cs" />
     <Compile Include="Controllers\Operators\WhereOperator.cs" />
+    <Compile Include="Popups\TemplatePopups\ArticlePopup.xaml.cs">
+      <DependentUpon>ArticlePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\BiographyPopup.xaml.cs">
+      <DependentUpon>BiographyPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\CardPopup.xaml.cs">
+      <DependentUpon>CardPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\CitationPopup.xaml.cs">
+      <DependentUpon>CitationPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\CustomTemplate.cs" />
+    <Compile Include="Popups\TemplatePopups\FlashcardPopup.xaml.cs">
+      <DependentUpon>FlashcardPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\NotePopup.xaml.cs">
+      <DependentUpon>NotePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\ProfilePopup.xaml.cs">
+      <DependentUpon>ProfilePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\TitlePopup.xaml.cs">
+      <DependentUpon>TitlePopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\DSL\Error Models\IncompleteVariableDeclarationErrorModel.cs" />
+    <Compile Include="Util\DSL\UserPromptException.cs" />
     <Compile Include="Popups\TraveloguePopup.xaml.cs">
       <DependentUpon>TraveloguePopup.xaml</DependentUpon>
     </Compile>
@@ -512,7 +553,7 @@
     <Compile Include="Util\DSL\FunctionExpression.cs" />
     <Compile Include="Util\DSL\FunctionSuggestion.cs" />
     <Compile Include="Util\DSL\ObjectExpression.cs" />
-    <Compile Include="Util\DSL\OuterReplScope.cs" />
+    <Compile Include="Util\DSL\DocumentScope.cs" />
     <Compile Include="Util\DSL\Error Models\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
@@ -804,6 +845,9 @@
     </Compile>
     <Compile Include="Views\LinkButton.xaml.cs">
       <DependentUpon>LinkButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LinkMenu.xaml.cs">
+      <DependentUpon>LinkMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
@@ -1158,7 +1202,55 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\LayoutTemplatesPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ManageBehaviors\BehaviorTextbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\ManageBehaviors\ManageBehaviorsPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\NewTemplatePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\ArticlePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\BiographyPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\CardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\CitationPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\FlashcardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\FlashcardTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\NotePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\ProfilePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Popups\TemplatePopups\TitlePopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1470,6 +1562,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\LinkMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainSearchBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1634,9 +1730,33 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Templates\ArticleTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\BiographyTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\CardTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\CitationTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Templates\NoteTemplate.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Templates\ProfileTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\TitleTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TreeView\TreeView.xaml">
       <SubType>Designer</SubType>

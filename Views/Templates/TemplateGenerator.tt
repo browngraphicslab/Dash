@@ -45,5 +45,17 @@ foreach(var file in files) {
                 return _templates;
             }
         }
+
+        public enum TemplateType
+        {
+            <#
+            foreach(var file in files) {
+                var name = Path.GetFileName(file).Replace("Template.xaml", "");
+            #> <#= name #>,
+            <#
+            }
+            #>
+            None
+        }
     }
 }

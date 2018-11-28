@@ -39,6 +39,8 @@ namespace Dash
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (Tag != null && Tag.Equals("HACK"))
+                return base.MeasureOverride(availableSize);
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
@@ -87,7 +89,7 @@ namespace Dash
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && docView != null)
                 {
                     if (!SelectionManager.IsSelected(docView))
                     {
@@ -99,7 +101,6 @@ namespace Dash
                         selection.StartPosition = lenght;
                         selection.EndPosition = lenght;
                         Focus(FocusState.Keyboard);
-                        MenuToolbar.Instance.Update(SelectionManager.GetSelectedDocs());
                     }
 
                     TouchInteractions.NumFingers++;
@@ -165,7 +166,7 @@ _manipulator = null;
                 if (string.IsNullOrEmpty(getReadableText()) &&  DataFieldKey.Equals(KeyStore.DataKey))
                 {
                     var docView = getDocView();
-                    if (!SelectionManager.IsSelected(docView))
+                    if (docView != null && !SelectionManager.IsSelected(docView))
                     {
                         using (UndoManager.GetBatchHandle())
                         {
@@ -223,7 +224,7 @@ _manipulator = null;
         public KeyController         DataFieldKey { get; set; }
         public DocumentController    DataDocument => ViewModel?.DataDocument;
         public DocumentController    LayoutDocument => ViewModel?.LayoutDocument;
-        public DocumentViewModel     ViewModel => getDocView()?.ViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
+        public DocumentViewModel     ViewModel => getDocView()?.ViewModel ?? DataContext as DocumentViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
         private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         private IList<TextController> getSelected()
         {
@@ -901,7 +902,7 @@ _manipulator = null;
         }
 
         public const string HyperlinkMarker = "<hyperlink marker>";
-        public const string HyperlinkText = "\r Text from: " + HyperlinkMarker;
+        public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         { 
@@ -919,14 +920,14 @@ _manipulator = null;
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
             }
-            if (DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
+            if (DataDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
             {
                 CreateActionMenu(this);
             }
             var documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView != null)
             {
-                Document.Selection.FindText(HyperlinkText, getRtfText().Length, FindOptions.Case);
+                Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
                 if (Document.Selection.StartPosition != Document.Selection.EndPosition)
                 {
                     var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;

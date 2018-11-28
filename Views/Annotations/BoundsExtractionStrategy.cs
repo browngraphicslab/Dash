@@ -173,6 +173,7 @@ namespace Dash
                 lastIndex += newElements.Count;
                 pages.Add(lastIndex);
             }
+            pages.Add(lastIndex);
 
 
             StringBuilder sb = new StringBuilder(elements.Count);
@@ -181,23 +182,29 @@ namespace Dash
             var prevElement = elements.FirstOrDefault();
             if (prevElement != null)
             {
+                sb.Append(prevElement.Contents);
                 prevElement.Index = 0;
                 var elemClone = new List<SelectableElement>(elements);
                 foreach (var element in elemClone.Skip(1))
                 {
+                    if (!((string)element.Contents).Any())
+                    {
+                        continue;
+                    }
                     var nchar = ((string)element.Contents).First();
                     if (prevIndex > 0 && sb.Length > 0 &&
-                        (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height
+                        (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height * 0.5
                          || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
                          (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
                           !char.IsLower(sb[sb.Length - 1]))) &&
                         element.Bounds.Top >
                         prevElement.Bounds.Bottom)
                     {
-                        elements.Insert(prevIndex,
-                            new SelectableElement(++prevIndex, "\n",
+                        elements.Insert(prevIndex + 1,
+                            new SelectableElement(prevIndex + 1, "\n",
                                 new Rect(prevElement.Bounds.Right, prevElement.Bounds.Top, prevElement.Bounds.Width,
                                     prevElement.Bounds.Height), prevElement.FontFamily, prevElement.AvgWidth));
+                        prevIndex++;
                         sb.Append("\n");
                     }
 
@@ -223,8 +230,14 @@ namespace Dash
             // loop through every element
             foreach (var selectableElement in page.Skip(1))
             {
+                //if (char.IsWhiteSpace((selectableElement.Contents as string)[0]))
+                //{
+                //    lines.Last().Add(selectableElement);
+                //    continue;
+                //}
+
                 // if the element is deemed to be on a new line, create a new one and add it
-                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height / 2 ||
+                if (Math.Abs(selectableElement.Bounds.Y - element.Bounds.Y) > element.Bounds.Height * 0.5 ||
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height)
                 {
                     element = selectableElement;
@@ -522,10 +535,6 @@ namespace Dash
                 {
                     PDFSection shouldAddNewSection = null;
                     var sectionsToRemove = new List<PDFSection>();
-                    if (elem != null && (string)elem.Contents == "F")
-                    {
-
-                    }
 
                     foreach (var section in sections)
                     {
@@ -553,6 +562,7 @@ namespace Dash
                             }
                             else
                             {
+                                //section.Bounds = Union(section.Bounds, elem.Bounds);
                                 shouldAddNewSection = section;
                                 break;
                             }
@@ -639,6 +649,10 @@ namespace Dash
 
             double[] spacingData = ProcessXSpacing(lines);
 
+            if (!spacingData.Any())
+            {
+                return (null, null);
+            }
             (int[] clusters, double[] spaceMeans) = KMeansCluster.Cluster(spacingData, 2);
             lines.Sort((l1, l2) => Math.Sign(l1.First().Bounds.Y - l2.First().Bounds.Y));
             double lineSpacing = Math.Max(0, GetLineSpacing(lines));

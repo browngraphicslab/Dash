@@ -77,7 +77,8 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 GetConverter = FieldConversion.GetFieldtoStringConverter,
-                FallbackValue = "<null>",
+                //changed fallbackvalue from "<null>" to ""
+                FallbackValue = "",
                 Tag = "TextingBox SetupTextBinding"
             };
             element.AddFieldBinding(element is EditableTextBlock ? EditableTextBlock.TextProperty:
@@ -90,19 +91,12 @@ namespace Dash
             public override TextAlignment ConvertDataToXaml(List<object> data, object parameter = null)
             {
                 bool isNumber = data[1] is double;
-                if (data[0] != null && data[0] is double) 
+                if (data[0] != null && data[0] is string align)
                 {
-                    switch ((int)(double)data[0]) {
-                        case (int)TextAlignment.Left:
-                            return TextAlignment.Left;
-                        case (int)TextAlignment.Right:
-                            return TextAlignment.Right;
-                        case (int)TextAlignment.Center:
-                            return TextAlignment.Center;
-                        case (int)TextAlignment.Justify:
-                            return TextAlignment.Justify;
+                    if (Enum.TryParse<TextAlignment>(align, true, out var alignment))
+                    {
+                        return alignment;
                     }
-                    
                 }
                 return isNumber ? TextAlignment.Right : TextAlignment.Left;
             }

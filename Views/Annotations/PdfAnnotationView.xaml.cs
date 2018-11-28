@@ -58,8 +58,8 @@ namespace Dash
         private int _localFingers = 0;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
-        public DocumentController                 DataDocument => ViewModel.DataDocument;
-        public DocumentController                 LayoutDocument => ViewModel.LayoutDocument;
+        public DocumentController                 DataDocument => ViewModel?.DataDocument;
+        public DocumentController                 LayoutDocument => ViewModel?.LayoutDocument;
         public DataVirtualizationSource           Pages { get; set; }
         public WPdf.PdfDocument                   PDFdoc { get; set; }
 
@@ -159,18 +159,9 @@ namespace Dash
 
         public void ScrollToPosition(double pos)
         {
-            var sizes = Pages.PageSizes;
-            var botOffset = 0.0;
-            foreach (var size in sizes)
-            {
-                var scale = ScrollViewer.ViewportWidth / size.Width;
-                if (botOffset + (size.Height * scale) - pos > 1)
-                {
-                    break;
-                }
-
-                botOffset += (size.Height * scale) + 15;
-            }
+            var offset = pos * pageScaling(Pages.PageSizes.First().Width);
+            var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2) * pageScaling(Pages.PageSizes.First().Width),
+                0);
 
             ScrollViewer.ChangeView(null, botOffset, null);
         }
@@ -179,21 +170,27 @@ namespace Dash
         public double LeftMargin { get; set; }
         public void SetRightMargin(double margin)
         {
-            xPdfGrid.Padding = new Thickness(0);
-            PdfMaxWidth -= RightMargin;
-            RightMargin = margin;
-            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
-            PdfMaxWidth += RightMargin;
-            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+            if (Pages.PageSizes.Count > 0)
+            {
+                xPdfGrid.Padding = new Thickness(0);
+                PdfMaxWidth -= RightMargin;
+                RightMargin = margin;
+                xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+                PdfMaxWidth += RightMargin;
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+            }
         }
         public void SetLeftMargin(double margin)
         {
-            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin/pageScaling(Pages.PageSizes[0].Width) };
-            xPdfGrid.Padding = new Thickness(0);
-            PdfMaxWidth -= LeftMargin;
-            LeftMargin = margin;
-            xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
-            PdfMaxWidth += LeftMargin;
+            if (Pages.PageSizes.Count > 0)
+            {
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin / pageScaling(Pages.PageSizes[0].Width) };
+                xPdfGrid.Padding = new Thickness(0);
+                PdfMaxWidth -= LeftMargin;
+                LeftMargin = margin;
+                xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+                PdfMaxWidth += LeftMargin;
+            }
         }
 
         public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
@@ -238,7 +235,6 @@ namespace Dash
             }
             if (regionDoc != null)
             {
-                AnnotationOverlay.RegionDocsList.Add(regionDoc);
                 return regionDoc;
             }
             return LayoutDocument;
@@ -272,9 +268,19 @@ namespace Dash
                     PageNext();
                     args.Handled = true;
                 }
-                if (args.Key == VirtualKey.PageUp)
+                else if (args.Key == VirtualKey.PageUp)
                 {
                     PagePrev();
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Down)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset + 20, null);
+                    args.Handled = true;
+                }
+                else if (args.Key == VirtualKey.Up)
+                {
+                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset - 20, null);
                     args.Handled = true;
                 }
             }
@@ -414,16 +420,18 @@ namespace Dash
                             }
                             else if (char.IsNumber(contents.First()))
                             {
-                                sb.Append("\\" + (string)selectableElement.Contents);
+                                sb.Append("\\" + contents);
                             }
                             else
                             {
-                                sb.Append((string)selectableElement.Contents);
+                                sb.Append(contents);
                             }
                         }
 
                         prevIndex = index;
                     }
+
+                    //sb.Append("}");
 
                     var dataPackage = new DataPackage();
                     dataPackage.SetRtf(sb.ToString());

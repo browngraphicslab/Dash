@@ -212,7 +212,7 @@ namespace Dash
                 return;
 
             var splits = (e.Value as string).Split(' ');
-            var x = double.Parse(splits[0]);
+            var x = Math.Max(200, double.Parse(splits[0]));
             var y = Math.Min(500, double.Parse(splits[1]));
             parent.ViewModel.LayoutDocument.SetWidth(x);
             parent.ViewModel.LayoutDocument.SetHeight(y);

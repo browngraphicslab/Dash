@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
+using Windows.UI.Xaml.Controls.Primitives;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -38,7 +39,7 @@ namespace Dash
             {
                 if (_templateDocument != null)
                 {
-                    templateButton.Content = "Remove  Template";
+                    templateButton.Content = "Remove Template";
                     XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { Undecorated = true, IsDimensionless = true };
                 }
                 if (ViewModel?.DocumentViewModels.Count > 0)
@@ -172,6 +173,29 @@ namespace Dash
             ViewModel.RemoveDocument(CurrentPage.DocumentController);
         }
 
+        private void Navigate_OnClicked(object sender, RoutedEventArgs e)
+        {
+            var originalDoc = CurrentPage.DocumentController.GetDereferencedField<DocumentController>(KeyStore.SearchOriginKey,null);
+            SplitFrame.HighlightDoc(originalDoc, SplitFrame.HighlightMode.Highlight);
+            var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != SplitFrame.ActiveFrame).ToList();
+            // split if pageview is still in active frame with other documents
+            if (frames.Count == 0)
+            {
+                SplitFrame.ActiveFrame.Split(SplitDirection.Right, ViewModel.ContainerDocument, true);
+                SplitFrame.ActiveFrame.UpdateLayout();
+                frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != SplitFrame.ActiveFrame).ToList();
+                SplitFrame.ActiveFrame = frames[0];
+            }
+            var tree = DocumentTree.MainPageTree;
+            var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(originalDoc));
+            if (node?.Parent == null)
+            {
+                SplitFrame.OpenInActiveFrame(originalDoc);
+                return;
+            }
+            SplitFrame.OpenInInactiveWorkspace(originalDoc, node.Parent.ViewDocument);
+        }
+
         private TextBox _renameBox;
         private Flyout _flyout;
 
@@ -231,7 +255,7 @@ namespace Dash
         {
             if (_templateDocument == null && CurrentPage !=null)
             {
-                templateButton.Content = "Remove  Template";
+                templateButton.Content = "Remove Template";
                 CreateTemplate();
             }
             else
@@ -296,6 +320,24 @@ namespace Dash
             {
                 ScriptToggle.Content = "Show Script";
                 xTextBox.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void Thumb_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        { 
+            e.Handled = true;
+        }
+
+        private void Navigate_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            var mfi = sender as MenuFlyoutItem;
+            if (CurrentPage.DocumentController
+                    .GetDereferencedField<DocumentController>(KeyStore.SearchOriginKey, null) != null)
+            {
+                if (mfi != null)
+                {
+                    mfi.Visibility = Visibility.Visible;
+                }
             }
         }
     }

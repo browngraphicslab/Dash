@@ -261,7 +261,7 @@ namespace Dash.Views.TreeView
             else
             {
                 _tapped = true;
-                await Task.Delay(100);//Delay to allow for double tapped
+                await Task.Delay(200);//Delay to allow for double tapped
                 if (_tapped)
                 {
                     IsEditing = true;
@@ -355,12 +355,17 @@ namespace Dash.Views.TreeView
 
         private void SnapshotItemOnClick(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (!IsCollection)
-            {
-                return;
-            }
+            if (!(SplitFrame.ActiveFrame.ViewModel.Content is CollectionView cview)) return;
 
-            ViewModel.DocumentController.CreateSnapshot();
+            MainPage.Instance.SnapshotOverlay.Visibility = Visibility.Visible;
+            MainPage.Instance.FadeIn.Begin();
+            MainPage.Instance.FadeOut.Begin();
+
+            using (UndoManager.GetBatchHandle())
+            {
+                var snapshot = cview.ViewModel.ContainerDocument.CreateSnapshot();
+                MainPage.Instance.xMainTreeView.ViewModel.AddDocument(snapshot);
+            }
         }
 
         private void FocusItemOnClick(object sender, RoutedEventArgs routedEventArgs)

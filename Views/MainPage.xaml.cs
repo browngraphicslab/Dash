@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
@@ -26,6 +27,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 
 
@@ -69,7 +71,7 @@ namespace Dash
         }
 
         private Point? _forceFocusPoint;
-        public  Point? ForceFocusPoint { get => _forceFocusPoint; }
+        public Point? ForceFocusPoint { get => _forceFocusPoint; }
         public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
             _forceFocusPoint = where;
@@ -94,6 +96,14 @@ namespace Dash
         public Storyboard FadeIn => xFadeIn;
         public Storyboard FadeOut => xFadeOut;
 
+        public Timer LowPriorityTimer = new Timer(3600000);     // every hour
+        public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
+        public Timer HighPriorityTimer = new Timer(5000);      // every 15 seconds
+
+        public ListController<DocumentController> LowPriorityOps;
+        public ListController<DocumentController> ModeratePriorityOps;
+        public ListController<DocumentController> HighPriorityOps;
+
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
@@ -107,6 +117,7 @@ namespace Dash
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
+            
 
             SetUpToolTips();
 
@@ -136,14 +147,14 @@ namespace Dash
                 }
             };
 
-            xToolbar.SetValue(Canvas.ZIndexProperty, 20);
+            Canvas.SetZIndex(xToolbar, 20);
 
             SplitFrame.ActiveDocumentChanged += frame =>
             {
                 MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
             };
 
-         
+
 
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
@@ -162,7 +173,7 @@ namespace Dash
                     misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
                     misc.SetTitle("Miscellaneous");
                     MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
-                   // folders.Add(misc);
+                    // folders.Add(misc);
                 }
                 return misc;
             }
@@ -188,6 +199,8 @@ namespace Dash
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             await DotNetRPC.Init();
+
+            await DocumentScope.InitGlobalScope();
 
             var docs = await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType));
@@ -224,7 +237,7 @@ namespace Dash
             }
 
             XMainSplitter.SetContent(lastWorkspace);
-            
+
             var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
@@ -233,11 +246,12 @@ namespace Dash
             var toolbar = MainDocument.GetField<DocumentController>(KeyStore.ToolbarKey);
             if (toolbar == null)
             {
-                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid).Document;
+                toolbar = new CollectionNote(new Point(), CollectionViewType.Grid, double.NaN, 70).Document;
+                await InitToolbar(toolbar);
                 MainDocument.SetField(KeyStore.ToolbarKey, toolbar, true);
             }
 
-            //MenuToolbar.Instance.SetCollection(toolbar);
+            MenuToolbar.Instance.SetCollection(toolbar);
 
             SetupMapView(lastWorkspace);
 
@@ -247,6 +261,18 @@ namespace Dash
             //OperatorScriptParser.TEST();
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
+
+            LowPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.LowPriorityOpsKey);
+            ModeratePriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey);
+            HighPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey);
+
+            LowPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, LowPriorityOps);
+            ModeratePriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, ModeratePriorityOps);
+            HighPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, HighPriorityOps);
+
+            LowPriorityTimer.Start();
+            ModeratePriorityTimer.Start();
+            HighPriorityTimer.Start();
 
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
@@ -265,6 +291,11 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
+            EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
+            MenuToolbar.Instance.xStackPanel.Children.Remove(MenuToolbar.Instance.xSubtoolbarStackPanel);
+            customTitleBar.Children.Add(MenuToolbar.Instance.xSubtoolbarStackPanel);
+            MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
+            MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
 
 
             if (e.Parameter.GetType() == typeof(Dash.DashVoiceCommand))
@@ -295,17 +326,217 @@ namespace Dash
 
             }
             //remove this line if it's causing issues --I'm com
-            EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
+            EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));    
+   
+        }
 
+        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,
+            ListController<DocumentController> opList)
+        {
+            if (opList.Any())
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                {
+                    var tasks = new List<Task>(opList.Count);
+                    foreach (var opDoc in opList)
+                    {
+                        var op = opDoc.GetField<OperatorController>(KeyStore.ScheduledOpKey);
+                        var layoutDoc = opDoc.GetField<DocumentController>(KeyStore.ScheduledDocKey);
+                        var task = OperatorScript.Run(op, new List<FieldControllerBase>() {layoutDoc}, new DictionaryScope());
+                        if (!task.IsFaulted) tasks.Add(task);
+                        else Debug.WriteLine("TASK FAULTED!");
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                });
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
+
+
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
+        {
+            var op = await new DSL().Run(tappedHandler, true) as OperatorController;
+            if (op == null)
+            {
+                return null;
+            }
+            var doc = new DocumentController();
+            doc.SetField<TextController>(KeyStore.XamlKey,
+                @"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+      xmlns:dash='using:Dash'
+      xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center'>
+" + (rotate ? @"
+        <TextBlock.RenderTransform>
+            <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
+        </TextBlock.RenderTransform>
+" : "") +  @"
+    </TextBlock>
+</Grid>", true);
+            doc.SetField<TextController>(KeyStore.DataKey, icon, true);
+            doc.SetField<TextController>(KeyStore.TitleKey, name, true);
+            doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
+
+            return doc;
+        }
+
+        private async Task InitToolbar(DocumentController toolbar)
+        {
+            toolbar.SetBackgroundColor(Colors.SkyBlue);
+            var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+
+            var buttons = new List<(string icon, string name, bool rotate, string function)>
+            {
+                ("\uE107", "Delete", false, @"
+function(d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.remove(doc.Document);
+    }
+}
+"),
+                ("\uE923", "Make Instance", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.instance());
+    }
+}
+"),
+                ("\uF571", "Make View Copy", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.view_copy());
+    }
+}
+"),
+                ("\uE16F", "Make Copy", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Parent == null) {
+            continue;
+        }
+        doc.Parent.Data.add(doc.Document.copy());
+    }
+}
+"),
+                ("\uE840", "Pin", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = false;
+    }
+}
+"),
+                ("\uE77A", "Unpin", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        doc.Document.AreContentsHitTestVisible = true;
+    }
+}
+"),
+                ("\uEC8F", "Fit Width", true, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Horizontal Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Horizontal Alignment"", ""Left"");
+            doc.Document.Width = doc.Document._StoredWidth;
+            doc.Document._StoredWidth = null;
+        } else {
+            doc.Document.set_field(""Horizontal Alignment"", ""Stretch"");
+            doc.Document._StoredWidth = doc.Document.Width;
+            doc.Document.Width = NaN;
+        }
+    }
+}
+"),
+                ("\uEC8F", "Fit Height", false, @"
+function (d) {
+    for(var doc in get_selected_docs()) {
+        if(doc.Document.get_field(""Vertical Alignment"") == ""Stretch"") {
+            doc.Document.set_field(""Vertical Alignment"", ""Top"");
+            doc.Document.Height = doc.Document._StoredHeight;
+            doc.Document._StoredHeight = null;
+        } else {
+            doc.Document.set_field(""Vertical Alignment"", ""Stretch"");
+            doc.Document._StoredHeight = doc.Document.Height;
+            doc.Document.Height = NaN;
+        }
+    }
+}
+"),
+                ("\uE10E", "Undo", false, @"
+function(d) {
+    undo();
+}
+"),
+                ("\uE10D", "Redo", false, @"
+function(d) {
+    redo();
+}
+"),
+                ("\uF57C", "Split Horizontal", false, @"
+function (d) {
+    split_horizontal();
+}
+"),
+                ("\uE985", "Split Vertical", false, @"
+function (d) {
+    split_vertical();
+}
+"),
+                ("\uE8BB", "Close Split", false, @"
+function (d) {
+    close_split();
+}
+"),
+                ("\uE72B", "Back", false, @"
+function (d) {
+    frame_history_back();
+}
+"),
+                ("\uE72A", "Forward", false, @"
+function (d) {
+    frame_history_forward();
+}
+"),
+                ("\uE898", "Export", false, @"
+function (d) {
+    export_workspace();
+}
+"),
+                ("\uE768", "Toggle Presentation", false, @"
+function (d) {
+    toggle_presentation();
+}
+"),
+            };
+
+            await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name, item.rotate))));
         }
 
         #region LOAD AND UPDATE SETTINGS
 
         private void LoadSettings()
         {
-            var settingsDoc = GetAppropriateSettingsDoc();
-            xSettingsView.LoadSettings(settingsDoc);
-            XDocumentDecorations.LoadTags(settingsDoc);
+            xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
         }
 
         private DocumentController GetAppropriateSettingsDoc()
@@ -399,11 +630,11 @@ namespace Dash
             //activateall selected docs
             if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
             {
-               
+
                 var docs = SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>();
                 SelectionManager.SelectDocuments(docs, this.IsShiftPressed());
             }
-            
+
             e.Handled = true;
         }
 
@@ -454,10 +685,10 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
-            xToolbar.SwitchTheme(nightModeOn);
+            //xToolbar.SwitchTheme(nightModeOn);
         }
 
-        private void xSearchButton_Clicked (object sender, RoutedEventArgs tappedRoutedEventArgs)
+        private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
 
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
@@ -503,7 +734,7 @@ namespace Dash
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
                 overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-            } 
+            }
 
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
@@ -628,6 +859,81 @@ namespace Dash
             return mode;
         }
 
+        public async Task<string> GetLayoutTemplate(IEnumerable<DocumentController> docs)
+        {
+            var popup = new LayoutTemplatesPopup();
+            SetUpPopup(popup);
+            //TODO: Eventually unset this popup after templatePopup, so that user can exit back
+            var templateType = await popup.GetTemplate();
+            UnsetPopup();
+
+            if (templateType == TemplateList.TemplateType.None)
+                return null;
+
+            var fields = 
+                docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
+                Aggregate((a, b) => a.Intersect(b));
+
+            ICustomTemplate templatePopup;
+            switch (templateType)
+            {
+            case TemplateList.TemplateType.Citation:
+                templatePopup = new CitationPopup(fields);
+                break;
+            case TemplateList.TemplateType.Note:
+                templatePopup = new NotePopup(fields);
+                break;
+            case TemplateList.TemplateType.Card:
+                templatePopup = new CardPopup(fields);
+                break;
+            case TemplateList.TemplateType.Title:
+                templatePopup = new TitlePopup(fields);
+                break;
+            case TemplateList.TemplateType.Profile:
+                templatePopup = new ProfilePopup(fields);
+                break;
+            case TemplateList.TemplateType.Article:
+                templatePopup = new ArticlePopup(fields);
+                break;
+            case TemplateList.TemplateType.Biography:
+                templatePopup = new BiographyPopup(fields);
+                break;
+            case TemplateList.TemplateType.Flashcard:
+                templatePopup = new FlashcardPopup(fields);
+                break;
+            default:
+                //templatePopup = new LayoutTemplatesPopup();
+                templatePopup = null;
+                break;
+            }
+            SetUpPopup(templatePopup);
+            var customLayout = await templatePopup.GetLayout();
+            UnsetPopup();
+
+            var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
+
+            var splitXaml = templateXaml.Split(" ", StringSplitOptions.None);
+            for (int i = 0; i < customLayout.Count; i++)
+            {
+                for(int j=0; j<splitXaml.Length;j++)
+                {
+                    if (splitXaml[j].Contains("Field" + i))
+                    {
+                        splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
+                        break;
+                    }
+                    if (splitXaml[j].Contains("PlaceHolderText" + i))
+                    {
+                        splitXaml[j] = splitXaml[j].Replace("PlaceHolderText" + i, customLayout[i]);
+                        break;
+                    }
+                }
+            }
+
+            var stringXaml = string.Join(" ", splitXaml);
+            return stringXaml;
+        }
+
         public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
         {
             var importPopup = new HTMLRTFPopup();
@@ -686,7 +992,7 @@ namespace Dash
         /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
         /// </summary>
         /// <param name="popup"></param>
-        private void SetUpPopup(DashPopup popup)
+        public void SetUpPopup(DashPopup popup)
         {
             ActivePopup = popup;
             xOverlay.Visibility = Visibility.Visible;
@@ -699,7 +1005,7 @@ namespace Dash
         /// <summary>
         /// This method is called after a popup closes, to remove it from the page.
         /// </summary>
-        private void UnsetPopup()
+        public void UnsetPopup()
         {
             xOverlay.Visibility = Visibility.Collapsed;
             if (ActivePopup != null)
@@ -793,8 +1099,11 @@ namespace Dash
             var origWidth = doc.GetWidth();
             var origHeight = doc.GetHeight();
             var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
-            docCopy.SetWidth(size?.X ?? 150);
-            docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            if (!doc.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                docCopy.SetWidth(size?.X ?? 150);
+                docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            }
             docCopy.SetBackgroundColor(Colors.White);
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
@@ -986,7 +1295,7 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xSearchButton, search);
         }
-        
+
         public async Task<(string, string)> PromptNewTemplate()
         {
             var templatePopup = new NewTemplatePopup();
@@ -997,16 +1306,16 @@ namespace Dash
 
             return results;
         }
-        
-	    public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
-	    {
-			// TODO: do the following eventually; for now it will just export everything you have
-		    // var documentList = await GetDocumentsToPublish();
 
-		    var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
-		    allDocuments.Remove(MainDocument.GetDataDocument());
-			
-		    await new Publisher().StartPublication(allDocuments);
+        public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            // TODO: do the following eventually; for now it will just export everything you have
+            // var documentList = await GetDocumentsToPublish();
+
+            var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+            allDocuments.Remove(MainDocument.GetDataDocument());
+
+            await new Publisher().StartPublication(allDocuments);
         }
 
         public async Task<(List<DocumentController>, List<string>)> PromptTravelogue()

@@ -156,7 +156,7 @@
 
     <Grid x:Name="xGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="47.5" />
+            <ColumnDefinition Width="40" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <AppBarButton x:Name="xMoreButton" Style="{StaticResource AppBarButtonStyler}" Background="{StaticResource DashMediumBlueBrush}" Margin="0, 0, 0, 0" Click="XMoreButton_OnClick">
@@ -166,7 +166,7 @@
             </StackPanel>
 
         </AppBarButton>
-        <StackPanel x:Name="xInitialGrid" Height="40" Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" Grid.Column="1">
+        <StackPanel x:Name="xInitialGrid" Height="40" VerticalAlignment="Top" Orientation="Horizontal" Background="{StaticResource DashToolBarBrush}" Grid.Column="1">
             
             <controls:TextToolbar
                 x:Name="xDashTextSubtoolbar"
@@ -252,7 +252,7 @@
             </AppBarButton>
 
         </StackPanel>
-        <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Grid.Column="1"></local:FormattingMenuView>
+        <local:FormattingMenuView x:Name="xMenuView" Visibility="Collapsed" Margin="0 -6 0 0" Grid.Column="1" />
     </Grid>
 
 </UserControl>
