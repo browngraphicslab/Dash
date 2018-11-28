@@ -308,19 +308,15 @@ namespace Dash
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("TitleTemplate.xaml"),
                         [KeyStore.XamlKey] = new TextController(@"
-<Page
+<Grid
     xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
     xmlns:dash=""using:Dash""
     xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
     xmlns:dash1=""using:Windows.UI.Xaml.Controls"">
 
-    <Grid>
-        <Border BorderThickness=""2"" BorderBrush=""CadetBlue"" Background=""White"">
-            <TextBlock x:Name=""xTextField0"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" TextWrapping=""Wrap""/>
-        </Border>
-    </Grid>
-</Page>
+    <TextBlock x:Name=""xTextField0"" HorizontalAlignment=""Left"" VerticalAlignment=""Top"" TextWrapping=""Wrap""/>
+</Grid>
 "),
                     }, DocumentType.DefaultType),
                 };

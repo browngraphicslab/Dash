@@ -1143,7 +1143,7 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;
-            if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            if (true || ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
                 {
