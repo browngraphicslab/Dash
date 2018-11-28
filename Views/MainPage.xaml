@@ -166,7 +166,7 @@
                     <SymbolIcon Symbol="Setting" Foreground="White"/>
                 </Button>
             </Grid>
-            <Grid HorizontalAlignment="Left" Margin="58d 0 0 0">
+            <Grid HorizontalAlignment="Left" Margin="58 0 0 0">
                 <Canvas>
                     <local:DocumentPathView x:Name="XDocPathView" x:FieldModifier="public" />
                 </Canvas>

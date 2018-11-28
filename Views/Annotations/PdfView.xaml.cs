@@ -39,7 +39,7 @@ namespace Dash
         private double _pdfMaxWidth;
         public PdfAnnotationView DefaultView => _botPdf;
         public DocumentController DataDocument => (DataContext as DocumentViewModel)?.DataDocument;
-        public DocumentController LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
+        public DocumentController LayoutDocument => (DataContext as DocumentViewModel)?.LayoutDocument;
         public Uri PdfUri
         {
             get => (Uri)GetValue(PdfUriProperty);
@@ -545,7 +545,7 @@ namespace Dash
             this.GetDescendantsOfType<TextAnnotation>().ToList().ForEach((child) => child.HelpRenderRegion());
             try
             {
-                if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
+                if (LayoutDocument?.GetField(KeyStore.GoToRegionKey) != null)
                 {
                     GoToUpdatedFieldChanged(LayoutDocument, null);
                 }
