@@ -314,9 +314,7 @@ namespace Dash
 
                     string searchTerm = command.searchTerm;
                     xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
-                    //xMainSearchBox.xAutoSuggestBox.Focus(FocusState.Pointer);
                 xMainSearchBox.ExecuteDishSearch(xMainSearchBox.xAutoSuggestBox);
-                    //xMainSearchBox.Focus(FocusState.Pointer);
                     if (xSearchBoxGrid.Visibility != Visibility.Visible)
                     {
                         xSearchBoxGrid.Visibility = Visibility.Visible;
@@ -325,7 +323,6 @@ namespace Dash
                     }
                     //TODO: results don't show up
                     xMainSearchBox.Focus(FocusState.Pointer);
-                    xMainSearchBox.xAutoSuggestBox.Focus(FocusState.Pointer);
                 break;
                 default:
                      break;
