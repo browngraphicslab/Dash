@@ -302,7 +302,7 @@ namespace Dash
                                 {
                                     foreach (var chr in content)
                                     {
-                                        if (!char.IsNumber(chr))
+                                        if (!char.IsNumber(chr) || !char.IsSymbol(chr))
                                         {
                                             sb.Append(chr);
                                         }
