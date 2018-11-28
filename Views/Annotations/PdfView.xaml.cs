@@ -16,6 +16,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
@@ -334,6 +335,44 @@ namespace Dash
                 {
                     _botPdf.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
                 }
+
+                var annosToAdd = _botPdf.AnnotationOverlay.AnnotationsToAdd;
+                foreach (var anno in annosToAdd)
+                {
+
+                    var range = anno.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey).FirstOrDefault()?.Data ?? new Point(0, -1);
+
+                    for (var i = range.X; i <= range.Y; i++)
+                    {
+                        var dict = new Dictionary<KeyController, FieldControllerBase>
+                        {
+                            // store range
+                            {KeyStore.SelectionIndicesListKey, new PointController(range.X, range.Y)},
+                            // store position
+                            {
+                                KeyStore.SelectionBoundsKey,
+                                new RectController(_botPdf.AnnotationOverlay.TextSelectableElements[(int) i].Bounds)
+                            }
+                        };
+                        anno.GetDataDocument()
+                            .AddToListField(KeyStore.SelectionBoundsKey,
+                                new DocumentController(dict, DocumentType.DefaultType));
+                        /*{
+                            // store range
+                            new PointController(StartIndex, EndIndex),
+                            // store position
+                            new PointController(ParentOverlay.TextSelectableElements[i].Bounds.X,
+                                ParentOverlay.TextSelectableElements[i].Bounds.Y),
+                            // store size
+                            new PointController(ParentOverlay.TextSelectableElements[i].Bounds.Width,
+                                ParentOverlay.TextSelectableElements[i].Bounds.Height)
+                        });*/
+                    }
+
+                    _botPdf.AnnotationOverlay.XAnnotationCanvas.Children.Add(anno.CreateAnnotationAnchor(_botPdf.AnnotationOverlay));
+                }
+
+                _botPdf.AnnotationOverlay.AnnotationsToAdd.Clear();
             }
             else if (_botPdf.AnnotationOverlay.TextSelectableElements?.Any() ?? false)
             {

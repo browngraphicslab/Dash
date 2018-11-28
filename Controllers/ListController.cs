@@ -86,6 +86,8 @@ namespace Dash
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, targetList, prevList));
         }
 
+        public bool ContainsBase(FieldControllerBase element) => element is T checkedElement && Contains(checkedElement);
+
         public void Set(IEnumerable<FieldControllerBase> fmcs)
         {
             Set(fmcs.OfType<T>());

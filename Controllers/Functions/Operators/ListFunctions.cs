@@ -23,9 +23,14 @@ namespace Dash
             list.Clear();
         }
 
-        public static void Insert(IListController list, FieldControllerBase item, int index)
+        public static BoolController Contains(IListController list, FieldControllerBase item)
         {
-            list.InsertBase(index, item);
+            return new BoolController(list.ContainsBase(item));
+        }
+
+        public static void Insert(IListController list, FieldControllerBase item, NumberController index)
+        {
+            list.InsertBase((int)index.Data, item);
         }
 
         [OperatorFunctionName("remove")]
