@@ -310,22 +310,27 @@ namespace Dash
             {
                 case "searchForTerm":
                 //this is a bit of a HACK - making a bunch of search things public
+
+
+                    string searchTerm = command.searchTerm;
+                    xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
+                    //xMainSearchBox.xAutoSuggestBox.Focus(FocusState.Pointer);
+                xMainSearchBox.ExecuteDishSearch(xMainSearchBox.xAutoSuggestBox);
+                    //xMainSearchBox.Focus(FocusState.Pointer);
                     if (xSearchBoxGrid.Visibility != Visibility.Visible)
                     {
                         xSearchBoxGrid.Visibility = Visibility.Visible;
                         xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
-                        xMainSearchBox.Focus(FocusState.Programmatic);
+                        xMainSearchBox.Focus(FocusState.Pointer);
                     }
-
-                    string searchTerm = command.searchTerm;
-                    xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
-                   // MainSearchBox.ExecuteDishSearch(xMainSearchBox.xAutoSuggestBox);
+                    //TODO: results don't show up
+                    xMainSearchBox.Focus(FocusState.Pointer);
+                    xMainSearchBox.xAutoSuggestBox.Focus(FocusState.Pointer);
                 break;
                 default:
                      break;
 
             }
-            //remove this line if it's causing issues --I'm com
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));    
    
         }
