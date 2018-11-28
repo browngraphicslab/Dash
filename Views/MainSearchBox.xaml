@@ -62,6 +62,7 @@
 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
                     <Grid 
+                        x:Name="xOuterGrid"
                         PointerEntered="Grid_PointerEntered" 
                         PointerExited="Grid_PointerExited" 
                         CanDrag="True" 
@@ -73,7 +74,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="32"/>
-                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="190"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock
                             x:Name="xDropDown"

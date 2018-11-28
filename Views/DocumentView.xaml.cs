@@ -839,17 +839,19 @@ namespace Dash
 
         private void MenuFlyoutItemGetScript_Click(object o, RoutedEventArgs routedEventArgs)
         {
+            var dp = new DataPackage();
+            dp.SetText(GetScriptingRepresentation());
+            Clipboard.SetContent(dp);
+        }
+
+        private string GetScriptingRepresentation()
+        {
             var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
-            if (path == null)
-            {
-                return;
-            }
+            if (path == null) return "Invalid path";
 
             var pathString = DocumentTree.GetEscapedPath(path);
             var pathScript = $"d(\"{pathString.Replace(@"\", @"\\").Replace("\"", "\\\"")}\")";
-            DataPackage dp = new DataPackage();
-            dp.SetText(pathScript);
-            Clipboard.SetContent(dp);
+            return pathScript;
         }
 
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
