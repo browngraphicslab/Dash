@@ -171,7 +171,7 @@ namespace Dash
                 var misc = folders.Where((doc) => doc.Title == "Miscellaneous").FirstOrDefault();
                 if (misc == null)
                 {
-                    misc = new CollectionNote(new Point(), CollectionViewType.Stacking).Document;
+                    misc = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
                     misc.SetTitle("Miscellaneous");
                     MainDocument.GetDataDocument().AddToListField(KeyStore.DataKey, misc);
                     // folders.Add(misc);

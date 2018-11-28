@@ -311,19 +311,34 @@ namespace Dash
             {
             case "Image Box":
                 var uri = docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data;
-                //var stream = RandomAccessStreamReference.CreateFromUri(uri);
                 var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://")) ?
                     await StorageFile.GetFileFromApplicationUriAsync(uri) :
                     await StorageFile.GetFileFromPathAsync(uri.LocalPath);
                 var sflist = new HashSet<StorageFile>();
                 sflist.Add(sf);
                 args.Data.SetStorageItems(sflist);
-                //args.Data.SetBitmap(stream);
+                break;
+            case "Video Box":
+                uri = docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
+                try
+                {
+                    sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
+                        ? await StorageFile.GetFileFromApplicationUriAsync(uri)
+                        : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
+                    sflist = new HashSet<StorageFile>();
+                    sflist.Add(sf);
+                    args.Data.SetStorageItems(sflist);
+                }
+                catch (Exception ex)
+                {
+
+                }
+
                 break;
             default:
                 break;
             }
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move| DataPackageOperation.Copy;
 
             // compute the drag bounds rectangle and make all dragged documents not hit test visible (so we don't drop on them).
             // then get the bitmap that contains all the documents being dragged.

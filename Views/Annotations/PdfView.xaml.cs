@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Dash.Annotations;
 using iText.Kernel.Crypto;
@@ -153,9 +154,13 @@ namespace Dash
             SearchIndexHandler?.Detach();
             _previousSelections.Clear();
             _searchEnd = 0;
-            LayoutDocument.SetField<NumberController>(KeyStore.SearchIndexKey, 0, true);
-            prevIndex = -1;
-            SearchIndexHandler = LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchIndexKey, (view, collection, arg3) => view.SearchIndexUpdated(collection, arg3));
+                prevIndex = -1;
+            if (DataContext != null)
+            {
+                LayoutDocument.SetField<NumberController>(KeyStore.SearchIndexKey, 0, true);
+                SearchIndexHandler = LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.SearchIndexKey,
+                    (view, collection, arg3) => view.SearchIndexUpdated(collection, arg3));
+            }
         }
 
         private int prevIndex = -1;
@@ -249,6 +254,7 @@ namespace Dash
             {
                 var uri = PdfUri;
                 string textToSet = null;
+                string authorString = null;
                 await Task.Run(async () =>
                 {
                     bool hasPdf;
@@ -291,8 +297,27 @@ namespace Dash
                             pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
                         }
 
-                        var (selectableElements, text, pages, vagueSections) =
+                        var (selectableElements, authors, text, pages, vagueSections) =
                             newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                        if (authors != null)
+                        {
+                            var sb = new StringBuilder();
+                            foreach (var item in authors)
+                            {
+                                if (item.Contents is string content)
+                                {
+                                    foreach (var chr in content)
+                                    {
+                                        if (!char.IsNumber(chr))
+                                        {
+                                            sb.Append(chr);
+                                        }
+                                    }
+                                }
+                            }
+
+                            authorString = sb.ToString();
+                        }
                         _botPdf.AnnotationOverlay.TextSelectableElements =
                             new List<SelectableElement>(selectableElements);
                         _botPdf.AnnotationOverlay.PageEndIndices = pages;
@@ -300,6 +325,11 @@ namespace Dash
                         await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
                     }
                 });
+                if (authorString != null)
+                {
+                    this.DataDocument.SetField<TextController>(KeyStore.AuthorKey, authorString, true);
+                }
+
                 if (textToSet != null)
                 {
                     _botPdf.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
@@ -717,6 +747,7 @@ namespace Dash
             var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
+            _topPdf.SetRightMargin(margin);
         }
         private void xRightMarginPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -735,6 +766,7 @@ namespace Dash
             var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
+            _topPdf.SetLeftMargin(margin);
         }
         private void xLeftMarginPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -747,6 +779,7 @@ namespace Dash
             if (_botPdf.RightMargin > 0)
                 _botPdf.SetRightMargin(0);
             else _botPdf.SetRightMargin(ActualWidth / 6);
+            _topPdf.SetRightMargin(_botPdf.RightMargin);
             xRightMargin.Margin = new Thickness(0, 0, _botPdf.RightMargin - 2.5, 0);
         }
 
@@ -755,6 +788,7 @@ namespace Dash
             if (_botPdf.LeftMargin > 0)
                 _botPdf.SetLeftMargin(0);
             else _botPdf.SetLeftMargin(ActualWidth / 6);
+            _topPdf.SetLeftMargin(_botPdf.LeftMargin);
             xLeftMargin.Margin = new Thickness(_botPdf.LeftMargin - 2.5, 0, 0, 0);
         }
     }

@@ -141,8 +141,7 @@ namespace Dash
             }
             switch (text)
             {
-            default:
-                break;
+            
             case "Follow":
                 xTypeFollow.IsChecked = true;
                 break;
@@ -154,6 +153,8 @@ namespace Dash
                 break;
             case "Float":
                 xTypeFloat.IsChecked = true;
+                break;
+            default:
                 break;
             }
         }
@@ -240,7 +241,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(entry)) return;
 
                 var newtag = AddTagIfUnique(entry);
-                //newtag.Select();
+                newtag.Select();
 
                 box.Text = "";
             }

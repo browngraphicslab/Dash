@@ -74,7 +74,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="32"/>
-                            <ColumnDefinition Width="190"/>
+                            <ColumnDefinition Width="200"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock
                             x:Name="xDropDown"
