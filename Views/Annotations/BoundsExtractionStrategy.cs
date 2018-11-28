@@ -653,7 +653,7 @@ namespace Dash
             var lines = SortIntoLines(page);
             
             List<SelectableElement> authors = null;
-            if (isFirstPage)
+            if (isFirstPage && lines.Count >= 2)
             {
                 authors = new List<SelectableElement>(lines[1]);
                 authors.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
