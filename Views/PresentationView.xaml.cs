@@ -311,12 +311,16 @@ namespace Dash
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+            _document = (((FrameworkElement)e.OriginalSource).DataContext as PresentationItemViewModel)?.Document;
+            if (_document == null)
+            {
+                return;
+            }
             var listView = (ListView)sender;
             PinnedNodeFlyout.ShowAt(listView, e.GetPosition(listView));
             var source = (FrameworkElement)e.OriginalSource;
             _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ??
                        source.GetFirstAncestorOfType<PresentationViewTextBox>();
-            _document = (((FrameworkElement)e.OriginalSource).DataContext as PresentationItemViewModel)?.Document;
 
             var zoomContext = ((BoolController) _document.GetField(KeyStore.PresContextZoomKey))?.Data ?? false;
             Fullscreen.Background = zoomContext ? new SolidColorBrush(Colors.LightSteelBlue) : new SolidColorBrush(Colors.Transparent);

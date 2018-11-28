@@ -199,7 +199,7 @@ namespace Dash
                     var nchar = ((string)element.Contents).First();
                     if (prevIndex > 0 && sb.Length > 0 &&
                         (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height * 0.5
-                         || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
+                         || nchar > 128 || (char.IsUpper(nchar) && ".:?!)\r\n ".Contains(sb[sb.Length - 1])) ||
                          (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
                           !char.IsLower(sb[sb.Length - 1]))) &&
                         element.Bounds.Top >
@@ -653,7 +653,7 @@ namespace Dash
             var lines = SortIntoLines(page);
             
             List<SelectableElement> authors = null;
-            if (isFirstPage)
+            if (isFirstPage && lines.Count >= 2)
             {
                 authors = new List<SelectableElement>(lines[1]);
                 authors.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));

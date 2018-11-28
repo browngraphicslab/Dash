@@ -454,7 +454,6 @@ namespace Dash
 
         public async Task<DocumentController> GetRegionDocument(Point? docViewPoint)
         {
-
             return LayoutDocument;
             var regionDoc = await _annotationOverlay.CreateRegionFromPreviewOrSelection();
             if (regionDoc == null)

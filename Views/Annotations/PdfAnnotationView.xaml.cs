@@ -405,7 +405,7 @@ namespace Dash
                             }
                             else if (char.IsWhiteSpace(contents, 0))
                             {
-                                sb.Append("\\~");
+                                sb.Append(contents);
                             }
                             else if (contents.Equals("-") || contents.Equals("—") || contents.Equals("--"))
                             {
