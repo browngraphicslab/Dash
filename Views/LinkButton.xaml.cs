@@ -153,7 +153,11 @@ namespace Dash
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
                 var displayDoc = linkDoc.GetDereferencedField<DocumentController>(matches ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey, null);
-                displayDoc.SetTitle(displayDoc.GetRegionDefinition().Title+" region");
+                if (displayDoc.GetRegionDefinition() is DocumentController parent)
+                {
+                    displayDoc.SetTitle(parent.Title + " region");
+                }
+
                 var fieldBinding = new FieldBinding<TextController>
                 {
                     Key = KeyStore.TitleKey,
@@ -166,10 +170,6 @@ namespace Dash
         }
 
         private static LinkBehavior? _overrideBehavior = null;
-        private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //ChangeLinkBehavior(sender);
-        }
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
@@ -201,14 +201,11 @@ namespace Dash
 
         private void SymbolIcon_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
             (sender as SymbolIcon).Foreground = new SolidColorBrush(Color.FromArgb(255, 109, 168, 222));
         }
 
         private void SymbolIcon_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            xLinkList.SelectionChanged -= XLinkList_OnSelectionChanged;
-            xLinkList.SelectionChanged += XLinkList_OnSelectionChanged;
             (sender as SymbolIcon).Foreground = new SolidColorBrush(Color.FromArgb(255, 64, 123, 177));
         }
 
@@ -245,9 +242,11 @@ namespace Dash
             if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
             {
                 var link = _allKeys.ElementAt(index);
-                var linkedFrom = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
+                var srcLinkDoc = link.GetLinkedDocument(LinkDirection.ToSource);
+                var linkedFrom = srcLinkDoc?.GetDataDocument();
+                var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
                 new AnnotationManager(_documentView).FollowLink(_documentView, link,
-                    linkedFrom.Equals(_documentView.ViewModel.DataDocument) ? LinkDirection.ToDestination : LinkDirection.ToSource,
+                    matches ? LinkDirection.ToDestination : LinkDirection.ToSource,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
         }
