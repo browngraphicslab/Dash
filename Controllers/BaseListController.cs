@@ -13,7 +13,7 @@ namespace Dash
         void AddBase(FieldControllerBase fmc);
         void AddRange(IEnumerable<FieldControllerBase> fmcs);
         void Clear();
-        void Insert(int index, FieldControllerBase element);
+        void InsertBase(int index, FieldControllerBase element);
 
         void Set(IEnumerable<FieldControllerBase> fmcs);
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,6 +23,8 @@ using static Dash.DataTransferTypeInfo;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Input;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
 
 namespace Dash
 {
@@ -288,13 +291,75 @@ namespace Dash
         }
 
 
-        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
+        private async void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {
             if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
                 switch (listArgs.ListAction)
                 {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                    if (TextSelectableElements != null && !TextSelectableElements.Any())
+                    {
+                        var pdfView = this.GetFirstAncestorOfType<PdfView>();
+                        var uri = pdfView.PdfUri;
+                        string textToSet = null;
+                        await Task.Run(async () =>
+                        {
+                            bool hasPdf;
+                            try
+                            {
+                                hasPdf = await pdfView.PdfEndpoint.ContainsPDF(uri);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.ToString());
+                                hasPdf = false;
+                            }
+
+                            if (hasPdf)
+                            {
+                                try
+                                {
+                                    var (elems, pages) = await pdfView.PdfEndpoint.GetSelectableElements(uri);
+                                    TextSelectableElements =
+                                        new List<SelectableElement>(elems);
+                                    PageEndIndices = pages;
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex.ToString());
+                                }
+                            }
+                            else
+                            {
+                                var reader = new PdfReader(await pdfView.File.OpenStreamForReadAsync());
+                                var pdfDocument = new PdfDocument(reader);
+                                var newstrategy = new BoundsExtractionStrategy();
+                                var pdfTotalHeight = 0.0;
+                                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
+                                {
+                                    //if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
+                                    var page = pdfDocument.GetPage(i);
+                                    newstrategy.SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
+                                    new PdfCanvasProcessor(newstrategy).ProcessPageContent(page);
+                                    pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
+                                }
+
+                                var (selectableElements, text, pages, vagueSections) =
+                                    newstrategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
+                                TextSelectableElements =
+                                    new List<SelectableElement>(selectableElements);
+                                PageEndIndices = pages;
+                                textToSet = text;
+                                await pdfView.PdfEndpoint.AddPdf(uri, pages, selectableElements);
+                            }
+                        });
+                        if (textToSet != null)
+                        {
+                            pdfView.DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, textToSet, true);
+                        }
+                    }
+
                     listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:

@@ -32,6 +32,7 @@ namespace Dash
 
         //This might be more efficient as a linked list of KV pairs if our selections are always going to be contiguous
         private Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
+        public StorageFile File => _file;
         private StorageFile _file;
         private double _pdfMaxWidth;
         public PdfAnnotationView DefaultView => _botPdf;
@@ -54,6 +55,7 @@ namespace Dash
         //This makes the assumption that both pdf views are always in the same annotation mode
         public AnnotationType CurrentAnnotationType => _botPdf.AnnotationOverlay.CurrentAnnotationType;
 
+        public LocalPDFEndpoint PdfEndpoint => _pdfEndpoint;
         private static LocalPDFEndpoint _pdfEndpoint = RESTClient.Instance.GetPDFEndpoint();
         private int _searchEnd = 0;
         private WeakEventListener<PdfView, DocumentController, DocumentController.DocumentFieldUpdatedEventArgs> SearchIndexHandler;

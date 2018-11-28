@@ -33,6 +33,16 @@ namespace Dash
             return new NumberController(Math.Tan(theta.Data));
         }
 
+        public static BoolController And(BoolController one, BoolController two)
+        {
+            return new BoolController(one.Data && two.Data);
+        }
+
+        public static BoolController Or(BoolController one, BoolController two)
+        {
+            return new BoolController(one.Data || two.Data);
+        }
+
         private static Random r = new Random();
 
         public static NumberController Rand()

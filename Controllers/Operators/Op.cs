@@ -210,6 +210,7 @@ namespace Dash
             rand,
             rand_i,
             remove,
+            insert,
             instance,
             view_copy,
             active_document,
@@ -227,7 +228,9 @@ namespace Dash
             split,
             sort,
             toggle_presentation,
-            export_workspace
+            export_workspace,
+            and,
+            or
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

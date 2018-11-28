@@ -130,6 +130,54 @@ public sealed class ClearOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.insert)]
+public sealed class InsertOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController ListKey = KeyController.Get("List");
+    public static readonly KeyController ItemKey = KeyController.Get("Item");
+    public static readonly KeyController IndexKey = KeyController.Get("Index");
+
+        //Output Keys
+        public static readonly KeyController UpdatedListKey = KeyController.Get("UpdatedList");
+
+    public InsertOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public InsertOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("InsertOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new InsertOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(ListKey, new IOInfo(DashShared.TypeInfo.List, true)),
+        new KeyValuePair<KeyController, IOInfo>(ItemKey, new IOInfo(DashShared.TypeInfo.Any, true)),
+        new KeyValuePair<KeyController, IOInfo>(IndexKey, new IOInfo(DashShared.TypeInfo.Number, true))
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [UpdatedListKey] = DashShared.TypeInfo.List,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var list = (IListController)inputs[ListKey];
+        var item = inputs[ItemKey];
+        var index = (NumberController)inputs[IndexKey];
+        Dash.ListFunctions.Insert(list, item, (int)index.Data);
+
+        return Task.CompletedTask;
+    }
+
+}
+
 [OperatorType(Op.Name.remove)]
 public sealed class DocumentRemoveOperator : OperatorController
 {

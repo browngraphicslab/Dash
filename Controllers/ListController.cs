@@ -354,8 +354,12 @@ namespace Dash
             if (element is T checkedElement) Add(checkedElement);
         }
 
+        public void InsertBase(int index, FieldControllerBase element)
+        {
+            if (element is T checkedElement) Insert(index, checkedElement);
+        }
+
         // @IList<T> //
-        public void Add(T element)
         public void Add(T element)
         {
             if (IsReadOnly) return;

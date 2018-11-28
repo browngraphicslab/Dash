@@ -23,9 +23,9 @@ namespace Dash
             list.Clear();
         }
 
-        public static void Clear(IListController list, int index)
+        public static void Insert(IListController list, FieldControllerBase item, int index)
         {
-            list.Insert(index);
+            list.InsertBase(index, item);
         }
 
         [OperatorFunctionName("remove")]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -307,7 +307,7 @@ public sealed class SortOperator : OperatorController
                                  DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
         var list = (IListController)inputs[ListKey];
         var output0 = Dash.UtilFunctions.Sort(list);
-        outputs[Output0Key] = output0.AsField();
+        outputs[Output0Key] = (FieldControllerBase)output0;
         return Task.CompletedTask;
     }
 
@@ -352,7 +352,7 @@ public sealed class SortDocsOperator : OperatorController
         var listController = (ListController<DocumentController>)inputs[ListControllerKey];
         var selector = (KeyController)inputs[SelectorKey];
         var output0 = Dash.UtilFunctions.SortDocs(listController, selector);
-        outputs[Output0Key] = output0.AsField();
+        outputs[Output0Key] = (FieldControllerBase)output0;
         return Task.CompletedTask;
     }
 
