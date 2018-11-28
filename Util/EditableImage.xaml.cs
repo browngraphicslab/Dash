@@ -29,7 +29,6 @@ namespace Dash
         private StateCropControl _cropControl;
         private ImageController _imgctrl;
         public bool IsCropping;
-        private DocumentView _docview;
         public DocumentController DataDocument => (DataContext as DocumentViewModel).DataDocument;
         public DocumentController LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
 
@@ -59,10 +58,10 @@ namespace Dash
                 XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
 
-                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-                _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
-                XAnnotationGrid.Children.Add(_annotationOverlay);
-                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
+                //_annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                //_annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+                //XAnnotationGrid.Children.Add(_annotationOverlay);
+                //XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
 
             Loaded += EditableImage_Loaded;
@@ -71,9 +70,9 @@ namespace Dash
 
         private void EditableImage_Loaded(object sender, RoutedEventArgs e)
         {
-            LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdated(controller, arg3));
+            //LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdated(controller, arg3));
             
-            _imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
+            //_imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
         }
 
         private DocumentController RegionGetter(AnnotationType type)
@@ -139,9 +138,7 @@ namespace Dash
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             // initialize values that rely on the image
-            _docview = this.GetFirstAncestorOfType<DocumentView>();
-            Focus(FocusState.Keyboard);
-            _cropControl = new StateCropControl(LayoutDocument, this);
+            //_cropControl = new StateCropControl(LayoutDocument, this);
         }
 
         private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -380,6 +377,12 @@ namespace Dash
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            if (_annotationOverlay == null)
+            {
+                e.Handled = true;
+                return;
+                
+            }
             if (IsCropping) e.Handled = true;
 
             var point = e.GetCurrentPoint(_annotationOverlay);
@@ -401,6 +404,11 @@ namespace Dash
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (_annotationOverlay == null)
+            {
+                e.Handled = true;
+                return;
+            }
             if (IsCropping) e.Handled = true;
             var point = e.GetCurrentPoint(_annotationOverlay);
 
@@ -421,6 +429,11 @@ namespace Dash
         Point _downPt = new Point();
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (_annotationOverlay == null)
+            {
+                e.Handled = true;
+                return;
+            }
             if (IsCropping) e.Handled = true;
             var point = e.GetCurrentPoint(_annotationOverlay);
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
