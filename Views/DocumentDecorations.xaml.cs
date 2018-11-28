@@ -253,7 +253,7 @@ namespace Dash
             {
                 foreach (var doc in SelectedDocs)
                 {
-                    if (doc.GetFirstDescendantOfType<PdfView>() != null)
+                    if (doc.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType)==true)
                         showPDFControls = true;
                     if (doc.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
                         parentIsFreeform = false;

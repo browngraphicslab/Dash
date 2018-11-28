@@ -1156,11 +1156,11 @@ namespace Dash
             //Add the Layout Template Popup
            xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = "Document Layouts",
+                Text = "Apply Template",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Sitemap }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLayoutTemplates_Click;
-            if (ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            if (true || ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 xMenuFlyout.Items.Add(new MenuFlyoutItem()
                 {
@@ -1263,9 +1263,18 @@ namespace Dash
                 if (template == null)
                     return;
 
+                bool flashcard = false;
+                if (template.Contains("FlashcardTemplate"))
+                    flashcard = true;
+
                 foreach (var doc in docs)
                 {
                     doc.SetField<TextController>(KeyStore.XamlKey, template, true);
+                    if (flashcard)
+                    {
+                        doc.SetWidth(600);
+                        doc.SetHeight(600);
+                    }
                 }
             }
         }

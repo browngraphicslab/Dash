@@ -38,7 +38,7 @@ namespace Dash
         private StorageFile _file;
         private double _pdfMaxWidth;
         public PdfAnnotationView DefaultView => _botPdf;
-        public DocumentController DataDocument => (DataContext as DocumentViewModel).DataDocument;
+        public DocumentController DataDocument => (DataContext as DocumentViewModel)?.DataDocument;
         public DocumentController LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
         public Uri PdfUri
         {
@@ -194,12 +194,12 @@ namespace Dash
 
                             prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
 
-                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top);
+                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[Math.Max(0, index - i)].Bounds.Top);
                             //_botPdf.ScrollViewer.ChangeView(null,
                             //    _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top, null, true);
                             //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
                             //    .Top);
-                            _previousSelections.Add(index - i);
+                            _previousSelections.Add(Math.Max(0, index - i));
                             return;
                         }
                     }
@@ -309,7 +309,7 @@ namespace Dash
                                 {
                                     foreach (var chr in content)
                                     {
-                                        if (!char.IsNumber(chr))
+                                        if (!char.IsNumber(chr) || !char.IsSymbol(chr))
                                         {
                                             sb.Append(chr);
                                         }
@@ -328,7 +328,7 @@ namespace Dash
                 });
                 if (authorString != null)
                 {
-                    this.DataDocument.SetField<TextController>(KeyStore.AuthorKey, authorString, true);
+                    this.DataDocument?.SetField<TextController>(KeyStore.AuthorKey, authorString, true);
                 }
 
                 if (textToSet != null)

@@ -15,7 +15,7 @@
                 <Border x:Name="xBorder"
                         BorderBrush="{StaticResource AccentGreenLight}"
                         Background="White"
-                        BorderThickness="2 40 2 2" Width="600"  Height="500"
+                        BorderThickness="2 40 2 2" Width="600"  Height="375"
                         Margin="-100 -100 0 0"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Left">

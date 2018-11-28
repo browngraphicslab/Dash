@@ -845,7 +845,8 @@ function (d) {
 
             var fields = 
                 docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
-                Aggregate((a, b) => a.Intersect(b));
+                Aggregate((a, b) => a.Intersect(b)).ToList();
+            fields.Insert(0, "");
 
             ICustomTemplate templatePopup;
             switch (templateType)
@@ -882,6 +883,9 @@ function (d) {
             SetUpPopup(templatePopup);
             var customLayout = await templatePopup.GetLayout();
             UnsetPopup();
+
+            if (customLayout == null)
+                return null;
 
             var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
 

@@ -49,7 +49,7 @@ namespace Dash
         }
         public override void StartAnnotation(Point p)
         {
-            if (ParentOverlay.TextSelectableElements.Any() && ParentOverlay.PageEndIndices.Any())
+            if (ParentOverlay.TextSelectableElements != null && ParentOverlay.TextSelectableElements.Any() && ParentOverlay.PageEndIndices.Any())
             {
                 _selectionStartPoint = p;
             }
@@ -104,7 +104,7 @@ namespace Dash
 
         public override void UpdateAnnotation(Point p)
         {
-            if (ParentOverlay.TextSelectableElements.Any() && ParentOverlay.PageEndIndices.Any())
+            if (ParentOverlay.TextSelectableElements != null && ParentOverlay.TextSelectableElements.Any() && ParentOverlay.PageEndIndices.Any())
             {
                 if (_selectionStartPoint.HasValue)
                 {

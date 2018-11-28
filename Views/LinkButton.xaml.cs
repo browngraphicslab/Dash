@@ -146,9 +146,9 @@ namespace Dash
         private void TextBoxLoaded(object sender, RoutedEventArgs e)
         {
             var textBox = (sender as TextBox);
-            if (textBox != null)
+            if (textBox?.DataContext is DocumentController link)
             {
-                var linkDoc = (textBox.DataContext as DocumentController).GetDataDocument();
+                var linkDoc = link.GetDataDocument();
                 var srcLinkDoc = linkDoc.GetLinkedDocument(LinkDirection.ToSource);
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
