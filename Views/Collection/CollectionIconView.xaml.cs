@@ -33,13 +33,19 @@ namespace Dash.Views.Collection
         {
             using (UndoManager.GetBatchHandle())
             {
-                var doc = ViewModel.ContainerDocument.GetViewCopy();
-                doc.SetField<TextController>(KeyStore.CollectionViewTypeKey,ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey,null)?.Data ?? CollectionViewType.Freeform.ToString(), true);
-                doc.SetWidth(double.NaN);
-                doc.SetHeight(double.NaN);
-                doc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                doc.SetVerticalAlignment(VerticalAlignment.Stretch);
-                SplitFrame.OpenInActiveFrame(doc);
+                var doc = ViewModel.ContainerDocument; //.GetViewCopy();
+                if (doc.GetField(KeyStore.LastWorkspaceKey) == null)
+                {
+                    doc.SetField(KeyStore.LastWorkspaceKey, doc.GetViewCopy(),true);
+                }
+
+                var openDoc = doc.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                openDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data ?? CollectionViewType.Freeform.ToString(), true);
+                openDoc.SetWidth(double.NaN);
+                openDoc.SetHeight(double.NaN);
+                openDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                openDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
+                SplitFrame.OpenInActiveFrame(openDoc);
             }
         }
 

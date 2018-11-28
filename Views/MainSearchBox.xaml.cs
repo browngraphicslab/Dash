@@ -437,7 +437,7 @@ namespace Dash
         #endregion
 
         #region Search
-        private void ExecuteDishSearch(AutoSuggestBox searchBox)
+        public void ExecuteDishSearch(AutoSuggestBox searchBox)
         {
             if (searchBox == null) return;
 
