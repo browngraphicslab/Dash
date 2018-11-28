@@ -191,12 +191,12 @@ namespace Dash
 
                             prevIndex = (int)sender.GetField<NumberController>(KeyStore.SearchIndexKey).Data;
 
-                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top);
+                            _botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[Math.Max(0, index - i)].Bounds.Top);
                             //_botPdf.ScrollViewer.ChangeView(null,
                             //    _botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds.Top, null, true);
                             //_botPdf.ScrollToPosition(_botPdf.AnnotationOverlay.TextSelectableElements[index - i].Bounds
                             //    .Top);
-                            _previousSelections.Add(index - i);
+                            _previousSelections.Add(Math.Max(0, index - i));
                             return;
                         }
                     }
