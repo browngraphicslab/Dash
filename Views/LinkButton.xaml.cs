@@ -167,9 +167,11 @@ namespace Dash
             if (_allKeys != null && !(sender is SymbolIcon) && index != -1)
             {
                 var link = _allKeys.ElementAt(index);
-                var linkedFrom = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource)?.GetDataDocument();
+                var srcLinkDoc = link.GetLinkedDocument(LinkDirection.ToSource);
+                var linkedFrom = srcLinkDoc?.GetDataDocument();
+                var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
                 new AnnotationManager(_documentView).FollowLink(_documentView, link,
-                    linkedFrom.Equals(_documentView.ViewModel.DataDocument)  ? LinkDirection.ToDestination : LinkDirection.ToSource, 
+                    matches  ? LinkDirection.ToDestination : LinkDirection.ToSource, 
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
         }
