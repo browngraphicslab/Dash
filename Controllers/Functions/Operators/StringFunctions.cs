@@ -11,7 +11,13 @@ namespace Dash
         [OperatorReturnName("Split")]
         public static ListController<TextController> Split(TextController field, TextController delimiter)
         {
-            return field.Data.Split(delimiter.Data).Select(s => new TextController(s)).ToListController();
+            var ret = new ListController<TextController>();
+            foreach (var s in field.Data.Split(delimiter.Data))
+            {
+                ret.Add(new TextController(s));
+            }
+
+            return ret;
         }
     }
 }

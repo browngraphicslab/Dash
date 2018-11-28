@@ -146,9 +146,9 @@ namespace Dash
         private void TextBoxLoaded(object sender, RoutedEventArgs e)
         {
             var textBox = (sender as TextBox);
-            if (textBox != null)
+            if (textBox?.DataContext is DocumentController link)
             {
-                var linkDoc = (textBox.DataContext as DocumentController).GetDataDocument();
+                var linkDoc = link.GetDataDocument();
                 var srcLinkDoc = linkDoc.GetLinkedDocument(LinkDirection.ToSource);
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
@@ -228,6 +228,7 @@ namespace Dash
             destinationDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Remove(linkDoc);
             sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
             setLinkKeys();
+            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
             //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
         }
 
@@ -249,6 +250,11 @@ namespace Dash
                     matches ? LinkDirection.ToDestination : LinkDirection.ToSource,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
+        }
+
+        private void XFlyout_OnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        {
+            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
         }
     }
 }
