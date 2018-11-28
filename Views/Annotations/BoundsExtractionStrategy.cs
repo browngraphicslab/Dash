@@ -116,7 +116,7 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public (List<SelectableElement> elements, string, List<int> pages, List<List<PDFSection>> vagueSectionList) GetSelectableElements(int startPage, int endPage)
+        public (List<SelectableElement> elements, List<SelectableElement> authors, string, List<int> pages, List<List<PDFSection>> vagueSectionSuperList) GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
@@ -126,7 +126,7 @@ namespace Dash
                 {
                     list.Add(0);
                 }
-                return (new List<SelectableElement>(), "", list, new List<List<PDFSection>>());
+                return (new List<SelectableElement>(), null, "", list, new List<List<PDFSection>>());
             }
 
             var pageElements = new List<List<SelectableElement>>();
@@ -162,11 +162,16 @@ namespace Dash
             var lastIndex = 0;
             // sort and add the elements in each page to a list of elements
             var vagueSectionSuperList = new List<List<PDFSection>>();
+            List<SelectableElement> authors = null;
             foreach (var page in pageElements)
             {
-                var (newElements, vagueSectionList) = GetSortedSelectableElements(page, elements.Count);
+                var (newElements, authorReturn, vagueSectionList) = GetSortedSelectableElements(page, elements.Count, page == pageElements.First());
                 if (vagueSectionList == null || newElements == null)
                     continue;
+                if (authorReturn != null)
+                {
+                    authors = authorReturn;
+                }
                 vagueSectionSuperList.AddRange(vagueSectionList);
                 elements.AddRange(newElements);
                 // set the last index to the last index of the new elements, or the last index of the previous page if no new elements, or 0 if no previous pages.
@@ -214,7 +219,7 @@ namespace Dash
                 }
             }
 
-            return (elements, sb.ToString(), pages, vagueSectionSuperList);
+            return (elements, authors, sb.ToString(), pages, vagueSectionSuperList);
         }
 
         /// <summary>
@@ -237,7 +242,7 @@ namespace Dash
                 //}
 
                 // if the element is deemed to be on a new line, create a new one and add it
-                if (Math.Abs(selectableElement.Bounds.Y - element.Bounds.Y) > element.Bounds.Height * 0.5 ||
+                if (selectableElement.Bounds.Y - element.Bounds.Y > element.Bounds.Height * 0.5 ||
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height)
                 {
                     element = selectableElement;
@@ -637,21 +642,28 @@ namespace Dash
             return vagueSections;
         }
 
-        private (List<SelectableElement>, List<List<PDFSection>>) GetSortedSelectableElements(List<SelectableElement> page, int elementCount)
+        private (List<SelectableElement> sortedElements, List<SelectableElement> authors, List<List<PDFSection>> vagueSectionsSorted) GetSortedSelectableElements(List<SelectableElement> page, int elementCount, bool isFirstPage = false)
         {
             if (page.Count == 0)
-                return (null, null);
+                return (null, null, null);
             // sort the elements in a page vertically
             page.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
             var elements = new List<SelectableElement>();
 
             var lines = SortIntoLines(page);
+            
+            List<SelectableElement> authors = null;
+            if (isFirstPage)
+            {
+                authors = new List<SelectableElement>(lines[1]);
+                authors.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));
+            }
 
             double[] spacingData = ProcessXSpacing(lines);
 
             if (!spacingData.Any())
             {
-                return (null, null);
+                return (null, null, null);
             }
             (int[] clusters, double[] spaceMeans) = KMeansCluster.Cluster(spacingData, 2);
             lines.Sort((l1, l2) => Math.Sign(l1.First().Bounds.Y - l2.First().Bounds.Y));
@@ -775,7 +787,7 @@ namespace Dash
                 }
             }
 
-            return (sortedElements, /*new List<List<PDFSection>> {sections}*/ vagueSectionsSorted);
+            return (sortedElements, authors, /*new List<List<PDFSection>> {sections}*/ vagueSectionsSorted);
         }
 
         /// <summary>

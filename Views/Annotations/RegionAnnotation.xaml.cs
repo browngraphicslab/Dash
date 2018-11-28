@@ -130,7 +130,7 @@ namespace Dash
             {
                 var y = new Path()
                 {
-                    StrokeThickness = 0.5,
+                    StrokeThickness = 2,
                     Stroke = new SolidColorBrush(Colors.Black),
                 };
                 var pf = new PathFigure() { StartPoint = new Point(flip ? width : 0, 0) };
@@ -159,7 +159,7 @@ namespace Dash
                 {
                     Fill = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xff, 0)),
                     Opacity = ParentOverlay.XPreviewRect.Opacity,
-                    StrokeThickness = 0.5,
+                    StrokeThickness = 2,
                     StrokeDashArray = new DoubleCollection { 2 },
                     Stroke = new SolidColorBrush(Colors.Black),
                 };
