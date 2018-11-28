@@ -221,14 +221,19 @@ namespace Dash
                     if (!(sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType)) TouchInteractions.NumFingers++;
                     TouchInteractions.HeldDocument = this;
 
-                    //initiate drag drop (as long as it's not a pdf)
-                    if (!SelectionManager.IsSelected(this))
-                        SelectionManager.Select(this, false);
-                    if (!((sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType) && e.Pointer.PointerDeviceType == PointerDeviceType.Touch))
+                    //if toolbar button, don't do this
+                    if ((sender as DocumentView).GetFirstAncestorOfType<MenuToolbar>() == null)
                     {
-                        SelectionManager.TryInitiateDragDrop(this, e, null);
+                        if (!SelectionManager.IsSelected(this))
+                            SelectionManager.Select(this, false);
+                        if (!((sender as DocumentView).ViewModel.DocumentController.DocumentType.Equals(
+                                  PdfBox.DocumentType) && e.Pointer.PointerDeviceType == PointerDeviceType.Touch))
+                        {
+                            //initiate drag drop (as long as it's not a pdf)
+                            SelectionManager.TryInitiateDragDrop(this, e, null);
+                        }
                     }
-                   
+
                 }
 
                 //e.Handled = true;
