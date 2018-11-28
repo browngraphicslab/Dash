@@ -129,7 +129,7 @@ namespace Dash
             }
             FlyoutBase.ShowAttachedFlyout(fwe);
             _tooltip.IsOpen = false;
-            ChangeLinkBehavior(fwe);
+            //ChangeLinkBehavior(fwe);
         }
 
         private void LinkButton_DragStarting(UIElement sender, DragStartingEventArgs args)
@@ -166,7 +166,7 @@ namespace Dash
         private static LinkBehavior? _overrideBehavior = null;
         private void XLinkList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ChangeLinkBehavior(sender);
+            //ChangeLinkBehavior(sender);
         }
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
