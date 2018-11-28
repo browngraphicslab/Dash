@@ -15,7 +15,7 @@ namespace Dash
 {
     public sealed partial class Tag
     {
-	   
+
 
         public string Text
         {
@@ -23,11 +23,11 @@ namespace Dash
             set { _text = value; }
         }
 
-	    public Color Color
-	    {
-		    get => _color;
-		    set { _color = value; }
-	    }
+        public Color Color
+        {
+            get => _color;
+            set { _color = value; }
+        }
         private string _text;
         private Color _color;
         private LinkMenu _linkMenu;
@@ -37,7 +37,7 @@ namespace Dash
             set { xTagContainer = value; }
         }
 
-		public Tag(LinkMenu linkMenu, String text, Color color)
+        public Tag(LinkMenu linkMenu, String text, Color color)
         {
             this.InitializeComponent();
             xTagContainer.Background = new SolidColorBrush(color);
@@ -78,7 +78,7 @@ namespace Dash
 
         public void Deselect()
         {
-            
+
             xTagContainer.BorderThickness = new Thickness(0);
             xTagContainer.Padding = new Thickness(4, 0, 4, 6);
         }
@@ -92,7 +92,7 @@ namespace Dash
         public void Select()
         {
 
-            
+
 
             foreach (var tag in _linkMenu.RecentTags)
             {
@@ -182,18 +182,18 @@ namespace Dash
                         temp.Add(currtag);
                     }
                     _linkMenu.TagNameDict.Remove(currtag.Text);
-                    
+
 
 
                 }
 
                 _linkMenu.RecentTags.Clear();
-              
+
                 foreach (var tag in temp)
                 {
                     _linkMenu.RecentTags.Enqueue(tag);
                     _linkMenu.TagNameDict.Add(tag.Text, tag);
-                  
+
                 }
 
                 temp.Reverse();
@@ -243,6 +243,22 @@ namespace Dash
                         _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, "Annotation",
                             true);
                         MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+                    }
+
+                    var lbs = MainPage.Instance.XDocumentDecorations.LinkButtons;
+
+                    //tyler it's this section right here
+                    foreach (var button in lbs)
+                    {
+                        if (button.Text.Equals(Text))
+                        {
+                            foreach (var link in button.AllKeys)
+                            {
+                                link.GetDataDocument()
+                                    .SetField<TextController>(KeyStore.LinkTagKey, "Annotation", true);
+                                MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+                            }
+                        }
                     }
                 }
             }
