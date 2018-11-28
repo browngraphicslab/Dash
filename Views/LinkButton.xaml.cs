@@ -104,7 +104,6 @@ namespace Dash
 
         public void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-
             OpenFlyout(sender as FrameworkElement, null);
             xLinkList.SelectedItem = null;
             e.Handled = true;   
