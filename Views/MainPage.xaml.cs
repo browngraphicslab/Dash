@@ -880,6 +880,9 @@ function (d) {
             var customLayout = await templatePopup.GetLayout();
             UnsetPopup();
 
+            if (customLayout == null)
+                return null;
+
             var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
 
             var splitXaml = templateXaml.Split(" ", StringSplitOptions.None);

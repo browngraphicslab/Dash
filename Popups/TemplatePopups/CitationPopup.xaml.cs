@@ -37,6 +37,13 @@ namespace Dash.Popups.TemplatePopups
             var tcs = new TaskCompletionSource<List<string>>();
             xLayoutPopup.IsOpen = true;
             xConfirmButton.Tapped += XConfirmButton_OnClick;
+            xCancelButton.Tapped += xCancelButton_OnClick;
+            void xCancelButton_OnClick(object sender, object e)
+            {
+                xLayoutPopup.IsOpen = false;
+                tcs.SetResult(null);
+                xCancelButton.Tapped -= xCancelButton_OnClick;
+            }
             void XConfirmButton_OnClick(object sender, RoutedEventArgs e)
             {
                 var input = new List<string>
