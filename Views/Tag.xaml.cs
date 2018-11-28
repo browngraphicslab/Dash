@@ -256,10 +256,11 @@ namespace Dash
                             {
                                 link.GetDataDocument()
                                     .SetField<TextController>(KeyStore.LinkTagKey, "Annotation", true);
-                                MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+                                
                             }
                         }
                     }
+                    MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
                 }
             }
         }
