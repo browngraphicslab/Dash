@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
+using Windows.Devices.Input;
 using Windows.System;
 using Dash.Converters;
 
@@ -53,7 +54,10 @@ namespace Dash
 			video.PointerEntered += (s, e) => video.TransportControls.Show();
 			video.PointerExited += (s, e) => video.TransportControls.Hide();
             video.Unloaded += (s, e) => video.MediaPlayer.Pause();
-            video.PointerPressed += (s, e) => e.Handled = true;
+            video.PointerPressed += (s, e) =>
+            {
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch) e.Handled = false;
+            };
 
 			// setup bindings on the video
 			SetupVideoBinding(video, docController, key, context);

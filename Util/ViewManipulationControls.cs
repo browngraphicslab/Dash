@@ -180,7 +180,7 @@ namespace Dash
                     ////handle touch interactions with just one finger - equivalent to drag without ctr
                     //if in another touch mode, ignore
                     if ((TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None || TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.Marquee) 
-                        && _freeformView.StartMarquee(point))
+                        && TouchInteractions.HeldDocument == null && _freeformView.StartMarquee(point))
                     {
                         TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Marquee;
                         e.Handled = true;
