@@ -156,10 +156,10 @@ namespace Dash
 
             subtoolbarElement = null;
 
-            if (!ToolbarColumn.Width.IsStar)
-            {
-                return;
-            }
+            //if (!ToolbarColumn.Width.IsStar)
+            //{
+            //    return;
+            //}
 
             docs = docs.ToList();
 

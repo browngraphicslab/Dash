@@ -66,14 +66,19 @@ namespace Dash
             var docs = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
             if (docs != null)
             {
+                var snapshot = collection.GetViewCopy();
                 var snap = new CollectionNote(new Point(), CollectionViewType.Freeform, double.NaN, double.NaN,
                     copyData ? docs.Select(doc => doc.GetDataCopy()) : docs.Select(doc => doc.GetViewCopy())).Document;
+                snap.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.DataKey, 
+                    copyData ? docs.Select(doc => doc.GetDataCopy()) : docs.Select(doc => doc.GetViewCopy()), true);
+                snapshot.SetField(KeyStore.DocumentContextKey, snap.GetDataDocument(), true);
 
                 var snapshots = collection.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.SnapshotsKey);
                 snapshots.Add(snap);
                 snap.GetDataDocument().SetTitle(collection.Title + $"_snapshot{snapshots.Count}");
                 snap.SetFitToParent(true);
-                return snap;
+                snapshot.SetField(KeyStore.SourceUriKey, collection, true);
+                return snapshot;
             }
             return null;
         }

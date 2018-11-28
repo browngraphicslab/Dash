@@ -157,14 +157,19 @@
             <TextBlock Text="Dash" Foreground="White" VerticalAlignment="Center" Margin="12,0,0,0"/>
 
             <Grid  HorizontalAlignment="Right">
-                <Button  Name="xSearchButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Margin="0,0,200,0" Click="xSearchButton_Clicked" >
+                <Button  Name="xSearchButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Margin="0,-5,200,0" Click="xSearchButton_Clicked" >
                     <SymbolIcon Symbol="Find" Foreground="White"/>
                 </Button>
             </Grid>
             <Grid  HorizontalAlignment="Right">
-                <Button  Name="xSettingsButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Margin="0,0,240,0" Click="xSettingsButton_Clicked" >
+                <Button  Name="xSettingsButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Margin="0,-5,240,0" Click="xSettingsButton_Clicked" >
                     <SymbolIcon Symbol="Setting" Foreground="White"/>
                 </Button>
+            </Grid>
+            <Grid HorizontalAlignment="Center">
+                <Canvas>
+                    <local:DocumentPathView x:Name="xDocPathView" x:FieldModifier="public" />
+                </Canvas>
             </Grid>
         </Grid>
     </Grid>

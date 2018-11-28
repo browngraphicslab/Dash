@@ -2127,7 +2127,7 @@
                                 x:Name="Root"
                                 MinWidth="{TemplateBinding MinWidth}"
                                 MaxWidth="{TemplateBinding MaxWidth}"
-                                Background="{StaticResource DashToolBarBrush}">
+                                Background="{StaticResource DashDarkBlueBrush}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="ApplicationViewStates">
                                         <VisualState x:Name="FullSize"/>
@@ -2284,7 +2284,7 @@
                                 x:Name="Root"
                                 MinWidth="{TemplateBinding MinWidth}"
                                 MaxWidth="{TemplateBinding MaxWidth}"
-                                Background="{StaticResource DashToolBarBrush}">
+                                Background="{StaticResource DashDarkBlueBrush}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="ApplicationViewStates">
                                         <VisualState x:Name="FullSize"/>

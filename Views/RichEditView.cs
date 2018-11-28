@@ -897,7 +897,6 @@ _manipulator = null;
 
         private void UnLoaded(object s, RoutedEventArgs e)
         {
-            SetSelected("");
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
         }
 

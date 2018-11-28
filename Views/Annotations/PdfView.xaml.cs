@@ -716,7 +716,7 @@ namespace Dash
 
         private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X);
+            var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
         }
@@ -735,7 +735,7 @@ namespace Dash
 
         private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X);
+            var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
         }
@@ -743,6 +743,22 @@ namespace Dash
         {
             xLeftMargin.ReleasePointerCapture(e.Pointer);
             xLeftMargin.PointerMoved -= xLeftMarginPointerMoved;
+        }
+
+        private void xRightMargin_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_botPdf.RightMargin > 0)
+                _botPdf.SetRightMargin(0);
+            else _botPdf.SetRightMargin(ActualWidth / 6);
+            xRightMargin.Margin = new Thickness(0, 0, _botPdf.RightMargin - 2.5, 0);
+        }
+
+        private void xLeftMargin_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_botPdf.LeftMargin > 0)
+                _botPdf.SetLeftMargin(0);
+            else _botPdf.SetLeftMargin(ActualWidth / 6);
+            xLeftMargin.Margin = new Thickness(_botPdf.LeftMargin - 2.5, 0, 0, 0);
         }
     }
 }
