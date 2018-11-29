@@ -704,70 +704,39 @@ namespace Dash
             }
         }
 
-        private void XPrevOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var documentView in SelectedDocs)
-            {
-                var searchString = documentView.ViewModel.DocumentController
-                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
-                if (!searchString.Equals(xSearchBox.Text))
-                {
-                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
-                        xSearchBox.Text, true);
-                }
-            }
-
-            foreach (var documentView in SelectedDocs)
-            {
-                documentView.ViewModel.DocumentController.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, true, true);
-            }
-
-            //foreach (var documentView in SelectedDocs)
-            //{
-            //    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
-            //        xSearchBox.Text, true);
-            //}
-            //foreach (var documentView in SelectedDocs)
-            //{
-            //    var searchIndex =
-            //        documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -2;
-
-            //    documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey,
-            //        searchIndex, true);
-            //}
-        }
-
-        private void XNextOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            foreach (var documentView in SelectedDocs)
-            {
-                var searchString = documentView.ViewModel.DocumentController
-                    .GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
-                if (!searchString.Equals(xSearchBox.Text))
-                {
-                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
-                        xSearchBox.Text, true);
-                }
-            }
-
-            foreach (var documentView in SelectedDocs)
-            {
-                var searchIndex =
-                    documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -1;
-
-                documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey,
-                    searchIndex + 1, true);
-            }
-        }
-
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            XNextOccur_OnPointerPressed(sender, null);
-            //foreach (var documentView in SelectedDocs)
-            //{
-            //    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey,
-            //        sender.Text, true);
-            //}
+            if (!updateSearchString())
+            {
+                changeSearchIndex(1);
+            }
+        }
+        private void XPrevOccur_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            updateSearchString();
+            changeSearchIndex(-1);
+        }
+        private void changeSearchIndex(int change)
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchIndex = documentView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.SearchIndexKey)?.Data ?? -1;
+                documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey, Math.Max(0, searchIndex + change), true);
+            }
+        }
+
+        private bool updateSearchString()
+        {
+            foreach (var documentView in SelectedDocs)
+            {
+                var searchString = documentView.ViewModel.DocumentController.GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
+                if (!searchString.Equals(xSearchBox.Text))
+                {
+                    documentView.ViewModel.DocumentController.SetField<TextController>(KeyStore.SearchStringKey, xSearchBox.Text, true);
+                    return true;
+                }
+            }
+            return false;
         }
 
         // try dropping the Xaml style below onto the blue frame of one or more selected text documents:

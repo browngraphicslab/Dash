@@ -527,6 +527,7 @@ namespace Dash
         public void ClearSelection(bool hardReset = false)
         {
             CurrentAnchorableAnnotations.Clear();
+            _currRect = null;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
             XPreviewRect.Width = XPreviewRect.Height = 0;
@@ -648,7 +649,7 @@ namespace Dash
                 {
                     Width = ele.Bounds.Width,
                     Height = ele.Bounds.Height,
-                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x00, 0xFF, 0xFF))
                 };
                 Canvas.SetLeft(_currRect, ele.Bounds.Left);
                 Canvas.SetTop(_currRect, ele.Bounds.Top);
