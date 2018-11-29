@@ -6,15 +6,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Microsoft.Toolkit.Uwp.UI.Animations;
-using Windows.UI.Xaml.Data;
-using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Controllers;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -120,9 +114,7 @@ namespace Dash
             Loaded += (sender, args) =>
             {
                 var ele = (FrameworkElement)Window.Current.Content;
-                xFloating.ManipulateControlPosition(ele.ActualWidth - XDocumentView.ActualWidth,
-                    ele.ActualHeight - XDocumentView.ActualHeight,
-                    XDocumentView.ActualHeight, XDocumentView.ActualWidth);
+                xFloating.ManipulateControlPosition(318, 8, XDocumentView.ActualHeight, XDocumentView.ActualWidth);
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             };
         }
@@ -465,8 +457,6 @@ namespace Dash
                 XDocumentView.Visibility = Visibility.Visible;
                 XCollapseBox.Text = "\uE73F";
             }
-
-            Update(SelectionManager.GetSelectedDocs());
         }
     }
 }

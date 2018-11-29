@@ -28,8 +28,9 @@ namespace Dash
         public void SetVariable(string variableName, FieldControllerBase value)
         {
             Scope child = this;
-            while (!child.TryGetVariable(variableName, out var _) && child.Parent != null) { child = child.Parent; }
+            while (child != null && !child.HasLocalVariable(variableName)) { child = child.Parent; }
 
+            child = child ?? this;
             child.SetLocalVariable(variableName, value);
         }
 

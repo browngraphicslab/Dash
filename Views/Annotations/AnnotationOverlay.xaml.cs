@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,6 +23,9 @@ using static Dash.DataTransferTypeInfo;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Input;
+using DashShared;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
 
 namespace Dash
 {
@@ -287,15 +291,18 @@ namespace Dash
             return annotation;
         }
 
+        public List<DocumentController> AnnotationsToAdd = new List<DocumentController>();
 
-        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
+        private async void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {
             if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
                 switch (listArgs.ListAction)
                 {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
+                    AnnotationsToAdd.AddRange(listArgs.NewItems);
+                    //listArgs.NewItems.ForEach((reg) =>
+                    //    XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
                     XAnnotationCanvas.Children.OfType<RegionAnnotation>().ToList().ForEach((reg) =>
@@ -325,7 +332,7 @@ namespace Dash
 
         public static void LinkRegion(DocumentController sourceDoc, DocumentController targetDoc,
             double? sStartIndex = null, double? sEndIndex = null, double? tStartIndex = null, double? tEndIndex = null,
-            string linkTag = null)
+            string linkTag = null, string behavior = null)
         {
             Debug.Assert(sourceDoc.GetRegionDefinition() == null);
             var linkSource = sStartIndex is double sStart && sEndIndex is double sEnd
@@ -335,7 +342,7 @@ namespace Dash
                 ? createRegionDoc(targetDoc, tStart, tEnd)
                 : targetDoc;
 
-            linkSource.Link(linkTarget, LinkBehavior.Follow, linkTag);
+            linkSource.Link(linkTarget, Enum.TryParse(behavior, out LinkBehavior behaviorEnum) ? behaviorEnum : LinkBehavior.Annotate, linkTag);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -345,6 +352,32 @@ namespace Dash
                     region = new RichTextNote().Document;
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey)
                         .Add(new PointController(start, end));
+                    //for (var i = start; i <= end; i++)
+                    //{
+                    //    var dict = new Dictionary<KeyController, FieldControllerBase>
+                    //    {
+                    //        // store range
+                    //        {KeyStore.SelectionIndicesListKey, new PointController(start, end)},
+                    //        // store position
+                    //        {
+                    //            KeyStore.SelectionBoundsKey,
+                    //            new RectController(TextSelectableElements[i].Bounds)
+                    //        }
+                    //    };
+                    //    region.GetDataDocument()
+                    //        .AddToListField(KeyStore.SelectionBoundsKey,
+                    //            new DocumentController(dict, DocumentType.DefaultType));
+                    //    /*{
+                    //        // store range
+                    //        new PointController(StartIndex, EndIndex),
+                    //        // store position
+                    //        new PointController(ParentOverlay.TextSelectableElements[i].Bounds.X,
+                    //            ParentOverlay.TextSelectableElements[i].Bounds.Y),
+                    //        // store size
+                    //        new PointController(ParentOverlay.TextSelectableElements[i].Bounds.Width,
+                    //            ParentOverlay.TextSelectableElements[i].Bounds.Height)
+                    //    });*/
+                    //}
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
                     region.SetAnnotationType(AnnotationType.Selection);
@@ -363,7 +396,7 @@ namespace Dash
                 return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
                     var selInds = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                    return (selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
+                    return (selInds != null && selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
                                                    (int)endIndex == (int)selInds[0].Data.Y));
                 });
             }
@@ -494,6 +527,7 @@ namespace Dash
         public void ClearSelection(bool hardReset = false)
         {
             CurrentAnchorableAnnotations.Clear();
+            _currRect = null;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
             XPreviewRect.Width = XPreviewRect.Height = 0;
@@ -615,7 +649,7 @@ namespace Dash
                 {
                     Width = ele.Bounds.Width,
                     Height = ele.Bounds.Height,
-                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x00, 0xFF, 0xFF))
                 };
                 Canvas.SetLeft(_currRect, ele.Bounds.Left);
                 Canvas.SetTop(_currRect, ele.Bounds.Top);

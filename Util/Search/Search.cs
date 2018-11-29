@@ -176,7 +176,6 @@ namespace Dash
                 {
                     keyRefs.Add(result.Key.Name);
                     fieldRefs.Add(result.Value.RelatedString);
-
                 }
             }
 
@@ -197,14 +196,15 @@ namespace Dash
 
                 foreach (var node in nodes)
                 {
+                    if (node.ViewDocument == MainPage.Instance.MainDocument) continue;
                     DocSearch(node.ViewDocument);
                     DocSearch(node.DataDocument);
 
-
                     if (keyRefs.Any())
                     {
-                        results.Add(new SearchResult(node, keyRefs, fieldRefs,
-                            keyRefs.Count));
+                        var pathDocs = DocumentTree.GetPathsToDocuments(node.ViewDocument).FirstOrDefault();
+                        var path = DocumentTree.GetEscapedPath(pathDocs);
+                        results.Add(new SearchResult(node, keyRefs, fieldRefs, path, keyRefs.Count));
                     }
 
                     keyRefs.Clear();
@@ -224,7 +224,9 @@ namespace Dash
 
                     if (keyRefs.Any())
                     {
-                        results.Add(new SearchResult(documentController, keyRefs, fieldRefs,
+                        var pathDocs = DocumentTree.GetPathsToDocuments(documentController).FirstOrDefault();
+                        var path = DocumentTree.GetEscapedPath(pathDocs);
+                        results.Add(new SearchResult(documentController, keyRefs, fieldRefs, path,
                             keyRefs.Count));
                     }
 
@@ -268,7 +270,7 @@ namespace Dash
             var dataDoc = doc.GetDataDocument();
             var filteredNodes = DocumentTree.MainPageTree.GetAllNodes().Where(node => node.DataDocument.Equals(dataDoc));
             if (avoidDuplicateViews) filteredNodes = filteredNodes.Where(node => !node.ViewDocument.Equals(doc));
-            return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }));
+            return filteredNodes.Select(node => new SearchResult(node, new List<string>(), new List<string> { id }, DocumentTree.GetEscapedPath(DocumentTree.GetPathsToDocuments(node.ViewDocument).FirstOrDefault())));
         }
 
         public static DocumentController SearchIndividualById(string id) => RESTClient.Instance.Fields.GetController<DocumentController>(id);

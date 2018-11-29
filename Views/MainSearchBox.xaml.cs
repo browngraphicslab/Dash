@@ -231,19 +231,25 @@ namespace Dash
 
         #region Other Events
 
-        private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Grid_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
-            DocumentController docTapped = viewModel?.ViewDocument;
-
-            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Highlight);
+            if (!(sender is Grid outerGrid && outerGrid.DataContext is SearchResultViewModel srvm)) return;
+            var tip = new ToolTip()
+            {
+                Content = srvm.Path,
+                Placement = PlacementMode.Left,
+                VerticalOffset = 400
+            };
+            ToolTipService.SetToolTip(outerGrid, tip);
+            tip.IsOpen = true;
+            SplitFrame.HighlightDoc(srvm.ViewDocument, SplitFrame.HighlightMode.Highlight);
         }
 
-        private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Grid_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
-            DocumentController docTapped = viewModel?.ViewDocument;
-            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Unhighlight);
+            if (!(sender is Grid outerGrid && outerGrid.DataContext is SearchResultViewModel srvm)) return;
+            if (ToolTipService.GetToolTip(outerGrid) is ToolTip tip) tip.IsOpen = false;
+            SplitFrame.HighlightDoc(srvm.ViewDocument, SplitFrame.HighlightMode.Unhighlight);
         }
 
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
@@ -530,7 +536,7 @@ namespace Dash
                     }
                 }
 
-                SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
+                var newVm = DocumentSearchResultToViewModel(res);
 
                 // removing copies 
 
@@ -599,7 +605,7 @@ namespace Dash
             string suffix = len < docTitle.Length - 1 ? "..." : "";
             docTitle = docTitle.Substring(1, len) + suffix;
             var titles = result.FormattedKeyRef.Select(key => "Title:" + docTitle + ", Key:" + key).ToList();
-            var svm = new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, result.Node.Parent?.ViewDocument, true);
+            var svm = new SearchResultViewModel(result.Path, titles, result.RelevantText, result.ViewDocument, result.Node.Parent?.ViewDocument, true);
             return svm;
         }
 

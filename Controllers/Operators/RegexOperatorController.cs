@@ -71,7 +71,7 @@ namespace Dash
                     else
                     {
                         var key = KeyController.Get(group.Name);
-                        if (group.Name.Equals("0")) key = KeyController.Get("Full Match");
+                        if (group.Name.Equals("0")) key = KeyController.Get("FullMatch");
 
                         infoDoc.SetField<TextController>(key, group.Value.Trim(), true);
                     }

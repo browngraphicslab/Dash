@@ -195,6 +195,7 @@ namespace Dash
                 var maxZ = parentCanvas.Children.Aggregate(int.MinValue, (agg, val) => Math.Max(Canvas.GetZIndex(val), agg));
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
                 SetZLayer();
+                SetUpToolTips();
             };
 
             Unloaded += (sender, args) =>
@@ -253,6 +254,20 @@ namespace Dash
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
+        }
+
+        private void SetUpToolTips()
+        {
+            var text = ViewModel?.DocumentController?.GetField(KeyStore.ToolbarButtonNameKey);
+            if (!(text is TextController t)) return;
+
+            var label = new ToolTip()
+            {
+                Content = t.Data,
+                Placement = PlacementMode.Bottom,
+                VerticalOffset = 10
+            };
+            ToolTipService.SetToolTip(xMasterStack, label);
         }
 
         private void UpdateBindings()
@@ -662,7 +677,7 @@ namespace Dash
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    var args = new List<FieldControllerBase>() {ViewModel.DocumentController};
+                    var args = new List<FieldControllerBase> {ViewModel.DocumentController};
                     var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
                     foreach (var operatorController in scripts)
                     {
@@ -824,17 +839,19 @@ namespace Dash
 
         private void MenuFlyoutItemGetScript_Click(object o, RoutedEventArgs routedEventArgs)
         {
+            var dp = new DataPackage();
+            dp.SetText(GetScriptingRepresentation());
+            Clipboard.SetContent(dp);
+        }
+
+        private string GetScriptingRepresentation()
+        {
             var path = DocumentTree.GetPathsToDocuments(ViewModel.DocumentController).FirstOrDefault();
-            if (path == null)
-            {
-                return;
-            }
+            if (path == null) return "Invalid path";
 
             var pathString = DocumentTree.GetEscapedPath(path);
             var pathScript = $"d(\"{pathString.Replace(@"\", @"\\").Replace("\"", "\\\"")}\")";
-            DataPackage dp = new DataPackage();
-            dp.SetText(pathScript);
-            Clipboard.SetContent(dp);
+            return pathScript;
         }
 
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
@@ -1400,6 +1417,16 @@ namespace Dash
         private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
         {
             xMenuFlyout_Opening(sender, e);
+        }
+
+        private void MasterStackShowTooltip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = true;
+        }
+
+        private void MasterStackHideTooltip(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = false;
         }
     }
 }

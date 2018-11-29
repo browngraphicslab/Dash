@@ -10,8 +10,8 @@
     d:DesignWidth="800">
 
     <Grid>
-        <StackPanel Orientation="Horizontal" Background="{StaticResource DashDarkBlueBrush}" x:Name="xImageCommandbar" Height="40">
-            <ComboBox x:Name="xScaleOptionsDropdown" Style="{StaticResource ComboBoxStyler}" SelectionChanged="xScaleOptionsDropdown_SelectionChanged"  SelectedIndex="0" Width="200" Height="30" Margin="5 0 0 0" VerticalAlignment="Center" >
+        <StackPanel Orientation="Horizontal" Background="{StaticResource DashDarkDarkBlueBrush}" x:Name="xImageCommandbar" Height="40" Margin="0 -5 0 0">
+            <ComboBox x:Name="xScaleOptionsDropdown" Style="{StaticResource ComboBoxStyler}" SelectionChanged="xScaleOptionsDropdown_SelectionChanged"  SelectedIndex="0" Width="200" Height="28" Margin="5 2 0 0" VerticalAlignment="Center" >
                 <ComboBoxItem Content="None"/>
                 <ComboBoxItem Content="Fill"/>
                 <ComboBoxItem Content="Uniform"/>

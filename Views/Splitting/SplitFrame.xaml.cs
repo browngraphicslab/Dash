@@ -40,7 +40,7 @@ namespace Dash
 
                 OnActiveDocumentChanged(_activeFrame);
 
-                MainPage.Instance.xDocPathView.Document = (_activeFrame.DataContext as DocumentViewModel)?.LayoutDocument;
+                MainPage.Instance.XDocPathView.Document = (_activeFrame.DataContext as DocumentViewModel)?.LayoutDocument;
             }
         }
 
@@ -445,7 +445,7 @@ namespace Dash
         {
             ActiveDocumentChanged?.Invoke(frame);
             if (frame == ActiveFrame)
-            MainPage.Instance.xDocPathView.Document = (frame.DataContext as DocumentViewModel)?.DocumentController;
+            MainPage.Instance.XDocPathView.Document = (frame.DataContext as DocumentViewModel)?.DocumentController;
         }
 
         private readonly PointerEventHandler _pointerMoved;

@@ -53,6 +53,7 @@ namespace Dash
         private double            _scrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private DispatcherTimer   _scrollTimer;
         private AnnotationOverlay _annotationOverlay;
+        private double             _pageScaling => (xPdfGrid.ActualWidth + RightMargin + LeftMargin) / xPdfGrid.ActualWidth;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
         public DocumentController                 DataDocument => ViewModel?.DataDocument;
@@ -86,7 +87,6 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-        public bool                               CanSetAnnotationVisibilityOnScroll { get; set; }
         public bool                               ActiveView { get; set; }
 
         public PdfAnnotationView()
@@ -127,7 +127,7 @@ namespace Dash
             {
                 if (page++ >= pageNum)
                     break;
-                currOffset += (size.Height + 10) * pageScaling(size.Width);
+                currOffset += (size.Height + 10) * _pageScaling;
             }
 
             ScrollViewer.ChangeView(null, currOffset, 1);
@@ -141,76 +141,49 @@ namespace Dash
             int page = 1;
             foreach (var size in sizes)
             {
-                currOffset += size.Height * pageScaling(size.Width);
+                currOffset += size.Height * _pageScaling;
                 if (currOffset > ScrollViewer.VerticalOffset)
                     break;
-                currOffset += 10 * pageScaling(size.Width);
+                currOffset += 10 * _pageScaling;
                 page++;
             }
             return page;
         }
 
-        public void ScrollToPosition(double pos)
+        public void ScrollToPosition(double pos, bool center = true)
         {
-            var offset = pos * pageScaling(Pages.PageSizes.First().Width);
-            var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2) * pageScaling(Pages.PageSizes.First().Width),
-                0);
-
-            ScrollViewer.ChangeView(null, botOffset, null);
+            var offset = pos / _pageScaling * ActualWidth / (PdfMaxWidth - RightMargin - LeftMargin);
+            var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2), 0);
+            if (!double.IsNaN(botOffset))
+            {
+                ScrollViewer.ChangeView(null, Math.Max(botOffset, 0), null);
+            }
         }
         
         public double RightMargin { get; set; }
         public double LeftMargin { get; set; }
-        public void SetRightMargin(double margin)
+        public void   SetRightMargin(double margin)
         {
             if (Pages.PageSizes.Count > 0)
             {
                 xPdfGrid.Padding = new Thickness(0);
                 PdfMaxWidth -= RightMargin;
                 RightMargin = margin;
-                xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+                xPdfGrid.Padding = new Thickness(LeftMargin / _pageScaling, 0, RightMargin / _pageScaling, 0);
                 PdfMaxWidth += RightMargin;
-                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / pageScaling(Pages.PageSizes[0].Width) };
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / _pageScaling };
             }
         }
-        public void SetLeftMargin(double margin)
+        public void   SetLeftMargin(double margin)
         {
             if (Pages.PageSizes.Count > 0)
             {
-                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin / pageScaling(Pages.PageSizes[0].Width) };
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin / _pageScaling };
                 xPdfGrid.Padding = new Thickness(0);
                 PdfMaxWidth -= LeftMargin;
                 LeftMargin = margin;
-                xPdfGrid.Padding = new Thickness(LeftMargin / pageScaling(Pages.PageSizes[0].Width), 0, RightMargin / pageScaling(Pages.PageSizes[0].Width), 0);
+                xPdfGrid.Padding = new Thickness(LeftMargin / _pageScaling, 0, RightMargin / _pageScaling, 0);
                 PdfMaxWidth += LeftMargin;
-            }
-        }
-
-        public void SetAnnotationsVisibleOnScroll(bool? visibleOnScroll)
-        {
-            foreach (var annotation in AnnotationOverlay.XAnnotationCanvas.Children.OfType<AnchorableAnnotation>())
-            {
-                //get linked annotations
-                var regionDoc = (annotation.DataContext as AnchorableAnnotation.Selection)?.RegionDocument;
-                if (regionDoc != null)
-                {
-                    //bool for checking whether child is currently in view of scrollviewer
-                    var inView = annotation.IsInView(ScrollViewer.GetBoundingRect(annotation));
-
-                    foreach (var link in regionDoc.GetDataDocument().GetLinks(null))
-                    {
-                        bool pinned = link.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ??
-                                        !MainPage.Instance.xToolbar.xPdfToolbar.xAnnotationsVisibleOnScroll.IsChecked ?? false;
-                        if (visibleOnScroll.HasValue)
-                        {
-                            link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, visibleOnScroll.Value, true);
-                            pinned = visibleOnScroll.Value;
-                        }
-
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey, true) is DocumentController sourceDoc) sourceDoc.SetHidden(!pinned && !inView);
-                        if (link.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey, true) is DocumentController destDoc) destDoc.SetHidden(!pinned && !inView);
-                    }
-                }
             }
         }
 
@@ -456,15 +429,6 @@ namespace Dash
             Pages.Initialize();
         }
 
-
-        private async void Cvm_DocumentAdded(CollectionViewModel model, DocumentController added, Point where)
-        {
-            if (KeyStore.RegionCreator.TryGetValue(ViewModel.DocumentController.DocumentType, out KeyStore.MakeRegionFunc func))
-            {
-                (await GetRegionDocument(Util.PointTransformFromVisual(where, MainPage.Instance, AnnotationOverlay))).Link(added, LinkBehavior.Annotate);
-            }
-        }
-
         private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
         {
             _annotationOverlay?.TextSelectableElements?.Clear();
@@ -553,11 +517,6 @@ namespace Dash
                 _scrollTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
                 _scrollTimer.Start();
             }
-
-            if (CanSetAnnotationVisibilityOnScroll)
-            {
-                SetAnnotationsVisibleOnScroll(null);
-            }
         }
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -584,36 +543,30 @@ namespace Dash
         {
             PopForwardStack(_ForwardStack, _BackStack, ScrollViewer);
         }
-        private double pageScaling(double width)
-        {
-            return  ScrollViewer.ActualWidth  / xPdfGrid.ActualWidth;
-        }
+
         private void PagePrev()
         {
             var sizes = Pages.PageSizes;
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = pageScaling(size.Width);
-                if (currOffset + (size.Height + 10) * scale - ScrollViewer.VerticalOffset >= -1)
+                if (currOffset + (size.Height + 10) * _pageScaling - ScrollViewer.VerticalOffset >= -1)
                 {
                     break;
                 }
-                currOffset += (size.Height + 10) * scale;
+                currOffset += (size.Height + 10) * _pageScaling;
             }
 
             ScrollViewer.ChangeView(null, currOffset, 1);
             _BackStack.Push(currOffset / ScrollViewer.ExtentHeight);
         }
-
         private void PageNext()
         {
             var sizes      = Pages.PageSizes;
             var currOffset = 0.0;
             foreach (var size in sizes)
             {
-                var scale = pageScaling(size.Width);
-                currOffset += (size.Height + 10) * scale;
+                currOffset += (size.Height + 10) * _pageScaling;
                 if (currOffset - ScrollViewer.VerticalOffset > 1)
                 {
                     break;
@@ -659,7 +612,6 @@ namespace Dash
                 forwardstack.Push(pop);
             }
         }
-
         private void PopForwardStack(Stack<double> forwardstack, Stack<double> backstack, ScrollViewer viewer)
         {
             if (forwardstack.Any() && forwardstack.Peek() != double.NaN)

@@ -62,6 +62,7 @@
 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
                     <Grid 
+                        x:Name="xOuterGrid"
                         PointerEntered="Grid_PointerEntered" 
                         PointerExited="Grid_PointerExited" 
                         CanDrag="True" 

@@ -21,6 +21,7 @@ namespace Dash
         public string _BorderThickness = "0 0 0 0";
         public List<string> Titles { get; }
         public List<string> ContextualTexts { get; }
+        public string Path { get; }
         public DocumentController ViewDocument { get; }
         public DocumentController DocumentCollection { get; set; }
         public bool IsLikelyUsefulContextText { get; }
@@ -100,7 +101,7 @@ namespace Dash
             }
         }
 
-        public SearchResultViewModel(List<string> titles, List<string> contextualTexts, DocumentController viewDoc, DocumentController documentCollectionController, bool isLikelyUsefulContextText = false)
+        public SearchResultViewModel(string path, List<string> titles, List<string> contextualTexts, DocumentController viewDoc, DocumentController documentCollectionController, bool isLikelyUsefulContextText = false)
         {
             ContextualTexts = contextualTexts.Select(t => t.Replace("\r", " \\r ").Replace("\n", " \\n ").Replace("\t", " \\t ")).ToList();
             Titles = titles;
@@ -108,6 +109,7 @@ namespace Dash
             ViewDocument = viewDoc;
             DocumentCollection = documentCollectionController;
             IsLikelyUsefulContextText = isLikelyUsefulContextText;
+            Path = path;
 
             CurrentIndex = 0;
 

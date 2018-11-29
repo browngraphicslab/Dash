@@ -27,6 +27,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using MyToolkit.Multimedia;
 using Windows.Storage.Pickers;
+using Dash.Converters;
 using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 
@@ -294,9 +295,11 @@ namespace Dash
             
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
             MenuToolbar.Instance.xStackPanel.Children.Remove(MenuToolbar.Instance.xSubtoolbarStackPanel);
-            customTitleBar.Children.Add(MenuToolbar.Instance.xSubtoolbarStackPanel);
-            MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
-            MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
+            var subPanel = MenuToolbar.Instance.xSubtoolbarStackPanel;
+            customTitleBar.Children.Add(subPanel);
+            //subPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            //MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
+            //MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
         }
 
         private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,
@@ -355,6 +358,7 @@ namespace Dash
 </Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
             doc.SetField<TextController>(KeyStore.TitleKey, name, true);
+            doc.SetField<TextController>(KeyStore.ToolbarButtonNameKey, name, true);
             doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
 
             return doc;
@@ -362,7 +366,7 @@ namespace Dash
 
         private async Task InitToolbar(DocumentController toolbar)
         {
-            toolbar.SetBackgroundColor(Colors.SkyBlue);
+            toolbar.SetBackgroundColor(ColorConverter.HexToColor("#6DA8DE"));
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
 
             var buttons = new List<(string icon, string name, bool rotate, string function)>

@@ -213,14 +213,6 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xToggleAnnotations, _toggle);
 
-	        _scrollVis = new ToolTip()
-	        {
-		        Content = "Hide Annotations on Scroll",
-		        Placement = placementMode,
-		        VerticalOffset = offset
-	        };
-	        ToolTipService.SetToolTip(xAnnotationsVisibleOnScroll, _scrollVis);
-
 			_ink = new ToolTip()
             {
                 Content = "Ink Annotation",
@@ -258,26 +250,6 @@ namespace Dash
             if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
             else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
-
-	    private void XAnnotationsVisibleOnScroll_OnChecked(object sender, RoutedEventArgs e)
-	    {
-            if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
-            {
-                tip.Content = "Show All Annotations";
-            }
-
-            _currentPdfView?.SetAnnotationsVisibleOnScroll(false);
-	    }
-
-	    private void XAnnotationsVisibleOnScroll_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-	        if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
-            {
-                tip.Content = "Hide Annotations on Scroll";
-            }
-
-            _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
-	    }
 
         private void xToPageBox_GotFocus(object sender, RoutedEventArgs e)
         {
