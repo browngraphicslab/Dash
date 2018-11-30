@@ -53,7 +53,7 @@ namespace Dash
         private double            _scrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private DispatcherTimer   _scrollTimer;
         private AnnotationOverlay _annotationOverlay;
-        private double             _pageScaling => (xPdfGrid.ActualWidth + RightMargin + LeftMargin) / xPdfGrid.ActualWidth;
+        private double            _pageScaling => (xPdfGrid.ActualWidth + RightMargin + LeftMargin) / xPdfGrid.ActualWidth;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
         public DocumentController                 DataDocument => ViewModel?.DataDocument;
@@ -95,7 +95,6 @@ namespace Dash
             Pages = new DataVirtualizationSource(this, ScrollViewer, PageItemsControl);
 
             Loaded += PdfAnnotationView_Loaded;
-            Unloaded += PdfAnnotationView_Unloaded;
 
             _BackStack = new Stack<double>();
             _BackStack.Push(0);
@@ -133,7 +132,7 @@ namespace Dash
             ScrollViewer.ChangeView(null, currOffset, 1);
         }
 
-        public int PageNum()
+        public int    PageNum()
         {
             var sizes = Pages.PageSizes;
             var currOffset = 0.0;
@@ -149,8 +148,13 @@ namespace Dash
             }
             return page;
         }
-
-        public void ScrollToPosition(double pos, bool center = true)
+        public void   InitializeRegions(List<SelectableElement> textElements, List<int> pageEndIndices)
+        {
+            AnnotationOverlay.TextSelectableElements = textElements;
+            AnnotationOverlay.PageEndIndices = pageEndIndices;
+            AnnotationOverlay.InitializeRegions();
+         }
+        public void   ScrollToPosition(double pos, bool center = true)
         {
             var offset = pos / _pageScaling * ActualWidth / (PdfMaxWidth - RightMargin - LeftMargin);
             var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2), 0);
@@ -159,7 +163,15 @@ namespace Dash
                 ScrollViewer.ChangeView(null, Math.Max(botOffset, 0), null);
             }
         }
-        
+        public void   UpdateMatchedSearch(string searchString, int index)
+        {
+            AnnotationOverlay.ClearSelection();
+            ScrollToPosition(AnnotationOverlay.TextSelectableElements[index].Bounds.Top);
+            for (int j = 0; j < searchString.Length; j++)
+            {
+                AnnotationOverlay.SelectIndex(index + j, null, new SolidColorBrush(Windows.UI.Color.FromArgb(120, 0x00, 0xFF, 0xFF)));
+            }
+        }
         public double RightMargin { get; set; }
         public double LeftMargin { get; set; }
         public void   SetRightMargin(double margin)
@@ -229,44 +241,42 @@ namespace Dash
                     AnnotationOverlay.CurrentAnnotationType == AnnotationType.Region ? AnnotationType.Selection : AnnotationType.Region);
             if (!MainPage.Instance.IsShiftPressed())
             {
-                if (args.Key == VirtualKey.PageDown)
-                {
-                    PageNext();
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.PageUp)
-                {
-                    PagePrev();
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Down)
-                {
-                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset + 20, null);
-                    args.Handled = true;
-                }
-                else if (args.Key == VirtualKey.Up)
-                {
-                    ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset - 20, null);
-                    args.Handled = true;
+                switch (args.Key) {
+                    case VirtualKey.PageDown: PageNext();
+                                              args.Handled = true;
+                                              break;
+                    case VirtualKey.PageUp:   PagePrev();
+                                              args.Handled = true;
+                                              break;
+                    case VirtualKey.Down:     ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset + 20, null);
+                                              args.Handled = true;
+                                              break;
+                    case VirtualKey.Up:       ScrollViewer.ChangeView(null, ScrollViewer.VerticalOffset - 20, null);
+                                              args.Handled = true;
+                                              break;
                 }
             }
             if (this.IsCtrlPressed())
             {
-                var TextAnnos = AnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
+                var TextAnnos  = AnnotationOverlay.CurrentAnchorableAnnotations.OfType<TextAnnotation>();
                 var Selections = TextAnnos.Select(i => new KeyValuePair<int, int>(i.StartIndex, i.EndIndex));
-                var ClipRects = TextAnnos.Select(i => i.ClipRect);
-
+                var ClipRects  = TextAnnos.Select(i => i.ClipRect);
                 var selections = new List<List<SelRange>>
                 {
                     Selections.Zip(ClipRects, (map, clip) => new SelRange() {Range = map, ClipRect = clip}).ToList()
                 };
                 var allSelections = selections.SelectMany(s => s.ToList()).ToList();
+                if (args.Key == VirtualKey.F)
+                {
+                    MainPage.Instance.XDocumentDecorations.SetSearchBoxFocus();
+                    args.Handled = true;
+                }
                 if (args.Key == VirtualKey.C && allSelections.Count > 0 && allSelections.Last().Range.Key != -1)
                 {
                     Debug.Assert(allSelections.Last().Range.Value != -1);
                     Debug.Assert(allSelections.Last().Range.Value >= allSelections.Last().Range.Key);
-                    StringBuilder fontStringBuilder = new StringBuilder("\\fonttbl ");
-                    Dictionary<string, int> fontMap = new Dictionary<string, int>();
+                    var fontStringBuilder = new StringBuilder("\\fonttbl ");
+                    var fontMap = new Dictionary<string, int>();
                     int fontNum = 0;
                     foreach (var selection in allSelections)
                     {
@@ -410,10 +420,11 @@ namespace Dash
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
             Pages.ScrollViewerContentWidth = ActualWidth;
+            KeyDown -= PdfAnnotationView_KeyDown;
             KeyDown += PdfAnnotationView_KeyDown;
             if (AnnotationOverlay == null)
             {
-                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter, true);
                 xPdfGrid.Children.Add(AnnotationOverlay);
                 xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
@@ -422,16 +433,6 @@ namespace Dash
             {
                 Pages.Initialize();
             }
-        }
-
-        public void Bind()
-        {
-            Pages.Initialize();
-        }
-
-        private void PdfAnnotationView_Unloaded(object sender, RoutedEventArgs e)
-        {
-            _annotationOverlay?.TextSelectableElements?.Clear();
         }
 
         private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -503,7 +504,8 @@ namespace Dash
                 _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);
                 (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
                 (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
-            } else if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
+            }
+            else if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
             {
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.All;
             }
@@ -524,27 +526,7 @@ namespace Dash
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
         }
 
-        public void XNextPageButton_OnPointerPressed()
-        {
-            PageNext();
-        }
-
-        public void XPreviousPageButton_OnPointerPressed()
-        {
-            PagePrev();
-        }
-
-        public void XScrollBack_OnPointerPressed()
-        {
-            PopBackStack(_BackStack, _ForwardStack, ScrollViewer);
-        }
-
-        public void XScrollForward_OnPointerPressed()
-        {
-            PopForwardStack(_ForwardStack, _BackStack, ScrollViewer);
-        }
-
-        private void PagePrev()
+        public void PagePrev()
         {
             var sizes = Pages.PageSizes;
             var currOffset = 0.0;
@@ -560,7 +542,7 @@ namespace Dash
             ScrollViewer.ChangeView(null, currOffset, 1);
             _BackStack.Push(currOffset / ScrollViewer.ExtentHeight);
         }
-        private void PageNext()
+        public void PageNext()
         {
             var sizes      = Pages.PageSizes;
             var currOffset = 0.0;
@@ -593,32 +575,31 @@ namespace Dash
             }
         }
 
-        private void PopBackStack(Stack<double> backstack, Stack<double> forwardstack, ScrollViewer viewer)
+        public void PopBackStack()
         {
-            if (backstack.Any())
+            if (_BackStack.Any())
             {
-                var pop = backstack.Pop();
-                if (backstack.Count > 0 && !backstack.Peek().Equals(Double.NaN) &&
-                    !viewer.ExtentHeight.Equals(Double.NaN))
+                var pop = _BackStack.Pop();
+                if (_BackStack.Count > 0 && !_BackStack.Peek().Equals(double.NaN) &&
+                    !ScrollViewer.ExtentHeight.Equals(double.NaN))
                 {
-                    viewer.ChangeView(null, backstack.Peek() * viewer.ExtentHeight, 1);
+                    ScrollViewer.ChangeView(null, _BackStack.Peek() * ScrollViewer.ExtentHeight, 1);
                 }
                 else
                 {
-                    viewer.ChangeView(null, 0, 1);
+                    ScrollViewer.ChangeView(null, 0, 1);
                 }
-
-                //viewer.ChangeView(null, backstack.Any() ? backstack.Peek() * viewer.ExtentHeight : 0, 1);
-                forwardstack.Push(pop);
+                
+                _ForwardStack.Push(pop);
             }
         }
-        private void PopForwardStack(Stack<double> forwardstack, Stack<double> backstack, ScrollViewer viewer)
+        public void PopForwardStack()
         {
-            if (forwardstack.Any() && forwardstack.Peek() != double.NaN)
+            if (_ForwardStack.Any() && _ForwardStack.Peek() != double.NaN)
             {
-                var pop = forwardstack.Pop();
-                viewer.ChangeView(null, forwardstack.Any() ? pop * viewer.ExtentHeight : 0, 1);
-                backstack.Push(pop);
+                var pop = _ForwardStack.Pop();
+                ScrollViewer.ChangeView(null, _ForwardStack.Any() ? pop * ScrollViewer.ExtentHeight : 0, 1);
+                _BackStack.Push(pop);
             }
         }
 

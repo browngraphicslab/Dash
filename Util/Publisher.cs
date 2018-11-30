@@ -1000,21 +1000,8 @@ namespace Dash
 			var file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
 			var pdfDocument = new PdfDocument(reader);
-			var strategy = new BoundsExtractionStrategy();
+			var strategy = new BoundsExtractionStrategy(pdfDocument);
 			var processor = new PdfCanvasProcessor(strategy);
-			double offset = 0;
-
-			await Task.Run(() =>
-			{
-				for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-				{
-					var page = pdfDocument.GetPage(i);
-					var size = page.GetPageSize();
-					strategy.SetPage(i - 1, offset, size, page.GetRotation());
-					offset += page.GetPageSize().GetHeight() + 10;
-					processor.ProcessPageContent(page);
-				}
-			});
 
 			var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
 			_pdfSelectableElements[dc] = selectableElements.elements;

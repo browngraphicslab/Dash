@@ -274,21 +274,6 @@ namespace Dash
             xURISource.Visibility  = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
             xScrollNavStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
             xPageButtonStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
-
-            showPDFControls = false;
-            foreach (var doc in _selectedDocs)
-            {
-                if (doc.GetFirstDescendantOfType<PdfView>() != null)
-                {
-                    showPDFControls = true;
-                }
-            }
-
-            if (_selectedDocs.Count > 1 || _selectedDocs.Select(v => v.ViewModel.DocumentController).Contains(MainPage.Instance.MainDocument))
-            {
-                showPDFControls = false;
-            }
-
             xSearchStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
 
             ResizerVisibilityState = _selectedDocs.FirstOrDefault() != null && _selectedDocs.First().ViewModel?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
@@ -315,6 +300,11 @@ namespace Dash
                 ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
                 ContentRow.Height = new GridLength(botRight.Y - topLeft.Y);
             }
+        }
+
+        public void SetSearchBoxFocus()
+        {
+            this.xSearchBox.Focus(FocusState.Programmatic);
         }
 
         //adds a button for a link type to appear underneath the link button

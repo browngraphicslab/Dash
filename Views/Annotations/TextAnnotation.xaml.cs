@@ -152,7 +152,7 @@ namespace Dash
             }
             var indexList = RegionDocumentController.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
             var boundsList =
-                RegionDocumentController.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(
+                RegionDocumentController.GetDataDocument().GetFieldOrCreateDefault<ListController<RectController>>(
                     KeyStore.SelectionBoundsKey);
 
             if (indexList.Any() && boundsList.Any() && _selectionViewModel != null)
@@ -160,16 +160,13 @@ namespace Dash
                 var geometryGroup = new GeometryGroup();
                 var topLeft = new Point(double.MaxValue, double.MaxValue);
                 RectangleGeometry lastRect = null;
+                int start = 0;
                 foreach (var t in indexList)
                 {
                     var range = t.Data;
-                    var bounds = boundsList.Where(b =>
-                        b.GetField<PointController>(KeyStore.SelectionIndicesListKey).Data.X == range.X &&
-                        b.GetField<PointController>(KeyStore.SelectionIndicesListKey).Data.Y == range.Y).ToList();
-                    //var bounds = boundsList.Where(b => b.First().Data.X == range.X && b.First().Data.Y == range.Y).ToList();
                     for (var ind = (int)range.X; ind <= (int)range.Y; ind++)
                     {
-                        var rect = bounds[(int) (ind - range.X)].GetField<RectController>(KeyStore.SelectionBoundsKey).Data;
+                        var rect  = boundsList[start++].Data;
                         topLeft.X = Math.Min(topLeft.X, rect.X);
                         topLeft.Y = Math.Min(topLeft.Y, rect.Y);
                         if (lastRect != null && Math.Abs(lastRect.Rect.Right - rect.X) < 7 && Math.Abs(lastRect.Rect.Y - rect.Y) < 2) // bcz: watch out for magic numbers-- should probably be based on font size 
@@ -197,91 +194,41 @@ namespace Dash
 
         public override double AddToRegion(DocumentController region)
         {
-            var prevUsedIndex = -1;
-            var prevStartIndex = StartIndex;
-            for (var i = StartIndex; i <= EndIndex; i++)
+            if (ClipRect != Rect.Empty)
             {
-                var elem = ParentOverlay.TextSelectableElements[i];
-                if (ClipRect.Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2,
-                    elem.Bounds.Y + elem.Bounds.Height / 2)))
+                var prevUsedIndex = StartIndex - 1;
+                var prevStartIndex = StartIndex;
+                for (var i = StartIndex; i <= EndIndex; i++)
                 {
-                    if (i != prevUsedIndex + 1)
+                    var elem = ParentOverlay.TextSelectableElements[i];
+                    if (ClipRect.Contains(new Point(elem.Bounds.X + elem.Bounds.Width / 2, elem.Bounds.Y + elem.Bounds.Height / 2)))
                     {
-                        region.AddToListField(KeyStore.SelectionIndicesListKey,
-                            new PointController(prevStartIndex, prevUsedIndex));
-                        region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey,
-                            new PointController(prevStartIndex, prevUsedIndex));
-                        //region.GetDataDocument()
-                        //    .AddToListField(KeyStore.SelectionBoundsKey,
-                        //        new ListController<PointController>
-                        //        {
-                        //            // store range
-                        //            new PointController(StartIndex, EndIndex),
-                        //            // store position
-                        //            new PointController(elem.Bounds.X,
-                        //                elem.Bounds.Y),
-                        //            // store size
-                        //            new PointController(elem.Bounds.Width,
-                        //                elem.Bounds.Height)
-                        //        });
-
-                        prevStartIndex = i;
-                    }
-
-                    var dict = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        // store range
-                        {KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex)},
-                        // store position
+                        if (i != prevUsedIndex + 1)
                         {
-                            KeyStore.SelectionBoundsKey,
-                            new RectController(ParentOverlay.TextSelectableElements[i].Bounds)
+                            region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(prevStartIndex, prevUsedIndex));
+                            prevStartIndex = i;
                         }
-                    };
-                    region.GetDataDocument()
-                        .AddToListField(KeyStore.SelectionBoundsKey,
-                            new DocumentController(dict, DocumentType.DefaultType));
 
-                    prevUsedIndex = i;
+                        region.GetDataDocument()
+                            .AddToListField(KeyStore.SelectionBoundsKey,
+                                new RectController(ParentOverlay.TextSelectableElements[i].Bounds));
 
-                    YPos = ClipRect.Y;
-                    XPos = ClipRect.X;
+                        prevUsedIndex = i;
+                        YPos = ClipRect.Y;
+                        XPos = ClipRect.X;
+                    }
                 }
-                else if (ClipRect == Rect.Empty)
-                {
-                    break;
-                }
-            }
-
-            if (ClipRect == Rect.Empty)
+                region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(prevStartIndex, prevUsedIndex));
+            } 
+            else
             {
                 region.AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
                 region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
                 for (var i = StartIndex; i <= EndIndex; i++)
                 {
-                    var dict = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        // store range
-                        {KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex)},
-                        // store position
-                        {
-                            KeyStore.SelectionBoundsKey,
-                            new RectController(ParentOverlay.TextSelectableElements[i].Bounds)
-                        }
-                    };
                     region.GetDataDocument()
                         .AddToListField(KeyStore.SelectionBoundsKey,
-                            new DocumentController(dict, DocumentType.DefaultType));
-                    /*{
-                        // store range
-                        new PointController(StartIndex, EndIndex),
-                        // store position
-                        new PointController(ParentOverlay.TextSelectableElements[i].Bounds.X,
-                            ParentOverlay.TextSelectableElements[i].Bounds.Y),
-                        // store size
-                        new PointController(ParentOverlay.TextSelectableElements[i].Bounds.Width,
-                            ParentOverlay.TextSelectableElements[i].Bounds.Height)
-                    });*/
+                            new RectController(ParentOverlay.TextSelectableElements[i].Bounds));
                 }
             }
 
@@ -290,7 +237,7 @@ namespace Dash
             return YPos;
         }
 
-        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
         private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())

@@ -58,10 +58,10 @@ namespace Dash
                 XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
 
-                //_annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
-                //_annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
-                //XAnnotationGrid.Children.Add(_annotationOverlay);
-                //XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+                XAnnotationGrid.Children.Add(_annotationOverlay);
+                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
 
             Loaded += EditableImage_Loaded;

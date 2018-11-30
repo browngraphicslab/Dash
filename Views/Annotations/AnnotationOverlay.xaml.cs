@@ -33,7 +33,8 @@ namespace Dash
     {
         private InkController _inkController;
         private AnnotationType _currAnnotationType = AnnotationType.None;
-        private bool _maskInkUpdates = false;
+        private bool           _maskInkUpdates = false;
+        private bool           _regionsInitialized =false;
         [CanBeNull] private AnchorableAnnotation _currentAnnotation;
 
 
@@ -68,7 +69,7 @@ namespace Dash
         private InkCanvas XInkCanvas { get; }
 
         public AnnotationOverlayEmbeddings AnnotationOverlayEmbeddings { get; set; }
-        public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
+        public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion, bool delayLoadingRegions=false)
         {
             InitializeComponent();
 
@@ -93,26 +94,42 @@ namespace Dash
             _inkController = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
             MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.InkDataKey, (view, controller, arge) => view.inkController_FieldModelUpdated(controller, arge));
             MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.RegionsKey, (view, controller, arge) => view.regionDocsListOnFieldModelUpdated(controller, arge));
-            regionDocsListOnFieldModelUpdated(null,
-                new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Update, null,
-              new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, RegionDocsList.ToList(), new List<DocumentController>(), 0), false));
-        }
-
-        public class CursorConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, string language)
+            if (!delayLoadingRegions)
             {
-                switch ((AnnotationType)value)
-                {
-                case AnnotationType.Selection: return CoreCursorType.IBeam;
-                case AnnotationType.Region: return CoreCursorType.Cross;
-                }
-                return CoreCursorType.Arrow;
+                InitializeRegions();
             }
-
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
+        }
+        public void InitializeRegions()
+        {
+            _regionsInitialized = true;
+            AddRegions(RegionDocsList, false);
+        }
+        public void RemoveRegions(IEnumerable<DocumentController> oldItems)
+        {
+            XAnnotationCanvas.Children.OfType<RegionAnnotation>().Where((reg) => oldItems.Contains(reg.RegionDocumentController)).
+                ToList().ForEach((reg) => XAnnotationCanvas.Children.Remove(reg));
+        }
+        public void AddRegions(IEnumerable<DocumentController> newItems, bool updateDocument=true)
+        {
+            if (_regionsInitialized)
             {
-                throw new NotImplementedException();
+                foreach (var anno in newItems)
+                {
+                    if (updateDocument)
+                    {
+                        var listField = anno.GetDataDocument().GetDereferencedField<ListController<RectController>>(KeyStore.SelectionBoundsKey, null)?.ToList() ?? new List<RectController>();
+                        if (!listField.Any())
+                        {
+                            var range = anno.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey)?.FirstOrDefault()?.Data ?? new Point(0, -1);
+                            for (var i = range.X; i <= range.Y; i++)
+                            {
+                                listField.Add(new RectController(TextSelectableElements[(int)i].Bounds));
+                            }
+                            anno.GetDataDocument().SetField<ListController<RectController>>(KeyStore.SelectionBoundsKey, listField, true);
+                        }
+                    }
+                    XAnnotationCanvas.Children.Add(anno.CreateAnnotationAnchor(this));
+                }
             }
         }
 
@@ -126,6 +143,7 @@ namespace Dash
             var deselect = SelectedRegion?.IsSelected == true;
             var selectable = SelectableRegions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
             foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
+            {
                 foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
                 {
                     if (nvo.SelectedRegion != null)
@@ -138,6 +156,7 @@ namespace Dash
 
                     documentView.ViewModel?.SetHighlight(!deselect);
                 }
+            }
         }
         public void DeselectRegion()
         {
@@ -293,24 +312,18 @@ namespace Dash
 
         public List<DocumentController> AnnotationsToAdd = new List<DocumentController>();
 
-        private async void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
+        private void regionDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {
             if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
                 switch (listArgs.ListAction)
                 {
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    AnnotationsToAdd.AddRange(listArgs.NewItems);
-                    //listArgs.NewItems.ForEach((reg) =>
-                    //    XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    XAnnotationCanvas.Children.OfType<RegionAnnotation>().ToList().ForEach((reg) =>
-                    {
-                        if (listArgs.OldItems.Contains(reg.RegionDocumentController))
-                            XAnnotationCanvas.Children.Remove(reg);
-                    });
-                    break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                        AddRegions(listArgs.NewItems);
+                        break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                        RemoveRegions(listArgs.OldItems);
+                        break;
                 }
             }
         }
@@ -629,8 +642,9 @@ namespace Dash
 
         private Rectangle _currRect;
 
-        public void SelectIndex(int index, Rect? clipRect = null)
+        public void SelectIndex(int index, Rect? clipRect = null, Brush highlightBrush = null)
         {
+            highlightBrush = highlightBrush ?? new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
             var ele = TextSelectableElements[index];
             var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
             var clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
@@ -649,7 +663,7 @@ namespace Dash
                 {
                     Width = ele.Bounds.Width,
                     Height = ele.Bounds.Height,
-                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x00, 0xFF, 0xFF))
+                    Fill = highlightBrush
                 };
                 Canvas.SetLeft(_currRect, ele.Bounds.Left);
                 Canvas.SetTop(_currRect, ele.Bounds.Top);
@@ -694,7 +708,7 @@ namespace Dash
                 {
                     Width = ele.Bounds.Width,
                     Height = ele.Bounds.Height,
-                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                    Fill = highlightBrush
                 };
                 Canvas.SetLeft(_currRect, ele.Bounds.Left);
                 Canvas.SetTop(_currRect, ele.Bounds.Top);
