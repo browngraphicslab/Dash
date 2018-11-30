@@ -176,26 +176,24 @@ namespace Dash
         public double LeftMargin { get; set; }
         public void   SetRightMargin(double margin)
         {
-            if (Pages.PageSizes.Count > 0)
-            {
-                xPdfGrid.Padding = new Thickness(0);
-                PdfMaxWidth -= RightMargin;
-                RightMargin = margin;
-                xPdfGrid.Padding = new Thickness(LeftMargin / _pageScaling, 0, RightMargin / _pageScaling, 0);
-                PdfMaxWidth += RightMargin;
-                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / _pageScaling };
-            }
+            PdfMaxWidth += margin - RightMargin;
+            RightMargin = margin;
+            UpdateMargins();
         }
+
         public void   SetLeftMargin(double margin)
         {
-            if (Pages.PageSizes.Count > 0)
+            PdfMaxWidth += margin - LeftMargin;
+            LeftMargin = margin;
+            UpdateMargins();
+        }
+        public void UpdateMargins()
+        {
+            if (Pages.PageSizes.Count() > 0 && ScrollViewer.ExtentHeight > 0)
             {
-                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = margin / _pageScaling };
-                xPdfGrid.Padding = new Thickness(0);
-                PdfMaxWidth -= LeftMargin;
-                LeftMargin = margin;
-                xPdfGrid.Padding = new Thickness(LeftMargin / _pageScaling, 0, RightMargin / _pageScaling, 0);
-                PdfMaxWidth += LeftMargin;
+                var viewboxScaling = PdfTotalHeight / ScrollViewer.ExtentHeight;
+                xPdfGrid.Padding = new Thickness(LeftMargin * viewboxScaling, 0, RightMargin * viewboxScaling, 0);
+                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin * viewboxScaling };
             }
         }
 

@@ -498,6 +498,8 @@ namespace Dash
             xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
             _topPdf.SetRightMargin(margin);
+
+            HackToFixMargins();
         }
         private void xRightMarginPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -506,11 +508,10 @@ namespace Dash
         }
         private void xRightMargin_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_botPdf.RightMargin > 0)
-                _botPdf.SetRightMargin(0);
-            else _botPdf.SetRightMargin(ActualWidth / 6);
+            _botPdf.SetRightMargin(_botPdf.RightMargin > 0 ? 0 : ActualWidth / 6);
             _topPdf.SetRightMargin(_botPdf.RightMargin);
             xRightMargin.Margin = new Thickness(0, 0, _botPdf.RightMargin - 2.5, 0);
+            HackToFixMargins();
         }
 
         private void xLeftMarginPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -525,6 +526,8 @@ namespace Dash
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
             _topPdf.SetLeftMargin(margin);
+
+            HackToFixMargins();
         }
         private void xLeftMarginPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -533,11 +536,21 @@ namespace Dash
         }
         private void xLeftMargin_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_botPdf.LeftMargin > 0)
-                _botPdf.SetLeftMargin(0);
-            else _botPdf.SetLeftMargin(ActualWidth / 6);
+            _botPdf.SetLeftMargin(_botPdf.LeftMargin > 0 ? 0 : ActualWidth / 6);
             _topPdf.SetLeftMargin(_botPdf.LeftMargin);
             xLeftMargin.Margin = new Thickness(_botPdf.LeftMargin - 2.5, 0, 0, 0);
+
+            HackToFixMargins();
+        }
+        
+        private void HackToFixMargins()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                UpdateLayout(); // bcz: need to figure out what's making things take multiple updates to get back in synch => Calculate what ScrollViewer.ExtentHeight will be...
+                _botPdf.UpdateMargins();
+                _topPdf.UpdateMargins();
+            }
         }
     }
 }
