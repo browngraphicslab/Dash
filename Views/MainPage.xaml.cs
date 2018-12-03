@@ -1164,7 +1164,7 @@ function (d) {
                 } else
                 {
                     onScreenView.ViewModel.SetHighlight(false);
-                    onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegion());
+                    onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegions());
                 }
             }
             else

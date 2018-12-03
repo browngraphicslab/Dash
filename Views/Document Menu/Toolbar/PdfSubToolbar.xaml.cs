@@ -26,14 +26,14 @@ namespace Dash
         private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
             // xPdfCommandbar.IsOpen = true;
-            _currentPdfView?.ShowRegions();
+            _currentPdfView?.SetRegionVisibility(Visibility.Visible);
             xToggleAnnotations.Label = "Visible";
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
             // xPdfCommandbar.IsOpen = true;
-            _currentPdfView?.HideRegions();
+            _currentPdfView?.SetRegionVisibility(Visibility.Collapsed);
             xToggleAnnotations.Label = "Hidden";
 	    }
 
@@ -48,7 +48,7 @@ namespace Dash
 
             if (_currentPdfView == null)
                 return;
-            xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible();
+            xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible;
 
             //update selected annotation type according to this newly selected PDF
             switch (_currentPdfView.CurrentAnnotationType)
@@ -253,7 +253,7 @@ namespace Dash
 
         private void xToPageBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            xToPageBox.Text = _currentPdfView.PageNum().ToString();
+            xToPageBox.Text = _currentPdfView.PageNum.ToString();
         }
     }
 

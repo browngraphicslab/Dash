@@ -135,45 +135,30 @@ namespace Dash
 
         public void SelectRegion(DocumentController region)
         {
-            var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (documentView == null)
-                return;
-            documentView.Visibility = Visibility.Visible;
-
-            var deselect = SelectedRegion?.IsSelected == true;
-            var selectable = SelectableRegions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
-            foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
+            DeselectRegions();
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            if (docView != null)
             {
-                foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
+                docView.Visibility = Visibility.Visible;
+                foreach (var nvo in docView.GetDescendantsOfType<AnnotationOverlay>())
                 {
-                    if (nvo.SelectedRegion != null)
-                        nvo.SelectedRegion.IsSelected = false;
-                    nvo.SelectedRegion = deselect ? null : r;
-                    if (!deselect)
+                    foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(region)))
                     {
+                        nvo.SelectedRegion = r;
                         r.IsSelected = true;
                     }
-
-                    documentView.ViewModel?.SetHighlight(!deselect);
                 }
             }
         }
-        public void DeselectRegion()
+        public void DeselectRegions()
         {
-            var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            var selectedRegion = SelectedRegion;
-            if (selectedRegion != null)
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            if (docView != null)
             {
-                foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
+                foreach (var nvo in docView.GetDescendantsOfType<AnnotationOverlay>().Where((a) => a.SelectedRegion != null))
                 {
-                    foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
-                    {
-                        if (nvo.SelectedRegion != null)
-                        {
-                            nvo.SelectedRegion.IsSelected = false;
-                            nvo.SelectedRegion = null;
-                        }
-                    }
+                    nvo.SelectedRegion.IsSelected = false;
+                    nvo.SelectedRegion = null;
                 }
             }
         }
@@ -475,7 +460,7 @@ namespace Dash
             {
                 _currentAnnotation.EndAnnotation(p);
                 _currentAnnotation = null;
-                DeselectRegion();
+                DeselectRegions();
             }
         }
 

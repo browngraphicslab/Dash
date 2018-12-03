@@ -23,8 +23,8 @@
         </Grid>
 
         <Grid x:Name="xTopPdfGrid" Grid.Row="0" >
-            <local:PdfAnnotationView x:Name="_topPdf"/>
-        </Grid>
+            <local:PdfAnnotationView x:Name="_topPdf" Visibility="Collapsed"/>
+        </Grid> 
 
         <controls:GridSplitter x:Name="xPdfDivider" Tapped="xPdfDivider_Tapped"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Height="0" MinHeight="0" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows" HorizontalAlignment="Left" 
                                ManipulationStarted="XPdfDivider_OnManipulationStarted" ManipulationDelta="XPdfDivider_OnManipulationDelta" ManipulationCompleted="XPdfDivider_OnManipulationCompleted" PointerPressed="XPdfDivider_OnPointerPressed">

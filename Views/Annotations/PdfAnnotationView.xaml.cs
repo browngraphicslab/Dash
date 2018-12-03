@@ -34,60 +34,33 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
-    public sealed partial class PdfAnnotationView : UserControl, INotifyPropertyChanged
+    public sealed partial class PdfAnnotationView : UserControl
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        public event EventHandler DocumentLoaded;
         private class SelRange
         {
             public KeyValuePair<int, int> Range;
             public Rect ClipRect;
         }
-        public void OnDocumentLoaded(DocumentController layoutDocument) { DocumentLoaded?.Invoke(layoutDocument, new EventArgs()); }
-        private ObservableCollection<DocumentView> _annotationList = new ObservableCollection<DocumentView>();
+        public const double       InterPageSpacing = 10;
         private Stack<double>     _BackStack;
         private Stack<double>     _ForwardStack;
-        private double            _pdfMaxWidth = -1;
-        private double            _pdfTotalHeight;
         private Point             _downPt = new Point();
         private double            _scrollRatio;// ScrollViewers don't deal well with being resized so we have to manually track the scroll ratio and restore it on SizeChanged
         private DispatcherTimer   _scrollTimer;
         private AnnotationOverlay _annotationOverlay;
-        private double            _pageScaling => (xPdfGrid.ActualWidth + RightMargin + LeftMargin) / xPdfGrid.ActualWidth;
+        private double            _leftMargin, _rightMargin;
+        private double            viewboxScaling => (ActualWidth - RightMargin - LeftMargin) / PdfMaxWidth;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
         public DocumentController                 DataDocument => ViewModel?.DataDocument;
         public DocumentController                 LayoutDocument => ViewModel?.LayoutDocument;
         public DataVirtualizationSource           Pages { get; set; }
         public WPdf.PdfDocument                   PDFdoc { get; set; }
-        public ObservableCollection<DocumentView> Annotations
-        {
-            get => _annotationList;
-            set
-            {
-                _annotationList = value;
-                OnPropertyChanged();
-            }
-        }
-        public double                             PdfMaxWidth
-        {
-            get => _pdfMaxWidth;
-            set
-            {
-                _pdfMaxWidth = value;
-                OnPropertyChanged();
-            }
-        }
-        public double                             PdfTotalHeight
-        {
-            get => _pdfTotalHeight;
-            set
-            {
-                _pdfTotalHeight = value;
-                OnPropertyChanged();
-            }
-        }
+        public double                             PdfMaxWidth { get; set; } = 1;
+        public double                             PdfTotalHeight{ get; set; }
         public bool                               ActiveView { get; set; }
+        public double                             RightMargin { get => _rightMargin; set { _rightMargin = value; UpdateMargins(); } }
+        public double                             LeftMargin { get => _leftMargin; set { _leftMargin = value; UpdateMargins(); } }
 
         public PdfAnnotationView()
         {
@@ -97,8 +70,8 @@ namespace Dash
             Loaded += PdfAnnotationView_Loaded;
 
             _BackStack = new Stack<double>();
-            _BackStack.Push(0);
             _ForwardStack = new Stack<double>();
+            _ForwardStack.Push(0);
 
             ScrollViewer.ViewChanged += ScrollViewer_ViewChanged;
 
@@ -106,7 +79,13 @@ namespace Dash
             _scrollTimer.Tick += (s, e) =>
             {
                 _scrollTimer.Stop();
-                AddToStack(_BackStack, ScrollViewer);
+                var offset = ScrollViewer.VerticalOffset / ScrollViewer.ExtentHeight;
+                if (_ForwardStack.Peek() != offset)
+                {
+                    AddToStack(_BackStack, _ForwardStack.Pop());
+                    _ForwardStack.Clear();
+                    AddToStack(_ForwardStack, offset);
+                }
             };
             PointerEntered += (s, e) => ActiveView = true;
             PointerExited += (s, e) => ActiveView = false;
@@ -116,37 +95,27 @@ namespace Dash
         {
             Debug.WriteLine("FINALIZING PdfAnnotationView");
         }
-        public void GoToPage(double pageNum)
+
+        public void   GoToPage(double pageNum)
         {
-            var sizes = Pages.PageSizes;
             var currOffset = 0.0;
-
-            int page = 1;
-            foreach (var size in sizes)
-            {
-                if (page++ >= pageNum)
-                    break;
-                currOffset += (size.Height + 10) * _pageScaling;
+            for (int page = 0; page < pageNum-1; page++) { 
+                currOffset += Pages.PageSizes[page].Height + InterPageSpacing;
             }
-
-            ScrollViewer.ChangeView(null, currOffset, 1);
+            ScrollViewer.ChangeView(null, currOffset * viewboxScaling, 1);
         }
-
         public int    PageNum()
         {
-            var sizes = Pages.PageSizes;
             var currOffset = 0.0;
-
-            int page = 1;
-            foreach (var size in sizes)
+            for (int page = 0; page < Pages.PageSizes.Count; page++)
             {
-                currOffset += size.Height * _pageScaling;
-                if (currOffset > ScrollViewer.VerticalOffset)
-                    break;
-                currOffset += 10 * _pageScaling;
-                page++;
+                if (currOffset > ScrollViewer.VerticalOffset + ScrollViewer.ActualHeight/2)
+                {
+                    return page;
+                }
+                currOffset += Pages.PageSizes[page].Height * viewboxScaling + InterPageSpacing * viewboxScaling;
             }
-            return page;
+            return Pages.PageSizes.Count;
         }
         public void   InitializeRegions(List<SelectableElement> textElements, List<int> pageEndIndices)
         {
@@ -156,12 +125,8 @@ namespace Dash
          }
         public void   ScrollToPosition(double pos, bool center = true)
         {
-            var offset = pos / _pageScaling * ActualWidth / (PdfMaxWidth - RightMargin - LeftMargin);
-            var botOffset = Math.Max(offset - (ScrollViewer.ViewportHeight / 2), 0);
-            if (!double.IsNaN(botOffset))
-            {
-                ScrollViewer.ChangeView(null, Math.Max(botOffset, 0), null);
-            }
+            var offset = Math.Max(pos * viewboxScaling - ScrollViewer.ViewportHeight / 2, 0);
+            ScrollViewer.ChangeView(null, Math.Max(offset, 0), null);
         }
         public void   UpdateMatchedSearch(string searchString, int index)
         {
@@ -172,31 +137,30 @@ namespace Dash
                 AnnotationOverlay.SelectIndex(index + j, null, new SolidColorBrush(Windows.UI.Color.FromArgb(120, 0x00, 0xFF, 0xFF)));
             }
         }
-        public double RightMargin { get; set; }
-        public double LeftMargin { get; set; }
-        public void   SetRightMargin(double margin)
+        public void   PopBackStack()
         {
-            PdfMaxWidth += margin - RightMargin;
-            RightMargin = margin;
-            UpdateMargins();
-        }
-
-        public void   SetLeftMargin(double margin)
-        {
-            PdfMaxWidth += margin - LeftMargin;
-            LeftMargin = margin;
-            UpdateMargins();
-        }
-        public void UpdateMargins()
-        {
-            if (Pages.PageSizes.Count() > 0 && ScrollViewer.ExtentHeight > 0)
+            if (_BackStack.Any())
             {
-                var viewboxScaling = PdfTotalHeight / ScrollViewer.ExtentHeight;
-                xPdfGrid.Padding = new Thickness(LeftMargin * viewboxScaling, 0, RightMargin * viewboxScaling, 0);
-                xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin * viewboxScaling };
+                var pop = _BackStack.Pop();
+                ScrollViewer.ChangeView(null, pop * ScrollViewer.ExtentHeight, 1);
+                AddToStack(_ForwardStack, pop);
             }
         }
-
+        public void   PopForwardStack()
+        {
+            if (_ForwardStack.Count > 1)
+            {
+                AddToStack(_BackStack, _ForwardStack.Pop());
+                ScrollViewer.ChangeView(null, _ForwardStack.Peek() * ScrollViewer.ExtentHeight, 1);
+            }
+        }
+        public void   PagePrev() { GoToPage(Math.Max(0, PageNum() - 1)); }
+        public void   PageNext() { GoToPage(Math.Min(Pages.PageSizes.Count, PageNum()+1)); }
+        public void   SetRegionVisibility(Visibility state)
+        {
+            AnnotationOverlay.Visibility = state;
+            xPdfGridWithEmbeddings.Visibility = state;
+        }
         /// <summary>
         /// This creates a region document at a Point specified in the coordinates of the containing DocumentView
         /// </summary>
@@ -204,34 +168,24 @@ namespace Dash
         /// <returns></returns>
         public async Task<DocumentController> GetRegionDocument(Point? pointInAnnotationOverlayCoords = null)
         {
+            Point calculateClosestPointOnPDF(Point p)
+            {
+                return new Point(p.X < 0 ? 30 : p.X > xPdfGrid.ActualWidth ? xPdfGrid.ActualWidth - 30 : p.X,
+                                 p.Y < 0 ? 30 : p.Y > xPdfGrid.ActualHeight ? xPdfGrid.ActualHeight - 30 : p.Y);
+            }
             var regionDoc = await AnnotationOverlay.CreateRegionFromPreviewOrSelection();
             if (regionDoc == null && pointInAnnotationOverlayCoords != null)
             {
                 regionDoc = AnnotationOverlay.CreatePinRegion(calculateClosestPointOnPDF(pointInAnnotationOverlayCoords.Value));
             }
-            if (regionDoc != null)
-            {
-                return regionDoc;
-            }
-            return LayoutDocument;
+            return regionDoc ?? LayoutDocument;
         }
-
-        private Point calculateClosestPointOnPDF(Point p)
-        {
-            return new Point(p.X < 0 ? 30 : p.X > xPdfGrid.ActualWidth ? xPdfGrid.ActualWidth - 30 : p.X,
-                             p.Y < 0 ? 30 : p.Y > xPdfGrid.ActualHeight ? xPdfGrid.ActualHeight - 30 : p.Y);
-        }
-
-        private static DocumentController RegionGetter(AnnotationType type)
-        {
-            return new RichTextNote().Document;
-        }
+        private static DocumentController RegionGetter(AnnotationType type) { return new RichTextNote().Document; }
 
         private void PdfAnnotationView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ScrollViewer.ChangeView(null, _scrollRatio * ScrollViewer.ExtentHeight, null, true);
         }
-
         private void PdfAnnotationView_KeyDown(object sender, KeyRoutedEventArgs args)
         {
             if (args.Key == VirtualKey.Space)
@@ -417,7 +371,6 @@ namespace Dash
         }
         private void PdfAnnotationView_Loaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            Pages.ScrollViewerContentWidth = ActualWidth;
             KeyDown -= PdfAnnotationView_KeyDown;
             KeyDown += PdfAnnotationView_KeyDown;
             if (AnnotationOverlay == null)
@@ -433,20 +386,6 @@ namespace Dash
             }
         }
 
-        private void xPdfGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (PdfMaxWidth > 0)
-            {
-                Pages.ScrollViewerContentWidth = ScrollViewer.ActualWidth - LeftMargin - RightMargin;
-            }
-        }
-
-        [NotifyPropertyChangedInvocator]
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (_annotationOverlay.CurrentAnnotationType == AnnotationType.Region)
@@ -457,7 +396,6 @@ namespace Dash
                 }
             }
         }
-
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
@@ -477,7 +415,6 @@ namespace Dash
                 Focus(FocusState.Pointer);
             }
         }
-
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
@@ -490,7 +427,6 @@ namespace Dash
                 _annotationOverlay.UpdateAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
             }
         }
-
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _downPt = e.GetCurrentPoint(this).Position;
@@ -518,94 +454,29 @@ namespace Dash
                 _scrollTimer.Start();
             }
         }
-
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
             _scrollRatio = e.FinalView.VerticalOffset / ScrollViewer.ExtentHeight;
         }
 
-        public void PagePrev()
+        private void AddToStack(Stack<double> stack, double offset)
         {
-            var sizes = Pages.PageSizes;
-            var currOffset = 0.0;
-            foreach (var size in sizes)
+            if (!stack.Any() || stack.Peek() != offset)
             {
-                if (currOffset + (size.Height + 10) * _pageScaling - ScrollViewer.VerticalOffset >= -1)
-                {
-                    break;
-                }
-                currOffset += (size.Height + 10) * _pageScaling;
-            }
-
-            ScrollViewer.ChangeView(null, currOffset, 1);
-            _BackStack.Push(currOffset / ScrollViewer.ExtentHeight);
-        }
-        public void PageNext()
-        {
-            var sizes      = Pages.PageSizes;
-            var currOffset = 0.0;
-            foreach (var size in sizes)
-            {
-                currOffset += (size.Height + 10) * _pageScaling;
-                if (currOffset - ScrollViewer.VerticalOffset > 1)
-                {
-                    break;
-                }
-            }
-
-            ScrollViewer.ChangeView(null, currOffset, 1);
-            _BackStack.Push(currOffset / ScrollViewer.ExtentHeight);
-        }
-
-        private void AddToStack(Stack<double> stack, ScrollViewer viewer)
-        {
-            if (!stack.Count().Equals(0))
-            {
-                if (!stack.Peek().Equals(viewer.VerticalOffset / viewer.ExtentHeight))
-                {
-                    stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
-                }
-            }
-            else
-            {
-                stack.Push(0);
-                stack.Push(viewer.VerticalOffset / viewer.ExtentHeight);
+                stack.Push(offset);
             }
         }
-
-        public void PopBackStack()
+        private void UpdateMargins()
         {
-            if (_BackStack.Any())
-            {
-                var pop = _BackStack.Pop();
-                if (_BackStack.Count > 0 && !_BackStack.Peek().Equals(double.NaN) &&
-                    !ScrollViewer.ExtentHeight.Equals(double.NaN))
-                {
-                    ScrollViewer.ChangeView(null, _BackStack.Peek() * ScrollViewer.ExtentHeight, 1);
-                }
-                else
-                {
-                    ScrollViewer.ChangeView(null, 0, 1);
-                }
-                
-                _ForwardStack.Push(pop);
-            }
-        }
-        public void PopForwardStack()
-        {
-            if (_ForwardStack.Any() && _ForwardStack.Peek() != double.NaN)
-            {
-                var pop = _ForwardStack.Pop();
-                ScrollViewer.ChangeView(null, _ForwardStack.Any() ? pop * ScrollViewer.ExtentHeight : 0, 1);
-                _BackStack.Push(pop);
-            }
+            xPdfGrid.Padding = new Thickness(LeftMargin / viewboxScaling, 0, RightMargin / viewboxScaling, 0);
+            xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / viewboxScaling };
         }
 
-        public void OnDragEnter(object sender, DragEventArgs e)
+        private void OnDragEnter(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = e.DataView.HasDragModel() ? e.AcceptedOperation | DataPackageOperation.Copy : DataPackageOperation.None;
         }
-        public void OnDrop(object sender, DragEventArgs e)
+        private void OnDrop(object sender, DragEventArgs e)
         {
             AnnotationOverlay.OnDrop(sender, e);
         }
