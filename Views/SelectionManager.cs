@@ -161,6 +161,7 @@ namespace Dash
         {
             if (SelectedDocs.Contains(view))
             {
+            Debug.WriteLine("DeSelected " + view.ViewModel.DocumentController.Title);
                 SelectedDocs.Remove(view);
                 DeselectHelper(view);
                 OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { view }, new List<DocumentView>()));
@@ -181,12 +182,14 @@ namespace Dash
         private static void SelectHelper(DocumentView view)
         {
             view.OnSelected();
-        }
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => rv.IsEnabled = true);
+         }
 
         private static void DeselectHelper(DocumentView view)
         {
             view.OnDeselected();
-        }
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => rv.IsEnabled = false);
+         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
         {
@@ -293,7 +296,7 @@ namespace Dash
         }
         public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
-            if (docView.IsTopLevel() && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
+            if (docView.IsTopLevel && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
             {
                 args.Cancel = true;
                 return;
@@ -305,38 +308,33 @@ namespace Dash
             var dragDocOffset = args.GetPosition(docView);
             var relDocOffsets = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
-            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset));
-            var type = docView.ViewModel.DocumentController.GetDocType();
-            switch (type)
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset) { DraggedWithLeftButton = docView.IsLeftBtnPressed() });
+
+            if (SelectedDocs.Count == 1)  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
+                                          //      seems to override our DragUI override and only the dragged image is shown.
             {
-            case "Image Box":
-                var uri = docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data;
-                var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://")) ?
-                    await StorageFile.GetFileFromApplicationUriAsync(uri) :
-                    await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                var sflist = new HashSet<StorageFile>();
-                sflist.Add(sf);
-                args.Data.SetStorageItems(sflist);
-                break;
-            case "Video Box":
-                uri = docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
-                try
+                var type = docView.ViewModel.DocumentController.GetDocType();
+                switch (type)
                 {
-                    sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
-                        ? await StorageFile.GetFileFromApplicationUriAsync(uri)
-                        : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                    sflist = new HashSet<StorageFile>();
-                    sflist.Add(sf);
-                    args.Data.SetStorageItems(sflist);
-                }
-                catch (Exception ex)
-                {
+                    case "Image Box":
+                    case "Video Box":
+                        try
+                        {
+                            var uri = type == "Image Box" ? docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data :
+                                                       docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
+                            var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
+                            ? await StorageFile.GetFileFromApplicationUriAsync(uri)
+                            : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
+                            var sflist = new HashSet<StorageFile>();
+                            sflist.Add(sf);
+                            args.Data.SetStorageItems(sflist);
+                        }
+                        catch (Exception ex) { }
 
+                        break;
+                    default:
+                        break;
                 }
-
-                break;
-            default:
-                break;
             }
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move| DataPackageOperation.Copy;
 

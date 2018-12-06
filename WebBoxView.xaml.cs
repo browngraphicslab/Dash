@@ -7,6 +7,7 @@ using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using Image = Windows.UI.Xaml.Controls.Image;
 
@@ -52,8 +53,10 @@ namespace Dash
 
             void ContainerHandler(object sender, RoutedEventArgs args)
             {
-                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                var containerDoc = this.GetFirstAncestorOfType<DocumentView>().ParentCollection?.ViewModel.ContainerDocument;
+                if (containerDoc != null) {
+                    eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey, containerDoc, true);
+                }
                 Loaded -= ContainerHandler;
             }
 
@@ -98,13 +101,16 @@ namespace Dash
                 Unfreeze();
             }
         }
-        private async void SelectionManager_SelectionChangedAsync(DocumentSelectionChangedEventArgs args)
+        private void SelectionManager_SelectionChangedAsync(DocumentSelectionChangedEventArgs args)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
 
             if (args.SelectedViews.Contains(docView) && SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
             {
-                Unfreeze();
+                var dt = new DispatcherTimer();
+                dt.Interval = new TimeSpan(0, 0, 0, 0, 200);
+                dt.Tick += (ss, ee) => { dt.Stop(); Unfreeze(); };
+                dt.Start();
             }
             else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) ||
                 (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
@@ -113,7 +119,7 @@ namespace Dash
             }
         }
 
-        private async void Freeze()
+        private void Freeze()
         {
             var b = new WebViewBrush();
             b.SourceName = "_xWebView";
@@ -131,7 +137,7 @@ namespace Dash
         private void Unfreeze()
         {
             if (_xWebView == null)
-            {
+            { 
                 constructWebBrowserViewer();
                 xOuterGrid.Children.Add(_xWebView);
             }
@@ -170,7 +176,7 @@ namespace Dash
                     correctedHtml = correctedHtml.Replace(" //", " http://").Replace("\"//", "\"http://");
                 }
                 _xWebView.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
-            };
+            }
 
             _xWebView.LoadCompleted += Web_LoadCompleted;
         }
@@ -285,6 +291,5 @@ namespace Dash
                 webBoxView?.Freeze();
             }
         }
-
     }
 }

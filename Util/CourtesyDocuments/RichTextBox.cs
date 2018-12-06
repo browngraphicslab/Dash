@@ -82,8 +82,8 @@ namespace Dash
             //};
             rtv.ManipulationMode = ManipulationModes.All;
             rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-            rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-            rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
+            rtv.GotFocus       += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+            rtv.LostFocus      += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
             //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;

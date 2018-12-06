@@ -28,23 +28,9 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Collection Box Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key,  Context context)
         {
-
-            // get a collection and collection view model from the data
-            var data = docController.GetField(KeyStore.DataKey);
-            if (data != null)
-            {
-                //var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
-                //Debug.Assert(collectionController != null);
-                var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey);
-
-                var view = new CollectionView() { DataContext = collectionViewModel };
-
-                return view;
-            }
-
-            return null;
+            return new CollectionView() { DataContext = new CollectionViewModel(docController, key) };
         }
         
     }

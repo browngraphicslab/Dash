@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -8,7 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
+using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,10 +17,9 @@ namespace Dash
 {
     public sealed partial class KeyValuePane : UserControl
     {
-
         private bool _showDataDoc = true;
 
-        DocumentController activeContextDoc { get => _showDataDoc ? _dataContextDocument : _layoutContextDocument; }
+        private DocumentController activeContextDoc { get => _showDataDoc ? _dataContextDocument : _layoutContextDocument; }
 
         /// <summary>
         /// This is a local reference to the DataContext and the Document we render fields for
@@ -28,10 +28,20 @@ namespace Dash
         private DocumentController _layoutContextDocument;
         private DocumentController _contextDocument;
 
+        public class KeyValueItemViewModel : EditableScriptViewModel {
+            private bool _isSelected = false;
+            public KeyValueItemViewModel(FieldReference reference) : base(reference) { }
+            public bool IsSelected
+            {
+                get => _isSelected;
+                set => SetProperty<bool>(ref _isSelected, value);
+            }
+        };
+
         /// <summary>
         ///     The list of fields displayed on the key value pane
         /// </summary>
-        private ObservableCollection<EditableScriptViewModel> ListItemSource { get; }
+        private ObservableCollection<KeyValueItemViewModel> ListItemSource { get; }
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
 
@@ -39,11 +49,9 @@ namespace Dash
         {
             InitializeComponent();
 
-            ListItemSource = new ObservableCollection<EditableScriptViewModel>();
+            ListItemSource = new ObservableCollection<KeyValueItemViewModel>();
 
             DataContextChanged += KeyValuePane_DataContextChanged;
-            PointerPressed += (sender, e) =>
-                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
 
             if (AllowClose)
             {
@@ -52,11 +60,6 @@ namespace Dash
 
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
-        }
-
-        void FontIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
         private void KeyValuePane_Unloaded(object sender, RoutedEventArgs e)
@@ -122,7 +125,7 @@ namespace Dash
             {
                 foreach (var keyFieldPair in activeContextDoc.EnumDisplayableFields())
                     ListItemSource.Add(
-                        new EditableScriptViewModel(
+                        new KeyValueItemViewModel(
                             new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
             }
         }
@@ -156,7 +159,9 @@ namespace Dash
         private void addField(DocumentController.DocumentFieldUpdatedEventArgs dargs)
         {
             if (!dargs.Reference.FieldKey.Name.StartsWith("_"))
-                ListItemSource.Add(new EditableScriptViewModel(dargs.Reference));
+            {
+                ListItemSource.Add(new KeyValueItemViewModel(dargs.Reference));
+            }
         }
 
 
@@ -172,17 +177,13 @@ namespace Dash
                 var key = KeyController.Get(xNewKeyText.Text);
                 var stringValue = xNewValueText.Text;
 
-                FieldControllerBase fmController;
+                FieldControllerBase fmController = null;
 
                 try
                 {
-                    //fmController = DSL.InterpretUserInput(stringValue, true);
                     fmController = await DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
                 }
-                catch (DSLException e)
-                {
-                    fmController = null;
-                }
+                catch (DSLException e) { }
 
                 activeContextDoc.SetField(key, fmController, true);
 
@@ -195,56 +196,12 @@ namespace Dash
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
             using (UndoManager.GetBatchHandle())
-                docView.DeleteDocument();
+            {
+                this.GetFirstAncestorOfType<DocumentView>().DeleteDocument();
+            }
+
             e.Handled = true;
-        }
-
-        private void XNewKeyField_OnKeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            // focus on the value field if the user hits the tab key
-            if (e.Key == VirtualKey.Tab)
-            {
-                e.Handled = true; // stop the operator menu frum shoing up
-            }
-        }
-
-        private async void XNewValueField_OnKeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            // focus on the button if the user hits the tab key
-            if (e.Key == VirtualKey.Tab)
-            {
-                e.Handled = true;
-            }
-
-            // add the field if the user hits enter
-            if (e.Key == VirtualKey.Enter)
-            {
-                await AddKeyValuePair();
-            }
-        }
-
-
-        /// <summary>
-        /// changing background color slightly to show that you've moused over this element
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ListItemPointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            var container = (Panel)sender;
-            container.Background = new SolidColorBrush(Color.FromArgb(80, 180, 180, 180));
-        }
-        /// <summary>
-        /// changes bg color back
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ListItemPointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            var container = (Panel)sender;
-            container.Background = new SolidColorBrush(Color.FromArgb(0, 255, 255, 255));
         }
 
         /// <summary>
@@ -278,12 +235,13 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
 
         private void XFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
             foreach (object m in args.Items)
             {
+                // if the field is a document, then drag out the document
+                // otherwise drag out a databox containing the field value.
                 var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel)?.Key);
                 args.Data.SetDragModel(docField != null ? (DragModelBase)new DragDocumentModel(docField) : new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel)?.Key)));
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
@@ -291,21 +249,11 @@ namespace Dash
                 break;
             }
         }
-
+        private bool _deselectOnTap = false;
         private void KeyValueScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            _deselectOnTap = (sender as KVPRow).IsSelected;
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
-        }
-
-        private void xKeyListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
-        {
-            foreach (var m in args.Items)
-            {
-                args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeContextDoc, (m as EditableScriptViewModel).Key)));
-                // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-                break;
-            }
         }
 
         private void SwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -336,6 +284,26 @@ namespace Dash
                 Left = xDocBlock.Text.Equals("Data") ? -12 : -30
             };
             xDocBlock.Margin = margin;
+        }
+
+        private void xFieldListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            e.AddedItems.ToList().ForEach((ai) => (ai as KeyValueItemViewModel).IsSelected = true);
+            e.RemovedItems.ToList().ForEach((ai) => (ai as KeyValueItemViewModel).IsSelected = false);
+        }
+
+        private void xText_GotFocus(object sender, RoutedEventArgs e)
+        {
+            xFieldListView.SelectedIndex = -1; 
+        }
+
+        private void KVPRow_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_deselectOnTap)
+            {
+                xFieldListView.SelectedIndex = -1;
+                MainPage.Instance.Focus(FocusState.Programmatic);
+            }
         }
     }
 }

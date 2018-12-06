@@ -110,10 +110,7 @@ namespace Dash
                 _regionPreviewGeometry.RenderTransform = ParentOverlay.XPreviewRect.RenderTransform;
                 ParentOverlay.XAnnotationCanvas.Children.Add(_regionPreviewGeometry);
                 ParentOverlay.CurrentAnchorableAnnotations.Add(this);
-            } else
-            {
-                SelectionManager.DeselectAll();
-            }
+            } 
         }
         public override double AddToRegion(DocumentController region)
         {

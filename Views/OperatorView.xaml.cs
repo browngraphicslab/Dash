@@ -44,16 +44,10 @@ namespace Dash
 
         public OperatorView()
         {
-            this.InitializeComponent();
-            this.Loaded += OperatorView_Loaded;
+            InitializeComponent();
+            Loaded += OperatorView_Loaded;
         }
-
-
-        private void OutputEllipse_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-        }
-
+        
 
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {

@@ -180,24 +180,11 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private Storyboard _lateralAdjustment = new Storyboard();
-        private Storyboard _verticalAdjustment = new Storyboard();
-
         private void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
         {
             switch (args.ListAction)
             {
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
-                // we only care about changes to the Hidden field of the contained documents.
-                foreach (var d in args.NewItems)
-                {
-                    //var visible = !d.GetHidden();
-                    //var shown = DocumentViewModels.Any(dvm => dvm.DocumentController.Equals(d));
-                    //if (visible && !shown)
-                    //    addViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                    //if (!visible && shown)
-                    //    removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
-                }
                 break;
             case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                 AddViewModels(args.NewItems, args.StartingChangeIndex);
@@ -759,18 +746,29 @@ namespace Dash
                         var newDoc = joinDragModel.CollectionDocument.GetViewCopy(where);
                         newDoc.SetField(KeyController.Get("DBChartField"), joinDragModel.DraggedKey, true);
                         newDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, CollectionViewType.DB.ToString(), true);
-                        AddDocument(newDoc);
+                        AddDocuments(await AddDroppedDocuments(new DocumentController[] { newDoc }.ToList(), null, false, this, where));
                     }
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    AddDocuments(await AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, this));
+                    AddDocuments(await AddDroppedDocuments(docsToAdd, dragModel, isMoving, this, where));
                 }
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }
         }
 
-        public static async Task<List<DocumentController>> AddDroppedDocuments(object sender, List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel)
+        public static async Task<List<DocumentController>> AddDroppedDocuments(List<DocumentController> docsToAdd, DragModelBase dragModel, bool isMoving, CollectionViewModel collectionViewModel, Point where)
         {
-            if (isMoving && dragModel is DragDocumentModel dragDocModel)
+            var dragDocModel = dragModel as DragDocumentModel;
+            if (dragDocModel?.DraggedWithLeftButton == true && 
+                dragDocModel?.DraggedDocumentViews?[0] is DocumentView dragView && MainPage.Instance.IsFloaty(dragView) )
+            {
+                dragView.Visibility = Visibility.Visible;
+                var npos = MainPage.Instance.xCanvas.PointerPos();
+                npos.X -= dragDocModel.Offset.X;
+                npos.Y -= dragDocModel.Offset.Y;
+                MainPage.Instance.MoveFloaty(dragView, npos);
+                docsToAdd.Clear();
+            }
+            else if (isMoving && dragDocModel != null)
             {
                 for (var i = 0; i < dragDocModel.DraggedDocCollectionViews?.Count; i++)
                 {
@@ -824,7 +822,6 @@ namespace Dash
             {
                 RouteDataBoxReferencesThroughCollection(collectionViewModel.ContainerDocument, docsToAdd);
             }
-
             return docsToAdd;
         }
 

@@ -44,8 +44,6 @@ namespace Dash
                     _lastViewModel = ViewModel;
                 }
             };
-
-            xOuterGrid.PointerPressed += OnPointerPressed;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)
@@ -73,8 +71,8 @@ namespace Dash
                 ViewModel.ContainerDocument.GetFitToParent() && CurrentView is CollectionFreeformView freeform)
             {
                 var parSize = ViewModel.ContainerDocument.GetActualSize() ?? new Point();
-                var ar = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>().Select((cp) => cp.GetFirstDescendantOfType<DocumentView>())
-                    .Aggregate(Rect.Empty, (rect, dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
+                var ar = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>().Select(cp => cp.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null).
+                    Aggregate(Rect.Empty, (rect, dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
 
                 if (ar is Rect r && !r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
@@ -94,33 +92,6 @@ namespace Dash
             if (args.NewValue != null)
             {
                 InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
-            }
-        }
-
-        /// <summary>
-        /// Begins panning events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            //if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            //{
-            //    if (!SelectionManager.IsSelected(docview))
-            //        SelectionManager.Select(docview, false);
-            //    SelectionManager.TryInitiateDragDrop(docview, args, null);
-            //}
-            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed ) 
-            {
-                docview.ManipulationMode = ManipulationModes.All;
-                CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ||
-                this.GetFirstAncestorOfType<DocumentView>().IsTopLevel() ?
-                    ManipulationModes.All : ManipulationModes.None;
-                    args.Handled = true;
-            } else
-            {
-                docview.ManipulationMode = ManipulationModes.None;
             }
         }
         

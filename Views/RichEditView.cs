@@ -106,7 +106,6 @@ namespace Dash
                     SelectionManager.TryInitiateDragDrop(docView, e, null);
                 }
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
-                DocumentView.FocusedDocument = docView;
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(this_Tapped), true);
@@ -897,11 +896,13 @@ namespace Dash
         public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        { 
-            if (GetValue(TextProperty) is RichTextModel.RTD xamlText)
-            {
-                Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
-            }
+        {
+            // need to do this because RichEditViews handle all events. If Enabled=False, they don't handle events but they also are hit test visible so 
+            // documentView won't get any events on them.  This hack should be replaced with another mechanism whereby the RichEditVIew doesn't become
+            // totally hittest invisible but als doesn't consume events.
+            this.GetFirstAncestorOfType<DocumentView>().GetFirstDescendantOfType<Grid>().Background = new SolidColorBrush(Colors.Transparent);
+
+
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
             //DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
@@ -911,6 +912,10 @@ namespace Dash
                 GotFocus += RichTextView_GotFocus;
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
+            }
+            else
+            {
+                IsEnabled = false;
             }
             if (DataDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
             {

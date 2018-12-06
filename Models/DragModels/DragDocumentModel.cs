@@ -17,6 +17,7 @@ namespace Dash
         /// </summary>
         public bool DraggingLinkButton = false;
         public string DraggedLinkType = null; // type of link to be created
+        public bool DraggedWithLeftButton = false;
 
         /// <summary>
         /// When DraggingLinkButton is false, this stores the collection views that contained each of the documents

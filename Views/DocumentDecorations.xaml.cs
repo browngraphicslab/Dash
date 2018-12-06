@@ -202,7 +202,6 @@ namespace Dash
                 };
                 handle.PointerPressed += (s, e) =>
                 {
-                    ManipulationMode = ManipulationModes.None;
                     if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
                     {
                         handle.CapturePointer(e.Pointer);
@@ -454,13 +453,15 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocs)
-            {
-                var ann = new AnnotationManager(doc);
-                if (doc.ViewModel != null)
-                    ann.FollowRegion(doc, doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
-                        e.GetPosition(doc));
-            }
+            var kvp = SelectedDocs.First().ViewModel.DocumentController.GetKeyValueAlias(new Point());
+            MainPage.Instance.AddFloatingDoc(kvp, new Point(500, 300), e.GetPosition(MainPage.Instance.xCanvas));
+            //foreach (var doc in SelectedDocs)
+            //{
+            //    var ann = new AnnotationManager(doc);
+            //    if (doc.ViewModel != null)
+            //        ann.FollowRegion(doc, doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
+            //            e.GetPosition(doc));
+            //}
         }
 
 
@@ -544,14 +545,8 @@ namespace Dash
 
         private void XTitleBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocs)
-            {
-                CapturePointer(e.Pointer);
-                doc.ManipulationMode = e.GetCurrentPoint(doc).Properties.IsRightButtonPressed
-                    ? ManipulationModes.None
-                    : ManipulationModes.All;
-                e.Handled = doc.ManipulationMode == ManipulationModes.All;
-            }
+            CapturePointer(e.Pointer);
+            e.Handled = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
         }
 
         private void XTitleBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -579,7 +574,7 @@ namespace Dash
         private void DocumentDecorations_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (!this.IsLeftBtnPressed() && touchActivated == false)
-                VisibilityState = Visibility.Collapsed;
+                ;// VisibilityState = Visibility.Collapsed;
         }
         
         void ResizeTLaspect(object sender, ManipulationDeltaRoutedEventArgs e) { _selectedDocs.ForEach(dv => dv.Resize(sender as FrameworkElement, e, true, true, true)); }

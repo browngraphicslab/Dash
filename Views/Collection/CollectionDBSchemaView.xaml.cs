@@ -16,6 +16,7 @@ using CheckBox = Windows.UI.Xaml.Controls.CheckBox;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Task = System.Threading.Tasks.Task;
 using TextBlock = Windows.UI.Xaml.Controls.TextBlock;
+using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -103,21 +104,20 @@ namespace Dash
 
         private void UpdateSort()
         {
+            var docViewModels = ViewModel.DocumentViewModels;
             switch (_sortColumn?.SortDirection)
             {
             case DataGridSortDirection.Ascending:
-                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.OrderBy<DocumentViewModel, string>((dvm) =>
-                    dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key, null)?.ToString() ??
-                    "");
-                break;
-            case DataGridSortDirection.Descending:
-                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.OrderByDescending<DocumentViewModel, string>(
-                    (dvm) => dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key, null)
-                                 ?.ToString() ?? "");
-                break;
-            default:
-                this.xDataGrid.ItemsSource = ViewModel.DocumentViewModels.ToArray();
-                break;
+                    xDataGrid.ItemsSource = docViewModels.OrderBy<DocumentViewModel, string>(dvm =>
+                         dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key, null)?.ToString() ?? "");
+                    break;
+                case DataGridSortDirection.Descending:
+                    xDataGrid.ItemsSource = docViewModels.OrderByDescending<DocumentViewModel,string>(dvm =>
+                        dvm.DocumentController.GetDataDocument().GetDereferencedField(_sortColumn.Key,null) ?.ToString() ?? "");
+                    break;
+                default:
+                    xDataGrid.ItemsSource = docViewModels.ToArray();
+                    break;
             }
         }
 
@@ -217,7 +217,7 @@ namespace Dash
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var newDoc = new CollectionNote(new Windows.Foundation.Point(), CollectionViewType.Stacking, 200, 200).Document;
+            var newDoc = new CollectionNote(new Point(), CollectionViewType.Stacking, 200, 200).Document;
             var docs = newDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
             int placement = 0;
             foreach (var key in Keys)
@@ -473,15 +473,27 @@ namespace Dash
 
         private void Join_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            var docViewModels = ViewModel.DocumentViewModels;
+            var columnKey     = ((sender as FrameworkElement).DataContext as ColumnHeaderViewModel).Key;
+            var docs          = docViewModels.Select(dvm => dvm.DocumentController).ToList();
+
             args.Data.RequestedOperation = DataPackageOperation.Move;
-
-            var docs = new List<DocumentController>();
-            foreach (var doc in ViewModel.DocumentViewModels)
+            args.Data.SetJoinModel(new JoinDragModel(ViewModel.ContainerDocument, docs, columnKey));
+            
+            var grouped       = docViewModels.GroupBy(dvm => dvm.DocumentController.GetDataDocument().GetDereferencedField(columnKey, null)?.ToString() ?? "");
+            var collections   = grouped.Select(val => {
+                var cnote = new CollectionNote(new Point(), CollectionViewType.Stacking, 300, 200, val.Select(dvm => dvm.DocumentController)).Document;
+                cnote.SetTitle(columnKey.ToString()+"="+val.Key);
+                return cnote;
+            });
+            ViewModel.ContainerDocument.SetField<ListController<DocumentController>>(KeyController.Get("DBGroupings"), collections.ToList(), true);
+            var dfm = new DragFieldModel(new DocumentFieldReference(ViewModel.ContainerDocument, KeyController.Get("DBGroupings")))
             {
-                docs.Add(doc.DocumentController);
-            }
-
-            args.Data.SetJoinModel(new JoinDragModel(ViewModel.ContainerDocument, docs, (sender as FrameworkElement).DataContext as KeyController));
+                LayoutFields = new Dictionary<KeyController, FieldControllerBase>() {
+                    [KeyStore.CollectionViewTypeKey] = new TextController(CollectionViewType.Stacking.ToString())
+                }
+            };
+            args.Data.SetDragModel(dfm);
         }
 
         private async void CollectionDBSchemaView_OnDrop(object sender, DragEventArgs e)

@@ -409,24 +409,18 @@ namespace Dash
                 e.Handled = true;
                 return;
             }
-            if (IsCropping) e.Handled = true;
+            if (IsCropping)
+            {
+                e.Handled = true;
+            }
             var point = e.GetCurrentPoint(_annotationOverlay);
-
             if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
                 _annotationOverlay.EndAnnotation(point.Position);
                 e.Handled = true;
             }
-            var curPt = e.GetCurrentPoint(this).Position;
-            var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
-            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-            if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
-            {
-                SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
-            }
         }
-
-        Point _downPt = new Point();
+        
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (_annotationOverlay == null)
@@ -434,21 +428,28 @@ namespace Dash
                 e.Handled = true;
                 return;
             }
-            if (IsCropping) e.Handled = true;
+            if (IsCropping)
+            {
+                e.Handled = true;
+            }
             var point = e.GetCurrentPoint(_annotationOverlay);
-            if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) &&
+                point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed&& !IsCropping)
             {
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
+                e.Handled = true;
             }
-            _downPt = e.GetCurrentPoint(this).Position;
-            e.Handled = true;
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            using (UndoManager.GetBatchHandle())
+            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
             {
-                _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
+                using (UndoManager.GetBatchHandle())
+                {
+                    _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
+                }
+                e.Handled = true;
             }
         }
 

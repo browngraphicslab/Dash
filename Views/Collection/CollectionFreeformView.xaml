@@ -35,7 +35,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <local:DocumentView BindRenderTransform="True" BindVisibility="True" />
+                        <local:DocumentView BindRenderTransform="True" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

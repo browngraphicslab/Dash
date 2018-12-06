@@ -48,8 +48,7 @@
         <Grid Grid.Row="0">
 
             <!--header-->
-            <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                       Fill="{StaticResource DashLightBlueBrush}" />
+            <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Fill="{StaticResource DashLightBlueBrush}" />
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
@@ -57,7 +56,7 @@
                     <ColumnDefinition Width="40"></ColumnDefinition>
                     <ColumnDefinition Width="40"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,0,0,0" VerticalAlignment="Center" FontWeight="Bold" TextAlignment="Center" />
+                <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,0,0,0" VerticalAlignment="Center" FontWeight="Bold" TextAlignment="Center"/>
                 <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Margin="-12,0,0,0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
                 <Button Width="40" Height="48" Foreground="White"  Background="Transparent" x:Name="xSwitchButton" x:FieldModifier="public"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
@@ -88,8 +87,9 @@
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Stretch" 
                     VerticalAlignment="Stretch" 
-                    SelectionMode="None" 
+                    SelectionMode="Single" 
                     CanDragItems="True" 
+                    SelectionChanged="xFieldListView_SelectionChanged"
                     DragItemsStarting="XFieldListView_DragItemsStarting" 
                     ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
@@ -104,7 +104,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <local:KVPRow PointerPressed="KeyValueScriptView_PointerPressed"></local:KVPRow>
+                            <local:KVPRow IsSelected="{Binding IsSelected}" Tapped="KVPRow_Tapped"  PointerPressed="KeyValueScriptView_PointerPressed"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 
@@ -121,14 +121,14 @@
                 <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                    <TextBox x:Name="xNewKeyText" PlaceholderText="Key..." BorderThickness="0" TextWrapping="Wrap" KeyUp="TextFocus_KeyUp"></TextBox>
+                    <TextBox x:Name="xNewKeyText" PlaceholderText="Key..." BorderThickness="0" TextWrapping="Wrap" GotFocus="xText_GotFocus" KeyUp="TextFocus_KeyUp"></TextBox>
                 </ScrollViewer>
             </Grid>
             <Grid Grid.Column="1" Height="Auto" BorderThickness="0,1,1,1" BorderBrush="LightGray">
                 <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                    <TextBox x:Name="xNewValueText" PlaceholderForeground="LightGray" BorderThickness="0" PlaceholderText="Value..." KeyUp="TextFocus_KeyUp" TextWrapping="Wrap" KeyDown="AddKeyValueFieldOnEnter"></TextBox>
+                    <TextBox x:Name="xNewValueText" PlaceholderForeground="LightGray" BorderThickness="0" PlaceholderText="Value..." GotFocus="xText_GotFocus" KeyUp="TextFocus_KeyUp" TextWrapping="Wrap" KeyDown="AddKeyValueFieldOnEnter"></TextBox>
                 </ScrollViewer>
             </Grid>
         </Grid>

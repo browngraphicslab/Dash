@@ -118,7 +118,7 @@ namespace Dash
                 //e.Complete();
                 _processManipulation = false;
             }
-            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel() && !DraggingDoc)
+            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel && !DraggingDoc)
             {
                 //drag document 
                 if (!SelectionManager.IsSelected(docView))
@@ -168,7 +168,7 @@ namespace Dash
                 ////only do marquee if main collection (for now)
                 //var mainColl = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformBase>();
                 var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
-                if (docView?.IsTopLevel() ?? false)
+                if (docView?.IsTopLevel ?? false)
                 {
                     var point = _freeformView //(Window.Current.Content)
                     .TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);

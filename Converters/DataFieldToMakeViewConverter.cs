@@ -58,7 +58,7 @@ namespace Dash.Converters
                     _docController.SetWidth(400);
                     _docController.SetHeight(400);
                 }
-                currView = CollectionBox.MakeView(_docController, _context);
+                currView = CollectionBox.MakeView(_docController, KeyStore.DataKey, _context);
             }
             else if (data is DocumentController dc)
             {

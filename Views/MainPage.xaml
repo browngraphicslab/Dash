@@ -157,14 +157,16 @@
             <TextBlock Text="Dash" Foreground="White" VerticalAlignment="Center" Margin="12,-12,0,0"/>
 
             <Grid  HorizontalAlignment="Right">
-                <Button  Name="xSearchButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Margin="0,-10,200,0" Click="xSearchButton_Clicked" >
-                    <SymbolIcon Symbol="Find" Foreground="White"/>
-                </Button>
-            </Grid>
-            <Grid  HorizontalAlignment="Right">
-                <Button  Name="xSettingsButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Margin="0,-10,240,0" Click="xSettingsButton_Clicked" >
-                    <SymbolIcon Symbol="Setting" Foreground="White"/>
-                </Button>
+                <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right" Margin="0,-10,180,0" >
+                    <Button  Name="xBackButton" FontFamily="Segoe MDL2 Assets" Foreground="White" Content="&#xE72B;" Padding="4" Click="xBackButton_Clicked"/>
+                    <Button  Name="xForwardButton" FontFamily="Segoe MDL2 Assets" Foreground="White" Content="&#xE72A;" Padding="4" Click="xForwardButton_Clicked"/>
+                    <Button  Name="xSearchButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Click="xSearchButton_Clicked" >
+                        <SymbolIcon Symbol="Find" Foreground="White"/>
+                    </Button>
+                    <Button  Name="xSettingsButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Click="xSettingsButton_Clicked" >
+                        <SymbolIcon Symbol="Setting" Foreground="White"/>
+                    </Button>
+                </StackPanel>
             </Grid>
             <Grid HorizontalAlignment="Left" Margin="58 0 0 0">
                 <Canvas>

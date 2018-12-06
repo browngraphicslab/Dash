@@ -14,6 +14,7 @@
     d:DesignHeight="400"
     AllowDrop="True"
     Drop="This_Drop"
+    ManipulationMode="None"
     UseLayoutRounding="False">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">

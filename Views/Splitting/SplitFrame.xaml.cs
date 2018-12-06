@@ -339,7 +339,7 @@ namespace Dash
                                           isCopying ? DataPackageOperation.Copy :
                                           DataPackageOperation.None;
 
-                    var docs = await CollectionViewModel.AddDroppedDocuments(this, docsToAdd, dragModel, isMoving, null);
+                    var docs = await CollectionViewModel.AddDroppedDocuments(docsToAdd, dragModel, isMoving, null, new Point());
                     var doc = docs.Count == 1 ? docs[0] :  new CollectionNote(new Point(), CollectionViewType.Freeform, collectedDocuments: docs).Document;
 
                     Split(dir, doc, true);

@@ -10,6 +10,8 @@ namespace Dash {
     {
         public List<DocumentFieldReference> DraggedRefs { get; }
 
+        public Dictionary<KeyController, FieldControllerBase> LayoutFields { get; set; }
+
         public DragFieldModel(List<DocumentFieldReference> draggedRefs) => DraggedRefs = draggedRefs;
 
         public DragFieldModel(params DocumentFieldReference[] draggedRefs) => DraggedRefs = draggedRefs.ToList();
@@ -24,6 +26,11 @@ namespace Dash {
                 if (type is DocumentController docField)
                     return docField;
                 var dbox = new DataBox(reference.GetReferenceController(), where?.X ?? 0, where?.Y ?? 0, type is TextController ? double.NaN : 300, type is TextController || type is ImageController ? double.NaN : 300).Document;
+               
+                foreach (var layoutfield in LayoutFields)
+                {
+                    dbox.SetField(layoutfield.Key, layoutfield.Value, true);
+                }
 
                 if (reference.FieldKey != null)
                 {

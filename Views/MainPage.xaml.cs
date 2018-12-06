@@ -30,6 +30,7 @@ using Windows.Storage.Pickers;
 using Dash.Converters;
 using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
+using Dash.Controllers.Functions.Operators;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -574,17 +575,15 @@ function (d) {
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
 
-            if (DocumentView.FocusedDocument != null && !e.Handled)
+            var focused = FocusManager.GetFocusedElement() as DocumentView ?? (FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<DocumentView>();
+            if (focused?.ViewModel != null && !e.Handled)
             {
-                if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift))
+                if (this.IsShiftPressed() && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
                 {
-                    if (DocumentView.FocusedDocument.ViewModel != null && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
-                    {
-                        // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                        if (!DocumentView.FocusedDocument.ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
-                            !DocumentView.FocusedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                            DocumentView.FocusedDocument.HandleShiftEnter();
-                    }
+                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                    if (!focused.ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                        !focused.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                        focused.HandleShiftEnter();
                 }
             }
 
@@ -735,6 +734,14 @@ function (d) {
         private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+        }
+        private void xBackButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            SplitFunctions.FrameHistoryBack();
+        }
+        private void xForwardButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            SplitFunctions.FrameHistoryForward();
         }
 
         public void ToggleSettingsVisibility(bool changeToVisible)
@@ -1114,6 +1121,18 @@ function (d) {
         {
             xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach((g) =>
                  xCanvas.Children.Remove(g));
+        }
+        public bool IsFloaty(DocumentView dragged)
+        {
+            return xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).Any();
+        }
+
+        public void MoveFloaty(DocumentView dragged, Point where)
+        {
+            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
+                ForEach((g) =>
+                g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y }
+            );
         }
 
         #region Annotation logic

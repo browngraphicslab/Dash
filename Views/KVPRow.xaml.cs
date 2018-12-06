@@ -27,16 +27,30 @@ namespace Dash
 
     public sealed partial class KVPRow : UserControl, INotifyPropertyChanged
     {
+        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
+            "IsSelected", typeof(bool), typeof(KVPRow), new PropertyMetadata(default(bool)));
+    
+        public bool IsSelected
+        {
+            get => (bool)GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
+        }
         public EditableScriptViewModel ViewModel => DataContext as EditableScriptViewModel;
         public bool IsEditing
         {
             get => _isEditing;
             set
             {
-                if (value == _isEditing) return;
                 _isEditing = value;
+                if (FocusManager.GetFocusedElement() == xEditBox)
+                {
+                    MainPage.Instance.Focus(FocusState.Programmatic);
+                }
                 OnPropertyChanged();
-                xEditBox.Focus(FocusState.Programmatic);
+                if (value)
+                {
+                    xEditBox.Focus(FocusState.Programmatic);
+                }
             }
         }
 
@@ -89,17 +103,8 @@ namespace Dash
 
         private void Edit_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            IsEditing = true;
-
-            if (xEditBox.Height > 50)
-            {
-                xEditBox.Height = XValuePresenter.ActualHeight;
-            }
-            else
-            {
-                xEditBox.Height = 50;
-            }
-            
+            IsEditing = !IsEditing;
+            e.Handled = true;
         }
 
         private void XEditBox_OnGotFocus(object sender, RoutedEventArgs e)
@@ -152,11 +157,11 @@ namespace Dash
             var dragModel        = e.DataView.GetDragModel();
             var dragDocModel     = dragModel as DragDocumentModel;
             var dragFieldModel   = dragModel as DragFieldModel;
-            var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
+            var internalMove     = !this.IsShiftPressed() && !this.IsAltPressed() && !this.IsCtrlPressed() && !fromFileSystem;
             var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
             var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
-            var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
-            var isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
+            var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || this.IsShiftPressed());
+            var isSettingContext = this.IsAltPressed() && !fromFileSystem;
 
             if (!(dragFieldModel?.DraggedRefs.FirstOrDefault() is DocumentFieldReference dragRef &&  // don't allow a key to be dropped onto itself
                   dragRef.DocumentController.Equals(ViewModel.Document) && dragRef.FieldKey.Equals(ViewModel.Key)))
@@ -168,11 +173,12 @@ namespace Dash
                                       DataPackageOperation.None;
 
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, sender as FrameworkElement, new Point());
-                var docs = await CollectionViewModel.AddDroppedDocuments(sender, docsToAdd, dragModel, isMoving, null);
+                var docs = await CollectionViewModel.AddDroppedDocuments(docsToAdd, dragModel, isMoving, null, new Point());
 
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
                 ViewModel.Document.SetField(ViewModel.Key, docs.Count() == 1 ? (FieldControllerBase)docs.First() : new ListController<DocumentController>(docs), true);
             }
         }
+        
     }
 }

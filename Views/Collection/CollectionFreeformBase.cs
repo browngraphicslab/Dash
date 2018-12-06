@@ -674,7 +674,11 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))), this.IsShiftPressed());
+                var marqueeDocs = DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height)));
+                if (marqueeDocs.Count > 0)
+                {
+                    SelectionManager.SelectDocuments(marqueeDocs, this.IsShiftPressed());
+                }
                 ResetMarquee(true);
                 if (e != null) e.Handled = true;
             }
@@ -770,13 +774,14 @@ namespace Dash
         /// <param name="args"></param>
         protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
-            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind != PointerUpdateKind.Other)
+            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
             {
-                return;
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                if (StartMarquee(pos))
+                {
+                    args.Handled = true;
+                }
             }
-            var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-            if (StartMarquee(pos))
-                args.Handled = true;
 
         }
 
@@ -791,29 +796,25 @@ namespace Dash
             {
                 handledTouch.Add(args);
                 NumFingers++;
-                //var docview = this.GetFirstAncestorOfType<DocumentView>();
-                //      if (SelectionManager.IsSelected(docview))
-                //    //SelectionManager.Select(docview, false);
-                //SelectionManager.TryInitiateDragDrop(docview, args, null);
                 ViewManipulationControls.isPanning = false;
             }
+            var active        = false;
+            var parentDocView = this.GetFirstAncestorOfType<DocumentView>();
             // marquee on left click by default
-            if (
-                (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                !args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)
+            foreach (var sel in SelectionManager.GetSelectedDocs())
             {
-                ParentDocument.ManipulationMode = ManipulationModes.None;
-                if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                    SelectionManager.DeselectAll();
-
+                if (sel == parentDocView || sel.GetAncestors().Contains(parentDocView))
+                {
+                    active = true;
+                }
+            }
+            if (active && (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                args.GetCurrentPoint(GetOuterGrid()).Properties.IsLeftButtonPressed)
+            {
                 GetOuterGrid().CapturePointer(args.Pointer);
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
                 _isMarqueeActive = true;
                 previewTextbox.Visibility = Visibility.Collapsed;
-                if (ParentDocument != null)
-                {
-                    ParentDocument.ManipulationMode = ManipulationModes.None;
-                }
                 args.Handled = true;
                 GetOuterGrid().PointerMoved -= OnPointerMoved;
                 GetOuterGrid().PointerMoved += OnPointerMoved;
@@ -1182,11 +1183,8 @@ namespace Dash
             _isMarqueeActive = false;
             if (!this.IsShiftPressed())
             {
-                var dt = new DispatcherTimer();
                 var pt = e.GetPosition(xTransformedCanvas);
-                dt.Tick += (s, ee) => { ShowPreviewTextbox(pt); dt.Stop(); };
-                dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
-                dt.Start();
+                ShowPreviewTextbox(pt); 
             }
             foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
             {

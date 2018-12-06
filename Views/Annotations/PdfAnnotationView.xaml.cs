@@ -125,7 +125,7 @@ namespace Dash
          }
         public void   ScrollToPosition(double pos, bool center = true)
         {
-            var offset = Math.Max(pos * viewboxScaling - ScrollViewer.ViewportHeight / 2, 0);
+            var offset = Math.Max(pos * viewboxScaling - (center ? ScrollViewer.ViewportHeight / 2 :0), 0);
             ScrollViewer.ChangeView(null, Math.Max(offset, 0), null);
         }
         public void   UpdateMatchedSearch(string searchString, int index)
@@ -388,62 +388,49 @@ namespace Dash
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (_annotationOverlay.CurrentAnnotationType == AnnotationType.Region)
+            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
             {
-                using (UndoManager.GetBatchHandle())
+                if (_annotationOverlay.CurrentAnnotationType == AnnotationType.Region)
                 {
-                    _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
+                    using (UndoManager.GetBatchHandle())
+                    {
+                        _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
+                    }
                 }
+                e.Handled = true;
             }
         }
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
+            xPdfGrid.ReleasePointerCapture(e.Pointer);
+            xPdfGrid.PointerMoved -= XPdfGrid_PointerMoved;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
                 _annotationOverlay.EndAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
                 e.Handled = true;
-                var curPt = e.GetCurrentPoint(this).Position;
-                var delta = new Point(curPt.X - _downPt.X, curPt.Y - _downPt.Y);
-                var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-                if (!SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && dist > 10)
-                {
-                    SelectionManager.Select(this.GetFirstAncestorOfType<DocumentView>(), this.IsShiftPressed());
-                }
 
                 Focus(FocusState.Pointer);
             }
         }
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-            {
-                _annotationOverlay.EndAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
-            }
-            else if (currentPoint.Properties.IsLeftButtonPressed)
-            {
-                _annotationOverlay.UpdateAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
-            }
+            _annotationOverlay.UpdateAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
         }
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) && 
+                currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
                 _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);
-                (sender as FrameworkElement).PointerMoved -= XPdfGrid_PointerMoved;
-                (sender as FrameworkElement).PointerMoved += XPdfGrid_PointerMoved;
+                xPdfGrid.PointerMoved -= XPdfGrid_PointerMoved;
+                xPdfGrid.PointerMoved += XPdfGrid_PointerMoved;
+                xPdfGrid.CapturePointer(e.Pointer);
+                e.Handled = true;
             }
-            else if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.RightButtonPressed)
-            {
-                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.All;
-            }
-            e.Handled = true;
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -468,8 +455,11 @@ namespace Dash
         }
         private void UpdateMargins()
         {
+            var scrollPos = ScrollViewer.VerticalOffset / viewboxScaling;
             xPdfGrid.Padding = new Thickness(LeftMargin / viewboxScaling, 0, RightMargin / viewboxScaling, 0);
             xPdfGridWithEmbeddings.RenderTransform = new TranslateTransform() { X = LeftMargin / viewboxScaling };
+            UpdateLayout();
+            ScrollToPosition(scrollPos, false);
         }
 
         private void OnDragEnter(object sender, DragEventArgs e)

@@ -1043,7 +1043,8 @@ namespace Dash
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         public void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() &&
+                SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
             {
                 Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
 

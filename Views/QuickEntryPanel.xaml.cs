@@ -266,7 +266,7 @@ namespace Dash.Views
             var allTopLevel = true;
             foreach (var doc in _selectedDocs)
             {
-                if (!doc.IsTopLevel())
+                if (!doc.IsTopLevel)
                 {
                     allTopLevel = false;
                 }
