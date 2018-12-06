@@ -56,6 +56,11 @@ namespace Dash
             Loaded += (s, e) =>
             {
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+                var parentView = this.GetFirstAncestorOfType<DocumentView>();
+                if (parentView != null && SelectionManager.GetSelectedDocs().Contains(parentView))
+                {
+                    SelectionManager_SelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>(), new DocumentView[] { parentView }.ToList()));
+                };
                 if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
                 {
                     GoToUpdatedFieldChanged(LayoutDocument, null);

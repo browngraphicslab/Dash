@@ -209,8 +209,7 @@ namespace Dash
                             prevStartIndex = i;
                         }
 
-                        region.GetDataDocument()
-                            .AddToListField(KeyStore.SelectionBoundsKey,
+                        region.GetDataDocument().AddToListField(KeyStore.SelectionBoundsKey,
                                 new RectController(ParentOverlay.TextSelectableElements[i].Bounds));
 
                         prevUsedIndex = i;
@@ -226,8 +225,7 @@ namespace Dash
                 region.GetDataDocument().AddToListField(KeyStore.SelectionIndicesListKey, new PointController(StartIndex, EndIndex));
                 for (var i = StartIndex; i <= EndIndex; i++)
                 {
-                    region.GetDataDocument()
-                        .AddToListField(KeyStore.SelectionBoundsKey,
+                    region.GetDataDocument().AddToListField(KeyStore.SelectionBoundsKey,
                             new RectController(ParentOverlay.TextSelectableElements[i].Bounds));
                 }
             }

@@ -10,7 +10,6 @@
     {
         Unhandled,
         HandledClose,
-        HandledRemainOpen
     }
 
     public interface ILinkHandler

@@ -27,7 +27,7 @@ namespace Dash {
                     return docField;
                 var dbox = new DataBox(reference.GetReferenceController(), where?.X ?? 0, where?.Y ?? 0, type is TextController ? double.NaN : 300, type is TextController || type is ImageController ? double.NaN : 300).Document;
                
-                foreach (var layoutfield in LayoutFields)
+                foreach (var layoutfield in LayoutFields ?? new Dictionary<KeyController, FieldControllerBase>())
                 {
                     dbox.SetField(layoutfield.Key, layoutfield.Value, true);
                 }

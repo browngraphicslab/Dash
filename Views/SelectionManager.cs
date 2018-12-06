@@ -161,7 +161,6 @@ namespace Dash
         {
             if (SelectedDocs.Contains(view))
             {
-            Debug.WriteLine("DeSelected " + view.ViewModel.DocumentController.Title);
                 SelectedDocs.Remove(view);
                 DeselectHelper(view);
                 OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { view }, new List<DocumentView>()));

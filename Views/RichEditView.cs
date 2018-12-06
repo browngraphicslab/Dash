@@ -30,7 +30,6 @@ namespace Dash
         /// </summary>
         private Dictionary<int, Color>    _originalCharFormat = new Dictionary<int, Color>();
         private ManipulationControlHelper _manipulator;
-        private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
         private Size                      _lastDesiredSize = new Size();
         private string                    _lastSizeRTFText = "";
@@ -176,16 +175,6 @@ namespace Dash
 
             SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
 
-            //var sizeBinding = new Binding
-            //{
-            //    Source = SettingsView.Instance,
-            //    Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
-            //    Mode = BindingMode.OneWay
-            //};
-            //SetBinding(FontSizeProperty, sizeBinding);
-
-            _annotationManager = new AnnotationManager(this);
-
             SizeChanged += (sender, e) =>
             {
                 // we always need to make sure that our own Height is NaN
@@ -310,7 +299,7 @@ namespace Dash
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
-                        _annotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        AnnotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
                 else if (target.StartsWith("http"))
@@ -900,7 +889,10 @@ namespace Dash
             // need to do this because RichEditViews handle all events. If Enabled=False, they don't handle events but they also are hit test visible so 
             // documentView won't get any events on them.  This hack should be replaced with another mechanism whereby the RichEditVIew doesn't become
             // totally hittest invisible but als doesn't consume events.
-            this.GetFirstAncestorOfType<DocumentView>().GetFirstDescendantOfType<Grid>().Background = new SolidColorBrush(Colors.Transparent);
+            if (this.GetFirstAncestorOfType<DocumentView>()?.GetFirstDescendantOfType<Grid>() is Grid grid)
+            {
+                grid.Background = new SolidColorBrush(Colors.Transparent);
+            }
 
 
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.

@@ -1146,6 +1146,7 @@ namespace Dash
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
+        public bool _doubleTapped = false;
         public double Zoom => ViewManipulationControls.ElementScale;
 
         void MakeInkCanvas()
@@ -1178,17 +1179,26 @@ namespace Dash
             previewTextbox.Text = string.Empty;
         }
 
-        protected void OnTapped(object sender, TappedRoutedEventArgs e)
+        protected  void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            _isMarqueeActive = false;
-            if (!this.IsShiftPressed())
+            _doubleTapped = true;
+        }
+        protected async void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            _doubleTapped = false;
+            await System.Threading.Tasks.Task.Delay(100);
+            if (!_doubleTapped)
             {
-                var pt = e.GetPosition(xTransformedCanvas);
-                ShowPreviewTextbox(pt); 
-            }
-            foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
-            {
-                rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
+                _isMarqueeActive = false;
+                if (!this.IsShiftPressed())
+                {
+                    var pt = e.GetPosition(xTransformedCanvas);
+                    ShowPreviewTextbox(pt);
+                }
+                foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
+                {
+                    rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
+                }
             }
         }
         private void ShowPreviewTextbox(Point where)

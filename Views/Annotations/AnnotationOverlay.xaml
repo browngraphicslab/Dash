@@ -10,9 +10,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="LayoutRoot" PointerPressed="OnPointerPressed"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" >
+    <Grid x:Name="LayoutRoot" DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" DoubleTapped="AnnotationOverlayDoubleTapped" PointerMoved="LayoutRoot_PointerMoved" >
         <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public">
-            <Grid x:Name="XPreviewRect" IsHitTestVisible="False" Visibility="Collapsed"  x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Grid x:Name="XPreviewRect"  PointerPressed="XPreviewRect_PointerPressed" Background="Transparent" Visibility="Collapsed"  x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />

@@ -1153,7 +1153,7 @@ function (d) {
             {
                 target.GotoRegion(region, linkDoc);
                 onScreenView?.ViewModel.SetHighlight(true);
-                return LinkHandledResult.HandledRemainOpen;
+                return LinkHandledResult.HandledClose;
             }
 
             if (linkDoc.GetLinkBehavior().Equals(LinkBehavior.ShowRegion))
@@ -1194,7 +1194,7 @@ function (d) {
                 target.GotoRegion(region, linkDoc);
             }
 
-            return LinkHandledResult.HandledRemainOpen;
+            return LinkHandledResult.HandledClose;
         }
 
         public void DockLink(DocumentController linkDoc, LinkDirection direction, bool inContext = true)

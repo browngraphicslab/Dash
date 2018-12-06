@@ -11,6 +11,7 @@
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     Tapped="OnTapped"
+    DoubleTapped="OnDoubleTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     x:Name="Control"

@@ -108,10 +108,10 @@ namespace Dash
             Tapped        += (s, e) => { e.Handled = true; TappedHandler(false); };
             DoubleTapped  += (s, e) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
             RightTapped   += (s, e) => ExhibitBehaviors(KeyStore.RightTappedOpsKey);
+            PointerPressed += (s, e) => this_PointerPressed(s, e);
 
             ToFront();
             xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
-            AddHandler(PointerPressedEvent, new PointerEventHandler(this_PointerPressed), false);
         }
         ~DocumentView()
         {
@@ -371,6 +371,31 @@ namespace Dash
 
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null));
         }
+        public async void MakeDocumentLink(Point where, DragDocumentModel dm)
+        {
+            DocumentController lastLinkDoc = null;
+            for (var index = 0; index < dm.DraggedDocuments.Count; index++)
+            {
+                var dragDoc = dm.DraggedDocuments[index];
+                if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
+                {
+                    dragDoc = await creatorFunc(dm.DraggedDocumentViews[index]);
+                }
+                //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                var dropDoc = ViewModel.DocumentController;
+                if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                {
+                    dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? where : (Point?)null);
+                }
+
+                lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
+
+                //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
+                dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+            }
+            MainPage.Instance.XDocumentDecorations.SetPositionAndSize(true);
+            MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType, lastLinkDoc);
+        }
         /// <summary>
         /// Opens in Chrome the context from which the document was made.
         /// </summary>
@@ -618,67 +643,44 @@ namespace Dash
                 SelectionManager.TryInitiateDragDrop(this, e, null);
             }
         }
-        private async void This_Drop(object sender, DragEventArgs e)
+        private void This_Drop(object sender, DragEventArgs e)
         {
-            if (ViewModel.IsAdornmentGroup || !ViewModel.AreContentsHitTestVisible)
-                return;
-
-            var dragModel = e.DataView.GetDragModel();
-            if (dragModel != null)
+            if (!ViewModel.IsAdornmentGroup && ViewModel.AreContentsHitTestVisible &&
+                e.DataView.GetDragModel() is DragDocumentModel dm && dm.DraggedDocumentViews != null && dm.DraggingLinkButton)
             {
-                if (!(dragModel is DragDocumentModel dm) || dm.DraggedDocumentViews == null || !dm.DraggingLinkButton) return;
                 e.Handled = true;
 
                 if (MainPage.Instance.IsAltPressed())
                 {
-                    var curLayout = ViewModel.LayoutDocument;
-                    var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.Position);
-                    draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                    if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
-                    {
-                        curLayout.SetWidth(dm.DraggedDocuments.First().GetActualSize().Value.X);
-                        curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
-                    }
-                    curLayout.SetField(KeyStore.DataKey, draggedLayout.GetField(KeyStore.DataKey), true);
-                    curLayout.SetField(KeyStore.PrototypeKey, draggedLayout.GetField(KeyStore.PrototypeKey), true);
-                    curLayout.SetField(KeyStore.LayoutPrototypeKey, draggedLayout, true);
-
-                    curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
-                    curLayout.DocumentType = draggedLayout.DocumentType;
-                    UpdateBindings();
-                    return;
+                    ApplyPseudoTemplate(dm);
                 }
-
-                var dragDocs = dm.DraggedDocuments;
-                DocumentController lastLinkDoc = null;
-                for (var index = 0; index < dragDocs.Count; index++)
+                else
                 {
-                    var dragDoc = dragDocs[index];
-                    if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
-                    {
-                        dragDoc = await creatorFunc(dm.DraggedDocumentViews[index]);
-                    }
-                    //add link description to doc and if it isn't empty, have flag to show as popup when links followed
-                    var dropDoc = ViewModel.DocumentController;
-                    if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                    {
-                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, this.IsShiftPressed() || this.IsCtrlPressed() ? e.GetPosition(this) : (Point?)null);
-                    }
-
-                    lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, dm.DraggedLinkType);
-                    //MainPage.Instance.AddFloatingDoc(linkDoc);
-
-
-                    //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
-                    dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
+                    MakeDocumentLink(e.GetPosition(this), dm);
+                    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
                 }
-                MainPage.Instance.XDocumentDecorations.SetPositionAndSize(true);
-                MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType, lastLinkDoc);
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None
-                    ? DataPackageOperation.Link
-                    : e.DataView.RequestedOperation;
             }
         }
+
+        private void ApplyPseudoTemplate(DragDocumentModel dm)
+        {
+            var curLayout     = ViewModel.LayoutDocument;
+            var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.Position);
+            draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+            if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
+            {
+                curLayout.SetWidth (dm.DraggedDocuments.First().GetActualSize().Value.X);
+                curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
+            }
+            curLayout.SetField(KeyStore.DataKey,            draggedLayout.GetField(KeyStore.DataKey), true);
+            curLayout.SetField(KeyStore.PrototypeKey,       draggedLayout.GetField(KeyStore.PrototypeKey), true);
+            curLayout.SetField(KeyStore.LayoutPrototypeKey, draggedLayout, true);
+
+            curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
+            curLayout.DocumentType = draggedLayout.DocumentType;
+            UpdateBindings();
+        }
+
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
@@ -888,9 +890,7 @@ namespace Dash
                 SelectionManager.DeselectAll();
                 SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
                 var df = SplitFrame.ActiveFrame.GetFirstDescendantOfType<DocumentView>();
-                df.Tag = "YO";
                 SelectionManager.Select(df, false);
-                Debug.WriteLine("out ==> " + SelectionManager.GetSelectedDocs()[0].Tag);
             }
         }
 
@@ -962,7 +962,7 @@ namespace Dash
 
         private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
         {
-            new AnnotationManager(this).FollowRegion(this, ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
+           AnnotationManager.FollowRegion(this, ViewModel.DocumentController, this.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(this));
         }
 
         private void AdjustEllipseSize(Ellipse ellipse, double length)

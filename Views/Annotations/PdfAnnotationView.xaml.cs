@@ -180,7 +180,6 @@ namespace Dash
             }
             return regionDoc ?? LayoutDocument;
         }
-        private static DocumentController RegionGetter(AnnotationType type) { return new RichTextNote().Document; }
 
         private void PdfAnnotationView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -375,7 +374,7 @@ namespace Dash
             KeyDown += PdfAnnotationView_KeyDown;
             if (AnnotationOverlay == null)
             {
-                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter, true);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument, true);
                 xPdfGrid.Children.Add(AnnotationOverlay);
                 xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
@@ -388,17 +387,7 @@ namespace Dash
 
         private void XPdfGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
-            {
-                if (_annotationOverlay.CurrentAnnotationType == AnnotationType.Region)
-                {
-                    using (UndoManager.GetBatchHandle())
-                    {
-                        _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
-                    }
-                }
-                e.Handled = true;
-            }
+            AnnotationOverlay.AnnotationOverlayDoubleTapped(sender, e);
         }
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {

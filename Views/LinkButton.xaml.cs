@@ -97,7 +97,7 @@ namespace Dash
             }
             if (_documentView != null)
             {
-                new AnnotationManager(_documentView).FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
+                AnnotationManager.FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
             }
             args.Handled = true;
@@ -246,7 +246,7 @@ namespace Dash
                 var srcLinkDoc = link.GetLinkedDocument(LinkDirection.ToSource);
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
-                new AnnotationManager(_documentView).FollowLink(_documentView, link,
+                AnnotationManager.FollowLink(_documentView, link,
                     matches ? LinkDirection.ToDestination : LinkDirection.ToSource,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }

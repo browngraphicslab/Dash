@@ -58,27 +58,11 @@ namespace Dash
                 XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
                 XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
 
-                _annotationOverlay = new AnnotationOverlay(LayoutDocument, RegionGetter);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument);
                 _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
                 XAnnotationGrid.Children.Add(_annotationOverlay);
                 XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
-
-            Loaded += EditableImage_Loaded;
-            // existing annotated regions are loaded with the VisualAnnotationManager
-        }
-
-        private void EditableImage_Loaded(object sender, RoutedEventArgs e)
-        {
-            //LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdated(controller, arg3));
-            
-            //_imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
-        }
-
-        private DocumentController RegionGetter(AnnotationType type)
-        {
-            return new RichTextNote("Image Region").Document;
-            return new ImageNote(_imgctrl.ImageSource).Document;
         }
 
         public async Task ReplaceImage()
@@ -119,7 +103,7 @@ namespace Dash
         }
 
 
-        public async void Revert()
+        public void Revert()
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -443,19 +427,11 @@ namespace Dash
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
-            {
-                using (UndoManager.GetBatchHandle())
-                {
-                    _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
-                }
-                e.Handled = true;
-            }
+            _annotationOverlay.AnnotationOverlayDoubleTapped(sender, e);
         }
 
         public async Task<DocumentController> GetRegionDocument(Point? docViewPoint)
         {
-            return LayoutDocument;
             var regionDoc = await _annotationOverlay.CreateRegionFromPreviewOrSelection();
             if (regionDoc == null)
             {
