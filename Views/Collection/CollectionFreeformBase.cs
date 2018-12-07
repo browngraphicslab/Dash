@@ -678,6 +678,7 @@ namespace Dash
                 if (marqueeDocs.Count > 0)
                 {
                     SelectionManager.SelectDocuments(marqueeDocs, this.IsShiftPressed());
+                    Focus(FocusState.Programmatic);
                 }
                 ResetMarquee(true);
                 if (e != null) e.Handled = true;
@@ -1186,7 +1187,7 @@ namespace Dash
         protected async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             _doubleTapped = false;
-            await System.Threading.Tasks.Task.Delay(100);
+            await Task.Delay(100);
             if (!_doubleTapped)
             {
                 _isMarqueeActive = false;

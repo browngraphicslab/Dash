@@ -35,6 +35,7 @@ namespace Dash
         // interface-required event to communicate with the AnnotationManager about when it's okay to start annotating
 
         public Image Image => xImage;
+        public Viewbox Viewbox => xViewbox;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -55,8 +56,18 @@ namespace Dash
             Image.ImageOpened += (sender, args) =>
             {
                 var source = Image.Source as BitmapSource;
-                XAnnotationGrid.Width = source?.PixelWidth ?? Image.ActualWidth;
-                XAnnotationGrid.Height = source?.PixelHeight ?? Image.ActualHeight;
+                if (source != null)
+                {
+                    var pw = source.PixelWidth;
+                    var scaling = pw > 800 ? 800.0 / pw : 1;
+                    XAnnotationGrid.Width = source.PixelWidth * scaling;
+                    XAnnotationGrid.Height = source.PixelHeight * scaling;
+                }
+                else
+                {
+                    XAnnotationGrid.Width = Image.ActualWidth;
+                    XAnnotationGrid.Height = Image.ActualHeight;
+                }
 
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument);
                 _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
@@ -67,8 +78,6 @@ namespace Dash
 
         public async Task ReplaceImage()
         {
-            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, new Context());
-
             // get the file from the current image controller
             var file = await GetImageFile();
             var fileProperties = await file.Properties.GetImagePropertiesAsync();
@@ -85,6 +94,7 @@ namespace Dash
 
         private async Task<StorageFile> GetImageFile()
         {
+            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, new Context());
             /*
 			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
 			 * try catch is literally the only way we can deal with regular
@@ -110,8 +120,6 @@ namespace Dash
                 // make sure if we have an original image stored (which we always should)
                 if (LayoutDocument.GetDataDocument().GetField(KeyStore.OriginalImageKey) is ImageController originalImage)
                 {
-                    _imgctrl = originalImage;
-
                     LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, originalImage.ImageSource, true);
                     LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
                     LayoutDocument.SetHeight(double.NaN);
@@ -158,11 +166,14 @@ namespace Dash
         // called when the cropclick action is invoked in the image subtoolbar
         public void StartCrop()
         {
+            _cropControl = new StateCropControl(LayoutDocument, this);
             // make sure that we aren't already cropping
-            if (xGrid.Children.Contains(_cropControl)) return;
-            Focus(FocusState.Programmatic);
-            xGrid.Children.Add(_cropControl);
-            IsCropping = true;
+            if (!xGrid.Children.Contains(_cropControl))
+            {
+                Focus(FocusState.Programmatic);
+                xGrid.Children.Add(_cropControl);
+                IsCropping = true;
+            }
         }
 
         private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
@@ -173,7 +184,9 @@ namespace Dash
 
         public async Task Crop(Rect rectangleGeometry)
         {
-            await transformImage(rectangleGeometry, BitmapRotation.None, BitmapFlip.None);
+            var scaling = 1.0 * Image.ActualWidth / ActualWidth;
+            var scaledRect = new Rect(rectangleGeometry.X * scaling, rectangleGeometry.Y * scaling, rectangleGeometry.Width * scaling, rectangleGeometry.Height * scaling);
+            await transformImage(scaledRect, BitmapRotation.None, BitmapFlip.None);
         }
         /// <summary>
         ///     crops the image with respect to the values of the rectangle passed in
@@ -186,7 +199,7 @@ namespace Dash
             var rectangleGeometry = rect != Rect.Empty ? rect : new Rect(0,0, Math.Floor(Image.ActualHeight),Math.Floor(Image.ActualWidth));
             var file = await GetImageFile();
             var fileProperties = await file.Properties.GetImagePropertiesAsync();
-            var fileRot = fileProperties.Orientation;
+            var fileRot = fileProperties.Orientation;  
 
             // retrieves data from rectangle
             var startPointX = (uint)(rectangleGeometry.X      / Image.ActualWidth  * fileProperties.Width);
@@ -301,9 +314,6 @@ namespace Dash
                 var uri = new Uri(newFile.Path);
                 LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, uri, true);
 
-                // store new image information so that multiple crops can be made
-                _imgctrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey,null);
-
                 var oldpoint = LayoutDocument.GetPosition() ?? new Point();
                 var scale = LayoutDocument.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
                 var oldAspect = LayoutDocument.GetActualSize().Value.X / LayoutDocument.GetActualSize().Value.Y;
@@ -315,7 +325,6 @@ namespace Dash
                                       oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
                 LayoutDocument.SetPosition(point);
-                _cropControl = new StateCropControl(LayoutDocument, this);
             }
         }
 
@@ -332,20 +341,17 @@ namespace Dash
             {
                 switch (e.Key)
                 {
-                case VirtualKey.Enter:
-                    // crop the image!
-                    IsCropping = false;
-                    xGrid.Children.Remove(_cropControl);
-                    await Crop(_cropControl.GetBounds());
+                    case VirtualKey.Enter: // crop the image!
+                        IsCropping = false;
+                        xGrid.Children.Remove(_cropControl);
+                        await Crop(_cropControl.GetBounds());
 
-                    break;
-                case VirtualKey.Left:
-                case VirtualKey.Right:
-                case VirtualKey.Up:
-                case VirtualKey.Down:
-                    // moves the bounding box in the key's direction
-                    _cropControl.OnKeyDown(e);
-                    break;
+                        break;
+                    case VirtualKey.Left:
+                    case VirtualKey.Right:
+                    case VirtualKey.Up: // moves the bounding box in the key's direction
+                        _cropControl.OnKeyDown(e);
+                        break;
                 }
                 e.Handled = true;
             }
@@ -354,73 +360,51 @@ namespace Dash
         // removes the cropping controls and allows image to be moved and used when focus is lost
         private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            if (!IsCropping) return;
-            IsCropping = false;
-            xGrid.Children.Remove(_cropControl);
+            if (IsCropping)
+            {
+                IsCropping = false;
+                xGrid.Children.Remove(_cropControl);
+            }
         }
 
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (_annotationOverlay == null)
+            var point = e.GetCurrentPoint(_annotationOverlay);
+            if (_annotationOverlay == null || IsCropping)
             {
                 e.Handled = true;
-                return;
-                
             }
-            if (IsCropping) e.Handled = true;
-
-            var point = e.GetCurrentPoint(_annotationOverlay);
-
-            if (!IsCropping)
+            else if (!IsCropping && SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) &&
+                    point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                if (point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
-                {
-                    _annotationOverlay.EndAnnotation(point.Position);
-                    e.Handled = true;
-                }
-                else if(point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
-                {
-                    _annotationOverlay.UpdateAnnotation(point.Position);
-                    e.Handled = true;
-                }
+                _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
+                e.Handled = true;
+            }
+        }
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint(_annotationOverlay);
+            if (_annotationOverlay == null || IsCropping)
+            {
+                e.Handled = true;
+            }
+            else if (!IsCropping && point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
+            {
+                _annotationOverlay.UpdateAnnotation(point.Position);
+                e.Handled = true;
             }
         }
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (_annotationOverlay == null)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (IsCropping)
-            {
-                e.Handled = true;
-            }
             var point = e.GetCurrentPoint(_annotationOverlay);
-            if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+            if (_annotationOverlay == null || IsCropping)
+            {
+                e.Handled = true;
+            }
+            else if (!IsCropping && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
             {
                 _annotationOverlay.EndAnnotation(point.Position);
-                e.Handled = true;
-            }
-        }
-        
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (_annotationOverlay == null)
-            {
-                e.Handled = true;
-                return;
-            }
-            if (IsCropping)
-            {
-                e.Handled = true;
-            }
-            var point = e.GetCurrentPoint(_annotationOverlay);
-            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) &&
-                point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed&& !IsCropping)
-            {
-                _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
                 e.Handled = true;
             }
         }
@@ -453,24 +437,12 @@ namespace Dash
             return new Point(p.X < 0 ? 30 : p.X > this._annotationOverlay.ActualWidth ? this._annotationOverlay.ActualWidth - 30 : p.X,
                              p.Y < 0 ? 30 : p.Y > this._annotationOverlay.ActualHeight ? this._annotationOverlay.ActualHeight - 30 : p.Y);
         }
-
-        public void ShowRegions()
+        public void SetRegionVisibility(Visibility state)
         {
-            if (_annotationOverlay != null)
-            {
-                _annotationOverlay.Visibility = Visibility.Visible;
-            }
+            _annotationOverlay.Visibility = state;
+            XAnnotationGridWithEmbeddings.Visibility = state;
         }
-
-        public void HideRegions()
-        {
-            if (_annotationOverlay != null)
-            {
-                _annotationOverlay.Visibility = Visibility.Collapsed;
-            }
-        }
-
-
+        
         public bool AreAnnotationsVisible()
         {
             return _annotationOverlay?.Visibility == Visibility.Visible;

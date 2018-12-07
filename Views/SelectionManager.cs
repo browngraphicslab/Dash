@@ -181,7 +181,12 @@ namespace Dash
         private static void SelectHelper(DocumentView view)
         {
             view.OnSelected();
-            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => rv.IsEnabled = true);
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv =>
+            {
+                rv.IsEnabled = true;
+                rv.Focus(FocusState.Programmatic);
+            });
+
          }
 
         private static void DeselectHelper(DocumentView view)

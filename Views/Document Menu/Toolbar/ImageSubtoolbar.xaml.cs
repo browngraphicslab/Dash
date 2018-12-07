@@ -72,8 +72,10 @@ namespace Dash
 
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentImage.IsCropping) return;
-            _currentImage.StartCrop();
+            if (!_currentImage.IsCropping)
+            {
+                _currentImage.StartCrop();
+            }
         }
 
         /// <summary>
@@ -166,16 +168,16 @@ namespace Dash
         }
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
-	    {
-			_currentImage?.ShowRegions();
-		    xToggleAnnotations.Label = "Visible";
-	    }
+        {
+            _currentImage?.SetRegionVisibility(Visibility.Visible);
+            xToggleAnnotations.Label = "Visible";
+        }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
-            _currentImage?.HideRegions();
-		    xToggleAnnotations.Label = "Hidden";
-	    }
+            _currentImage?.SetRegionVisibility(Visibility.Collapsed);
+            xToggleAnnotations.Label = "Hidden";
+        }
 
         private ToolTip _toggle;
         private ToolTip _crop;

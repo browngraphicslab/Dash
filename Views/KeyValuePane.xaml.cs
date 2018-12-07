@@ -53,11 +53,6 @@ namespace Dash
 
             DataContextChanged += KeyValuePane_DataContextChanged;
 
-            if (AllowClose)
-            {
-                xCloseButton.Visibility = Visibility.Collapsed;
-            }
-
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
         }
@@ -194,16 +189,6 @@ namespace Dash
             }
         }
 
-        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                this.GetFirstAncestorOfType<DocumentView>().DeleteDocument();
-            }
-
-            e.Handled = true;
-        }
-
         /// <summary>
         /// add new key value pair on enter in list view of key value grid
         /// </summary>
@@ -256,34 +241,12 @@ namespace Dash
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
-        private void SwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void SwitchButton_Tapped(object sender, RoutedEventArgs e)
         {
             _showDataDoc = !_showDataDoc;
             xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
 
-            OffsetMarginOnToggle();
-
             SetListItemSourceToCurrentDataContext();
-        }
-
-        private void xDocBlock_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            _showDataDoc = !_showDataDoc;
-            xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
-
-            OffsetMarginOnToggle();
-
-            SetListItemSourceToCurrentDataContext();
-        }
-
-        private void OffsetMarginOnToggle()
-        {
-            var margin = new Thickness
-            {
-                Top = -4,
-                Left = xDocBlock.Text.Equals("Data") ? -12 : -30
-            };
-            xDocBlock.Margin = margin;
         }
 
         private void xFieldListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -10,7 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     CanDrag="True" 
-    PointerExited="LinkButton_PointerExited" PointerEntered="LinkButton_PointerEntered"  PointerPressed="LinkButton_PointerPressed" 
+    PointerExited="LinkButton_PointerExited" PointerEntered="LinkButton_PointerEntered"  DoubleTapped="LinkButton_DoubleTapped"
     DragStarting="LinkButton_DragStarting" Tapped="LinkButton_Tapped" RightTapped="LinkButton_RightTapped"
     Width="22" 
     Height="22">

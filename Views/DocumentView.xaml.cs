@@ -772,7 +772,17 @@ namespace Dash
         }
 
         #region Context menu click handlers
-
+        private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
+                    var kvp = doc.ViewModel.DocumentController.GetKeyValueAlias();
+                    MainPage.Instance.AddFloatingDoc(kvp, new Point(500, 300), MainPage.Instance.xCanvas.PointerPos());
+                }
+            }
+        }
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
@@ -975,6 +985,12 @@ namespace Dash
         {
             xMenuFlyout.Items.Clear();
 
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Fields",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Database }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Open",

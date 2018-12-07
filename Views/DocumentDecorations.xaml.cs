@@ -451,20 +451,22 @@ namespace Dash
             touchActivated = false;
         }
 
-        private void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            _doubleTapped = false;
+            await System.Threading.Tasks.Task.Delay(100);
+            if (!_doubleTapped)
+            {
+                SelectedDocs.First().MenuFlyout.ShowAt(null, e.GetPosition(MainPage.Instance));
+            }
+        }
+        private bool _doubleTapped = false;
+        private void xAnnotateEllipseBorder_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _doubleTapped = true;
             var kvp = SelectedDocs.First().ViewModel.DocumentController.GetKeyValueAlias(new Point());
             MainPage.Instance.AddFloatingDoc(kvp, new Point(500, 300), e.GetPosition(MainPage.Instance.xCanvas));
-            //foreach (var doc in SelectedDocs)
-            //{
-            //    var ann = new AnnotationManager(doc);
-            //    if (doc.ViewModel != null)
-            //        ann.FollowRegion(doc, doc.ViewModel.DocumentController, doc.GetAncestorsOfType<ILinkHandler>(),
-            //            e.GetPosition(doc));
-            //}
         }
-
-
         private void AllEllipses_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
         }
@@ -709,6 +711,7 @@ namespace Dash
                 documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey, Math.Max(0, searchIndex + change), true);
             }
         }
+
 
         private bool updateSearchString()
         {

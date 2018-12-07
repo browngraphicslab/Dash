@@ -45,9 +45,6 @@ namespace Dash
 
         protected static void BindImageSource(EditableImage editableImage, DocumentController docController, KeyController key, Context context)
         {
-            var image = editableImage.Image;
-            editableImage.HorizontalAlignment = HorizontalAlignment.Left;
-            editableImage.VerticalAlignment = VerticalAlignment.Top;
             var binding = new FieldBinding<ImageController>
             {
                 Document = docController,
@@ -56,7 +53,7 @@ namespace Dash
                 Context = context,
                 Converter = UriToBitmapImageConverter.Instance
             };
-            image.AddFieldBinding(Image.SourceProperty, binding);
+            editableImage.Image.AddFieldBinding(Image.SourceProperty, binding);
             var binding2 = new FieldBinding<TextController>
             {
                 Document = docController,
@@ -66,14 +63,12 @@ namespace Dash
                 Converter = new StringToEnumConverter<Stretch>(),
                 FallbackValue = Stretch.Uniform
             };
-            image.AddFieldBinding(Image.StretchProperty, binding2);
+            editableImage.Viewbox.AddFieldBinding(Viewbox.StretchProperty, binding2);
         }
 
 	    public static Task<DocumentController> MakeRegionDocument(DocumentView image, Point? point)
 	    {
 		    return image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
 	    }
-
-		
 	}
 }

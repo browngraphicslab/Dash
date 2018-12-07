@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -73,10 +75,6 @@ namespace Dash
             }
             _allKeys = matchingLinkDocs.ToList();
         }
-
-        private void LinkButton_PointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-        }
         
         private void LinkButton_PointerExited(object sender, PointerRoutedEventArgs args)
         {
@@ -88,19 +86,33 @@ namespace Dash
             _tooltip.IsOpen = true;
         }
 
+        private bool _doubleTapped = false;
         //follows the link. if there is only one link tagged under this tag, it zooms to that link's position. otherwise it zooms to the last link added with this tag.
-        private void LinkButton_Tapped(object sender, TappedRoutedEventArgs args)
+        private async void LinkButton_Tapped(object sender, TappedRoutedEventArgs args)
         {
-            if (_tooltip.IsOpen)
+            _doubleTapped = false;
+            await Task.Delay(new TimeSpan(0, 0, 0, 0, 100));
+            if (!_doubleTapped)
             {
-                _tooltip.IsOpen = false;
-            }
-            if (_documentView != null)
-            {
-                AnnotationManager.FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
-                    _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
+                if (_tooltip.IsOpen)
+                {
+                    _tooltip.IsOpen = false;
+                }
+                if (_documentView != null)
+                {
+                    AnnotationManager.FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
+                        _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
+                }
             }
             args.Handled = true;
+        }
+
+        private void LinkButton_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _doubleTapped = true;
+            OpenFlyout(sender as FrameworkElement, null);
+            xLinkList.SelectedItem = null;
+            e.Handled = true;
         }
 
         public void LinkButton_RightTapped(object sender, RightTappedRoutedEventArgs e)

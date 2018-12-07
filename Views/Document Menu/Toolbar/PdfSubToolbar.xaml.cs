@@ -25,14 +25,12 @@ namespace Dash
 
         private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
-            // xPdfCommandbar.IsOpen = true;
             _currentPdfView?.SetRegionVisibility(Visibility.Visible);
             xToggleAnnotations.Label = "Visible";
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
-            // xPdfCommandbar.IsOpen = true;
             _currentPdfView?.SetRegionVisibility(Visibility.Collapsed);
             xToggleAnnotations.Label = "Hidden";
 	    }

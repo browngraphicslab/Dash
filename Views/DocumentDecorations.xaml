@@ -116,7 +116,8 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
-                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
+                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" 
+                            Tapped="XAnnotateEllipseBorder_OnTapped" DoubleTapped="xAnnotateEllipseBorder_DoubleTapped"
                             DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                     <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
                     <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>

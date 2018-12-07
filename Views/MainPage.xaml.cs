@@ -1092,6 +1092,7 @@ function (d) {
             //put popup slightly left of center, so its not covered centered doc
             var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
 
+            FieldControllerBase.MakeRoot(docCopy); // when do I release this?
             var docView = new DocumentView
             {
                 DataContext = new DocumentViewModel(docCopy),
