@@ -446,6 +446,10 @@ namespace Dash
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            if (_annotationOverlay == null)
+            {
+                return;
+            }
             using (UndoManager.GetBatchHandle())
             {
                 _annotationOverlay.EmbedDocumentWithPin(e.GetPosition(_annotationOverlay));
@@ -454,18 +458,18 @@ namespace Dash
 
         public async Task<DocumentController> GetRegionDocument(Point? docViewPoint)
         {
-            var regionDoc = await _annotationOverlay.CreateRegionFromPreviewOrSelection();
+            var regionDoc = _annotationOverlay != null ? await _annotationOverlay.CreateRegionFromPreviewOrSelection() : null;
             if (regionDoc == null)
             {
-                if (docViewPoint != null)
-                {
-                    //else, make a new push pin region closest to given point
-                    var overlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _annotationOverlay);
-                    var newPoint = calculateClosestPointOnImage(overlayPoint);
+                //if (docViewPoint != null)
+                //{
+                //    //else, make a new push pin region closest to given point
+                //    var overlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _annotationOverlay);
+                //    var newPoint = calculateClosestPointOnImage(overlayPoint);
 
-                    regionDoc = _annotationOverlay.CreatePinRegion(newPoint);
-                }
-                else
+                //    regionDoc = _annotationOverlay?.CreatePinRegion(newPoint);
+                //}
+                //else
                     regionDoc = LayoutDocument;
             }
             return regionDoc;
