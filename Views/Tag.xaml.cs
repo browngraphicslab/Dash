@@ -91,9 +91,6 @@ namespace Dash
 
         public void Select()
         {
-
-
-
             foreach (var tag in _linkMenu.RecentTags)
             {
                 tag.Deselect();
@@ -132,8 +129,8 @@ namespace Dash
             }
 
             _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, Text, true);
-            MainPage.Instance.XDocumentDecorations.AddLinkTypeButton(Text);
-            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+            //MainPage.Instance.XDocumentDecorations.AddLinkTypeButton(Text);
+            //MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
 
         }
 

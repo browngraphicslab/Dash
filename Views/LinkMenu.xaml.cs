@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using System.Runtime.InteropServices;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -134,25 +135,27 @@ namespace Dash
                 }
             }
 
-            if (!this.IsInVisualTree())
+            try
             {
-                return;
+                var behavior = LinkDoc.DataDocument.GetLinkBehavior();
+                switch (behavior)
+                {
+                case LinkBehavior.Follow:
+                    xTypeFollow.IsChecked = true;
+                    break;
+                case LinkBehavior.Annotate:
+                    xTypeAnnotation.IsChecked = true;
+                    break;
+                case LinkBehavior.Dock:
+                    xTypeDock.IsChecked = true;
+                    break;
+                case LinkBehavior.Float:
+                    xTypeFloat.IsChecked = true;
+                    break;
+                }
             }
-            var behavior = LinkDoc.DataDocument.GetLinkBehavior();
-            switch (behavior)
+            catch (COMException)
             {
-            case LinkBehavior.Follow:
-                xTypeFollow.IsChecked = true;
-                break;
-            case LinkBehavior.Annotate:
-                xTypeAnnotation.IsChecked = true;
-                break;
-            case LinkBehavior.Dock:
-                xTypeDock.IsChecked = true;
-                break;
-            case LinkBehavior.Float:
-                xTypeFloat.IsChecked = true;
-                break;
             }
         }
 
