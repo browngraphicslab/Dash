@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -19,21 +15,53 @@ namespace Dash
             return newDoc;
         }
 
+        private static void FitContents(CollectionView cv)
+        {
+            var parSize = new Point(cv.ActualWidth, cv.ActualHeight);
+            var ar = cv.ViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
+                    .Aggregate(Rect.Empty, (rect, dv) =>
+                    {
+                        var pos = dv.GetPosition() ?? new Point();
+                        var size = dv.GetActualSize() ?? new Point();
+                        rect.Union(new Rect(pos.X, pos.Y, size.X, size.Y));
+                        return rect;
+                    });
+
+            if (ar is Rect r && !r.IsEmpty)
+            {
+                var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                bool scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                double scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
+                if (scaleAmt > 0)
+                {
+                    cv.ViewModel.TransformGroup = new TransformGroupData(trans, new Point(scaleAmt, scaleAmt));
+                }
+            }
+        }
+
         public static DocumentController OpenInInactiveFrame(DocumentController doc)
         {
             var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
             if (frames.Count == 0)
             {
-                return ActiveFrame.Split(SplitDirection.Right, doc, true);
+                var documentController = ActiveFrame.Split(SplitDirection.Right, doc, true);
+                frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
+                if (frames[0].ViewModel.Content is CollectionView cv)
+                {
+                    frames[0].UpdateLayout();
+                    FitContents(cv);
+                }
+                return documentController;
             }
             else
             {
                 var frame = frames[0];
-                var area = frame.ActualWidth * frame.ActualHeight;
-                for (var i = 1; i < frames.Count; ++i)
+                double area = frame.ActualWidth * frame.ActualHeight;
+                for (int i = 1; i < frames.Count; ++i)
                 {
                     var curFrame = frames[i];
-                    var curArea = curFrame.ActualWidth * curFrame.ActualHeight;
+                    double curArea = curFrame.ActualWidth * curFrame.ActualHeight;
                     if (curArea > area)
                     {
                         area = curArea;
@@ -49,7 +77,12 @@ namespace Dash
                 //    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
                 //}
 
-                return frame.OpenDocument(doc);
+                var document = frame.OpenDocument(doc);
+                if (frame.ViewModel.Content is CollectionView cv)
+                {
+                    FitContents(cv);
+                }
+                return document;
             }
         }
 
@@ -63,11 +96,11 @@ namespace Dash
             center.X *= -1;
             center.Y *= -1;
 
-            var widthRatio = ActualWidth / size.X;
-            var heightRatio = ActualHeight / size.Y;
+            double widthRatio = ActualWidth / size.X;
+            double heightRatio = ActualHeight / size.Y;
             widthRatio = Math.Clamp(widthRatio, 0.2, 6);
             heightRatio = Math.Clamp(heightRatio, 0.2, 6);
-            var scale = Math.Min(widthRatio, heightRatio);
+            double scale = Math.Min(widthRatio, heightRatio);
             scale *= 0.8;
 
             var col = ViewModel.Content as CollectionView;
@@ -92,29 +125,29 @@ namespace Dash
             {
                 return ActiveFrame.Split(SplitDirection.Right, doc, true);
             }
-                var frame = frames[0];
-                var area = frame.ActualWidth * frame.ActualHeight;
-                for (var i = 1; i < frames.Count; ++i)
+            var frame = frames[0];
+            double area = frame.ActualWidth * frame.ActualHeight;
+            for (int i = 1; i < frames.Count; ++i)
+            {
+                // TODO: prioritize frames with workspace already open
+                var curFrame = frames[i];
+                double curArea = curFrame.ActualWidth * curFrame.ActualHeight;
+                if (curArea > area)
                 {
-                    // TODO: prioritize frames with workspace already open
-                    var curFrame = frames[i];
-                    var curArea = curFrame.ActualWidth * curFrame.ActualHeight;
-                    if (curArea > area)
-                    {
-                        area = curArea;
-                        frame = curFrame;
-                    }
+                    area = curArea;
+                    frame = curFrame;
                 }
+            }
 
-                //if (frame.ActualWidth < MainPage.Instance.ActualWidth / 2)
-                //{
-                //    var columns = frame.GetFirstAncestorOfType<SplitManager>().GetFirstAncestorOfType<SplitManager>().Columns;
-                //    var frameCol = Grid.GetColumn(frame.GetFirstAncestorOfType<SplitManager>());
-                //    columns[frameCol].Width = new GridLength(1, GridUnitType.Star);
-                //    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
-                //}
+            //if (frame.ActualWidth < MainPage.Instance.ActualWidth / 2)
+            //{
+            //    var columns = frame.GetFirstAncestorOfType<SplitManager>().GetFirstAncestorOfType<SplitManager>().Columns;
+            //    var frameCol = Grid.GetColumn(frame.GetFirstAncestorOfType<SplitManager>());
+            //    columns[frameCol].Width = new GridLength(1, GridUnitType.Star);
+            //    columns[frameCol - 2].Width = new GridLength(1, GridUnitType.Star);
+            //}
 
-                return frame.OpenDocument(doc,workspace);
+            return frame.OpenDocument(doc, workspace);
         }
 
         public static DocumentController OpenDocumentInWorkspace(DocumentController document, DocumentController workspace)

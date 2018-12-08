@@ -127,6 +127,7 @@ namespace Dash
             XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
+        //TODO this should maybe return the SplitFrame that is creates, instead of the document it fills it with
         public DocumentController Split(SplitDirection dir, DocumentController doc = null, bool autosize = false)
         {
             if (dir == SplitDirection.InPlace)
