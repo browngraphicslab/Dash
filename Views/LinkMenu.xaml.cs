@@ -125,36 +125,29 @@ namespace Dash
                 Mode = BindingMode.TwoWay
             };
             xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
-            String text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey).Data;
 
             foreach (var tag in xTagContainer.Children)
             {
-                if ((tag as Tag).Text.Equals(LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkTagKey).Data))
+                if (((Tag) tag).Text.Equals(LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkTagKey).Data))
                 {
-                    (tag as Tag).fakeSelect();
+                    ((Tag) tag).fakeSelect();
                 }
             }
 
-            if (!this.IsInVisualTree())
+            var behavior = LinkDoc.DataDocument.GetLinkBehavior();
+            switch (behavior)
             {
-                return;
-            }
-            switch (text)
-            {
-            
-            case "Follow":
+            case LinkBehavior.Follow:
                 xTypeFollow.IsChecked = true;
                 break;
-            case "Annotate":
+            case LinkBehavior.Annotate:
                 xTypeAnnotation.IsChecked = true;
                 break;
-            case "Dock":
+            case LinkBehavior.Dock:
                 xTypeDock.IsChecked = true;
                 break;
-            case "Float":
+            case LinkBehavior.Float:
                 xTypeFloat.IsChecked = true;
-                break;
-            default:
                 break;
             }
         }
@@ -313,8 +306,6 @@ namespace Dash
 
         private void xLinkBehavior_OnChecked(object sender, RoutedEventArgs e)
         {
-            //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
-            //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
             if (sender == xTypeFollow)
             {
                 LinkDoc.DataDocument.SetLinkBehavior(LinkBehavior.Follow);

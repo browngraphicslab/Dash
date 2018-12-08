@@ -159,7 +159,6 @@
             <TextBlock x:Name="xHelpPrompt" Visibility="Collapsed" Opacity="0" x:FieldModifier="public" TextAlignment="Center" FontSize="16" Padding="0, 22, 0, 0"/>
             <Grid Margin="0, 30, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <ListView 
@@ -170,7 +169,7 @@
                     CanReorderItems="True"
                     AllowDrop="True" 
                     HorizontalAlignment="Stretch" 
-                    Grid.Column="1" 
+                    Grid.Column="0" 
                     Opacity="0"
                     SelectionMode="None" 
                     IsItemClickEnabled="True" 
@@ -194,13 +193,12 @@
                         <DataTemplate x:DataType="dash:PresentationItemViewModel">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="30"/>
-                                    <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
-                                <local:PresentationViewTextBox FontSize="16" Grid.Column="1" HorizontalAlignment="Stretch" />
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="3">
+                                <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch" />
+                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="2">
                                     <SymbolIcon Symbol="Delete"/>
                                 </Button>
                             </Grid>
