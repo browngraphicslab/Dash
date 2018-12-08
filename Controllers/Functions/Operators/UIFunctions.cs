@@ -129,7 +129,7 @@ namespace Dash
 
         public static void TogglePresentation()
         {
-            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
+            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed, false);
         }
 
         public static void ExportWorkspace()

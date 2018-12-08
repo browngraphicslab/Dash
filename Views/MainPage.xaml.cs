@@ -1,11 +1,15 @@
-﻿using DashShared;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Web;
+using Dash.Popups;
+using Dash.Popups.TemplatePopups;
+using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Controls;
+using MyToolkit.Multimedia;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.System;
@@ -19,16 +23,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
-using Dash.Popups;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
-using System.Web;
-using Windows.UI.Input;
-using Windows.UI.Xaml.Media.Imaging;
-using MyToolkit.Multimedia;
-using Windows.Storage.Pickers;
-using Dash.Popups.TemplatePopups;
-using static Dash.DocumentController;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -62,16 +58,16 @@ namespace Dash
 
         public PresentationViewState CurrPresViewState
         {
-            get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
+            get => xPresentationView.ActualWidth > 0 ? PresentationViewState.Expanded : PresentationViewState.Collapsed;//return MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)//           ?.Data ?? false//    ? PresentationViewState.Expanded//    : PresentationViewState.Collapsed;
             set
             {
-                bool state = value == PresentationViewState.Expanded;
-                MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, state, true);
+                //bool state = value == PresentationViewState.Expanded;
+                //MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, state, true);
             }
         }
 
         private Point? _forceFocusPoint;
-        public Point? ForceFocusPoint { get => _forceFocusPoint; }
+        public Point? ForceFocusPoint => _forceFocusPoint;
         public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
             _forceFocusPoint = where;
@@ -117,9 +113,10 @@ namespace Dash
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
-            
+
 
             SetUpToolTips();
+            SetUpAnimations();
 
             Loaded += (s, e) =>
             {
@@ -191,7 +188,7 @@ namespace Dash
 
         private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
         {
-            var value = e.Value as string;
+            string value = e.Value as string;
             Debug.WriteLine("val = " + value);
         }
 
@@ -291,7 +288,7 @@ namespace Dash
             // var mainPageCollectionView =
             //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
             // mainPageCollectionView.ViewModel.AddDocument(docC);
-            
+
             EventManager.LoadEvents(MainDocument.GetField<ListController<DocumentController>>(KeyStore.EventManagerKey));
             MenuToolbar.Instance.xStackPanel.Children.Remove(MenuToolbar.Instance.xSubtoolbarStackPanel);
             customTitleBar.Children.Add(MenuToolbar.Instance.xSubtoolbarStackPanel);
@@ -328,8 +325,10 @@ namespace Dash
             return false;
         }
 
-        public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
-
+        public void OverlayVisibility(Visibility visibility)
+        {
+            xOverlay.Visibility = visibility;
+        }
 
         private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
@@ -350,7 +349,7 @@ namespace Dash
         <TextBlock.RenderTransform>
             <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
         </TextBlock.RenderTransform>
-" : "") +  @"
+" : "") + @"
     </TextBlock>
 </Grid>", true);
             doc.SetField<TextController>(KeyStore.DataKey, icon, true);
@@ -750,6 +749,21 @@ function (d) {
         //    xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         //}
 
+        private void SetUpAnimations()
+        {
+            xPresentationExpand.Completed += (sender, o) =>
+            {
+                xPresentationView.xContentIn.Begin();
+                xPresentationView.xHelpIn.Begin();
+            };
+            xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
+            xPresentationView.xSettingsIn.Completed += (sender, o) =>
+            {
+                bool? isChecked = xPresentationView.xShowLinesButton.IsChecked;
+                if (isChecked ?? false) xPresentationView.ShowLines();
+            };
+        }
+
         public void SetPresentationState(bool expand, bool animate = true)
         {
             //    TogglePresentationMode(expand);
@@ -760,21 +774,10 @@ function (d) {
                 if (animate)
                 {
                     xPresentationExpand.Begin();
-                    xPresentationExpand.Completed += (sender, o) =>
-                    {
-                        xPresentationView.xContentIn.Begin();
-                        xPresentationView.xHelpIn.Begin();
-                    };
-                    xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
-                    xPresentationView.xSettingsIn.Completed += (sender, o) =>
-                    {
-                        var isChecked = xPresentationView.xShowLinesButton.IsChecked;
-                        if (isChecked ?? false) xPresentationView.ShowLines();
-                    };
                 }
                 else
                 {
-                    xUtilTabColumn.MinWidth = 300;
+                    xUtilTabColumn.Width = new GridLength(300);
                     xPresentationView.SimulateAnimation(true);
                 }
 
@@ -793,7 +796,7 @@ function (d) {
                 }
                 else
                 {
-                    xUtilTabColumn.MinWidth = 0;
+                    xUtilTabColumn.Width = new GridLength(0);
                     xPresentationView.SimulateAnimation(false);
                 }
 
@@ -839,7 +842,7 @@ function (d) {
             if (templateType == TemplateList.TemplateType.None)
                 return null;
 
-            var fields = 
+            var fields =
                 docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
                 Aggregate((a, b) => a.Intersect(b));
 
@@ -879,12 +882,12 @@ function (d) {
             var customLayout = await templatePopup.GetLayout();
             UnsetPopup();
 
-            var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
+            string templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
 
-            var splitXaml = templateXaml.Split(" ", StringSplitOptions.None);
+            string[] splitXaml = templateXaml.Split(" ", StringSplitOptions.None);
             for (int i = 0; i < customLayout.Count; i++)
             {
-                for(int j=0; j<splitXaml.Length;j++)
+                for (int j = 0; j < splitXaml.Length; j++)
                 {
                     if (splitXaml[j].Contains("Field" + i))
                     {
@@ -899,7 +902,7 @@ function (d) {
                 }
             }
 
-            var stringXaml = string.Join(" ", splitXaml);
+            string stringXaml = string.Join(" ", splitXaml);
             return stringXaml;
         }
 
@@ -928,7 +931,7 @@ function (d) {
                     return await new VideoToDashUtil().ParseFileAsync(video.File);
                 case VideoType.Uri:
                     var query = HttpUtility.ParseQueryString(video.Uri.Query);
-                    var videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
+                    string videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
 
                     try
                     {
@@ -1014,7 +1017,7 @@ function (d) {
 
             if (onScreenView != null)
             {
-                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
+                bool highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
                 onScreenView.ViewModel.SetHighlight(true);
                 if (highlighted)
                 {
@@ -1065,9 +1068,9 @@ function (d) {
                 docCopy.SetHeight(300);
                 docCopy.SetFitToParent(true);
             }
-            var origWidth = doc.GetWidth();
-            var origHeight = doc.GetHeight();
-            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
+            double origWidth = doc.GetWidth();
+            double origHeight = doc.GetHeight();
+            double aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
             if (!doc.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 docCopy.SetWidth(size?.X ?? 150);
@@ -1136,14 +1139,14 @@ function (d) {
 
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
-                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
+                bool highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
                     //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
                     //AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
                     //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
-                  
+
                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
@@ -1153,7 +1156,8 @@ function (d) {
                 {
                     onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
                     onScreenView.ViewModel.SetHighlight(true);
-                } else
+                }
+                else
                 {
                     onScreenView.ViewModel.SetHighlight(false);
                     onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegion());

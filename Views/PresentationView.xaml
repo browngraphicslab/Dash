@@ -17,18 +17,21 @@
                 Storyboard.TargetProperty="MinHeight"
                 To="60"
                 Duration="0:0:0.3"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
             <DoubleAnimation 
                 Storyboard.TargetName="xPinnedNodesListView"
                 Storyboard.TargetProperty="Opacity"
                 To="1"
                 Duration="0:0:0.5"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
             <DoubleAnimation 
                 Storyboard.TargetName="xPresentationTitle"
                 Storyboard.TargetProperty="Opacity"
                 To="1"
                 Duration="0:0:0.2"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
         </Storyboard>
         <Storyboard x:Name="xContentOut" x:FieldModifier="public">
@@ -38,18 +41,21 @@
                 To="0"
                 Duration="0:0:0.2"
                 EnableDependentAnimation="True"
+                FillBehavior="Stop"
                 Completed="Timeline_OnCompleted"/>
             <DoubleAnimation 
                 Storyboard.TargetName="xPinnedNodesListView"
                 Storyboard.TargetProperty="Opacity"
                 To="0"
                 Duration="0:0:0.2"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
             <DoubleAnimation 
                 Storyboard.TargetName="xPresentationTitle"
                 Storyboard.TargetProperty="Opacity"
                 To="0"
                 Duration="0:0:0.2"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
         </Storyboard>
         <Storyboard x:Name="xSettingsIn" x:FieldModifier="public">
@@ -58,6 +64,7 @@
                 Storyboard.TargetProperty="Opacity"
                 To="1"
                 Duration="0:0:0.4"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
         </Storyboard>
         <Storyboard x:Name="xSettingsOut" x:FieldModifier="public">
@@ -66,6 +73,7 @@
                 Storyboard.TargetProperty="Opacity"
                 To="0"
                 Duration="0:0:0.2"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
         </Storyboard>
         <Storyboard x:Name="xHelpIn" x:FieldModifier="public">
@@ -74,6 +82,7 @@
                 Storyboard.TargetProperty="Opacity"
                 To="0.5"
                 Duration="0:0:0.2"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
         </Storyboard>
         <Storyboard x:Name="xHelpOut" x:FieldModifier="public">
@@ -82,6 +91,7 @@
                 Storyboard.TargetProperty="Opacity"
                 To="0"
                 Duration="0:0:0.2"
+                FillBehavior="Stop"
                 EnableDependentAnimation="True"/>
         </Storyboard>
     </UserControl.Resources>
@@ -118,7 +128,7 @@
                     <ToolTip Content="Settings" Placement="Bottom" VerticalOffset="30" />
                 </ToolTipService.ToolTip>
             </TextBlock>
-            <TextBlock x:Name="xPresentationTitle" Grid.Column="1" Foreground="White" TextAlignment="Center" Text="Presentation Mode" FontSize="20" HorizontalAlignment="Center" />
+            <TextBlock x:Name="xPresentationTitle" Grid.Column="1" Foreground="White" TextAlignment="Center" Text="Presentation" FontSize="20" HorizontalAlignment="Center" />
             <Button x:Name="xClosePresentation" Grid.Column="2" Click="XClosePresentation_OnClick" Background="LightGray"
                     VerticalAlignment="Center" HorizontalAlignment="Center">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BB;" FontSize="9" Margin="5" />

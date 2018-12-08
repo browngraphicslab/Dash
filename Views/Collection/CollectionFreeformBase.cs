@@ -10,7 +10,6 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
 using NewControls.Geometry;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.Input;
@@ -145,7 +144,7 @@ namespace Dash
             var settingsView = MainPage.Instance.GetSettingsView;
             if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
             {
-                var storedPath = settingsView.CustomImagePath;
+                string storedPath = settingsView.CustomImagePath;
                 if (storedPath != null) _background = storedPath;
             }
             else
@@ -166,7 +165,7 @@ namespace Dash
                 var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
                                             new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
                 var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
-                var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
+                double newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
                 if (newHeight != _backgroundCanvas.Height)
                 {
                     _backgroundCanvas.Height = newHeight;
@@ -246,7 +245,7 @@ namespace Dash
             _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
 
             Debug.Assert(_transformBeingAnimated != null);
-            var milliseconds = 1000;
+            int milliseconds = 1000;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
 
             //Clear storyboard
@@ -259,8 +258,8 @@ namespace Dash
             _storyboard2 = new Storyboard { Duration = duration };
 
 
-            var startX = _transformBeingAnimated.Matrix.OffsetX;
-            var startY = _transformBeingAnimated.Matrix.OffsetY;
+            double startX = _transformBeingAnimated.Matrix.OffsetX;
+            double startY = _transformBeingAnimated.Matrix.OffsetY;
 
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
@@ -308,7 +307,7 @@ namespace Dash
             _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
 
             Debug.Assert(_transformBeingAnimated != null);
-            var milliseconds = 1000;
+            int milliseconds = 1000;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
 
             //Clear storyboard
@@ -322,19 +321,22 @@ namespace Dash
 
             var startMatrix = _transformBeingAnimated.Matrix;
 
-            var scaleMatrix = scale.GetMatrix();
+            var group = new TransformGroup();
+            group.Children.Add(scale);
+            group.Children.Add(translate);
+            var endMatrix = group.Value;
 
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
             //the higher number, the more it xooms, but doesn't actually change final view 
-            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
-            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
+            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, endMatrix.M11, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, endMatrix.M22, "MatrixTransform.Matrix.M22", duration);
 
             _storyboard1.Children.Add(zoomAnimationX);
             _storyboard1.Children.Add(zoomAnimationY);
 
             // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, endMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, endMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
@@ -524,7 +526,7 @@ namespace Dash
             {
                 var ff    = this as CollectionFreeformView;
                 var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
-                var scale = mat?.Matrix.M11 ?? 1;
+                double scale = mat?.Matrix.M11 ?? 1;
                 // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
                 _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
                 _bgBrush.Opacity = _bgOpacity;
@@ -614,7 +616,7 @@ namespace Dash
 
                     var matrix = composite.Value;
 
-                    var aliasSafeScale = matrix.M11;// clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+                    double aliasSafeScale = matrix.M11;// clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
                     _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
                         (float)matrix.M12,
                         (float)matrix.M21,
@@ -709,8 +711,8 @@ namespace Dash
         {
             if (_isMarqueeActive)
             {
-                var dX = pos.X - _marqueeAnchor.X;
-                var dY = pos.Y - _marqueeAnchor.Y;
+                double dX = pos.X - _marqueeAnchor.X;
+                double dY = pos.Y - _marqueeAnchor.Y;
 
                 //Debug.WriteLine(dX + " and " + dY);
 
@@ -839,7 +841,7 @@ namespace Dash
         {
             if (!(FocusManager.GetFocusedElement() is RichEditBox) && !(FocusManager.GetFocusedElement() is TextBox))
             {
-                var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
+                bool useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
                 TriggerActionFromSelection(e.Key, useMarquee);
             }
             PreviewTextBuffer += Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
@@ -910,8 +912,8 @@ namespace Dash
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
                 topLeftMostPoint.Y = doc.ViewModel.Position.Y < topLeftMostPoint.Y ? doc.ViewModel.Position.Y : topLeftMostPoint.Y;
-                var actualX = (double.IsNaN(doc.ViewModel.ActualSize.X) ? 0 : doc.ViewModel.ActualSize.X);
-                var actualY =(double.IsNaN(doc.ViewModel.ActualSize.Y) ? 0 : doc.ViewModel.ActualSize.Y);
+                double actualX = (double.IsNaN(doc.ViewModel.ActualSize.X) ? 0 : doc.ViewModel.ActualSize.X);
+                double actualY =(double.IsNaN(doc.ViewModel.ActualSize.Y) ? 0 : doc.ViewModel.ActualSize.Y);
                 bottomRightMostPoint.X = doc.ViewModel.Position.X + actualX > bottomRightMostPoint.X
                     ? doc.ViewModel.Position.X + actualX : bottomRightMostPoint.X;
                 bottomRightMostPoint.Y = doc.ViewModel.Position.Y + actualY > bottomRightMostPoint.Y
@@ -970,7 +972,7 @@ namespace Dash
 
             var type = CollectionViewType.Freeform;
 
-            var deselect = false;
+            bool deselect = false;
             if (!(this.IsAltPressed()))
             {
                 switch (modifier)
@@ -1012,7 +1014,7 @@ namespace Dash
                         {
                             var docDec = MainPage.Instance.XDocumentDecorations;
                             var rect = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
-                            var centered = MainPage.Instance.IsCtrlPressed();
+                            bool centered = MainPage.Instance.IsCtrlPressed();
                             foreach (var v in views)
                             {
                                 double alignedX = v.ViewModel.LayoutDocument.GetPosition().Value.X;
@@ -1036,15 +1038,15 @@ namespace Dash
                     {
                         DoAction((views, where, size) =>
                         {
-                            var sortY = modifier == VirtualKey.Down || modifier == VirtualKey.Up;
+                            bool sortY = modifier == VirtualKey.Down || modifier == VirtualKey.Up;
                             views.Sort((dv1, dv2) =>
                             {
                                 var v1p = dv1.ViewModel.LayoutDocument.GetPosition() ?? new Point();
                                 var v2p = dv2.ViewModel.LayoutDocument.GetPosition() ?? new Point();
-                                var v1 = sortY ? v1p.Y : v1p.X;
-                                var v2 = sortY ? v2p.Y : v2p.X;
-                                var v1o = sortY ? v1p.X : v1p.Y;
-                                var v2o = sortY ? v2p.X : v2p.Y;
+                                double v1 = sortY ? v1p.Y : v1p.X;
+                                double v2 = sortY ? v2p.Y : v2p.X;
+                                double v1o = sortY ? v1p.X : v1p.Y;
+                                double v2o = sortY ? v2p.X : v2p.Y;
                                 if (v1 < v2)
                                     return -1;
                                 else if (v1 > v2)
@@ -1057,9 +1059,9 @@ namespace Dash
                             });
 
                             var docDec = MainPage.Instance.XDocumentDecorations;
-                            var usedDim = views.Aggregate(0.0, (val, view) => val + (sortY ? view.ViewModel.Bounds.Height : view.ViewModel.Bounds.Width));
+                            double usedDim = views.Aggregate(0.0, (val, view) => val + (sortY ? view.ViewModel.Bounds.Height : view.ViewModel.Bounds.Width));
                             var bounds     = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
-                            var spacing    = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (views.Count -1);
+                            double spacing    = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (views.Count -1);
                             double placement = sortY ? bounds.Top : bounds.Left;
                             if (modifier == VirtualKey.Down || modifier == VirtualKey.Left)
                                 views.Reverse();
@@ -1167,7 +1169,7 @@ namespace Dash
 
         #region TextInputBox
 
-        static public string PreviewFormatString = "#";
+        public static string PreviewFormatString = "#";
         public string PreviewTextBuffer { get; set; } = "";
 
         private TextBox previewTextbox  = null;
@@ -1222,7 +1224,7 @@ namespace Dash
             }
             else
             {
-                var text = Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
+                string text = Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
                 if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
                 {
                     e.Handled = true;
@@ -1261,7 +1263,7 @@ namespace Dash
         public async void LoadNewActiveTextBox(string text, Point where)
         {
             var postitNote  = text == null ? await ViewModel.Paste(Clipboard.GetContent(), where) : SettingsView.Instance.MarkdownEditOn ? new MarkdownNote(text: text).Document : new RichTextNote(text: text).Document;
-            var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
+            string defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
             if (!string.IsNullOrEmpty(defaultXaml))
             {
                 postitNote.SetField<TextController>(KeyStore.XamlKey, defaultXaml, true);
@@ -1271,7 +1273,8 @@ namespace Dash
                 MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
 
                 Actions.DisplayDocument(ViewModel, postitNote, where);
-            } else
+            }
+            else
             {
                 MainPage.Instance.ClearForceFocus();
             }

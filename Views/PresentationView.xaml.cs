@@ -731,7 +731,7 @@ namespace Dash
         private void XClosePresentation_OnClick(object sender, RoutedEventArgs e)
         {
             //close presentation
-            MainPage.Instance.SetPresentationState(false);
+            MainPage.Instance.SetPresentationState(false, false);
             TryPlayStopClick();
         }
 
