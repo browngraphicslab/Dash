@@ -800,9 +800,9 @@ function (d) {
                     xPresentationView.SimulateAnimation(false);
                 }
 
-                PresentationView presView = xPresentationView;
-                presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
-                presView.RemoveLines();
+                //PresentationView presView = xPresentationView;
+                //presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                //presView.RemoveLines();
             }
         }
 

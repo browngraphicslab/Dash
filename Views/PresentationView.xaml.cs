@@ -452,7 +452,7 @@ namespace Dash
 
         private void UpdatePaths()
         {
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+            //if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
 
             //if pins changed, updating won't work
             if (_paths.Count / 2 != xPinnedNodesListView.Items.Count - 1)
@@ -472,25 +472,12 @@ namespace Dash
                 Point endControlPt = points[3];
 
                 //create nest of elements to show segment
-                var segment =
-                    new BezierSegment()
-                    {
-                        Point1 = startControlPt,
-                        Point2 = endControlPt,
-                        Point3 = endPoint
-                    };
-
-                var segments = new PathSegmentCollection {segment};
-                var pathFig = new PathFigure
-                {
-                    StartPoint = startPoint,
-                    Segments = segments
-                };
-
-                var figures = new PathFigureCollection {pathFig};
-
-                var oldPath = ((_paths[2 * i] as Windows.UI.Xaml.Shapes.Path)?.Data as PathGeometry);
-                oldPath.Figures = figures;
+                var pg = ((_paths[i * 2] as Path).Data as PathGeometry);
+                pg.Figures[0].StartPoint = startPoint;
+                var bz = pg.Figures[0].Segments[0] as BezierSegment;
+                bz.Point1 = startControlPt;
+                bz.Point2 = endControlPt;
+                bz.Point3 = endPoint;
 
                 //make arrow points
                 var diffX = endControlPt.X - endPoint.X;
