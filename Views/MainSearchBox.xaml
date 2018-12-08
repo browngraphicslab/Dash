@@ -34,11 +34,11 @@
         </Border>
         <Grid Background="{StaticResource DashDarkBlueBrush}" Tapped="XArrowBlock_OnTapped"  HorizontalAlignment="Stretch" Grid.Row="0" Grid.Column="1" Width="40" >
             <TextBlock x:Name="xArrow" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SearchArrowIcon}" Foreground="White" HorizontalAlignment="Center">
-                
+
             </TextBlock>
 
         </Grid>
-        
+
 
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                     TextChanged="AutoSuggestBox_TextChanged"
@@ -200,20 +200,20 @@
             <Button x:Name="XMatchWordButton" Grid.Column="2" Grid.Row="2" Content="|Abc|" Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 0 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" BorderBrush="Transparent" BorderThickness="3 3 3 3" Click="XOptionButton_OnClick"/>
             <Grid Grid.Column="0" Grid.ColumnSpan="3"  Grid.Row="4" >
                 <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="*"/>
-                 </Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <Button x:Name="XRegexButton" Content=".*" Grid.Column="0"  Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 5 0 0" PointerEntered="ShowToolTip" PointerExited="HideToolTip" Click="XRegexButton_OnClick" BorderBrush="Transparent" BorderThickness="3 3 3 3" />
                 <Button x:Name="XSearchAllButton" Content="all" Grid.Column="2"  Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="White" Margin="0 5 0 0"  Click="XSearchAllButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
                 <Button x:Name="XClearFiltersButton" Content="X" Grid.Column="4"  Background="{StaticResource DashDarkBlueBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Foreground="Red" Margin="0 5 0 0"  Click="XClearFiltersButton_OnClick" BorderBrush="Transparent" BorderThickness="2 2 2 2" PointerEntered="ShowToolTip" PointerExited="HideToolTip"/>
             </Grid>
-          </Grid>
+        </Grid>
 
-        
-        
-        
+
+
+
     </Grid>
 </UserControl>

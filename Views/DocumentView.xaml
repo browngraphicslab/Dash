@@ -63,5 +63,13 @@
                 </Storyboard>
             </Border.Resources>
         </Border>
+        <TextBlock x:Name="XHasLinkIcon" 
+                   Visibility="Collapsed"
+                   FontFamily="{StaticResource FontAwesome}" 
+                   FontSize="{StaticResource DefaultFontSize}" 
+                   Text="{StaticResource LinkIcon}" 
+                   Margin="-30 0 0 0"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top" />
     </Grid>
 </UserControl>

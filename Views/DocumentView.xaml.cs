@@ -87,6 +87,21 @@ namespace Dash
                     Tag = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
+
+            var dataDoc = doc?.GetDataDocument();
+            var visBinding = !BindRenderTransform || dataDoc == null
+                ? null
+                : new FieldMultiBinding<Visibility>(new DocumentFieldReference(dataDoc, KeyStore.LinkToKey),
+                    new DocumentFieldReference(dataDoc, KeyStore.LinkFromKey),
+                    new DocumentFieldReference(dataDoc, KeyStore.RegionsKey))
+                {
+                    Converter = new LinkToVisibilityConverter(),
+                    Mode = BindingMode.OneWay,
+                    CanBeNull = true,
+                    Tag = "RenderTransform multi binding in DocumentView"
+                };
+            XHasLinkIcon.AddFieldBinding(VisibilityProperty, visBinding);
+            this.AddFieldBinding(RenderTransformProperty, binding);
             if (ViewModel?.IsDimensionless == true)
             {
                 Width = double.NaN;

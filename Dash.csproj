@@ -823,6 +823,7 @@
     <Compile Include="Views\LinkMenu.xaml.cs">
       <DependentUpon>LinkMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\LinkToVisibilityConverter.cs" />
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
     </Compile>

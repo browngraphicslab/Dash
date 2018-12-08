@@ -168,6 +168,7 @@
             <x:String x:Key="SearchArrowIcon">&#xf105;</x:String>
             <x:String x:Key="JoinIcon">&#xf126;</x:String>
             <x:String x:Key="RightArrowIcon">&#xf061;</x:String>
+            <x:String x:Key="LinkIcon">&#xf0c1;</x:String>
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
