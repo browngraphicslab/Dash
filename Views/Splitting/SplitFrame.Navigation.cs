@@ -40,12 +40,12 @@ namespace Dash
             }
         }
 
-        public static DocumentController OpenInInactiveFrame(DocumentController doc)
+        public static DocumentController OpenInInactiveFrame(DocumentController doc, SplitDirection fallbackDirection = SplitDirection.Right)
         {
             var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
             if (frames.Count == 0)
             {
-                var documentController = ActiveFrame.Split(SplitDirection.Right, doc, true);
+                var documentController = ActiveFrame.Split(fallbackDirection, doc, true);
                 frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
                 if (frames[0].ViewModel.Content is CollectionView cv)
                 {

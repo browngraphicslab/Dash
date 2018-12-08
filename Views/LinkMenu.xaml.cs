@@ -134,6 +134,10 @@ namespace Dash
                 }
             }
 
+            if (!this.IsInVisualTree())
+            {
+                return;
+            }
             var behavior = LinkDoc.DataDocument.GetLinkBehavior();
             switch (behavior)
             {

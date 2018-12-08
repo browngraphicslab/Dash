@@ -1174,7 +1174,7 @@ function (d) {
             return LinkHandledResult.HandledRemainOpen;
         }
 
-        public void DockLink(DocumentController linkDoc, LinkDirection direction, bool inContext = true)
+        public void DockLink(DocumentView originatingView, DocumentController linkDoc, LinkDirection direction, bool inContext = true)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
@@ -1185,8 +1185,27 @@ function (d) {
             }
             else
             {
+                SplitDirection dir;
+                Point pos;
+                if (originatingView == null)
+                {
+                    dir = SplitDirection.Right;
+                }
+                else
+                {
+                    pos = originatingView.TransformToVisual(SplitFrame.ActiveFrame).TransformPoint(new Point());
+                    dir = pos.X > SplitFrame.ActiveFrame.ActualWidth / 2 ? SplitDirection.Left : SplitDirection.Right;
+                    if (dir == SplitDirection.Left && MainSplitter.GetChildFrames().Count() == 1 &&
+                        SplitFrame.ActiveFrame.ViewModel.Content is CollectionView cv)
+                    {
+                        var transform = cv.ViewModel.TransformGroup;
+                        var newPos = new Point(transform.Translate.X - SplitFrame.ActiveFrame.ActualWidth / 2,
+                            transform.Translate.Y);
+                        cv.ViewModel.TransformGroup = new TransformGroupData(newPos, transform.ScaleAmount, transform.ScaleCenter);
+                    }
+                }
                 //TODO Splitting: Deal with inContext
-                SplitFrame.OpenInInactiveFrame(target);
+                SplitFrame.OpenInInactiveFrame(target, dir);
             }
         }
 
