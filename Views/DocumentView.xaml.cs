@@ -206,8 +206,8 @@ namespace Dash
                 UpdateAlignmentBindings();
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
 
-                var parentCanvas = this.GetFirstAncestorOfType<ContentPresenter>()?.GetFirstAncestorOfType<Canvas>() ?? new Canvas();
-                var maxZ = parentCanvas.Children.Aggregate(int.MinValue, (agg, val) => Math.Max(Canvas.GetZIndex(val), agg));
+                var parentCanvas = this.GetFirstAncestorOfTypeFast<ContentPresenter>()?.GetFirstAncestorOfTypeFast<Canvas>();
+                var maxZ = parentCanvas?.Children.Aggregate(int.MinValue, (agg, val) => Math.Max(Canvas.GetZIndex(val), agg)) ?? int.MinValue;
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
                 SetZLayer();
             };
@@ -303,15 +303,16 @@ namespace Dash
             if (ViewModel?.IsAdornmentGroup == true)
             {
                 var cp = this.GetFirstAncestorOfType<ContentPresenter>();
-                int curZ = 0;
-                var parCanvas = cp.GetFirstDescendantOfType<Canvas>();
-                if (parCanvas != null)
-                {
-                    foreach (var c in parCanvas.Children)
-                        if (Canvas.GetZIndex(c) < curZ)
-                            curZ = Canvas.GetZIndex(c);
-                    Canvas.SetZIndex(cp, curZ - 1);
-                }
+                Canvas.SetZIndex(cp, -1);
+                //int curZ = 0;
+                //var parCanvas = cp.GetFirstDescendantOfType<Canvas>();
+                //if (parCanvas != null)
+                //{
+                //    foreach (var c in parCanvas.Children)
+                //        if (Canvas.GetZIndex(c) < curZ)
+                //            curZ = Canvas.GetZIndex(c);
+                //    Canvas.SetZIndex(cp, curZ - 1);
+                //}
             }
         }
 
@@ -1309,7 +1310,7 @@ namespace Dash
 
         ~DocumentView()
         {
-            //Debug.Write("dispose DocumentView");
+            Debug.WriteLine("dispose DocumentView");
         }
 
         public bool AreContentsHitTestVisible

@@ -15,6 +15,11 @@ namespace Dash
 
             bool changed = true, success = true;
 
+            if (data.Length < numClusters)
+            {
+                return (null, new []{0.0, 0.0});
+            }
+
             int[] clustering = InitClustering(data.Length, numClusters, 0);
             double[] means = new double[numClusters];
 

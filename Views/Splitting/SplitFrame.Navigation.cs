@@ -101,7 +101,7 @@ namespace Dash
             widthRatio = Math.Clamp(widthRatio, 0.2, 6);
             heightRatio = Math.Clamp(heightRatio, 0.2, 6);
             double scale = Math.Min(widthRatio, heightRatio);
-            scale *= 0.8;
+            scale *= 0.9;
 
             var col = ViewModel.Content as CollectionView;
             var ffv = col?.CurrentView as CollectionFreeformBase;

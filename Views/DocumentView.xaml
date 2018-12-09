@@ -28,7 +28,6 @@
         <Grid.ContextFlyout>
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
         </Grid.ContextFlyout>
-        <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
         <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False" />
         <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">
             <Grid.Clip>
@@ -42,27 +41,6 @@
             </ContentPresenter>
         </Grid>
 
-        <!-- border to highlight search results-->
-        <Border x:Name="xDocHighlight" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" >
-            <Border.Resources>
-                <Storyboard x:Name="xToRed">
-                    <ColorAnimation 
-                    Storyboard.TargetName="xDocHighlight"
-                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                    To="DarkRed"
-                    Duration="0:0:0.2"
-                    EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xToYellow">
-                    <ColorAnimation 
-                    Storyboard.TargetName="xDocHighlight"
-                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                    To="Yellow"
-                    Duration="0:0:0.2"
-                    EnableDependentAnimation="True"/>
-                </Storyboard>
-            </Border.Resources>
-        </Border>
         <TextBlock x:Name="XHasLinkIcon" 
                    Visibility="Collapsed"
                    FontFamily="{StaticResource FontAwesome}" 

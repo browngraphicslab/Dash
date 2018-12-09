@@ -68,6 +68,11 @@ namespace Dash
             // existing annotated regions are loaded with the VisualAnnotationManager
         }
 
+        ~EditableImage()
+        {
+            Debug.WriteLine("Dispose EditableImage");
+        }
+
         private void EditableImage_Loaded(object sender, RoutedEventArgs e)
         {
             //LayoutDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (view, controller, arg3) => view.GoToUpdated(controller, arg3));

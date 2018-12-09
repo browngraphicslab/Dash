@@ -11,12 +11,12 @@ using Dash.Annotations;
 using iText.Kernel.Crypto;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Microsoft.Toolkit.Uwp.Helpers;
 using Point = Windows.Foundation.Point;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using WPdf = Windows.Data.Pdf;
@@ -129,7 +129,7 @@ namespace Dash
                     LayoutDocument.SetField<BoolController>(KeyStore.SearchPreviousIndexKey, false, true);
                     return;
                 }
-                var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
+                string searchString = sender.GetField<TextController>(KeyStore.SearchStringKey).Data.ToLower();
                 _previousSelections.Remove(_previousSelections.Last());
                 _botPdf.AnnotationOverlay.ClearSelection();
                 _searchEnd = _previousSelections.Last() + searchString.Length;
@@ -152,7 +152,7 @@ namespace Dash
             SearchIndexHandler?.Detach();
             _previousSelections.Clear();
             _searchEnd = 0;
-                prevIndex = -1;
+            prevIndex = -1;
             if (DataContext != null)
             {
                 LayoutDocument.SetField<NumberController>(KeyStore.SearchIndexKey, 0, true);
@@ -166,12 +166,12 @@ namespace Dash
 
         private void SearchIndexUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            var searchString = sender.GetField<TextController>(KeyStore.SearchStringKey)?.Data.ToLower();
+            string searchString = sender.GetField<TextController>(KeyStore.SearchStringKey)?.Data.ToLower();
             int i = 0;
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                for (var index = _searchEnd; index < _botPdf.AnnotationOverlay.TextSelectableElements.Count; index++)
+                for (int index = _searchEnd; index < _botPdf.AnnotationOverlay.TextSelectableElements.Count; index++)
                 {
                     var elem = _botPdf.AnnotationOverlay.TextSelectableElements[index];
                     if (string.IsNullOrEmpty((string)elem.Contents))
@@ -285,8 +285,8 @@ namespace Dash
                         var reader = new PdfReader(await _file.OpenStreamForReadAsync());
                         var pdfDocument = new PdfDocument(reader);
                         var newstrategy = new BoundsExtractionStrategy();
-                        var pdfTotalHeight = 0.0;
-                        for (var i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
+                        double pdfTotalHeight = 0.0;
+                        for (int i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
                         {
                             //if (MainPage.Instance.xSettingsView.UsePdfTextSelection)
                             var page = pdfDocument.GetPage(i);
@@ -304,7 +304,7 @@ namespace Dash
                             {
                                 if (item.Contents is string content)
                                 {
-                                    foreach (var chr in content)
+                                    foreach (char chr in content)
                                     {
                                         if (!char.IsNumber(chr))
                                         {
@@ -351,13 +351,13 @@ namespace Dash
             var reader = new PdfReader(await _file.OpenStreamForReadAsync());
             var pdfDocument = new PdfDocument(reader);
             int n = pdfDocument.GetNumberOfPages();
-            var title = DataDocument.GetTitleFieldOrSetDefault().Data;
+            string title = DataDocument.GetTitleFieldOrSetDefault().Data;
             var psplit = new iText.Kernel.Utils.PdfSplitter(pdfDocument);
             for (int i = 1; i <= n; i++)
             {
                 var localFolder = ApplicationData.Current.LocalFolder;
-                var uniqueFilePath = _file.Path.Replace(".pdf", "-" + i + ".pdf");
-                var exists = await localFolder.TryGetItemAsync(Path.GetFileName(uniqueFilePath)) != null;
+                string uniqueFilePath = _file.Path.Replace(".pdf", "-" + i + ".pdf");
+                bool exists = await localFolder.TryGetItemAsync(Path.GetFileName(uniqueFilePath)) != null;
                 var localFile = await localFolder.CreateFileAsync(Path.GetFileName(uniqueFilePath), CreationCollisionOption.OpenIfExists);
                 if (!exists)
                 {
@@ -487,16 +487,26 @@ namespace Dash
                 return;
             }
 
-            var reader = new PdfReader(await _file.OpenStreamForReadAsync());
-            var pdfDocument = new PdfDocument(reader);
-            _topPdf.PdfMaxWidth = _botPdf.PdfMaxWidth = PdfMaxWidth = CalculateMaxPDFWidth(pdfDocument);
-            _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = await LoadPdfFromFile(pdfDocument);
-            if (this.IsInVisualTree())  // bcz: super hack! --  shouldn't need to set the PdfHeight anyway, or at least not here (used for the export Publisher)
+            var uri = PdfUri;
+            Size pageSize;
+            await Task.Run(async () =>
             {
-                DataDocument.SetField<PointController>(KeyStore.PdfHeightKey, new Point(pdfDocument.GetPage(1).GetPageSize().GetWidth(), pdfDocument.GetPage(1).GetPageSize().GetHeight()), true);
+                var reader = new PdfReader(await _file.OpenStreamForReadAsync());
+                var pdfDocument = new PdfDocument(reader);
+                _topPdf.PdfMaxWidth = _botPdf.PdfMaxWidth = PdfMaxWidth = CalculateMaxPDFWidth(pdfDocument);
+                _topPdf.PdfTotalHeight = _botPdf.PdfTotalHeight = await LoadPdfFromFile(pdfDocument, uri);
+
+                var pdfPageSize = pdfDocument.GetPage(1).GetPageSize();
+                pageSize = new Size(pdfPageSize.GetWidth(), pdfPageSize.GetHeight());
+
+                reader.Close();
+                pdfDocument.Close();
+            });
+            if (this.IsInVisualTree()) // bcz: super hack! --  shouldn't need to set the PdfHeight anyway, or at least not here (used for the export Publisher)
+            {
+                DataDocument.SetField<PointController>(KeyStore.PdfHeightKey,
+                    new Point(pageSize.Width, pageSize.Height), true);
             }
-            reader.Close();
-            pdfDocument.Close();
 
             _botPdf.Bind();
             _topPdf.Bind();
@@ -517,8 +527,8 @@ namespace Dash
 
         private double CalculateMaxPDFWidth(PdfDocument pdfDocument)
         {
-            var maxWidth = 0.0;
-            for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+            double maxWidth = 0.0;
+            for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = pdfDocument.GetPage(i);
                 _topPdf.Pages.PageSizes.Add(new Size(page.GetPageSize().GetWidth(), page.GetPageSize().GetHeight()));
@@ -528,15 +538,15 @@ namespace Dash
             return maxWidth;
         }
 
-        private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument)
+        private async Task<double> LoadPdfFromFile(PdfDocument pdfDocument, Uri uri)
         {
-            var pdfTotalHeight = 0.0;
+            double pdfTotalHeight = 0.0;
 
 
             // PdfUri
             await Task.Run(() =>
             {
-                for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
+                for (int i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
                 {
                     var page = pdfDocument.GetPage(i);
                     pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
@@ -544,51 +554,47 @@ namespace Dash
             });
 
             _topPdf.PDFdoc = _botPdf.PDFdoc = await WPdf.PdfDocument.LoadFromFileAsync(_file);
-            var uri = PdfUri;
-            await Task.Run(async () =>
+            bool hasPdf;
+            try
             {
-                bool hasPdf;
+                hasPdf = await _pdfEndpoint.ContainsPDF(uri);
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                hasPdf = false;
+            }
+
+            if (hasPdf)
+            {
                 try
                 {
-                    hasPdf = await _pdfEndpoint.ContainsPDF(uri);
+                    /*var (elems, pages) = await _pdfEndpoint.GetSelectableElements(uri);
+                    _botPdf.AnnotationOverlay.TextSelectableElements =
+                        new List<SelectableElement>(elems);
+                    _botPdf.AnnotationOverlay.PageEndIndices = pages;*/
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            else
+            {
+                try
+                {
                 }
                 catch (InvalidOperationException ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    hasPdf = false;
                 }
+            }
 
-                if (hasPdf)
-                {
-                    try
-                    {
-                        /*var (elems, pages) = await _pdfEndpoint.GetSelectableElements(uri);
-                        _botPdf.AnnotationOverlay.TextSelectableElements =
-                            new List<SelectableElement>(elems);
-                        _botPdf.AnnotationOverlay.PageEndIndices = pages;*/
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                    }
-                }
-
-                if (_botPdf.AnnotationOverlay != null)
-                {
-                    _botPdf.AnnotationOverlay.TextSelectableElements = new List<SelectableElement>();
-                    _botPdf.AnnotationOverlay.PageEndIndices = new List<int>();
-                }
-            });
+            if (_botPdf.AnnotationOverlay != null)
+            {
+                _botPdf.AnnotationOverlay.TextSelectableElements = new List<SelectableElement>();
+                _botPdf.AnnotationOverlay.PageEndIndices = new List<int>();
+            }
 
             //try
             //{
@@ -671,8 +677,8 @@ namespace Dash
             if (absoluteOffsets != null && PdfMaxWidth > 0)
             {
                 var relativeOffsets = absoluteOffsets.Select(p => p.Data.Y * (xTBotPdfGrid.ActualWidth / PdfMaxWidth)).ToList();
-                var maxOffset = _botPdf.ScrollViewer.ViewportHeight;
-                var firstSplit = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
+                double maxOffset = _botPdf.ScrollViewer.ViewportHeight;
+                double firstSplit = relativeOffsets.Skip(1).FirstOrDefault(ro => ro - relativeOffsets.First() > maxOffset);
 
                 if (firstSplit != 0)
                 {
@@ -742,7 +748,7 @@ namespace Dash
 
         private void xRightMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X - 90);
+            double margin = Math.Max(0, xPdfContainer.ActualWidth - e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xRightMargin.Margin = new Thickness(0, 0, margin - 2.5, 0);
             _botPdf.SetRightMargin(margin);
             _topPdf.SetRightMargin(margin);
@@ -761,7 +767,7 @@ namespace Dash
         }
         private void xLeftMarginPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X - 90);
+            double margin = Math.Max(0, e.GetCurrentPoint(xPdfContainer).Position.X - 90);
             xLeftMargin.Margin = new Thickness(margin - 2.5, 0, 0, 0);
             _botPdf.SetLeftMargin(margin);
             _topPdf.SetLeftMargin(margin);

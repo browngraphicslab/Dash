@@ -69,7 +69,7 @@ namespace Dash
 
          ~RichEditView()
         {
-            // Debug.WriteLine("Disposing RichEditView");
+            Debug.WriteLine("Disposing RichEditView");
         }
         public RichEditView()
         {

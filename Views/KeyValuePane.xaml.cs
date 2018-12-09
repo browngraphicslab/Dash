@@ -91,6 +91,7 @@ namespace Dash
                     return;
                 }
                 _contextDocument = dc;
+                //TODO This probably leaks events/memory
                 // remove old events from the previous datacontext
                 if (_dataContextDocument != null)
                 {

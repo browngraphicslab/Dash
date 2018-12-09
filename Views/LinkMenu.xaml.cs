@@ -241,7 +241,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(entry)) return;
 
                 var newtag = AddTagIfUnique(entry);
-                //newtag.Select();
+                newtag.Select();
 
                 box.Text = "";
             }
