@@ -975,7 +975,7 @@ namespace Dash
             var deselect = false;
             if (!(this.IsAltPressed()))
             {
-                if (SelectionManager.GetSelectedDocs().Count > 1 || modifier == VirtualKey.Back || modifier == VirtualKey.Delete)
+                if (SelectionManager.GetSelectedDocs().Count > 1 || fromMarquee|| modifier == VirtualKey.Back || modifier == VirtualKey.Delete)
                 switch (modifier)
                 {
                 //create a viewcopy of everything selected
@@ -994,10 +994,9 @@ namespace Dash
                     DoAction((views, where, size) =>
                         {
                             var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                            var newCollection = new CollectionNote(where, type, size.Width, size.Height, docss).Document;
-                            ViewModel.AddDocument(newCollection);
+                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docss).Document);
 
-                            foreach (DocumentView v in views)
+                            foreach (var v in views)
                             {
                                 v.ViewModel.LayoutDocument.IsMovingCollections = true;
                                 v.DeleteDocument();
@@ -1048,14 +1047,10 @@ namespace Dash
                                 var v2 = sortY ? v2p.Y : v2p.X;
                                 var v1o = sortY ? v1p.X : v1p.Y;
                                 var v2o = sortY ? v2p.X : v2p.Y;
-                                if (v1 < v2)
-                                    return -1;
-                                else if (v1 > v2)
-                                    return 1;
-                                else if (v1o < v2o)
-                                    return -1;
-                                else if (v1o > v2o)
-                                    return 1;
+                                if (v1 < v2)        return -1;
+                                else if (v1 > v2)   return  1;
+                                else if (v1o < v2o) return -1;
+                                else if (v1o > v2o) return  1;
                                 return 0;
                             });
 
@@ -1084,21 +1079,11 @@ namespace Dash
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
-                    DoAction((views, where, size) =>
-                    {
-                        foreach (DocumentView v in views)
-                        {
-                            v.DeleteDocument();
-                        }
-                    });
-
+                    DoAction((views, where, size) => views.ForEach((v) => v.DeleteDocument()));
                     deselect = true;
                     break;
                 case VirtualKey.G:
-                    DoAction((views, where, size) =>
-                    {
-                        ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, size.Width, size.Height));
-                    });
+                    DoAction((views, where, size) => ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, size.Width, size.Height)));
                     deselect = true;
                     break;
                 case VirtualKey.R:

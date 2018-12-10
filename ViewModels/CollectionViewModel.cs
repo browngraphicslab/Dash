@@ -356,8 +356,7 @@ namespace Dash
                 }
                 else
                 {
-                    var pres = MainPage.Instance.xPresentationView;
-                    pres.FullPinDelete(document);
+                    MainPage.Instance.xPresentationView.FullPinDelete(document);
                 }
             }
         }
