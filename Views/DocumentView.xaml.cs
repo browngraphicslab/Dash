@@ -52,6 +52,7 @@ namespace Dash
             set => DataContext = value;
         }
         public MenuFlyout        MenuFlyout => xMenuFlyout;
+        public bool              IsSelected => SelectionManager.GetSelectedDocs().Contains(this);
         public bool              IsTopLevel => this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         public bool              PreventManipulation { get; set; }
         public Action            FadeOutBegin;

@@ -167,6 +167,11 @@ namespace Dash
             return dob == overlappedViews.FirstOrDefault();
         }
 
+        public static DocumentView GetDocumentView(this UIElement dob)
+        {
+            return dob.GetFirstAncestorOfType<DocumentView>();
+        }
+
         public static Rect GetBoundingRect(this FrameworkElement dob, FrameworkElement relativeTo = null)
         {
             if (relativeTo == null)

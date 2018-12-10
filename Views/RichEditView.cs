@@ -104,7 +104,7 @@ namespace Dash
                        
                     SelectionManager.TryInitiateDragDrop(docView, e, null);
                 }
-                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
+                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, true);
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(this_Tapped), true);

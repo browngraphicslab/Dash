@@ -975,6 +975,7 @@ namespace Dash
             var deselect = false;
             if (!(this.IsAltPressed()))
             {
+                if (SelectionManager.GetSelectedDocs().Count > 1 || modifier == VirtualKey.Back || modifier == VirtualKey.Delete)
                 switch (modifier)
                 {
                 //create a viewcopy of everything selected

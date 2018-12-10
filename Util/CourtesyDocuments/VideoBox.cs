@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Data;
 using System.Diagnostics;
 using Windows.System;
 using Dash.Converters;
+using Windows.UI.Xaml.Input;
+using Windows.Devices.Input;
 
 namespace Dash
 {
@@ -24,39 +26,55 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "VideoBox Prototype Layout", fields);
         }
 
-		/// <summary>
-		///   Creates a MediaPlayerElement that will be binded to video reference.
-		/// </summary>
-		public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
-		{
-			//create the media player element 
-			
-			MediaPlayerElement video = new MediaPlayerElement
-			{
+        /// <summary>
+        ///   Creates a MediaPlayerElement that will be binded to video reference.
+        /// </summary>
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        {
+            //create the media player element 
+
+            var video = new MediaPlayerElement
+            {
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
-				AreTransportControlsEnabled = true,
+                AreTransportControlsEnabled = true,
                 MinWidth = 200,
                 MinHeight = 100
-			};
+            };
 
-			//enables fullscreen exit with escape shortcut
-			video.KeyDown += (s, e) =>
-			{
-				if (e.Key == VirtualKey.Escape && video.IsFullWindow)
-				{
-					video.IsFullWindow = false;
-				}
-			};
+            //enables fullscreen exit with escape shortcut
+            video.KeyDown += (s, e) =>
+            {
+                if (e.Key == VirtualKey.Escape && video.IsFullWindow)
+                {
+                    video.IsFullWindow = false;
+                    e.Handled = true;
+                }
+            };
+            
+            video.TransportControls.IsCompact = true;
+            video.TransportControls.Visibility = Visibility.Collapsed;
+            video.Loaded   += (s,e) => video.TransportControls.Visibility = video.GetDocumentView().IsSelected ?  Visibility.Visible : Visibility.Collapsed;
+            video.Unloaded += (s,e) => video.MediaPlayer.Pause();
+            video.PointerEntered += (s, e) =>
+            {
+                video.TransportControls.Show();
+                video.TransportControls.Focus(FocusState.Programmatic);
+            };
+            video.PointerExited  += (s, e) => video.TransportControls.Hide();
 
-			video.TransportControls.IsCompact = true;
-			video.PointerEntered += (s, e) => video.TransportControls.Show();
-			video.PointerExited += (s, e) => video.TransportControls.Hide();
-            video.Unloaded += (s, e) => video.MediaPlayer.Pause();
-            video.PointerPressed += (s, e) => e.Handled = true;
+            ManipulationControlHelper _manipulator = null;
+            video.Tapped         += (s, e) => video.TransportControls.Show();
+            video.PointerPressed += (s, e) =>
+            {
+                var docView  = video.GetFirstAncestorOfType<DocumentView>();
+                _manipulator = e.IsRightPressed() || !SelectionManager.GetSelectedDocs().Contains(docView) ? new ManipulationControlHelper(video, true) : null;
+                e.Handled = true;
+            };
+            video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
 
-			// setup bindings on the video
-			SetupVideoBinding(video, docController, key, context);
+            // setup bindings on the video
+            SetupVideoBinding(video, docController, key, context);
 			
 			return video;
 		}

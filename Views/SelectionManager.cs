@@ -186,14 +186,20 @@ namespace Dash
                 rv.IsEnabled = true;
                 rv.Focus(FocusState.Programmatic);
             });
-
-         }
+            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv =>
+            {
+                rv.TransportControls.Visibility = Visibility.Visible;
+                rv.Focus(FocusState.Programmatic);
+            });
+        }
 
         private static void DeselectHelper(DocumentView view)
         {
             view.OnDeselected();
             view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => rv.IsEnabled = false);
-         }
+            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => 
+                rv.TransportControls.Visibility = Visibility.Collapsed);
+        }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
         {
