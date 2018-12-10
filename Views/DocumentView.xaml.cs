@@ -522,6 +522,8 @@ namespace Dash
             {
                 SelectionManager.Deselect(this);
                 UndoManager.StartBatch(); // bcz: EndBatch happens in FadeOut completed
+                FadeOut.Completed -= FadeOut_Completed;
+                FadeOut.Completed += FadeOut_Completed;
                 FadeOut.Begin();
                 FadeOutBegin?.Invoke();
             }
@@ -601,6 +603,7 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
+            FadeOut.Completed -= FadeOut_Completed;
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
 
             DocumentDeleted?.Invoke(this);
@@ -1308,10 +1311,10 @@ namespace Dash
             }
         }
 
-        ~DocumentView()
-        {
-            Debug.WriteLine("dispose DocumentView");
-        }
+        //~DocumentView()
+        //{
+        //    Debug.WriteLine("dispose DocumentView");
+        //}
 
         public bool AreContentsHitTestVisible
         {

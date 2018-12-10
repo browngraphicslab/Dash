@@ -87,6 +87,7 @@ namespace Dash
         private void WebBoxView_Unloaded(object sender, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged -= SelectionManager_SelectionChangedAsync;
+            _xWebView.NavigateToString("");
         }
 
         private void WebBoxView_Loaded(object s, RoutedEventArgs e)

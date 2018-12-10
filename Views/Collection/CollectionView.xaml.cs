@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -24,9 +25,9 @@ namespace Dash
 
         public CollectionView()
         {
-            Loaded   += CollectionView_Loaded;
-            Unloaded += CollectionView_Unloaded;
             InitializeComponent();
+            Loaded += CollectionView_Loaded;
+            Unloaded += CollectionView_Unloaded;
 
             InitializeView(CollectionViewType.Freeform);
             DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
@@ -59,10 +60,10 @@ namespace Dash
             }
         }
 
-        ~CollectionView()
-        {
-            //Debug.WriteLine("Finalizing CollectionView");
-        }
+        //~CollectionView()
+        //{
+        //    Debug.WriteLine("Finalizing CollectionView");
+        //}
         /// <summary>
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
@@ -155,8 +156,8 @@ namespace Dash
 
         private void InitializeView(CollectionViewType viewType)
         {
-            if (CurrentView?.UserControl != null)
-                CurrentView.UserControl.Loaded -= CurrentView_Loaded;
+            //if (CurrentView?.UserControl != null)
+                //CurrentView.UserControl.Loaded -= CurrentView_Loaded;
             if (CurrentView?.ViewType == viewType)
                 return;
             var initialViewType = CurrentView?.ViewType;
@@ -180,7 +181,7 @@ namespace Dash
                 case CollectionViewType.Graph:    CurrentView = new CollectionGraphView(); break;
                 default: throw new NotImplementedException("You need to add support for your collectionview here");
             }
-            CurrentView.UserControl.Loaded += CurrentView_Loaded;
+            //CurrentView.UserControl.Loaded += CurrentView_Loaded;
 
             if (initialViewType == CollectionViewType.Icon && CurrentView.ViewType != CollectionViewType.Icon)
             {

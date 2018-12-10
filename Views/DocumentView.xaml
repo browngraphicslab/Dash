@@ -16,7 +16,7 @@
     Drop="This_Drop"
     UseLayoutRounding="False">
     <UserControl.Resources>
-        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
+        <Storyboard x:Name="FadeOut" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="Root"/>
         </Storyboard>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>

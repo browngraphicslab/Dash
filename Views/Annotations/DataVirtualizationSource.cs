@@ -35,10 +35,10 @@ namespace Dash
             PageSizes = new List<Size>();
             pageItemsControl.ItemsSource = _visibleElements;
         }
-        ~DataVirtualizationSource()
-        {
-            Debug.WriteLine("Finalizing DataVirtualizationSource");
-        }
+        //~DataVirtualizationSource()
+        //{
+        //    Debug.WriteLine("Finalizing DataVirtualizationSource");
+        //}
         
         public double ScrollViewerContentWidth = 1;
 

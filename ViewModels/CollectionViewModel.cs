@@ -117,10 +117,10 @@ namespace Dash
             }
         }
 
-        ~CollectionViewModel()
-        {
-            //Debug.WriteLine("FINALIZING CollectionViewModel");
-        }
+        //~CollectionViewModel()
+        //{
+        //    Debug.WriteLine("FINALIZING CollectionViewModel");
+        //}
 
         /// <summary>
         /// pan/zooms the document so that all of its contents are visible.  

@@ -39,10 +39,10 @@ namespace Dash
             _scaleX = 1.01;
             _scaleY = 1.01;
         }
-        ~CollectionFreeformView()
-        {
-            //Debug.WriteLine("FINALIZING CollectionFreeFormView");
-        }
+        //~CollectionFreeformView()
+        //{
+        //    Debug.WriteLine("FINALIZING CollectionFreeFormView");
+        //}
 
         public void SetDisableTransformations()
         {

@@ -24,9 +24,9 @@ namespace Dash
         public CollectionGridView()
         {
             this.InitializeComponent();
-            PointerWheelChanged += CollectionGridView_PointerWheelChanged;
+            //PointerWheelChanged += CollectionGridView_PointerWheelChanged;
 
-            Loaded += CollectionGridView_Loaded;
+            //Loaded += CollectionGridView_Loaded;
         }
 
 
@@ -59,7 +59,7 @@ namespace Dash
                 if (selectedDocControllers.Contains(d))
                     xGridView.SelectedItem = i;
             }
-            xGridView.SelectionChanged += XGridView_SelectionChanged;
+            //xGridView.SelectionChanged += XGridView_SelectionChanged;
         }
         public void OnDocumentSelected(bool selected)
         {

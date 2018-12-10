@@ -30,7 +30,6 @@ namespace Dash
         /// </summary>
         private Dictionary<int, Color>    _originalCharFormat = new Dictionary<int, Color>();
         private ManipulationControlHelper _manipulator;
-        private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
         private Size                      _lastDesiredSize = new Size();
         private string                    _lastSizeRTFText = "";
@@ -67,10 +66,10 @@ namespace Dash
             return _lastDesiredSize;
         }
 
-         ~RichEditView()
-        {
-            Debug.WriteLine("Disposing RichEditView");
-        }
+        // ~RichEditView()
+        //{
+        //    Debug.WriteLine("Disposing RichEditView");
+        //}
         public RichEditView()
         {
             AllowDrop = true;
@@ -184,8 +183,6 @@ namespace Dash
             //    Mode = BindingMode.OneWay
             //};
             //SetBinding(FontSizeProperty, sizeBinding);
-
-            _annotationManager = new AnnotationManager(this);
 
             SizeChanged += (sender, e) =>
             {
@@ -311,7 +308,7 @@ namespace Dash
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
-                        _annotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        new AnnotationManager(this).FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
                 else if (target.StartsWith("http"))

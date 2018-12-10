@@ -68,10 +68,10 @@ namespace Dash
             // existing annotated regions are loaded with the VisualAnnotationManager
         }
 
-        ~EditableImage()
-        {
-            Debug.WriteLine("Dispose EditableImage");
-        }
+        //~EditableImage()
+        //{
+        //    Debug.WriteLine("Dispose EditableImage");
+        //}
 
         private void EditableImage_Loaded(object sender, RoutedEventArgs e)
         {

@@ -113,10 +113,10 @@ namespace Dash
             PointerExited += (s, e) => ActiveView = false;
             _scrollTimer.Start();
         }
-        ~PdfAnnotationView()
-        {
-            Debug.WriteLine("FINALIZING PdfAnnotationView");
-        }
+        //~PdfAnnotationView()
+        //{
+        //    Debug.WriteLine("FINALIZING PdfAnnotationView");
+        //}
         public void GoToPage(double pageNum)
         {
             var sizes = Pages.PageSizes;
