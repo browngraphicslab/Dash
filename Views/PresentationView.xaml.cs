@@ -238,24 +238,22 @@ namespace Dash
 
         public void FullPinDelete(DocumentController doc)
         {
-            if (!ViewModel.RemovePinFromPinnedNodesCollection(doc))
+            if (ViewModel.RemovePinFromPinnedNodesCollection(doc))
             {
-                return;
-            }
+                DrawLinesWithNewDocs();
 
-            DrawLinesWithNewDocs();
+                int selectedIndex = xPinnedNodesListView.SelectedIndex;
+                if (selectedIndex == xPinnedNodesListView.Items?.Count - 1 && !_repeat)
+                {
+                    //end presentation
+                    IsNextEnabled(false);
+                }
 
-            int selectedIndex = xPinnedNodesListView.SelectedIndex;
-            if (selectedIndex == xPinnedNodesListView.Items?.Count - 1 && !_repeat)
-            {
-                //end presentation
-                IsNextEnabled(false);
-            }
-
-            if (selectedIndex == 0 && !_repeat)
-            {
-                //disable back button
-                IsBackEnabled(false);
+                if (selectedIndex == 0 && !_repeat)
+                {
+                    //disable back button
+                    IsBackEnabled(false);
+                }
             }
         }
 
