@@ -276,13 +276,12 @@ namespace Dash
 
         private void CreateTemplate()
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            var parentCollection = docView.ParentCollection; 
-            if (parentCollection != null)
+            var docView = this.GetDocumentView();
+            if (docView.ParentCollection is CollectionView parentCollection)
             {
                 var viewModel = docView.ViewModel;
-                var where = viewModel.Position.X + viewModel.Width + 70;
-                var point = new Point(where, viewModel.Position.Y);
+                var where     = viewModel.Position.X + viewModel.Width + 70;
+                var point     = new Point(where, viewModel.Position.Y);
                 parentCollection.ViewModel.AddDocument(CurrentPage.DocumentController.GetKeyValueAlias(point));
             }
             if (_templateDocument == null)

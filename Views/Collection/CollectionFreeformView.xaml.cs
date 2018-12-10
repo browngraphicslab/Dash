@@ -62,7 +62,7 @@ namespace Dash
             return xTransformedCanvas;
         }
 
-        public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public override DocumentView ParentDocument => this.GetDocumentView();
         public override ViewManipulationControls ViewManipulationControls { get; set; }
 
         public override CollectionViewModel ViewModel => DataContext as CollectionViewModel;

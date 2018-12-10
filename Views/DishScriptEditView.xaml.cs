@@ -289,9 +289,10 @@ namespace Dash
 
         private void CloseButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
             using (UndoManager.GetBatchHandle())
-                docView.DeleteDocument();
+            {
+                this.GetDocumentView().DeleteDocument();
+            }
         }
     }
 }

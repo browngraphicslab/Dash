@@ -56,11 +56,11 @@ namespace Dash
             Loaded += (s, e) =>
             {
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-                var parentView = this.GetFirstAncestorOfType<DocumentView>();
-                if (parentView != null && SelectionManager.GetSelectedDocs().Contains(parentView))
+                var parentView = this.GetDocumentView();
+                if (parentView?.IsSelected == true)
                 {
                     SelectionManager_SelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>(), new DocumentView[] { parentView }.ToList()));
-                };
+                }
                 if (LayoutDocument.GetField(KeyStore.GoToRegionKey) != null)
                 {
                     GoToUpdatedFieldChanged(LayoutDocument, null);
@@ -347,7 +347,7 @@ namespace Dash
         }
         private async void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (SelectionManager.IsSelected(this.GetFirstAncestorOfType<DocumentView>()) && PdfUri != null && !_pdfTextInitialized)
+            if (this.GetDocumentView()?.IsSelected == true && PdfUri != null && !_pdfTextInitialized)
             {
                 var uri = PdfUri;
                 try

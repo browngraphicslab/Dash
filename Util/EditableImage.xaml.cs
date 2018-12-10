@@ -374,8 +374,7 @@ namespace Dash
             {
                 e.Handled = true;
             }
-            else if (!IsCropping && SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) &&
-                    point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            else if (!IsCropping && this.GetDocumentView().IsSelected && e.IsLeftPressed())
             {
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
                 e.Handled = true;
@@ -422,7 +421,7 @@ namespace Dash
                 if (docViewPoint != null)
                 {
                     //else, make a new push pin region closest to given point
-                    var overlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetFirstAncestorOfType<DocumentView>(), _annotationOverlay);
+                    var overlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetDocumentView(), _annotationOverlay);
                     var newPoint = calculateClosestPointOnImage(overlayPoint);
 
                     regionDoc = _annotationOverlay.CreatePinRegion(newPoint);

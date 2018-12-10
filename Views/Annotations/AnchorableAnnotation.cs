@@ -91,18 +91,22 @@ namespace Dash
             var linkHandlers = ParentOverlay.GetAncestorsOfType<ILinkHandler>().ToList();
             // AnnotationOverlay is an ILinkHandler but isn't included in GetAncestorsOfType()
             linkHandlers.Insert(0, ParentOverlay);
-            AnnotationManager.FollowRegion(this.GetFirstAncestorOfType<DocumentView>(), selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
+            AnnotationManager.FollowRegion(this.GetDocumentView(), selectable.RegionDocument, linkHandlers, mousePos ?? new Point(0, 0));
 
             // we still want to follow the region even if it's already selected, so this code's position matters
             if (ParentOverlay.SelectedRegion != selectable && ParentOverlay.IsInVisualTree())
             {
-                foreach (var nvo in ParentOverlay.GetFirstAncestorOfType<DocumentView>().GetDescendantsOfType<AnnotationOverlay>())
-                foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
-                { 
-                    if (nvo.SelectedRegion != null)
-                        nvo.SelectedRegion.IsSelected = false;
-                    nvo.SelectedRegion = r;
-                    r.IsSelected = true;
+                foreach (var nvo in ParentOverlay.GetDocumentView().GetDescendantsOfType<AnnotationOverlay>())
+                {
+                    foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
+                    { 
+                        if (nvo.SelectedRegion != null)
+                        {
+                            nvo.SelectedRegion.IsSelected = false;
+                        }
+                        nvo.SelectedRegion = r;
+                        r.IsSelected = true;
+                    }
                 }
             }
         }

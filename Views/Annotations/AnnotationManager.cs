@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Dash
 {
-    public class AnnotationManager
+    static public class AnnotationManager
     {
         static public void FollowLink(DocumentView originatingView, DocumentController link, LinkDirection direction, IEnumerable<ILinkHandler> linkHandlers, LinkBehavior? overrideBehavior = null)
         {
@@ -16,8 +16,8 @@ namespace Dash
 
             switch (overrideBehavior ?? link.GetDataDocument().GetLinkBehavior())
             {
-            case LinkBehavior.Dock: MainPage.Instance.DockLink(link, direction, linkContext); break;
-            case LinkBehavior.Float: MainPage.Instance.AddFloatingDoc(document); break;
+            case LinkBehavior.Dock:     MainPage.Instance.DockLink(link, direction, linkContext); break;
+            case LinkBehavior.Float:    MainPage.Instance.AddFloatingDoc(document); break;
             case LinkBehavior.Overlay:  //default behavior of highlighting and toggling link visibility and docking when off screen
             case LinkBehavior.Annotate: linkHandlers.TakeWhile(hdlr => hdlr.HandleLink(link, direction) != LinkHandledResult.HandledClose).ToList(); break;
             case LinkBehavior.Follow:   //navigate to link
@@ -51,15 +51,13 @@ namespace Dash
             if ((linksTo?.Count ?? 0) + (linksFrom?.Count ?? 0) > 0)
             {
                 var linkFlyout = MainPage.Instance.IsShiftPressed() ? new MenuFlyout() : null;
-                linksTo.Where((l) => matchesLinkType(l, linkType)).ToList().ForEach(linkTo => {
-                    processMatchingLink(linkTo, LinkDirection.ToDestination, originatingView, linkHandlers, linkFlyout);
-                });
+                linksTo.Where((l) => matchesLinkType(l, linkType)).ToList().ForEach(linkTo => 
+                    processMatchingLink(linkTo, LinkDirection.ToDestination, originatingView, linkHandlers, linkFlyout) );
 
                 linkFlyout?.Items?.Add(new MenuFlyoutSeparator());
 
-                linksFrom.Where((l) => matchesLinkType(l, linkType)).ToList().ForEach(linkFrom => {
-                    processMatchingLink(linkFrom, LinkDirection.ToSource, originatingView, linkHandlers, linkFlyout);
-                });
+                linksFrom.Where((l) => matchesLinkType(l, linkType)).ToList().ForEach(linkFrom =>
+                    processMatchingLink(linkFrom, LinkDirection.ToSource, originatingView, linkHandlers, linkFlyout));
                 
                 linkFlyout?.ShowAt(originatingView, flyoutPosition);
             }
@@ -79,9 +77,8 @@ namespace Dash
             else
             {
                 var targetTitle = link.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource).Title;
-                var item        = new MenuFlyoutItem { Text = targetTitle, DataContext = link };
-                var itemHdlr    = new RoutedEventHandler((s, e) => FollowLink(originatingView, link, direction, linkHandlers));
-                item.Click += itemHdlr;
+                var item = new MenuFlyoutItem { Text = targetTitle, DataContext = link };
+                item.Click += new RoutedEventHandler((s, e) => FollowLink(originatingView, link, direction, linkHandlers)); ;
                 linkFlyout.Items?.Add(item);
             }
         }

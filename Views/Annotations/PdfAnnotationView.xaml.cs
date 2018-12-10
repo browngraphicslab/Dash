@@ -410,8 +410,7 @@ namespace Dash
         {
             _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) && 
-                currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            if (this.GetDocumentView().IsSelected && this.IsLeftBtnPressed())
             {
                 var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
                 _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);

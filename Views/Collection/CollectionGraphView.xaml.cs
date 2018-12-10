@@ -217,7 +217,7 @@ namespace Dash
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
 
                 // set the parentDocument which is the document holding this collection
-                ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
+                ParentDocument = this.GetDocumentView()?.ViewModel?.DocumentController;
                 if (ParentDocument != null)
                 {
                     CreateCollection();

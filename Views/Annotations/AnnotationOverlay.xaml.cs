@@ -127,7 +127,7 @@ namespace Dash
         public void SelectRegion(DocumentController region)
         {
             DeselectRegions();
-            if (this.GetFirstAncestorOfType<DocumentView>() is DocumentView docView)
+            if (this.GetDocumentView() is DocumentView docView)
             {
                 docView.Visibility = Visibility.Visible;
                 foreach (var nvo in docView.GetDescendantsOfType<AnnotationOverlay>())
@@ -142,8 +142,7 @@ namespace Dash
         }
         public void DeselectRegions()
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            if (docView != null)
+            if (this.GetDocumentView() is DocumentView docView)
             {
                 foreach (var nvo in docView.GetDescendantsOfType<AnnotationOverlay>().Where((a) => a.SelectedRegion != null))
                 {
@@ -166,7 +165,7 @@ namespace Dash
                     !CurrentAnchorableAnnotations.OfType<RegionAnnotation>().Any(i => i?.Width < 10 && i?.Height < 10))
                 {
                     var rtb = new RenderTargetBitmap();
-                    var containingDocumentView = this.GetFirstAncestorOfType<DocumentView>();
+                    var containingDocumentView = this.GetDocumentView();
                     await rtb.RenderAsync(containingDocumentView, (int)containingDocumentView.ActualWidth, (int)containingDocumentView.ActualHeight);
 
                     var buf = (await rtb.GetPixelsAsync()).ToArray();
@@ -899,7 +898,7 @@ namespace Dash
                 }
                 else if (dm?.DraggingLinkButton == true && !this.IsShiftPressed())
                 {
-                    var docView = this.GetFirstAncestorOfType<DocumentView>();
+                    var docView = this.GetDocumentView();
                     docView.MakeDocumentLink(e.GetPosition(docView), dm);
                 }
                 else
@@ -947,8 +946,7 @@ namespace Dash
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() &&
-                SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
+            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() && this.GetDocumentView().IsSelected)
             {
                 Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
 
@@ -958,14 +956,11 @@ namespace Dash
 
         public void AnnotationOverlayDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()))
+            if (this.GetDocumentView().IsSelected && CurrentAnnotationType == AnnotationType.Region)
             {
-                if (CurrentAnnotationType == AnnotationType.Region)
+                using (UndoManager.GetBatchHandle())
                 {
-                    using (UndoManager.GetBatchHandle())
-                    {
-                        EmbedDocumentWithPin(e.GetPosition(this));
-                    }
+                    EmbedDocumentWithPin(e.GetPosition(this));
                 }
                 e.Handled = true;
             }

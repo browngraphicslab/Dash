@@ -112,7 +112,7 @@ namespace Dash
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
+            var docView = _freeformView.GetDocumentView();
             if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput) || this._freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
             {
                 //e.Complete();
@@ -165,13 +165,9 @@ namespace Dash
                 e.Handled = true;
             } else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1)
             {
-                ////only do marquee if main collection (for now)
-                //var mainColl = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformBase>();
-                var docView = _freeformView.GetFirstAncestorOfType<DocumentView>();
-                if (docView?.IsTopLevel ?? false)
+                if (_freeformView.GetDocumentView()?.IsTopLevel ?? false)
                 {
-                    var point = _freeformView //(Window.Current.Content)
-                    .TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
+                    var point = _freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
                     //gets funky with nested collections, but otherwise works
                     ////handle touch interactions with just one finger - equivalent to drag without ctr
                     if (_freeformView.StartMarquee(point))

@@ -67,8 +67,7 @@ namespace Dash
             video.Tapped         += (s, e) => video.TransportControls.Show();
             video.PointerPressed += (s, e) =>
             {
-                var docView  = video.GetFirstAncestorOfType<DocumentView>();
-                _manipulator = e.IsRightPressed() || !SelectionManager.GetSelectedDocs().Contains(docView) ? new ManipulationControlHelper(video, true) : null;
+                _manipulator = e.IsRightPressed() || !SelectionManager.GetSelectedDocs().Contains(video.GetDocumentView()) ? new ManipulationControlHelper(video, true) : null;
                 e.Handled = true;
             };
             video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);

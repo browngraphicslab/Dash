@@ -213,9 +213,13 @@ namespace Dash
             return new Rect(pos, pos2);
         }
 
+        public static bool IsLeftPressed(this PointerRoutedEventArgs e)
+        {
+            return e.GetCurrentPoint(null).Properties.PointerUpdateKind == Windows.UI.Input.PointerUpdateKind.LeftButtonPressed;
+        }
         public static bool IsRightPressed(this PointerRoutedEventArgs e)
         {
-            return e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
+            return e.GetCurrentPoint(null).Properties.PointerUpdateKind == Windows.UI.Input.PointerUpdateKind.RightButtonPressed;
         }
         public static bool IsCtrlPressed(this FrameworkElement f)
         {

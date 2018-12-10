@@ -799,18 +799,9 @@ namespace Dash
                 NumFingers++;
                 ViewManipulationControls.isPanning = false;
             }
-            var active        = false;
-            var parentDocView = this.GetFirstAncestorOfType<DocumentView>();
-            // marquee on left click by default
-            foreach (var sel in SelectionManager.GetSelectedDocs())
-            {
-                if (sel == parentDocView || sel.GetAncestors().Contains(parentDocView))
-                {
-                    active = true;
-                }
-            }
-            if (active && (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                args.GetCurrentPoint(GetOuterGrid()).Properties.IsLeftButtonPressed)
+            var parentDocView = this.GetDocumentView();
+            var active = SelectionManager.GetSelectedDocs().Any((sel) => sel == parentDocView || sel.GetAncestors().Contains(parentDocView));
+            if (active && !this.IsCtrlPressed() && args.IsLeftPressed())
             {
                 GetOuterGrid().CapturePointer(args.Pointer);
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;

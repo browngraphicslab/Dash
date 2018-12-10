@@ -71,8 +71,7 @@ namespace Dash
 
         private void CollectionDBView_DataContextChanged(object sender, DataContextChangedEventArgs args)
         {
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
-            UpdateChart(new Context(ParentDocument));
+            UpdateChart(new Context(this.GetDocumentView()?.ViewModel?.DocumentController));
         }
         public void OnDocumentSelected(bool selected)
         {
@@ -199,7 +198,7 @@ namespace Dash
 
         private void UpdateChart(Context context, bool updateViewOnly=false)
         {
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
+            ParentDocument = this.GetDocumentView().ViewModel.DocumentController;
             var dbDocs  = ParentDocument?.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context);
             IList<NumberController> buckets = ParentDocument?.GetDereferencedField<ListController<NumberController>>(BucketsKey, context);
             var pattern = ParentDocument?.GetDereferencedField<KeyController>(FilterFieldKey, context);
