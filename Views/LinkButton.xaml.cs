@@ -94,15 +94,9 @@ namespace Dash
             await Task.Delay(new TimeSpan(0, 0, 0, 0, 100));
             if (!_doubleTapped)
             {
-                if (_tooltip.IsOpen)
-                {
-                    _tooltip.IsOpen = false;
-                }
-                if (_documentView != null)
-                {
-                    AnnotationManager.FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
-                        _documentView.GetAncestorsOfType<ILinkHandler>(), args.GetPosition(_documentView), _text);
-                }
+                _tooltip.IsOpen = false;
+                OpenFlyout(sender as FrameworkElement, null);
+                xLinkList.SelectedItem = null;
             }
             args.Handled = true;
         }
@@ -110,8 +104,15 @@ namespace Dash
         private void LinkButton_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             _doubleTapped = true;
-            OpenFlyout(sender as FrameworkElement, null);
-            xLinkList.SelectedItem = null;
+            if (_tooltip.IsOpen)
+            {
+                _tooltip.IsOpen = false;
+            }
+            if (_documentView != null)
+            {
+                AnnotationManager.FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
+                    _documentView.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(_documentView), _text);
+            }
             e.Handled = true;
         }
 
