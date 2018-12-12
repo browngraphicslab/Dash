@@ -358,8 +358,7 @@ namespace Dash
             {
                 // will this screw things up?
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                var doc = ViewModel.DocumentController.GetDataInstance(null);
-                ParentCollection?.ViewModel.AddDocument(doc);
+                ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(null));
             }
         }
         /// <summary>
@@ -575,7 +574,7 @@ namespace Dash
         /// </summary>
         private void ToFront()
         {
-            if (ParentCollection != null && ViewModel?.IsAdornmentGroup != true)
+            if (ParentCollection != null && ViewModel?.DocumentController.GetIsAdornment() != true)
             {
                 ParentCollection.MaxZ += 1;
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
@@ -601,7 +600,7 @@ namespace Dash
         /// </summary>
         private void SetZLayer()
         {
-            if (ViewModel?.IsAdornmentGroup == true)
+            if (ViewModel?.DocumentController.GetIsAdornment() == true)
             {
                 var cp = this.GetFirstAncestorOfType<ContentPresenter>();
                 int curZ = 0;
@@ -646,7 +645,7 @@ namespace Dash
         }
         private void This_Drop(object sender, DragEventArgs e)
         {
-            if (!ViewModel.IsAdornmentGroup && ViewModel.AreContentsHitTestVisible &&
+            if (!ViewModel.DocumentController.GetIsAdornment() && ViewModel.AreContentsHitTestVisible &&
                 e.DataView.GetDragModel() is DragDocumentModel dm && dm.DraggedDocumentViews != null && dm.DraggingLinkButton)
             {
                 e.Handled = true;
@@ -805,6 +804,16 @@ namespace Dash
                 }
             }
         }
+        private void MenuFlyoutItemInstance_Click(object sender, RoutedEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
+                {
+                    doc.MakeInstance();
+                }
+            }
+        }
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
@@ -834,7 +843,7 @@ namespace Dash
             {
                 foreach (var docView in SelectionManager.GetSelectedSiblings(this))
                 {
-                    docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
+                    docView.ViewModel.DocumentController.SetIsAdornment(!docView.ViewModel.DocumentController.GetIsAdornment());
                     SetZLayer();
                 }
             }
@@ -927,33 +936,6 @@ namespace Dash
             //};
             //var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
         }
-
-        private void MenuFlyoutItemCaption_Click(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                if (ViewModel.LayoutDocument != null)
-                {
-                    ViewModel.LayoutDocument.SetField<TextController>(KeyStore.XamlKey,
-                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-                                 xmlns:dash=""using:Dash""
-                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height=""Auto"" ></RowDefinition>
-                                <RowDefinition Height=""*"" ></RowDefinition>
-                            </Grid.RowDefinitions>
-                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
-                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
-                                </Border>
-                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
-                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
-                                </Border>
-                        </Grid>",
-                        true);
-                }
-            }
-        }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
             if (IsTopLevel)
@@ -1004,18 +986,18 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Folder }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemOpenCollapsed_OnClick;
-            xMenuFlyout.Items.Add(new MenuFlyoutItem()
-            {
-                Text = "Delete",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Trash }
-            });
-            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemDelete_Click;
-            xMenuFlyout.Items.Add(new MenuFlyoutItem()
-            {
-                Text = "Hide",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Close }
-            });
-            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemHide_Click;
+            //xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            //{
+            //    Text = "Delete",
+            //    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Trash }
+            //});
+            //(xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemDelete_Click;
+            //xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            //{
+            //    Text = "Hide",
+            //    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Close }
+            //});
+            //(xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemHide_Click;
 
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
@@ -1027,10 +1009,16 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCopy_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
-                Text = "Alias",
+                Text = "Alias (duplicate view)",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Link }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemAlias_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Instance",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Link }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemInstance_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Cut",
@@ -1058,13 +1046,7 @@ namespace Dash
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemGetScript_Click;
 
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
-
-            xMenuFlyout.Items.Add(new MenuFlyoutItem()
-            {
-                Text = "Add Caption",
-                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.FileText }
-            });
-            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemCaption_Click;
+            
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Add to Presentation",

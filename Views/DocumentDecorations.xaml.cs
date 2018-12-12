@@ -195,17 +195,27 @@ namespace Dash
                 xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
             {
                 handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.PointerReleased += (s, e) =>
+                handle.DoubleTapped += (s, e) =>
                 {
-                    handle.ReleasePointerCapture(e.Pointer);
-                    e.Handled = true;
-                };
-                handle.PointerPressed += (s, e) =>
-                {
-                    if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+                    _doubleTapped = true;
+                    var vm = SelectedDocs.FirstOrDefault().ViewModel;
+                    var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(vm.DocumentController, true);
+                    if (frame != null)
                     {
-                        handle.CapturePointer(e.Pointer);
-                        e.Handled = true;
+                        frame.Delete();
+                    }
+                    else
+                    {
+                        // bcz: frame location should be determined by which part of the resize rectangle is tapped (e.g., left, right, top, bottom)
+                        SplitFrame.OpenInInactiveFrame(vm.DocumentController);
+                    }
+                };
+                handle.Tapped += async (s, e) =>
+                {
+                    _doubleTapped = false;
+                    await System.Threading.Tasks.Task.Delay(100);
+                    if (!_doubleTapped)
+                    {
                     }
                 };
             }
@@ -449,6 +459,13 @@ namespace Dash
             }
 
             touchActivated = false;
+        }
+        private void xDelete_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            foreach (var doc in SelectionManager.GetSelectedDocs().ToArray())
+            {
+                doc.DeleteDocument();
+            }
         }
 
         private async void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -711,7 +728,7 @@ namespace Dash
                 documentView.ViewModel.DocumentController.SetField<NumberController>(KeyStore.SearchIndexKey, Math.Max(0, searchIndex + change), true);
             }
         }
-
+        
 
         private bool updateSearchString()
         {

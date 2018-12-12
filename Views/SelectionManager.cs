@@ -320,7 +320,7 @@ namespace Dash
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset) { DraggedWithLeftButton = docView.IsLeftBtnPressed() });
 
-            if (SelectedDocs.Count == 1)  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
+            if (_dragViews.Count == 1)  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
                                           //      seems to override our DragUI override and only the dragged image is shown.
             {
                 var type = docView.ViewModel.DocumentController.GetDocType();
@@ -333,11 +333,9 @@ namespace Dash
                             var uri = type == "Image Box" ? docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data :
                                                        docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
                             var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
-                            ? await StorageFile.GetFileFromApplicationUriAsync(uri)
-                            : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                            var sflist = new HashSet<StorageFile>();
-                            sflist.Add(sf);
-                            args.Data.SetStorageItems(sflist);
+                                        ? await StorageFile.GetFileFromApplicationUriAsync(uri)
+                                        : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
+                            args.Data.SetStorageItems(new HashSet<StorageFile>(new StorageFile[] { sf }));
                         }
                         catch (Exception ex) { }
 

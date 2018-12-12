@@ -80,6 +80,25 @@ namespace Dash
 "),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("CaptionedImageTemplate.xaml"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                 xmlns:dash=""using:Dash""
+                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
+    <Grid.RowDefinitions>
+        <RowDefinition Height=""Auto"" ></RowDefinition>
+        <RowDefinition Height=""*"" ></RowDefinition>
+    </Grid.RowDefinitions>
+    <Border Grid.Row=""0"" Background =""CadetBlue"" >
+        <dash:EditableImage x:Name=""xImageField0"" Foreground =""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
+    </Border>
+    <Border Grid.Row=""1"" Background=""CadetBlue"" MinHeight=""30"" >
+        <dash:RichEditView x:Name=""xRichTextField1"" TextWrapping=""Wrap"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""1"" VerticalAlignment=""Top"" />
+    </Border>
+</Grid>"),
+                    }, DocumentType.DefaultType),
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("CardTemplate.xaml"),
                         [KeyStore.XamlKey] = new TextController(@"
 <Grid
@@ -329,6 +348,7 @@ namespace Dash
         {
              Article,
              Biography,
+             CaptionedImage,
              Card,
              Citation,
              Content,

@@ -189,5 +189,10 @@ namespace Dash
                 FallbackValue = "Untitled"
             });
         }
+
+        private void xExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.Publish_OnTapped(null, null);
+        }
     }
 }

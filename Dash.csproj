@@ -278,6 +278,9 @@
     <Compile Include="Popups\TemplatePopups\BiographyPopup.xaml.cs">
       <DependentUpon>BiographyPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Popups\TemplatePopups\CaptionedImage.xaml.cs">
+      <DependentUpon>CaptionedImage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Popups\TemplatePopups\CardPopup.xaml.cs">
       <DependentUpon>CardPopup.xaml</DependentUpon>
     </Compile>
@@ -1204,6 +1207,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TemplatePopups\CaptionedImage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\TemplatePopups\CardPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1213,6 +1220,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\TemplatePopups\FlashcardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\CaptionedImageTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

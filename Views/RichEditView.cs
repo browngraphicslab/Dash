@@ -863,10 +863,13 @@ namespace Dash
             if (clipboardContent.Properties[nameof(DocumentController)]?.Equals(LayoutDocument) != true)
             {
                 var dataPackage = new DataPackage();
-                dataPackage.SetText(await clipboardContent.GetTextAsync());
-                //set RichEditView property to this view
-                dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
-                Clipboard.SetContent(dataPackage);
+                if (clipboardContent.AvailableFormats.Contains(StandardDataFormats.Text))
+                {
+                    dataPackage.SetText(await clipboardContent.GetTextAsync());
+                    //set RichEditView property to this view
+                    dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
+                    Clipboard.SetContent(dataPackage);
+                }
             }
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }

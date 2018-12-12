@@ -74,11 +74,6 @@ namespace Dash
                 }
             }
         }
-        public bool IsAdornmentGroup
-        {
-            get => DocumentController.GetIsAdornment();
-            set => DocumentController.SetIsAdornment(value);
-        }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
         /// </summary>

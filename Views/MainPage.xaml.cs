@@ -115,7 +115,8 @@ namespace Dash
             InitializeComponent();
             //new Test().Process();
             SelectionManager.SelectionChanged += SelectionManagerSelectionChanged;
-            ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            var formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            formattableTitleBar.ButtonForegroundColor = Colors.White;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
@@ -372,46 +373,36 @@ namespace Dash
 
             var buttons = new List<(string icon, string name, bool rotate, string function)>
             {
-                ("\uE107", "Delete", false, @"
-function(d) {
-    for(var doc in get_selected_docs()) {
-        if(doc.Parent == null) {
-            continue;
-        }
-        doc.Parent.remove(doc.Document);
-    }
-}
-"),
-                ("\uE923", "Make Instance", false, @"
-function (d) {
-    for(var doc in get_selected_docs()) {
-        if(doc.Parent == null) {
-            continue;
-        }
-        doc.Parent.Data.add(doc.Document.instance());
-    }
-}
-"),
-                ("\uF571", "Make View Copy", false, @"
-function (d) {
-    for(var doc in get_selected_docs()) {
-        if(doc.Parent == null) {
-            continue;
-        }
-        doc.Parent.Data.add(doc.Document.view_copy());
-    }
-}
-"),
-                ("\uE16F", "Make Copy", false, @"
-function (d) {
-    for(var doc in get_selected_docs()) {
-        if(doc.Parent == null) {
-            continue;
-        }
-        doc.Parent.Data.add(doc.Document.copy());
-    }
-}
-"),
+//                ("\uE923", "Make Instance", false, @"
+//function (d) {
+//    for(var doc in get_selected_docs()) {
+//        if(doc.Parent == null) {
+//            continue;
+//        }
+//        doc.Parent.Data.add(doc.Document.instance());
+//    }
+//}
+//"),
+//                ("\uF571", "Make View Copy", false, @"
+//function (d) {
+//    for(var doc in get_selected_docs()) {
+//        if(doc.Parent == null) {
+//            continue;
+//        }
+//        doc.Parent.Data.add(doc.Document.view_copy());
+//    }
+//}
+//"),
+//                ("\uE16F", "Make Copy", false, @"
+//function (d) {
+//    for(var doc in get_selected_docs()) {
+//        if(doc.Parent == null) {
+//            continue;
+//        }
+//        doc.Parent.Data.add(doc.Document.copy());
+//    }
+//}
+//"),
                 ("\uE840", "Pin", false, @"
 function (d) {
     for(var doc in get_selected_docs()) {
@@ -481,26 +472,26 @@ function (d) {
     close_split();
 }
 "),
-                ("\uE72B", "Back", false, @"
-function (d) {
-    frame_history_back();
-}
-"),
-                ("\uE72A", "Forward", false, @"
-function (d) {
-    frame_history_forward();
-}
-"),
-                ("\uE898", "Export", false, @"
-function (d) {
-    export_workspace();
-}
-"),
-                ("\uE768", "Toggle Presentation", false, @"
-function (d) {
-    toggle_presentation();
-}
-"),
+//                ("\uE72B", "Back", false, @"
+//function (d) {
+//    frame_history_back();
+//}
+//"),
+//                ("\uE72A", "Forward", false, @"
+//function (d) {
+//    frame_history_forward();
+//}
+//"),
+//                ("\uE898", "Export", false, @"
+//function (d) {
+//    export_workspace();
+//}
+//"),
+//                ("\uE768", "Toggle Presentation", false, @"
+//function (d) {
+//    toggle_presentation();
+//}
+//"),
             };
 
             await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name, item.rotate))));
@@ -731,6 +722,11 @@ function (d) {
                 new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
         }
 
+
+        private void xPresentationButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            Dash.UIFunctions.TogglePresentation();
+        }
         private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
@@ -861,6 +857,9 @@ function (d) {
             case TemplateList.TemplateType.Citation:
                 templatePopup = new CitationPopup(fields);
                 break;
+            case TemplateList.TemplateType.CaptionedImage:
+                templatePopup = new CaptionedImage(fields);
+                break;
             case TemplateList.TemplateType.Note:
                 templatePopup = new NotePopup(fields);
                 break;
@@ -903,6 +902,8 @@ function (d) {
                 {
                     if (splitXaml[j].Contains("Field" + i))
                     {
+                        if (customLayout[i] == "Title")
+                            customLayout[i] = "Caption";
                         splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
                         break;
                     }

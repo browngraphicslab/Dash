@@ -87,7 +87,7 @@
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeTLaspect" ManipulationMode="TranslateY, TranslateX"/>
                 <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="10" Width="10"  Margin="-10 0  0 -10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeBLaspect" ManipulationMode="TranslateY, TranslateX" />
-                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10"  Margin="0 -10 -10  0" 
+                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10"  Margin="0 -10 -10  0"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
                 <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
@@ -112,21 +112,26 @@
         <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
             <Grid x:Name="xAnnotationButtonsStack" Padding="5 0 0 0" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="0"/>
                     <RowDefinition Height="26"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
+                <Grid Margin="4 -40 0 0" PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"  Tapped="xDelete_Tapped">
+                    <Ellipse Width="22" Height="22" Fill="#90FF0000"></Ellipse>
+                    <TextBlock Text="&#xE711;" FontSize="10"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="1 8 0 0" />
+                </Grid>
+                <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="1" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
                             PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" 
                             Tapped="XAnnotateEllipseBorder_OnTapped" DoubleTapped="xAnnotateEllipseBorder_DoubleTapped"
                             DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                     <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
                     <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
-                    <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE712;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
+                        <ToolTip Content="More Options" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
                     </ToolTipService.ToolTip>
                 </Grid>
-                <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="1" Spacing="2"  Margin="4 -6 0 0" CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
+                <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="2" Spacing="2"  Margin="4 -6 0 0" CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
             </Grid>
         </Canvas>
     </Grid>
