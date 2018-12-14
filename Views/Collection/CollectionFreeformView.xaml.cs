@@ -108,7 +108,7 @@ namespace Dash
             {
                 Window.Current.CoreWindow.PointerCursor = Arrow;
 
-                e.Handled = true;
+                //e.Handled = true; 
             }
         }
 

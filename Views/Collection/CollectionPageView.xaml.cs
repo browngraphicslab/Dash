@@ -157,14 +157,10 @@ namespace Dash
         private void XThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             //TODO This is not correct if there are multiple items, as there can only be one drag model
-            foreach (object m in e.Items)
+            foreach (var m in e.Items.OfType<DocumentViewModel>())
             {
-                _dragDoc = (DocumentViewModel) m;
-                var dm = new DragDocumentModel(_dragDoc.DocumentController)
-                {
-                    DraggedDocCollectionViews = new List<CollectionViewModel>(new CollectionViewModel[] {ViewModel})
-                };
-                e.Data.SetDragModel(dm);
+                _dragDoc = m;
+                e.Data.SetDragModel(new DragDocumentModel(m.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
             }
         }
 

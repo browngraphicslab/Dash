@@ -1235,10 +1235,10 @@ namespace Dash
             {
                 var curPt = e.GetCurrentPoint(LayoutRoot).Position;
                 PanContent(-_pointerPoint.X + curPt.X, -_pointerPoint.Y + curPt.Y);
+                e.Handled = true;
             }
 
             _pointerPoint = e.GetCurrentPoint(LayoutRoot).Position;
-            e.Handled = true;
         }
 
         private void LayoutRoot_OnSizeChanged(object sender, SizeChangedEventArgs e)

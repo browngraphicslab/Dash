@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -119,9 +120,12 @@ namespace Dash
             if (activeContextDoc != null)
             {
                 foreach (var keyFieldPair in activeContextDoc.EnumDisplayableFields())
+                {
                     ListItemSource.Add(
                         new KeyValueItemViewModel(
                             new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
+                }
+                SortKeys();
             }
         }
 
@@ -156,6 +160,20 @@ namespace Dash
             if (!dargs.Reference.FieldKey.Name.StartsWith("_"))
             {
                 ListItemSource.Add(new KeyValueItemViewModel(dargs.Reference));
+                SortKeys();
+            }
+        }
+
+        private void SortKeys()
+        {
+            var neworder = ListItemSource.Select((kvp) => kvp.Key.Name).ToList();
+            neworder.Sort();
+            var copied = ListItemSource.ToArray();
+            ListItemSource.Clear();
+            foreach (var n in neworder)
+            {
+                var item = copied.FirstOrDefault((kvp) => kvp.Key.Name == n);
+                ListItemSource.Add(item);
             }
         }
 
