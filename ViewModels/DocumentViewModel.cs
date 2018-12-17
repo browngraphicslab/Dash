@@ -19,7 +19,6 @@ namespace Dash
         private Thickness          _searchHighlightState = DocumentViewModel.UnHighlighted;
         private FrameworkElement   _content = null;
         private SolidColorBrush    _searchHighlightBrush;
-        private bool               _isDimensionless = false;
 
         public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
 
@@ -41,13 +40,11 @@ namespace Dash
                 LayoutDocument.SetField<NumberController>(KeyStore.IconTypeFieldKey, (int)(IconTypeEnum.Document), true);
             }
         }
-        
-        public void Load()
+        ~DocumentViewModel()
         {
-            //UnLoad();
-        }
-        public void UnLoad()
-        {
+            //System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
+            //System.Diagnostics.Debug.WriteLine(" ");
+            _content = null;
         }
 
         public DocumentController DocumentController { get; }
@@ -62,7 +59,8 @@ namespace Dash
         }
         
         public bool Undecorated { get; set; }
-        public bool IsDimensionless { get => _isDimensionless; set => _isDimensionless = value; }
+        public bool DragAllowed { get; set; } = true;
+        public bool IsDimensionless { get; set; }
         public bool AreContentsHitTestVisible
         {
             get => DocumentController.GetAreContentsHitTestVisible();
@@ -110,9 +108,8 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
         }
-        public bool DragWithinParentBounds;
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
-        public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
+        public Point ActualSize => LayoutDocument.GetActualSize() ?? new Point();
 
         protected bool Equals(DocumentViewModel other)
         {
@@ -176,7 +173,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+        private void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             // filter out callbacks on prototype from delegate
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
@@ -203,6 +200,7 @@ namespace Dash
                 //    Content = null; // forces layout to be recomputed by listeners who will access Content
             }
         }
+
         /// <summary>
         /// Called when the ActiveLayout field of the Layout document has changed (or a field on the ActiveLayout).
         /// Such a change requires that the layout view be re-created.  
@@ -213,7 +211,7 @@ namespace Dash
         /// <param name="doc"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args)
+        private void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args)
         {
             Content = null;
             //if (args.Action == FieldUpdatedAction.Remove)
@@ -246,16 +244,9 @@ namespace Dash
             //    }
             //}
         }
-        ~DocumentViewModel()
-        {
-            //System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
-            //System.Diagnostics.Debug.WriteLine(" ");
-            _content = null;
-        }
         public void Dispose()
         {
             System.Diagnostics.Debug.WriteLine("Diposing dvm:" + DocumentController?.Tag);
-            UnLoad();
         }
     }
 }

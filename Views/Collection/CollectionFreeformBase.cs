@@ -799,9 +799,7 @@ namespace Dash
                 NumFingers++;
                 ViewManipulationControls.IsPanning = false;
             }
-            var parentDocView = this.GetDocumentView();
-            var active = SelectionManager.GetSelectedDocs().Any((sel) => sel == parentDocView || sel.GetAncestors().Contains(parentDocView));
-            if (active && !this.IsCtrlPressed() && args.IsLeftPressed())
+            if (this.GetDocumentView().AreContentsActive && !this.IsCtrlPressed() && args.IsLeftPressed())
             {
                 GetOuterGrid().CapturePointer(args.Pointer);
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
@@ -898,17 +896,17 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (var doc in SelectionManager.GetSelectedDocs())
+            foreach (var dv in SelectionManager.GetSelectedDocViewModels())
             {
                 isEmpty = false;
-                topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
-                topLeftMostPoint.Y = doc.ViewModel.Position.Y < topLeftMostPoint.Y ? doc.ViewModel.Position.Y : topLeftMostPoint.Y;
-                var actualX = (double.IsNaN(doc.ViewModel.ActualSize.X) ? 0 : doc.ViewModel.ActualSize.X);
-                var actualY =(double.IsNaN(doc.ViewModel.ActualSize.Y) ? 0 : doc.ViewModel.ActualSize.Y);
-                bottomRightMostPoint.X = doc.ViewModel.Position.X + actualX > bottomRightMostPoint.X
-                    ? doc.ViewModel.Position.X + actualX : bottomRightMostPoint.X;
-                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + actualY > bottomRightMostPoint.Y
-                    ? doc.ViewModel.Position.Y + actualY : bottomRightMostPoint.Y;
+                topLeftMostPoint.X = dv.Position.X < topLeftMostPoint.X ? dv.Position.X : topLeftMostPoint.X;
+                topLeftMostPoint.Y = dv.Position.Y < topLeftMostPoint.Y ? dv.Position.Y : topLeftMostPoint.Y;
+                var actualX = (double.IsNaN(dv.ActualSize.X) ? 0 : dv.ActualSize.X);
+                var actualY =(double.IsNaN(dv.ActualSize.Y) ? 0 : dv.ActualSize.Y);
+                bottomRightMostPoint.X = dv.Position.X + actualX > bottomRightMostPoint.X
+                    ? dv.Position.X + actualX : bottomRightMostPoint.X;
+                bottomRightMostPoint.Y = dv.Position.Y + actualY > bottomRightMostPoint.Y
+                    ? dv.Position.Y + actualY : bottomRightMostPoint.Y;
             }
 
             if (isEmpty) return Rect.Empty;
@@ -949,7 +947,7 @@ namespace Dash
                         Height = bounds.Height,
                         Width = bounds.Width
                     };
-                    viewsToSelectFrom = SelectionManager.GetSelectedDocs();
+                    viewsToSelectFrom = SelectionManager.GetSelectedDocViews();
                 }
 
                 var toSelectFrom = viewsToSelectFrom.ToList();
@@ -964,13 +962,10 @@ namespace Dash
             var type = CollectionViewType.Freeform;
 
             var deselect = false;
-            if (!(this.IsAltPressed()))
-            {
-                if (SelectionManager.GetSelectedDocs().Count > 1 || fromMarquee|| modifier == VirtualKey.Back || modifier == VirtualKey.Delete)
+            if (!this.IsAltPressed() && (SelectionManager.GetSelectedDocViewModels().Count > 1 || fromMarquee|| modifier == VirtualKey.Back || modifier == VirtualKey.Delete)) { 
                 switch (modifier)
                 {
-                //create a viewcopy of everything selected
-                case VirtualKey.A:
+                case VirtualKey.A:  //create a viewcopy of everything selected
                     DoAction((dvs, where, size) =>
                     {
                         var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
@@ -1089,25 +1084,11 @@ namespace Dash
                     break;
                 }
             }
-            else if (this.IsShiftPressed())
-            {
-                switch (modifier)
-                {
-                case VirtualKey.R:
-                    DoAction((views, where, size) =>
-                    {
-                        if (size.Width >= 215 && size.Height >= 200)
-                        {
-                            ViewModel.AddDocument(new DishScriptBox(where.X, where.Y, size.Width, size.Height).Document);
-                        }
-                    });
-                    deselect = true;
-                    break;
-                }
-            }
 
             if (deselect)
+            {
                 SelectionManager.DeselectAll();
+            }
         }
 
         #endregion

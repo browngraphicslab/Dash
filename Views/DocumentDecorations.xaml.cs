@@ -64,7 +64,7 @@ namespace Dash
             set => _docWidth = value;
         }
         private double _docWidth;
-        private bool _visibilityLock;
+        private bool   _visibilityLock;
 
         public List<DocumentView> SelectedDocs
         {
@@ -82,11 +82,6 @@ namespace Dash
                 xButtonsCanvas.Margin = new Thickness(0, 0, 0, 0);
                 foreach (var docView in value)
                 {
-                    //if (docView.ViewModel?.Undecorated == true)
-                    //{
-                    //    _visibilityLock = true;
-                    //    VisibilityState = Visibility.Collapsed;
-                    //}
                     if (docView.ViewModel?.Undecorated == true)
                     {
                         xButtonsCanvas.Margin = new Thickness(-20, 0, 0, 0);
@@ -237,7 +232,7 @@ namespace Dash
 
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            SelectedDocs = SelectionManager.GetSelectedDocs().ToList();
+            SelectedDocs = SelectionManager.GetSelectedDocViews().ToList();
             xMultiSelectBorder.BorderThickness = new Thickness(SelectedDocs.Count > 1 ? 2 : 0);
             SetPositionAndSize();
 
@@ -462,10 +457,7 @@ namespace Dash
         }
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            foreach (var doc in SelectionManager.GetSelectedDocs().ToArray())
-            {
-                doc.DeleteDocument();
-            }
+            SelectionManager.DeleteSelected();
         }
 
         private async void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -474,7 +466,7 @@ namespace Dash
             await System.Threading.Tasks.Task.Delay(100);
             if (!_doubleTapped)
             {
-                SelectedDocs.First().MenuFlyout.ShowAt(null, e.GetPosition(MainPage.Instance));
+                SelectedDocs.First().ShowContextMenu(e.GetPosition(MainPage.Instance)); 
             }
         }
         private bool _doubleTapped = false;

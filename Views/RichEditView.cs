@@ -87,8 +87,7 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
-                var docView = this.GetFirstAncestorOfType<DocumentView>();
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && docView != null)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && this.GetDocumentView() is DocumentView docView)
                 {
                     if (!SelectionManager.IsSelected(docView))
                     {
@@ -206,7 +205,7 @@ namespace Dash
         public DocumentController    DataDocument => ViewModel?.DataDocument;
         public DocumentController    LayoutDocument => ViewModel?.LayoutDocument;
         public DocumentViewModel     ViewModel => getDocView()?.ViewModel ?? DataContext as DocumentViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
-        private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
+        private DocumentView         getDocView() { return this.GetDocumentView(); }
         private IList<TextController> getSelected()
         {
             return DataDocument?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)
@@ -260,8 +259,7 @@ namespace Dash
                 rtv.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
                 rtv._lastXamlRTFText = rtv.getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
             }
-            var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
-            if (documentView != null)
+            if (rtv.GetDocumentView() != null)
             {
                 if (rtv.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
                 {
@@ -502,7 +500,7 @@ namespace Dash
         {
             if (removeTextBox)
             {
-                this.GetFirstAncestorOfType<DocumentView>()?.DeleteDocument();
+                this.GetDocumentView()?.DeleteDocument();
             }
         }
         private void XRichEditBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -583,11 +581,11 @@ namespace Dash
                     DataDocument.SetField<NumberController>(KeyController.Get("DiscussionDepth"), Math.Max(0, dep - 1), true);
                     DataDocument.SetField<TextController>(KeyStore.TitleKey, Math.Max(0, dep - 1).ToString(), true);
                     e.Handled = true;
-                    getDocView().GetFirstAncestorOfType<DocumentView>().UpdateLayout();
+                    getDocView().GetDocumentView().UpdateLayout();
                     return;
                 }
-                var precontainer = getDocView().GetFirstAncestorOfType<DocumentView>();
-                var preprecontainer = precontainer?.GetFirstAncestorOfType<DocumentView>();
+                var precontainer = getDocView().GetDocumentView();
+                var preprecontainer = precontainer?.GetDocumentView();
                 var prereplies = precontainer?.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
                 var preprereplies = preprecontainer?.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
                 if (preprereplies != null && prereplies != null)
@@ -608,7 +606,7 @@ namespace Dash
                     DataDocument.SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep + 1, true);
                     DataDocument.SetField<TextController>(KeyStore.TitleKey, (dep + 1).ToString(), true);
                     e.Handled = true;
-                    getDocView().GetFirstAncestorOfType<DocumentView>().UpdateLayout();
+                    getDocView().GetDocumentView().UpdateLayout();
                     return;
                 }
             }
@@ -621,7 +619,7 @@ namespace Dash
                     var rt = new RichTextNote("").Document;
                     MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10)));
                     rt.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep, true);
-                    var parent = getDocView().GetFirstAncestorOfType<DocumentView>();
+                    var parent = getDocView().GetDocumentView();
                     var items = parent.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("DiscussionItems"), null);
                     items.Insert(items.IndexOf(LayoutDocument) + 1, rt);
                     e.Handled = true;
@@ -825,7 +823,7 @@ namespace Dash
                 var tags = "rich text, note, " + Document.Selection.Text.Substring(0, Document.Selection.Text.Length - 2);
                 eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
                 eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                    this.GetDocumentView().ParentCollection.ViewModel.ContainerDocument, true);
                 eventDoc.SetField(KeyStore.EventDisplay1Key, ViewModel.DocumentController, true);
                 var displayXaml =
                     @"<Grid
@@ -892,7 +890,7 @@ namespace Dash
             // need to do this because RichEditViews handle all events. If Enabled=False, they don't handle events but they also are hit test visible so 
             // documentView won't get any events on them.  This hack should be replaced with another mechanism whereby the RichEditVIew doesn't become
             // totally hittest invisible but als doesn't consume events.
-            if (this.GetFirstAncestorOfType<DocumentView>()?.GetFirstDescendantOfType<Grid>() is Grid grid)
+            if (this.GetDocumentView()?.GetFirstDescendantOfType<Grid>() is Grid grid)
             {
                 grid.Background = new SolidColorBrush(Colors.Transparent);
             }
@@ -916,8 +914,7 @@ namespace Dash
             {
                 CreateActionMenu(this);
             }
-            var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (documentView != null)
+            if (this.GetDocumentView() != null)
             {
                 Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
                 if (Document.Selection.StartPosition != Document.Selection.EndPosition)

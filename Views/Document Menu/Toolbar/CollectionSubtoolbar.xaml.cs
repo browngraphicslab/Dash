@@ -83,8 +83,8 @@ namespace Dash
                 }
                 var vms = _collection.ViewModel.DocumentViewModels.ToList();
 
-	            var offsetX = _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.XPos ?? 0;
-	            var offsetY = _collection.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.YPos ?? 0;
+	            var offsetX = _collection.GetDocumentView()?.ViewModel?.XPos ?? 0;
+	            var offsetY = _collection.GetDocumentView()?.ViewModel?.YPos ?? 0;
 
 				DocumentViewModel mostTopLeft = vms.First();
 
@@ -104,10 +104,7 @@ namespace Dash
                 }
 
                 //delete the sellected collection
-                foreach (DocumentView d in SelectionManager.GetSelectedDocs())
-                {
-                    d.DeleteDocument();
-                }
+                SelectionManager.DeleteSelected();
             }
         }
         private void FitParent_OnClick(object sender, RoutedEventArgs e)
@@ -196,7 +193,7 @@ namespace Dash
 
 	    private void XBackgroundColorPicker_OnSelectedColorChanged(object sender, Color e)
 	    {
-	        _collection?.GetFirstAncestorOfType<DocumentView>().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
+	        _collection?.GetDocumentView().ViewModel?.LayoutDocument?.SetBackgroundColor(e);
 	    }
 
         private ToolTip _break, _color, _fit;

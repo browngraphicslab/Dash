@@ -62,7 +62,7 @@ namespace Dash
                 }
             }
 
-            DataContext = new DocumentViewModel(doc) { Undecorated = true, IsDimensionless = true, ResizersVisible = false };
+            DataContext = new DocumentViewModel(doc) { IsDimensionless = true, Undecorated = true, ResizersVisible = false };
             
             return doc;
         }

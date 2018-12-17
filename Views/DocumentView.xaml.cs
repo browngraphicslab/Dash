@@ -28,11 +28,6 @@ namespace Dash
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindRenderTransformChanged));
         public event Action<DocumentView> DocumentDeleted;
-        private bool              _areContentsHitTestVisible 
-        {
-            get => ViewModel.AreContentsHitTestVisible;
-            set => ViewModel.AreContentsHitTestVisible = !ViewModel.DocumentController.GetAreContentsHitTestVisible();
-        }
         private bool              _anyBehaviors => ViewModel.LayoutDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
         private readonly Flyout   _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
@@ -51,16 +46,19 @@ namespace Dash
             get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
-        public MenuFlyout        MenuFlyout => xMenuFlyout;
-        public bool              IsSelected => SelectionManager.GetSelectedDocs().Contains(this);
+        public bool              IsSelected => SelectionManager.GetSelectedDocViewModels().Contains(ViewModel);
+        public bool              AreContentsActive => SelectionManager.GetSelectedDocViews().Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || IsTopLevel;
         public bool              IsTopLevel => this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
-        public bool              PreventManipulation { get; set; }
-        public bool              DragAllowed { get; set; } = true; 
         public Action            FadeOutBegin;
 
+        void pppt(object sender, PointerRoutedEventArgs e)
+        {
+
+        }
         // == CONSTRUCTORs ==
         public DocumentView()
         {
+            AddHandler(PointerPressedEvent, new PointerEventHandler(pppt), true);
             InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
@@ -95,13 +93,12 @@ namespace Dash
                 //Debug.WriteLine($"Document View {id} unloaded {--count}");
                 SizeChanged -= sizeChangedHandler;
                 SelectionManager.Deselect(this);
-                _oldViewModel?.UnLoad();
             };
 
-            MenuFlyout.Opened += (s, e) =>
+            xMenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
-                    MenuFlyout.Hide();
+                    xMenuFlyout.Hide();
             };
             
             DragStarting  += (s, e) => SelectionManager.DragStarting(this, s, e);
@@ -137,7 +134,7 @@ namespace Dash
             bool maintainAspectRatio)
         {
             e.Handled = true;
-            if (PreventManipulation || MainPage.Instance.IsRightBtnPressed())
+            if (MainPage.Instance.IsRightBtnPressed())
             {
                 return;
             }
@@ -182,27 +179,6 @@ namespace Dash
             var h = ActualHeight - extraOffsetY;
 
             Rect dragBounds = Rect.Empty;
-            // clamp the drag position to the available Bounds
-            if (ViewModel.DragWithinParentBounds)
-            {
-                var parentViewPresenter =
-                    this.GetFirstAncestorOfType<ItemsPresenter >(); // presenter of this document which defines the drag area bounds
-                var parentViewTransformationCanvas = parentViewPresenter .GetFirstDescendantOfType<Canvas >(); // bcz: assuming the content being presented has a Canvas ItemsPanelTemplate which may contain a RenderTransformation of the parent (which affects the drag area)
-                var rect = parentViewTransformationCanvas.RenderTransform.Inverse.TransformBounds(new Rect(0, 0,
-                    parentViewPresenter.ActualWidth, parentViewPresenter.ActualHeight));
-                dragBounds = rect;
-                if (dragBounds != Rect.Empty)
-                {
-                    var width = ActualWidth;
-                    var height = ActualHeight;
-                    var pos = new Point(ViewModel.XPos + width * (1 - moveXScale),
-                        ViewModel.YPos + height * (1 - moveYScale));
-                    if (!dragBounds.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
-                        return;
-                    var clamped = Util.Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), dragBounds);
-                    delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
-                }
-            }
 
             double diffX;
             double diffY;
@@ -313,14 +289,14 @@ namespace Dash
         }
         public void Cut(bool delete)
         {
-            var selected = SelectionManager.GetSelectedDocs();
+            var selected = SelectionManager.GetSelectedDocViews();
             if (selected.Any())
             {
                 var dataPackage = new DataPackage();
                 dataPackage.SetClipboardData(new CopyPasteModel(selected.Select(view => view.ViewModel.DocumentController).ToList(), !delete));
                 if (delete)
                 {
-                    selected.ForEach(dv => dv.DeleteDocument());
+                    selected.ToList().ForEach(dv => dv.DeleteDocument());
                 }
                 Clipboard.SetContent(dataPackage);
             }
@@ -403,6 +379,10 @@ namespace Dash
         public void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
+        }
+        public void ShowContextMenu(Point where)
+        {
+            xMenuFlyout.ShowAt(null, where);
         }
         public void OnSelected()
         {
@@ -555,7 +535,6 @@ namespace Dash
             UpdateVisibilityBinding();
             UpdateAlignmentBindings();
             UpdateBackgroundColorBinding();
-            ViewModel?.Load();
         }
         private void SetUpToolTips()
         {
@@ -586,7 +565,6 @@ namespace Dash
         {
             if (ViewModel != _oldViewModel)
             {
-                _oldViewModel?.UnLoad();
                 _oldViewModel = ViewModel;
                 if (ViewModel != null)
                 {
@@ -633,7 +611,7 @@ namespace Dash
         }
         private void this_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (DragAllowed)
+            if (ViewModel.DragAllowed)
             {
                 e.Handled = true;
                 var cur = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
@@ -724,16 +702,16 @@ namespace Dash
                     await System.Threading.Tasks.Task.Delay(100);
                     if (!_doubleTapped)
                     {
-                        if (!SelectionManager.GetSelectedDocs().Contains(this) || this.IsShiftPressed())
+                        if (!SelectionManager.GetSelectedDocViewModels().Contains(ViewModel) || this.IsShiftPressed())
                         {
                             SelectionManager.Select(this, this.IsShiftPressed());
                         }
                     }
                 }
 
-                if (SelectionManager.GetSelectedDocs().Count > 1)
+                if (SelectionManager.GetSelectedDocViewModels().Count > 1)
                 {
-                    // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    // move focus to container if multiple documents are selected (otherwise focus remains where it was)
                     (ParentCollection?.CurrentView as CollectionFreeformBase)?.Focus(FocusState.Programmatic);
                 }
             }
@@ -942,17 +920,15 @@ namespace Dash
         }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (IsTopLevel)
+            if (!IsTopLevel)
             {
-                return;
-            }
-
-            using (UndoManager.GetBatchHandle())
-            {
-                MainPage.Instance.PinToPresentation(ViewModel.DocumentController);
-                if (ViewModel.LayoutDocument == null)
+                using (UndoManager.GetBatchHandle())
                 {
-                    Debug.WriteLine("uh oh");
+                    MainPage.Instance.PinToPresentation(ViewModel.DocumentController);
+                    if (ViewModel.LayoutDocument == null)
+                    {
+                        Debug.WriteLine("uh oh");
+                    }
                 }
             }
         }

@@ -53,7 +53,7 @@ namespace Dash
 
             void ContainerHandler(object sender, RoutedEventArgs args)
             {
-                var containerDoc = this.GetFirstAncestorOfType<DocumentView>().ParentCollection?.ViewModel.ContainerDocument;
+                var containerDoc = this.GetDocumentView().ParentCollection?.ViewModel.ContainerDocument;
                 if (containerDoc != null) {
                     eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey, containerDoc, true);
                 }
@@ -95,17 +95,16 @@ namespace Dash
         private void WebBoxView_Loaded(object s, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
-            if (SelectionManager.GetSelectedDocs().Contains(this.GetFirstAncestorOfType<DocumentView>()) ||
-                xWebViewRectangleBrush.Fill == null)
+            if (this.GetDocumentView().IsSelected || xWebViewRectangleBrush.Fill == null)
             {
                 Unfreeze();
             }
         }
         private void SelectionManager_SelectionChangedAsync(DocumentSelectionChangedEventArgs args)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            var docView = this.GetDocumentView();
 
-            if (args.SelectedViews.Contains(docView) && SelectionManager.GetSelectedDocs().Contains(docView) && SelectionManager.GetSelectedDocs().Count == 1)
+            if (args.SelectedViews.Contains(docView) && docView.IsSelected && SelectionManager.GetSelectedDocViewModels().Count == 1)
             {
                 var dt = new DispatcherTimer();
                 dt.Interval = new TimeSpan(0, 0, 0, 0, 200);
@@ -113,7 +112,7 @@ namespace Dash
                 dt.Start();
             }
             else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) ||
-                (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocs().Count > 1))))
+                (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocViewModels().Count > 1))))
             {
                 Freeze();
             }
@@ -188,7 +187,7 @@ namespace Dash
             _WebView.ScriptNotify -= _WebView_ScriptNotify;
             _WebView.ScriptNotify += _WebView_ScriptNotify;
 
-            if (double.IsNaN(_WebView.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.LayoutDocument.GetWidth() ?? double.NaN))
+            if (double.IsNaN(_WebView.GetDocumentView()?.ViewModel?.LayoutDocument.GetWidth() ?? double.NaN))
             {
                 await _WebView.InvokeScriptAsync("eval", new[] { "window.external.notify(document.body.scrollWidth.toString() + ' ' + document.body.scrollHeight.toString());" });
             }
@@ -213,39 +212,33 @@ namespace Dash
         private static void _WebView_ScriptNotify(object sender, NotifyEventArgs e)
         {
             var web = sender as WebView;
-            var parent = web?.GetFirstAncestorOfType<DocumentView>();
-            if (parent == null)
-                return;
+            if (web?.GetDocumentView() is DocumentView parent)
+            {
+                var splits = (e.Value as string).Split(' ');
+                parent.ViewModel.LayoutDocument.SetWidth (Math.Max(200, double.Parse(splits[0])));
+                parent.ViewModel.LayoutDocument.SetHeight(Math.Min(500, double.Parse(splits[1])));
+                web.UpdateLayout();
 
-            var splits = (e.Value as string).Split(' ');
-            var x = Math.Max(200, double.Parse(splits[0]));
-            var y = Math.Min(500, double.Parse(splits[1]));
-            parent.ViewModel.LayoutDocument.SetWidth(x);
-            parent.ViewModel.LayoutDocument.SetHeight(y);
-            web.UpdateLayout();
-
-            //parent.ViewModel?.LayoutDocument.SetWidth(x);
-            //parent.ViewModel?.LayoutDocument.SetHeight(y);
-
-            //var shiftState = web.IsShiftPressed();
-            //switch (e.Value as string)
-            //{
-            //    case "2":    //web.Tag = (string)web.Tag != WebBoxView.BlockManipulation ? new ManipulationControlHelper(web, null, shiftState, true) : web.Tag; break;  // "2" is the 2nd mouse button = "Right" button
-            //    case "move": //(web.Tag as ManipulationControlHelper)?.PointerMoved(web, null);
-            //                  break;
-            //    case "leave": break;
-            //    case "up":    if (!MainPage.Instance.IsRightBtnPressed())
-            //                  {
-            //                        parent.tofront();
-            //                        if (documentview.focuseddocument != parent)
-            //                        {
-            //                            documentview.focuseddocument = parent;
-            //                            parent.forcelefttapped();
-            //                        }
-            //                        web.Tag = (string)web.Tag == WebBoxView.BlockManipulation ? web.Tag : null;
-            //                   }
-            //                   break;
-            //}
+                //var shiftState = web.IsShiftPressed();
+                //switch (e.Value as string)
+                //{
+                //    case "2":    //web.Tag = (string)web.Tag != WebBoxView.BlockManipulation ? new ManipulationControlHelper(web, null, shiftState, true) : web.Tag; break;  // "2" is the 2nd mouse button = "Right" button
+                //    case "move": //(web.Tag as ManipulationControlHelper)?.PointerMoved(web, null);
+                //                  break;
+                //    case "leave": break;
+                //    case "up":    if (!MainPage.Instance.IsRightBtnPressed())
+                //                  {
+                //                        parent.tofront();
+                //                        if (documentview.focuseddocument != parent)
+                //                        {
+                //                            documentview.focuseddocument = parent;
+                //                            parent.forcelefttapped();
+                //                        }
+                //                        web.Tag = (string)web.Tag == WebBoxView.BlockManipulation ? web.Tag : null;
+                //                   }
+                //                   break;
+                //}
+            }
         }
         private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
@@ -256,8 +249,8 @@ namespace Dash
                     MainPage.Instance.WebContext.SetUrl(args.Uri.AbsoluteUri);
                 else
                 {
-                    var docSize = sender.GetFirstAncestorOfType<DocumentView>().ViewModel.ActualSize;
-                    var docPos = sender.GetFirstAncestorOfType<DocumentView>().ViewModel.Position;
+                    var docSize = sender.GetDocumentView().ViewModel.ActualSize;
+                    var docPos = sender.GetDocumentView().ViewModel.Position;
                     var docViewPt = new Point(docPos.X + docSize.X, docPos.Y);
                     var theDoc = FileDropHelper.GetFileType(args.Uri.AbsoluteUri) == FileType.Image ? new ImageNote(args.Uri, new Point()).Document :
                         new HtmlNote(args.Uri.ToString(), args.Uri.AbsoluteUri, new Point(), new Size(200, 300)).Document;
@@ -285,8 +278,8 @@ namespace Dash
                 })()"
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
-            var docview = webBoxView?.GetFirstAncestorOfType<DocumentView>();
-            if (!SelectionManager.GetSelectedDocs().Contains(docview) || SelectionManager.GetSelectedDocs().Count > 1)
+            var docview = webBoxView?.GetDocumentView();
+            if (!docview.IsSelected || SelectionManager.GetSelectedDocViewModels().Count > 1)
             {
                 webBoxView?.Freeze();
             }

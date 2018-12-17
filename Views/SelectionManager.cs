@@ -45,16 +45,20 @@ namespace Dash
         public static event EventHandler DragManipulationStarted;
         public static event EventHandler DragManipulationCompleted;
 
-        private static List<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
+        private static List<DocumentView> SelectedDocViews { get; set; } = new List<DocumentView>();
 
-        public static List<DocumentView> GetSelectedDocs()
+        public static IEnumerable<DocumentView> GetSelectedDocViews()
         {
-            return new List<DocumentView>(SelectedDocs);
+            return SelectedDocViews;
+        }
+        public static List<DocumentViewModel> GetSelectedDocViewModels()
+        {
+            return SelectedDocViews.Select((dv) => dv.ViewModel).ToList();
         }
 
         public static bool IsSelected(DocumentView doc)
         {
-            return SelectedDocs.Contains(doc);
+            return SelectedDocViews.Contains(doc);
         }
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
@@ -72,7 +76,7 @@ namespace Dash
             {
                 bool alreadySelected = false;
                 var deselected = new List<DocumentView>();
-                foreach (var documentView in SelectedDocs)
+                foreach (var documentView in SelectedDocViews)
                 {
                     if (documentView == doc)
                     {
@@ -88,7 +92,7 @@ namespace Dash
 
                 var args = new DocumentSelectionChangedEventArgs(deselected, alreadySelected ? new List<DocumentView>() : new List<DocumentView> { doc });
 
-                SelectedDocs = new List<DocumentView> { doc };
+                SelectedDocViews = new List<DocumentView> { doc };
                 if (!alreadySelected)
                 {
                     SelectHelper(doc);
@@ -98,16 +102,16 @@ namespace Dash
             }
             else
             {
-                if (SelectedDocs.Contains(doc))
+                if (SelectedDocViews.Contains(doc))
                 {
                     DeselectHelper(doc);
-                    SelectedDocs.Remove(doc);
+                    SelectedDocViews.Remove(doc);
                     OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
                 }
                 else
                 {
                     SelectHelper(doc);
-                    SelectedDocs.Add(doc);
+                    SelectedDocViews.Add(doc);
                     OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>(), new List<DocumentView> { doc }));
                 }
             }
@@ -126,7 +130,7 @@ namespace Dash
             var documentViews = views.ToList();
             foreach (var documentView in documentViews)
             {
-                if (SelectedDocs.Contains(documentView))
+                if (SelectedDocViews.Contains(documentView))
                 {
                     continue;
                 }
@@ -135,14 +139,14 @@ namespace Dash
                 selectedDocs.Add(documentView);
                 if (keepPrevious)
                 {
-                    SelectedDocs.Add(documentView);
+                    SelectedDocViews.Add(documentView);
                 }
             }
 
             var deselectedDocs = new List<DocumentView>();
             if (!keepPrevious)
             {
-                foreach (var documentView in SelectedDocs)
+                foreach (var documentView in SelectedDocViews)
                 {
                     if (!documentViews.Contains(documentView))
                     {
@@ -151,7 +155,7 @@ namespace Dash
                     }
                 }
 
-                SelectedDocs = documentViews;
+                SelectedDocViews = documentViews;
             }
 
             OnSelectionChanged(new DocumentSelectionChangedEventArgs(deselectedDocs, selectedDocs));
@@ -159,9 +163,9 @@ namespace Dash
 
         public static void Deselect(DocumentView view)
         {
-            if (SelectedDocs.Contains(view))
+            if (SelectedDocViews.Contains(view))
             {
-                SelectedDocs.Remove(view);
+                SelectedDocViews.Remove(view);
                 DeselectHelper(view);
                 OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { view }, new List<DocumentView>()));
             }
@@ -169,24 +173,32 @@ namespace Dash
 
         public static void DeselectAll()
         {
-            foreach (var documentView in SelectedDocs)
+            foreach (var documentView in SelectedDocViews)
             {
                 DeselectHelper(documentView);
             }
-            var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(SelectedDocs), new List<DocumentView>());
-            SelectedDocs.Clear();
+            var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(SelectedDocViews), new List<DocumentView>());
+            SelectedDocViews.Clear();
             OnSelectionChanged(args);
+        }
+
+        public static void DeleteSelected()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                SelectedDocViews.ToList().ForEach(dv => dv.DeleteDocument());
+            }
         }
 
         private static void SelectHelper(DocumentView view)
         {
             view.OnSelected();
-            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.IsEnabled = true;
                 rv.Focus(FocusState.Programmatic);
             });
-            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.TransportControls.Visibility = Visibility.Visible;
                 rv.Focus(FocusState.Programmatic);
@@ -196,14 +208,14 @@ namespace Dash
         private static void DeselectHelper(DocumentView view)
         {
             view.OnDeselected();
-            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => rv.IsEnabled = false);
-            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetFirstAncestorOfType<DocumentView>() == view).ToList().ForEach(rv => 
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv => rv.IsEnabled = false);
+            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv => 
                 rv.TransportControls.Visibility = Visibility.Collapsed);
         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
         {
-            return SelectedDocs.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
+            return SelectedDocViews.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
         }
 
         /*
@@ -227,26 +239,24 @@ namespace Dash
         }
 
         #region Drag Manipulation Methods
-
         public static bool TryInitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe, ManipulationStartedRoutedEventArgs e)
         {
             var parents = draggedView.GetAncestorsOfType<DocumentView>().ToList();
-            if (parents.Count < 2 || SelectionManager.GetSelectedDocs().Contains(draggedView) ||
-                SelectionManager.GetSelectedDocs().Contains(draggedView.GetFirstAncestorOfType<DocumentView>()))
+            if (draggedView.IsSelected)
             {
-                SelectionManager.InitiateDragDrop(draggedView, pe?.GetCurrentPoint(draggedView), e);
+                InitiateDragDrop(draggedView, pe?.GetCurrentPoint(draggedView), e);
                 return true;
             }
             else
             {
-                var prevParent = parents.FirstOrDefault();
+                var prevParent = draggedView;
                 foreach (var parent in parents)// bcz: Ugh.. this is ugly.
                 {
                     if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
                         parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
-                        (SelectionManager.GetSelectedDocs().Contains(parent) || parent == parents.Last()))
+                        (SelectedDocViews.Contains(parent) || parent == parents.Last()))
                     {
-                        SelectionManager.InitiateDragDrop(prevParent, pe?.GetCurrentPoint(prevParent), e);
+                        InitiateDragDrop(prevParent, pe?.GetCurrentPoint(prevParent), e);
                         return true;
                     }
                     prevParent = parent;
@@ -262,7 +272,7 @@ namespace Dash
                 e.Complete();
             }
 
-            _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs.ToArray().ToList() : new List<DocumentView>(new[] { draggedView });
+            _dragViews = SelectedDocViews.Contains(draggedView) ? SelectedDocViews.ToArray().ToList() : new List<DocumentView>(new[] { draggedView });
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment())
             {

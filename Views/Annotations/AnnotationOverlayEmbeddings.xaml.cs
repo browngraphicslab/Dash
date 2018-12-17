@@ -74,25 +74,11 @@ namespace Dash
                 switch (listArgs.ListAction)
                 {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    listArgs.NewItems.ForEach((reg) =>
-                    EmbeddedViewModels.Add(
-                        new DocumentViewModel(reg)
-                        {
-                            ResizersVisible = true,
-                            DragWithinParentBounds = false
-                        }));
+                    listArgs.NewItems.ForEach(reg => EmbeddedViewModels.Add(new DocumentViewModel(reg) { ResizersVisible = true }));
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    listArgs.OldItems.ForEach((Action<DocumentController>)((removedDoc) =>
-                    {
-                        foreach (var em in Enumerable.ToArray<DocumentViewModel>(EmbeddedViewModels))
-                        {
-                            if (em.LayoutDocument.Equals(removedDoc))
-                            {
-                                EmbeddedViewModels.Remove(em);
-                            }
-                        }
-                    }));
+                    listArgs.OldItems.ForEach(removedDoc =>
+                        EmbeddedViewModels.Where(em => em.DocumentController.Equals(removedDoc)).ToList().ForEach(em => EmbeddedViewModels.Remove(em)));
                     break;
                 }
             }

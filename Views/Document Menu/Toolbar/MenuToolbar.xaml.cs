@@ -108,7 +108,7 @@ namespace Dash
             //xPadding.Width = ToolbarConstants.PaddingLong;
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
-            SelectionManager.SelectionChanged += (sender) => { Update(SelectionManager.GetSelectedDocs()); };
+            SelectionManager.SelectionChanged += (sender) =>  Update(SelectionManager.GetSelectedDocViews());
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
@@ -125,6 +125,7 @@ namespace Dash
             {
                 IsDimensionless = true,
                 ResizersVisible = false,
+                DragAllowed = false
                 //Undecorated = true,
             };
         }

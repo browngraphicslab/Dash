@@ -566,7 +566,7 @@ function (d) {
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
 
-            var focused = FocusManager.GetFocusedElement() as DocumentView ?? (FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<DocumentView>();
+            var focused = FocusManager.GetFocusedElement() as DocumentView ?? (FocusManager.GetFocusedElement() as FrameworkElement)?.GetDocumentView();
             if (focused?.ViewModel != null && !e.Handled)
             {
                 if (this.IsShiftPressed() && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
@@ -582,11 +582,7 @@ function (d) {
             {
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
                 {
-                    using (UndoManager.GetBatchHandle())
-                        foreach (var doc in SelectionManager.GetSelectedDocs())
-                        {
-                            doc.DeleteDocument();
-                        }
+                    SelectionManager.DeleteSelected();
                 }
             }
 
@@ -1054,16 +1050,13 @@ function (d) {
 
         private void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (args.SelectedViews.Count > 0)
+            if (args.SelectedViews.Count == 0 ||
+                !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.GetSelectedDocViewModels().Contains(dv.ViewModel)))
             {
-                if (xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.GetSelectedDocs().Contains(dv)))
-                    return;
+                Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
+                ClearFloaty(null);
             }
-
-            MainPage.Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
-            ClearFloaty(null);
         }
-
 
         public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {

@@ -14,7 +14,7 @@ namespace Dash
         {
             var docKey = KeyController.Get("Document");
             var parentKey = KeyController.Get("Parent");
-            var selected = SelectionManager.GetSelectedDocs();
+            var selected = SelectionManager.GetSelectedDocViews();
             var parents = selected.Select(dv => dv.GetFirstAncestorOfTypeFast<DocumentView>());
             var result = selected.Zip(parents, (doc, parent) => new DocumentController(
                 new Dictionary<KeyController, FieldControllerBase>
