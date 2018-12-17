@@ -44,12 +44,6 @@ namespace Dash
             //Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
 
-        public void SetDisableTransformations()
-        {
-            ViewManipulationControls.SetDisableScrollWheel(true);
-            ViewModel.DisableTransformations = true;
-        }
-
         private void OnLoad(object sender, RoutedEventArgs e)
         {
         }

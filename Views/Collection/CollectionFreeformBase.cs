@@ -684,7 +684,7 @@ namespace Dash
                 if (e != null) e.Handled = true;
             }
 
-            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
+            if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
 
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
@@ -707,7 +707,7 @@ namespace Dash
                 _isMarqueeActive = false;
                 if (e != null) e.Handled = true;
             }
-            if (NumFingers == 0) ViewManipulationControls.isPanning = false;
+            if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
         }
 
         public bool StartMarquee(Point pos)
@@ -797,7 +797,7 @@ namespace Dash
             {
                 handledTouch.Add(args);
                 NumFingers++;
-                ViewManipulationControls.isPanning = false;
+                ViewManipulationControls.IsPanning = false;
             }
             var parentDocView = this.GetDocumentView();
             var active = SelectionManager.GetSelectedDocs().Any((sel) => sel == parentDocView || sel.GetAncestors().Contains(parentDocView));

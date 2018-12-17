@@ -748,7 +748,14 @@ namespace Dash
                         AddDocuments(await AddDroppedDocuments(new DocumentController[] { newDoc }.ToList(), null, false, this, where));
                     }
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    AddDocuments(await AddDroppedDocuments(docsToAdd, dragModel, isMoving, this, where));
+                    if (docsToAdd.Count == 0 && !DocumentViewModels.Any((dvm) => dragDocModel.DraggedDocuments.Contains(dvm.DocumentController)))
+                    {
+                        e.Handled = false;
+                    }
+                    else
+                    {
+                        AddDocuments(await AddDroppedDocuments(docsToAdd, dragModel, isMoving, this, where));
+                    }
                 }
                 e.DataView.ReportOperationCompleted(e.AcceptedOperation);
             }

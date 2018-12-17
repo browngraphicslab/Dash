@@ -256,7 +256,7 @@ namespace Dash
         private void KeyValueScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _deselectOnTap = (sender as KVPRow).IsSelected;
-            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+           // this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
         private void SwitchButton_Tapped(object sender, RoutedEventArgs e)

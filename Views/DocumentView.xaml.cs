@@ -55,6 +55,7 @@ namespace Dash
         public bool              IsSelected => SelectionManager.GetSelectedDocs().Contains(this);
         public bool              IsTopLevel => this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
         public bool              PreventManipulation { get; set; }
+        public bool              DragAllowed { get; set; } = true; 
         public Action            FadeOutBegin;
 
         // == CONSTRUCTORs ==
@@ -619,7 +620,7 @@ namespace Dash
         {
             _down = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
             CapturePointer(e.Pointer);
-            PointerMoved += this_PointerMoved;
+            PointerMoved    += this_PointerMoved;
             PointerReleased += this_PointerReleased;
             e.Handled = true;
         }
@@ -632,15 +633,18 @@ namespace Dash
         }
         private void this_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            e.Handled = true;
-            var cur = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
-            var delta = new Point(cur.X - _down.X, cur.Y - _down.Y);
-            if (ViewModel.AreContentsHitTestVisible && Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 10)
+            if (DragAllowed)
             {
-                ReleasePointerCapture(e.Pointer);
-                PointerMoved -= this_PointerMoved;
-                PointerReleased -= this_PointerReleased;
-                SelectionManager.TryInitiateDragDrop(this, e, null);
+                e.Handled = true;
+                var cur = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
+                var delta = new Point(cur.X - _down.X, cur.Y - _down.Y);
+                if (ViewModel.AreContentsHitTestVisible && Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 10)
+                {
+                    ReleasePointerCapture(e.Pointer);
+                    PointerMoved -= this_PointerMoved;
+                    PointerReleased -= this_PointerReleased;
+                    SelectionManager.TryInitiateDragDrop(this, e, null);
+                }
             }
         }
         private void This_Drop(object sender, DragEventArgs e)
