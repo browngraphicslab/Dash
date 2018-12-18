@@ -13,6 +13,7 @@ namespace Dash
 
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
+        public event EventHandler DeleteRequested;
         // == MEMBERS, GETTERS, SETTERS ==
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private bool               _showLocalContext;
@@ -22,6 +23,8 @@ namespace Dash
 
         public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
 
+        public double MinWidth = 25;
+        public double MinHeight = 10;
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
@@ -46,6 +49,8 @@ namespace Dash
             //System.Diagnostics.Debug.WriteLine(" ");
             _content = null;
         }
+
+        public void RequestDelete() { if (DeleteRequested != null) DeleteRequested.Invoke(null, null); }
 
         public DocumentController DocumentController { get; }
         public DocumentController DataDocument => DocumentController.GetDataDocument();
@@ -110,6 +115,105 @@ namespace Dash
         }
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
         public Point ActualSize => LayoutDocument.GetActualSize() ?? new Point();
+
+
+        public void Resize(Point delta, Point cumulativeDelta, bool isShiftPressed, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
+        {
+            var isImage = DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
+                          (DocumentController.DocumentType.Equals(CollectionBox.DocumentType) && DocumentController.GetFitToParent()) ||
+                          DocumentController.DocumentType.Equals(VideoBox.DocumentType);
+
+            double extraOffsetX = 0;
+            if (!double.IsNaN(Width))
+            {
+                extraOffsetX = ActualSize.X - Width;
+            }
+
+
+            double extraOffsetY = 0;
+
+            if (!double.IsNaN(Height))
+            {
+                extraOffsetY = ActualSize.Y - Height;
+            }
+
+            var oldSize = new Size(ActualSize.X - extraOffsetX, ActualSize.Y - extraOffsetY);
+
+            var oldPos = Position;
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            var cursorXDirection = shiftLeft ? -1 : 1;
+            var cursorYDirection = shiftTop ? -1 : 1;
+            var moveXScale = shiftLeft ? 1 : 0;
+            var moveYScale = shiftTop ? 1 : 0;
+
+            cumulativeDelta.X *= cursorXDirection;
+            cumulativeDelta.Y *= cursorYDirection;
+
+            var w = ActualSize.X - extraOffsetX;
+            var h = ActualSize.Y - extraOffsetY;
+
+            double diffX;
+            double diffY;
+
+            var aspect = w / h;
+            var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
+
+            bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
+            if (cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0)
+            {
+
+                useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
+            }
+            else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            {
+                useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
+            }
+
+            var proportional = (!isImage && maintainAspectRatio)
+                ? isShiftPressed : (isShiftPressed ^ maintainAspectRatio);
+            if (useX)
+            {
+                aspect = 1 / aspect;
+                diffX = cursorXDirection * delta.X;
+                diffY = proportional
+                    ? aspect * diffX
+                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            }
+            else
+            {
+                diffY = cursorYDirection * delta.Y;
+                diffX = proportional
+                    ? aspect * diffY
+                    : cursorXDirection * delta.X;
+            }
+
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
+                XPos - moveXScale * (newSize.Width - oldSize.Width) * Scale.X,
+                YPos - moveYScale * (newSize.Height - oldSize.Height) * Scale.Y);
+
+            if (DocumentController.DocumentType.Equals(AudioBox.DocumentType))
+            {
+                newSize.Height = oldSize.Height;
+                newPos.Y = YPos;
+            }
+
+            Position = newPos;
+            if (newSize.Width != ActualSize.X)
+            {
+                Width = newSize.Width;
+            }
+
+            if (delta.Y != 0 || isShiftPressed || isImage)
+            {
+                if (newSize.Height != ActualSize.Y)
+                {
+                    Height = newSize.Height;
+                }
+            }
+        }
 
         protected bool Equals(DocumentViewModel other)
         {

@@ -361,6 +361,10 @@ namespace Dash
         {
             return document.GetDereferencedField<TextController>(KeyStore.LinkTagKey, null);
         }
+        public static void SetLinkTag(this DocumentController document, string tag)
+        {
+            document.SetField<TextController>(KeyStore.LinkTagKey, tag, true);
+        }
 
         public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {

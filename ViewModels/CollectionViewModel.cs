@@ -77,7 +77,7 @@ namespace Dash
                 {
                     ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
                     ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
-                    if (MainPage.Instance.XDocumentDecorations.SelectedDocs.Any((sd) => DocumentViewModels.Contains(sd.ViewModel)))
+                    if (SelectionManager.SelectedDocViewModels.Any(sdvm => DocumentViewModels.Contains(sdvm)))
                     {
                         MainPage.Instance.XDocumentDecorations.SetPositionAndSize(); // bcz: hack ... The Decorations should update automatically when the view zooms -- need a mechanism to bind/listen to view changing globally?
                     }
@@ -343,11 +343,13 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                // just update the collection, the colllection will update our view automatically
+                // just update the collection, the collection will update our view automatically
                 var theDoc = ContainerDocument;
                 var collectionField = theDoc.GetField<ListController<DocumentController>>(CollectionKey);
                 if (collectionField == null)
+                {
                     theDoc = ContainerDocument.GetDataDocument();
+                }
 
                 theDoc.RemoveFromListField(CollectionKey, document);
                 if (document.IsMovingCollections)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -104,7 +105,7 @@ namespace Dash
         {
             var docView = this.GetDocumentView();
 
-            if (args.SelectedViews.Contains(docView) && docView.IsSelected && SelectionManager.GetSelectedDocViewModels().Count == 1)
+            if (args.SelectedViews.Contains(docView) && docView.IsSelected && SelectionManager.SelectedDocViewModels.Count() == 1)
             {
                 var dt = new DispatcherTimer();
                 dt.Interval = new TimeSpan(0, 0, 0, 0, 200);
@@ -112,7 +113,7 @@ namespace Dash
                 dt.Start();
             }
             else if (_xWebView != null && ((args.DeselectedViews.Contains(docView) ||
-                (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.GetSelectedDocViewModels().Count > 1))))
+                (xWebViewRectangleBrush.Visibility == Visibility.Collapsed && SelectionManager.SelectedDocViewModels.Count() > 1))))
             {
                 Freeze();
             }
@@ -279,7 +280,7 @@ namespace Dash
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetDocumentView();
-            if (!docview.IsSelected || SelectionManager.GetSelectedDocViewModels().Count > 1)
+            if (!docview.IsSelected || SelectionManager.SelectedDocViewModels.Count() > 1)
             {
                 webBoxView?.Freeze();
             }

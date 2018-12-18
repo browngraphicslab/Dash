@@ -47,9 +47,6 @@ namespace Dash
         private void OnLoad(object sender, RoutedEventArgs e)
         {
         }
-        public void OnDocumentSelected(bool selected)
-        {
-        }
 
         public override Panel GetTransformedCanvas()
         {
@@ -94,7 +91,7 @@ namespace Dash
         private double _scaleX;
         private double _scaleY;
 
-        CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
+        private CoreCursor Arrow = new CoreCursor(CoreCursorType.Arrow, 1);
         private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
 
@@ -192,8 +189,6 @@ namespace Dash
                 menu.AddAction("CUSTOM", avm);
             }
         }
-
-        
 
         private Task<bool> AddTextNote(ActionFuncParams actionParams)
         {

@@ -110,7 +110,7 @@ namespace Dash
             }
             if (_documentView != null)
             {
-                AnnotationManager.FollowRegion(_documentView, _documentView.ViewModel.DocumentController,
+                AnnotationManager.FollowRegion(this, _documentView.ViewModel.DocumentController,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), e.GetPosition(_documentView), _text);
             }
             e.Handled = true;
@@ -234,14 +234,14 @@ namespace Dash
 
         private void SymbolIcon_DeleteTapped(object sender, TappedRoutedEventArgs e)
         {
-            var index = xLinkList.Items.IndexOf((sender as SymbolIcon).DataContext);
-            DocumentController linkDoc = _allKeys.ElementAt(index);
-            DocumentController destinationDoc = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
-            DocumentController sourceDoc = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
+            var index          = xLinkList.Items.IndexOf((sender as SymbolIcon).DataContext);
+            var linkDoc        = _allKeys.ElementAt(index);
+            var destinationDoc = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkDestinationKey);
+            var sourceDoc      = linkDoc.GetDataDocument().GetField<DocumentController>(KeyStore.LinkSourceKey);
             destinationDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Remove(linkDoc);
             sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
             setLinkKeys();
-            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+            MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
             //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
         }
 
@@ -259,7 +259,7 @@ namespace Dash
                 var srcLinkDoc = link.GetLinkedDocument(LinkDirection.ToSource);
                 var linkedFrom = srcLinkDoc?.GetDataDocument();
                 var matches = _documentView.ViewModel.DataDocument.GetRegions()?.Contains(srcLinkDoc) == true || linkedFrom.Equals(_documentView.ViewModel.DataDocument);
-                AnnotationManager.FollowLink(_documentView, link,
+                AnnotationManager.FollowLink(link,
                     matches ? LinkDirection.ToDestination : LinkDirection.ToSource,
                     _documentView.GetAncestorsOfType<ILinkHandler>(), _overrideBehavior);
             }
@@ -267,7 +267,7 @@ namespace Dash
 
         private void XFlyout_OnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
         {
-            MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+            MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
         }
     }
 }

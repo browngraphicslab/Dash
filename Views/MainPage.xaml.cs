@@ -335,6 +335,15 @@ namespace Dash
 
         public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
 
+        public bool IsTopLevel(DocumentViewModel docViewModel)
+        {
+            foreach (var s in this.GetDescendantsOfType<SplitFrame>())
+            {
+                if (s.DataContext == docViewModel)
+                    return true;
+            }
+            return false;
+        }
 
         private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
@@ -1051,7 +1060,7 @@ function (d) {
         private void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             if (args.SelectedViews.Count == 0 ||
-                !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.GetSelectedDocViewModels().Contains(dv.ViewModel)))
+                !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.SelectedDocViewModels.Contains(dv.ViewModel)))
             {
                 Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
                 ClearFloaty(null);

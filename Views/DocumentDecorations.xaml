@@ -12,8 +12,6 @@
     AllowDrop="True"
     DragOver="UserControl_DragOver"
     Drop="UserControl_Drop"
-    PointerEntered="DocumentDecorations_OnPointerEntered"
-    PointerExited="DocumentDecorations_OnPointerExited"
     d:DesignHeight="300"
     d:DesignWidth="400">
     
@@ -41,14 +39,14 @@
                 </Grid>
             </StackPanel>
             <StackPanel Visibility="Collapsed"  x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
-                <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Grid x:Name="xScrollBack" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                     <Ellipse />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     <ToolTipService.ToolTip>
                         <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="0"  />
                     </ToolTipService.ToolTip>
                 </Grid>
-                <Grid x:Name="xScrollForward" PointerPressed="XScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Grid x:Name="xScrollForward" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                     <Ellipse />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
                     <ToolTipService.ToolTip>
@@ -57,14 +55,14 @@
                 </Grid>
             </StackPanel>
             <StackPanel Visibility="Collapsed" x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Grid x:Name="xNextPageButton" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                     <Ellipse />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
                     <ToolTipService.ToolTip>
                         <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="0" />
                     </ToolTipService.ToolTip>
                 </Grid>
-                <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                <Grid x:Name="xPreviousPageButton" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
                     <Ellipse />
                     <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
                     <ToolTipService.ToolTip>
@@ -101,7 +99,7 @@
                             <ColumnDefinition Width="25"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
-                        <Ellipse CanDrag="True" DragStarting="Ellipse_DragStarting" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
+                        <Ellipse CanDrag="True" DragStarting="TitleEllipse_StartDragging" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
                 </Grid>
                 </Canvas>
             </Grid>
@@ -116,12 +114,11 @@
                     <RowDefinition Height="26"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid Margin="4 -40 0 0" PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased"  Tapped="xDelete_Tapped">
+                <Grid Margin="4 -40 0 0" Tapped="xDelete_Tapped">
                     <Ellipse Width="22" Height="22" Fill="#90FF0000"></Ellipse>
                     <TextBlock Text="&#xE711;" FontSize="10"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="1 8 0 0" />
                 </Grid>
                 <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="1" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
-                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" 
                             Tapped="XAnnotateEllipseBorder_OnTapped" DoubleTapped="xAnnotateEllipseBorder_DoubleTapped"
                             DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                     <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>

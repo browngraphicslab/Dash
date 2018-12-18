@@ -82,22 +82,17 @@ namespace Dash
             IsTextPredictionEnabled = true;
             Background = new SolidColorBrush(Colors.Transparent);
             Loaded += OnLoaded;
-            Unloaded += UnLoaded;
             MinWidth = 1;
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
                 if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && this.GetDocumentView() is DocumentView docView)
                 {
-                    if (!SelectionManager.IsSelected(docView))
+                    if (!SelectionManager.IsSelected(docView.ViewModel))
                     {
                         SelectionManager.Select(docView, false);
-                        var selection = Document.Selection;
-                        string boxText;
-                        Document.GetText(TextGetOptions.None, out boxText);
-                        var lenght = boxText.Length - 1;
-                        selection.StartPosition = lenght;
-                        selection.EndPosition = lenght;
+                        Document.GetText(TextGetOptions.None, out string boxText);
+                        Document.Selection.StartPosition = Document.Selection.EndPosition = boxText.Length - 1;
                         Focus(FocusState.Keyboard);
                     }
                        
@@ -124,16 +119,7 @@ namespace Dash
 
             PointerWheelChanged += (s, e) => e.Handled = true;
 
-            GotFocus += (s, e) =>
-            {
-                var docView = getDocView();
-                if (docView != null)
-                {
-                    docView.CacheMode = null;
-                    
-                    Clipboard.ContentChanged += Clipboard_ContentChanged;
-                }
-            };
+            GotFocus += (s, e) => Clipboard.ContentChanged += Clipboard_ContentChanged;
 
             TextChanged += (s, e) =>
             {
@@ -147,20 +133,15 @@ namespace Dash
 
             LostFocus += (s, e) =>
             {
-                if (getDocView() != null)
-                {
-                    getDocView().CacheMode = new BitmapCache();
-                }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
-                if (string.IsNullOrEmpty(getReadableText()) &&  DataFieldKey.Equals(KeyStore.DataKey))
+                if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey.Equals(KeyStore.DataKey))
                 {
-                    var docView = getDocView();
-                    if (docView != null && !SelectionManager.IsSelected(docView))
+                    if (!SelectionManager.IsSelected(ViewModel))
                     {
                         using (UndoManager.GetBatchHandle())
                         {
-                            docView?.DeleteDocument();
+                            ViewModel.RequestDelete();
                         }
                     }
                 }
@@ -188,18 +169,6 @@ namespace Dash
                 }
             };
 
-        }
-
-        private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
-        {
-            if (DataFieldKey.Equals(KeyStore.DataKey) && string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != this)
-            {
-                var docView = getDocView();
-                if (args.DeselectedViews.Contains(docView))
-                {
-                    docView.DeleteDocument();
-                }
-            }
         }
         public KeyController         DataFieldKey { get; set; }
         public DocumentController    DataDocument => ViewModel?.DataDocument;
@@ -297,7 +266,7 @@ namespace Dash
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
-                        AnnotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        AnnotationManager.FollowRegion(this, theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
                 else if (target.StartsWith("http"))
@@ -876,12 +845,6 @@ namespace Dash
         #endregion
 
         #region load/unload
-
-        private void UnLoaded(object s, RoutedEventArgs e)
-        {
-            SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
-        }
-
         public const string HyperlinkMarker = "<hyperlink marker>";
         public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
 
@@ -903,7 +866,6 @@ namespace Dash
             {
                 MainPage.Instance.ClearForceFocus();
                 GotFocus += RichTextView_GotFocus;
-                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
             }
             else

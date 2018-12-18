@@ -137,8 +137,8 @@ namespace Dash
         /// </summary>
         internal void SetImageBinding(DocumentView selection)
         {
-            _currentDocView = selection;
-            _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
+            _currentDocView       = selection;
+            _currentImage         = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
 	        xToggleAnnotations.IsChecked = _currentImage?.AreAnnotationsVisible();
             var modes = new Stretch[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill };
@@ -148,23 +148,29 @@ namespace Dash
 
         private async void Rotate_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentImage.IsCropping) return;
-            await _currentImage.Rotate();
-            AlertModified();
+            if (!_currentImage.IsCropping)
+            {
+                await _currentImage.Rotate();
+                AlertModified();
+            }
         }
 
         private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentImage.IsCropping) return;
-            await _currentImage.MirrorVertical();
-            AlertModified();
+            if (!_currentImage.IsCropping)
+            {
+                await _currentImage.MirrorVertical();
+                AlertModified();
+            }
         }
 
         private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentImage.IsCropping) return;
-            await _currentImage.MirrorHorizontal();
-            AlertModified();
+            if (!_currentImage.IsCropping)
+            {
+                await _currentImage.MirrorHorizontal();
+                AlertModified();
+            }
         }
 
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
@@ -251,14 +257,26 @@ namespace Dash
 
         private void ShowAppBarToolTip(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
-            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = true;
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip)
+            {
+                toggleTip.IsOpen = true;
+            }
         }
 
         private void HideAppBarToolTip(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
-            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
+            if (sender is AppBarButton button && ToolTipService.GetToolTip(button) is ToolTip tip)
+            {
+                tip.IsOpen = false;
+            }
+            else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip)
+            {
+                toggleTip.IsOpen = false;
+            }
         }
 
         private void xScaleOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -47,25 +47,25 @@ namespace Dash
         }
         public DragDocumentModel(DocumentView draggedDocumentView)
         {
-            DraggedDocuments = new List<DocumentController> { draggedDocumentView.ViewModel.DocumentController };
+            DraggedDocuments     = new List<DocumentController> { draggedDocumentView.ViewModel.DocumentController };
             DraggedDocumentViews = new List<DocumentView> { draggedDocumentView };
         }
 
-        public DragDocumentModel(List<DocumentView> draggedDocumentViews, List<CollectionViewModel> draggedDocCollectionViews, List<Point> off, Point offset)
+        public DragDocumentModel(IEnumerable<DocumentView> draggedDocumentViews, List<CollectionViewModel> draggedDocCollectionViews, List<Point> off, Point offset)
         {
-            DraggedDocuments = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
-            DraggedDocumentViews = draggedDocumentViews;
+            DraggedDocuments          = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            DraggedDocumentViews      = draggedDocumentViews.ToList();
             DraggedDocCollectionViews = draggedDocCollectionViews;
             DocOffsets = off;
-            Offset = offset;
-            Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
+            Offset     = offset;
+            Debug.Assert(DraggedDocCollectionViews.Count == DraggedDocumentViews.Count);
         }
 
         public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null, bool forceCopy = false)
         {
             DraggedDocuments = draggedDocuments;
-            ViewType = viewType;
-            MakeCollection = true;
+            ViewType         = viewType;
+            MakeCollection   = true;
             CollectionCreationMethod = collectionCreationMethod;
             ForceCopy = forceCopy;
         }

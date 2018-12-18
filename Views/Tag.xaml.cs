@@ -212,12 +212,12 @@ namespace Dash
         {
             if (_linkMenu.TagNameDict.Count > 1 && _linkMenu.TagNameDict.ContainsKey(Text))
             {
-                if (!this.Text.Equals("Annotation"))
+                if (!Text.Equals("Annotation"))
                 {
                     _linkMenu.TagNameDict.Remove(Text);
                     _linkMenu.XTagContainer.Children.Remove(this as UIElement);
-                    DocumentController tempTag = new DocumentController();
-                    DocumentController tempRecent = new DocumentController();
+                    var tempTag = new DocumentController();
+                    var tempRecent = new DocumentController();
                     foreach (var doc in _linkMenu.TagsSave)
                     {
                         if (doc.GetField<TextController>(KeyStore.DataKey).ToString().Equals(Text))
@@ -238,29 +238,18 @@ namespace Dash
 
                     _linkMenu.RecentTagsSave.Remove(tempRecent);
 
-                    if (_linkMenu.LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkTagKey).Data.Equals(Text))
+                    if (_linkMenu.LinkDoc.DataDocument.GetLinkTag().Equals(Text))
                     {
-                        _linkMenu.LinkDoc.DataDocument.SetField<TextController>(KeyStore.LinkTagKey, "Annotation",
-                            true);
-                        MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+                        _linkMenu.LinkDoc.DataDocument.SetLinkTag("Annotation");
+                        MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
                     }
-
-                    var lbs = MainPage.Instance.XDocumentDecorations.LinkButtons;
-
+                    
                     //tyler it's this section right here
-                    foreach (var button in lbs)
+                    foreach (var button in MainPage.Instance.XDocumentDecorations.LinkButtons.Where(lb => lb.Text.Equals(Text)))
                     {
-                        if (button.Text.Equals(Text))
-                        {
-                            foreach (var link in button.AllKeys)
-                            {
-                                link.GetDataDocument()
-                                    .SetField<TextController>(KeyStore.LinkTagKey, "Annotation", true);
-                                
-                            }
-                        }
+                        button.AllKeys.ForEach(link => link.GetDataDocument().SetLinkTag("Annotation"));
                     }
-                    MainPage.Instance.XDocumentDecorations.rebuildMenuIfNeeded();
+                    MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
                 }
             }
         }

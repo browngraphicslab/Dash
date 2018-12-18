@@ -68,28 +68,10 @@ namespace Dash
         // == STATIC ==
         public static MenuToolbar Instance;
 
-        // specifies default left click / tap behavior
-        public enum MouseMode
-        {
-            TakeNote,
-            PanFast,
-            QuickGroup,
-            Ink
-        };
-
-        public enum State
-        {
-            Expanded,
-            Collapsed
-        }
-
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
         private UIElement baseLevelContentToolbar;
-        private State state;
         private bool containsInternalContent;
-
-        private DocumentType _selectedType = null;
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -108,7 +90,7 @@ namespace Dash
             //xPadding.Width = ToolbarConstants.PaddingLong;
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
-            SelectionManager.SelectionChanged += (sender) =>  Update(SelectionManager.GetSelectedDocViews());
+            SelectionManager.SelectionChanged += (sender) =>  Update(SelectionManager.SelectedDocViews);
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
@@ -145,14 +127,12 @@ namespace Dash
         /// <param name="docs"></param>
         private void Update(IEnumerable<DocumentView> docs)
         {
-            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
+            if (subtoolbarElement != null)
+            {
+                subtoolbarElement.Visibility = Visibility.Collapsed;
+            }
 
             subtoolbarElement = null;
-
-            //if (!ToolbarColumn.Width.IsStar)
-            //{
-            //    return;
-            //}
 
             docs = docs.ToList();
 
@@ -162,7 +142,10 @@ namespace Dash
                 DocumentView selection = docs.First();
                 //_selectedType = selection.ViewModel.DocumentController.DocumentType;
 
-                if (selection.ViewModel == null) return;
+                if (selection.ViewModel == null)
+                {
+                    return;
+                }
 
                 //Find the type of the selected node and update the subtoolbar binding appropriately.
 
@@ -338,7 +321,7 @@ namespace Dash
                 }
 
             }
-            else if (docs.Count<DocumentView>() > 1)
+            else if (docs.Count() > 1)
             {
                 // TODO: multi select
                 subtoolbarElement = null;
@@ -367,9 +350,6 @@ namespace Dash
                 //xFloating.Floating_SizeChanged(null, null);
             }
         }
-
-        // controls which MouseMode is currently activated
-        private AppBarToggleButton _checkedButton;
 
         /// <summary>
         /// When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.

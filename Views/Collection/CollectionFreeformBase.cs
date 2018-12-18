@@ -658,9 +658,9 @@ namespace Dash
 
         #region Marquee Select
 
-        Rectangle _marquee;
-        public Point _marqueeAnchor;
-        bool _isMarqueeActive;
+        private Rectangle   _marquee;
+        private Point       _marqueeAnchor;
+        private bool        _isMarqueeActive;
         private MarqueeInfo mInfo;
 
         protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -675,7 +675,7 @@ namespace Dash
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 var marqueeDocs = DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height)));
-                if (marqueeDocs.Count > 0)
+                if (marqueeDocs.Any())
                 {
                     SelectionManager.SelectDocuments(marqueeDocs, this.IsShiftPressed());
                     Focus(FocusState.Programmatic);
@@ -857,36 +857,18 @@ namespace Dash
             }
         }
 
-        public List<DocumentView> DocsInMarquee(Rect marquee)
+        public IEnumerable<DocumentView> DocsInMarquee(Rect marquee)
         {
-            var selectedDocs = new List<DocumentView>();
             if (GetItemsControl().ItemsPanelRoot != null)
             {
-                var items = GetItemsControl().ItemsPanelRoot.Children;
-                foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
+                var items = GetItemsControl().ItemsPanelRoot.Children.Select(i => i.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null && marquee.IntersectsWith(dv.ViewModel.Bounds));
+                var docViewsSelected = items.Where(dv => !dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType) && dv.ViewModel.AreContentsHitTestVisible);
+
+                foreach (var dv in docViewsSelected.Any() ?  docViewsSelected : items)
                 {
-                    if (dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType))
-                        continue;
-                    if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
-                    {
-                        selectedDocs.Add(dv);
-                    }
-                }
-                if (selectedDocs.Count == 0)
-                {
-                    foreach (var dv in items.Select(i => i.GetFirstDescendantOfType<DocumentView>()))
-                    {
-                        if (!dv.ViewModel.AreContentsHitTestVisible && dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType))
-                        {
-                            if (dv != null && dv.IsHitTestVisible && marquee.IntersectsWith(dv.ViewModel.Bounds))
-                            {
-                                selectedDocs.Add(dv);
-                            }
-                        }
-                    }
+                    yield return dv;
                 }
             }
-            return selectedDocs;
         }
 
         public Rect GetBoundingRectFromSelection()
@@ -896,7 +878,7 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (var dv in SelectionManager.GetSelectedDocViewModels())
+            foreach (var dv in SelectionManager.SelectedDocViewModels)
             {
                 isEmpty = false;
                 topLeftMostPoint.X = dv.Position.X < topLeftMostPoint.X ? dv.Position.X : topLeftMostPoint.X;
@@ -921,54 +903,42 @@ namespace Dash
         /// <param name="fromMarquee">True if we select from the marquee, false if from currently selecte documents</param>
         public void TriggerActionFromSelection(VirtualKey modifier, bool fromMarquee)
         {
-            void DoAction(Action<List<DocumentView>, Point, Size> action)
+            void DoAction(Action<IEnumerable<DocumentViewModel>, Point, Size> action)
             {
-                Point where;
-                Rectangle marquee;
-                IEnumerable<DocumentView> viewsToSelectFrom;
-
                 if (fromMarquee)
                 {
-                    where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                        SelectionCanvas, GetItemsControl().ItemsPanelRoot);
-                    marquee = _marquee;
-                    viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                                                          SelectionCanvas, GetItemsControl().ItemsPanelRoot);
+                    var size = new Size(_marquee.Width, _marquee.Height);
+                    using (UndoManager.GetBatchHandle())
+                    {
+                        action(DocsInMarquee(new Rect(where, size)).Select(dv => dv.ViewModel), where, size);
+                    }
                 }
                 else
                 {
-                    var bounds = GetBoundingRectFromSelection();
-
-                    // hack to escape when CoreWindow fires the event a second time when it's actually from the marquee
-                    if (bounds == Rect.Empty) return;
-
-                    where = new Point(bounds.X, bounds.Y);
-                    marquee = new Rectangle
+                    if (GetBoundingRectFromSelection() is Rect bounds && bounds != Rect.Empty)
                     {
-                        Height = bounds.Height,
-                        Width = bounds.Width
-                    };
-                    viewsToSelectFrom = SelectionManager.GetSelectedDocViews();
+                        using (UndoManager.GetBatchHandle())
+                        {
+                            action(SelectionManager.SelectedDocViewModels, new Point(bounds.X, bounds.Y), new Size(bounds.Width, bounds.Height));
+                        }
+                    }
                 }
-
-                var toSelectFrom = viewsToSelectFrom.ToList();
-                using (UndoManager.GetBatchHandle())
-                {
-                    action(toSelectFrom, where, new Size(marquee.Width, marquee.Height));
-                }
-
+                
                 ResetMarquee(false);
             }
 
             var type = CollectionViewType.Freeform;
 
             var deselect = false;
-            if (!this.IsAltPressed() && (SelectionManager.GetSelectedDocViewModels().Count > 1 || fromMarquee|| modifier == VirtualKey.Back || modifier == VirtualKey.Delete)) { 
+            if (!this.IsAltPressed() && (SelectionManager.SelectedDocViewModels.Count() > 1 || fromMarquee|| modifier == VirtualKey.Back || modifier == VirtualKey.Delete)) { 
                 switch (modifier)
                 {
                 case VirtualKey.A:  //create a viewcopy of everything selected
-                    DoAction((dvs, where, size) =>
+                    DoAction((viewModels, where, size) =>
                     {
-                        var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                        var docs = viewModels.Select(dvm => dvm.DocumentController.GetViewCopy()).ToList();
                         ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs).Document);
                     });
                     deselect = true;
@@ -977,15 +947,15 @@ namespace Dash
                     type = CollectionViewType.Schema;
                     goto case VirtualKey.C;
                 case VirtualKey.C:
-                    DoAction((views, where, size) =>
+                    DoAction((viewModels, where, size) =>
                         {
-                            var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                            var docss = viewModels.Select(dvm => dvm.DocumentController).ToList();
                             ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docss).Document);
 
-                            foreach (var v in views)
+                            foreach (var viewModel in viewModels)
                             {
-                                v.ViewModel.LayoutDocument.IsMovingCollections = true;
-                                v.DeleteDocument();
+                                viewModel.LayoutDocument.IsMovingCollections = true;
+                                viewModel.RequestDelete();
                             }
                         });
                     deselect = true;
@@ -996,27 +966,27 @@ namespace Dash
                 case VirtualKey.Right:
                     if (!MainPage.Instance.IsShiftPressed()) // arrow aligns to left or right (ctrl + arrow aligns to horizontal or vertical center)
                     {
-                        DoAction((views, where, size) =>
+                        DoAction((viewModels, where, size) =>
                         {
                             var docDec = MainPage.Instance.XDocumentDecorations;
                             var rect = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
                             var centered = MainPage.Instance.IsCtrlPressed();
-                            foreach (var v in views)
+                            foreach (var v in viewModels)
                             {
-                                double alignedX = v.ViewModel.LayoutDocument.GetPosition().Value.X;
-                                double alignedY = v.ViewModel.LayoutDocument.GetPosition().Value.Y;
+                                double alignedX = v.LayoutDocument.GetPosition().Value.X;
+                                double alignedY = v.LayoutDocument.GetPosition().Value.Y;
                                 if (centered)
                                 {
-                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up) ? (rect.Left + rect.Right) / 2 - v.ActualWidth / 2 : alignedX;
-                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom) / 2 - v.ActualHeight / 2 : alignedY;
+                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up) ? (rect.Left + rect.Right) / 2 - v.ActualSize.X / 2 : alignedX;
+                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom) / 2 - v.ActualSize.Y / 2 : alignedY;
 
                                 }
                                 else
                                 {
-                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right - v.ActualWidth : alignedX;
-                                    alignedY = modifier == VirtualKey.Up ? rect.Top : modifier == VirtualKey.Down ? rect.Bottom - v.ActualHeight : alignedY;
+                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right - v.ActualSize.X : alignedX;
+                                    alignedY = modifier == VirtualKey.Up ? rect.Top : modifier == VirtualKey.Down ? rect.Bottom - v.ActualSize.Y : alignedY;
                                 }
-                                v.ViewModel.LayoutDocument.SetPosition(new Point(alignedX, alignedY));
+                                v.LayoutDocument.SetPosition(new Point(alignedX, alignedY));
                             }
                         });
                     }
@@ -1025,10 +995,11 @@ namespace Dash
                         DoAction((views, where, size) =>
                         {
                             var sortY = modifier == VirtualKey.Down || modifier == VirtualKey.Up;
-                            views.Sort((dv1, dv2) =>
+                            var sortedViewModels = views.ToList();
+                            sortedViewModels.Sort((dv1, dv2) =>
                             {
-                                var v1p = dv1.ViewModel.LayoutDocument.GetPosition() ?? new Point();
-                                var v2p = dv2.ViewModel.LayoutDocument.GetPosition() ?? new Point();
+                                var v1p = dv1.LayoutDocument.GetPosition() ?? new Point();
+                                var v2p = dv2.LayoutDocument.GetPosition() ?? new Point();
                                 var v1 = sortY ? v1p.Y : v1p.X;
                                 var v2 = sortY ? v2p.Y : v2p.X;
                                 var v1o = sortY ? v1p.X : v1p.Y;
@@ -1040,24 +1011,27 @@ namespace Dash
                                 return 0;
                             });
 
-                            var docDec = MainPage.Instance.XDocumentDecorations;
-                            var usedDim = views.Aggregate(0.0, (val, view) => val + (sortY ? view.ViewModel.Bounds.Height : view.ViewModel.Bounds.Width));
-                            var bounds     = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
-                            var spacing    = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (views.Count -1);
+                            var docDec       = MainPage.Instance.XDocumentDecorations;
+                            var usedDim      = sortedViewModels.Aggregate(0.0, (val, view) => val + (sortY ? view.Bounds.Height : view.Bounds.Width));
+                            var bounds       = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
+                            var spacing      = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (sortedViewModels.Count() -1);
                             double placement = sortY ? bounds.Top : bounds.Left;
                             if (modifier == VirtualKey.Down || modifier == VirtualKey.Left)
-                                views.Reverse();
-                            foreach (var v in views)
+                            {
+                                sortedViewModels.Reverse();
+                            }
+
+                            foreach (var v in sortedViewModels)
                             {
                                 if (modifier == VirtualKey.Down || modifier == VirtualKey.Up)
                                 {
-                                    v.ViewModel.LayoutDocument.SetPosition(new Point(v.ViewModel.LayoutDocument.GetPosition().Value.X, placement));
-                                    placement += v.ViewModel.Bounds.Height + spacing;
+                                    v.LayoutDocument.SetPosition(new Point(v.LayoutDocument.GetPosition().Value.X, placement));
+                                    placement += v.Bounds.Height + spacing;
                                 }
                                 if (modifier == VirtualKey.Left || modifier == VirtualKey.Right)
                                 {
-                                    v.ViewModel.LayoutDocument.SetPosition(new Point(placement, v.ViewModel.LayoutDocument.GetPosition().Value.Y));
-                                    placement += v.ViewModel.Bounds.Width + spacing;
+                                    v.LayoutDocument.SetPosition(new Point(placement, v.LayoutDocument.GetPosition().Value.Y));
+                                    placement += v.Bounds.Width + spacing;
                                 }
                             }
                         });
@@ -1065,7 +1039,7 @@ namespace Dash
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
-                    DoAction((views, where, size) => views.ForEach((v) => v.DeleteDocument()));
+                    DoAction((viewModels, where, size) => viewModels.ToList().ForEach(dvm => dvm.RequestDelete()));
                     deselect = true;
                     break;
                 case VirtualKey.G:
@@ -1073,13 +1047,7 @@ namespace Dash
                     deselect = true;
                     break;
                 case VirtualKey.R:
-                    DoAction((views, where, size) =>
-                    {
-                        if (size.Width >= 215 && size.Height >= 200)
-                        {
-                            ViewModel.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document);
-                        }
-                    });
+                    DoAction((views, where, size) => ((size.Width >= 215 && size.Height >= 200) ? ViewModel : null)?.AddDocument(new DishReplBox(where.X, where.Y, size.Width, size.Height).Document));
                     deselect = true;
                     break;
                 }

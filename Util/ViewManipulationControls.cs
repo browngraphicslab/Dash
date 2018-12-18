@@ -93,10 +93,10 @@ namespace Dash
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var docView = _freeformView.GetDocumentView();
-            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !docView.IsTopLevel && !DraggingDoc)
+            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !MainPage.Instance.IsTopLevel(docView.ViewModel) && !DraggingDoc)
             {
                 //drag document 
-                if (!SelectionManager.IsSelected(docView))
+                if (!SelectionManager.IsSelected(docView.ViewModel))
                 {
                     SelectionManager.Select(docView, false);
                     SelectionManager.DragManipulationCompleted += DragManipCompletedTouch;
@@ -137,7 +137,7 @@ namespace Dash
                     e.Handled = true;
                 }
                 else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 &&
-                           (_freeformView.GetDocumentView()?.IsTopLevel ?? false))
+                           MainPage.Instance.IsTopLevel(_freeformView.GetDocumentView()?.ViewModel))
                 {
                     var point = _freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
                     //gets funky with nested collections, but otherwise works

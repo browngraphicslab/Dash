@@ -46,9 +46,8 @@ namespace Dash
             get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
-        public bool              IsSelected => SelectionManager.GetSelectedDocViewModels().Contains(ViewModel);
-        public bool              AreContentsActive => SelectionManager.GetSelectedDocViews().Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || IsTopLevel;
-        public bool              IsTopLevel => this.GetFirstAncestorOfType<SplitFrame>()?.DataContext == DataContext;
+        public bool              IsSelected => SelectionManager.SelectedDocViewModels.Contains(ViewModel);
+        public bool              AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || MainPage.Instance.IsTopLevel(ViewModel);
         public Action            FadeOutBegin;
 
         void pppt(object sender, PointerRoutedEventArgs e)
@@ -130,139 +129,14 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft,
-            bool maintainAspectRatio)
+        public void Resize(ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-            e.Handled = true;
-            if (MainPage.Instance.IsRightBtnPressed())
+            if (!MainPage.Instance.IsRightBtnPressed())
             {
-                return;
-            }
-
-            var isImage = ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType) ||
-                          (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType) && ViewModel.DocumentController.GetFitToParent()) ||
-                          ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType);
-
-            double extraOffsetX = 0;
-            if (!double.IsNaN(Width))
-            {
-                extraOffsetX = ActualWidth - Width;
-            }
-
-
-            double extraOffsetY = 0;
-
-            if (!double.IsNaN(Height))
-            {
-                extraOffsetY = ActualHeight - Height;
-            }
-
-
-            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            //problem is that cumulativeDelta.Y is 0
-            var cumulativeDelta = Util.DeltaTransformFromVisual(e.Cumulative.Translation, this);
-            
-            var oldSize = new Size(ActualWidth - extraOffsetX, ActualHeight - extraOffsetY);
-
-            var oldPos = ViewModel.Position;
-
-            // sets directions/weights depending on which handle was dragged as mathematical manipulations
-            var cursorXDirection = shiftLeft ? -1 : 1;
-            var cursorYDirection = shiftTop ? -1 : 1;
-            var moveXScale = shiftLeft ? 1 : 0;
-            var moveYScale = shiftTop ? 1 : 0;
-
-            cumulativeDelta.X *= cursorXDirection;
-            cumulativeDelta.Y *= cursorYDirection;
-
-            var w = ActualWidth - extraOffsetX;
-            var h = ActualHeight - extraOffsetY;
-
-            Rect dragBounds = Rect.Empty;
-
-            double diffX;
-            double diffY;
-
-            var aspect = w / h;
-            var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
-
-            bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
-            if (cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0)
-            {
-
-                useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
-            }
-            else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
-            {
-                useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
-            }
-
-            var proportional = (!isImage && maintainAspectRatio)
-                ? this.IsShiftPressed()
-                : (this.IsShiftPressed() ^ maintainAspectRatio);
-            if (useX)
-            {
-                aspect = 1 / aspect;
-                diffX = cursorXDirection * delta.X;
-                diffY = proportional
-                    ? aspect * diffX
-                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
-            }
-            else
-            {
-                diffY = cursorYDirection * delta.Y;
-                diffX = proportional
-                    ? aspect * diffY
-                    : cursorXDirection * delta.X;
-            }
-
-            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
-            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
-            var newPos = new Point(
-                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
-                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
-
-            if (ViewModel.DocumentController.DocumentType.Equals(AudioBox.DocumentType))
-            {
-                MinWidth = 200;
-                newSize.Height = oldSize.Height;
-                newPos.Y = ViewModel.YPos;
-            }
-
-
-            // re-clamp the position to keep it in bounds
-            if (dragBounds != Rect.Empty)
-            {
-                if (!dragBounds.Contains(newPos) ||
-                    !dragBounds.Contains(new Point(newPos.X + newSize.Width,
-                        newPos.Y + DesiredSize.Height)))
-                {
-                    ViewModel.Position = oldPos;
-                    ViewModel.Width = oldSize.Width;
-                    ViewModel.Height = oldSize.Height;
-                    return;
-                }
-
-                var clamp = Util.Clamp(newPos, dragBounds);
-                newSize.Width += newPos.X - clamp.X;
-                newSize.Height += newPos.Y - clamp.Y;
-                newPos = clamp;
-                var br = Util.Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), dragBounds);
-                newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
-            }
-
-            ViewModel.Position = newPos;
-            if (newSize.Width != ViewModel.ActualSize.X)
-            {
-                ViewModel.Width = newSize.Width;
-            }
-
-            if (delta.Y != 0 || this.IsShiftPressed() || isImage)
-            {
-                if (newSize.Height != ViewModel.ActualSize.Y)
-                {
-                    ViewModel.Height = newSize.Height;
-                }
+                ViewModel.Resize(Util.DeltaTransformFromVisual(e.Delta.Translation,      this), 
+                                 Util.DeltaTransformFromVisual(e.Cumulative.Translation, this), 
+                                 this.IsShiftPressed(), shiftTop, shiftLeft, maintainAspectRatio);
+                e.Handled = true;
             }
         }
         /// <summary>
@@ -289,16 +163,15 @@ namespace Dash
         }
         public void Cut(bool delete)
         {
-            var selected = SelectionManager.GetSelectedDocViews();
-            if (selected.Any())
+            if (SelectionManager.SelectedDocViewModels.Any())
             {
                 var dataPackage = new DataPackage();
-                dataPackage.SetClipboardData(new CopyPasteModel(selected.Select(view => view.ViewModel.DocumentController).ToList(), !delete));
+                dataPackage.SetClipboardData(new CopyPasteModel(SelectionManager.SelectedDocViewModels.Select(vm => vm.DocumentController).ToList(), !delete));
+                Clipboard.SetContent(dataPackage);
                 if (delete)
                 {
-                    selected.ToList().ForEach(dv => dv.DeleteDocument());
+                    SelectionManager.SelectedDocViewModels.ToList().ForEach(dvm => dvm.RequestDelete());
                 }
-                Clipboard.SetContent(dataPackage);
             }
             else
             {
@@ -568,6 +441,7 @@ namespace Dash
                 _oldViewModel = ViewModel;
                 if (ViewModel != null)
                 {
+                    ViewModel.DeleteRequested += (s, e) => DeleteDocument();
                     UpdateBindings();
                 }
             }
@@ -702,14 +576,14 @@ namespace Dash
                     await System.Threading.Tasks.Task.Delay(100);
                     if (!_doubleTapped)
                     {
-                        if (!SelectionManager.GetSelectedDocViewModels().Contains(ViewModel) || this.IsShiftPressed())
+                        if (!SelectionManager.SelectedDocViewModels.Contains(ViewModel) || this.IsShiftPressed())
                         {
                             SelectionManager.Select(this, this.IsShiftPressed());
                         }
                     }
                 }
 
-                if (SelectionManager.GetSelectedDocViewModels().Count > 1)
+                if (SelectionManager.SelectedDocViewModels.Count() > 1)
                 {
                     // move focus to container if multiple documents are selected (otherwise focus remains where it was)
                     (ParentCollection?.CurrentView as CollectionFreeformBase)?.Focus(FocusState.Programmatic);
@@ -793,17 +667,6 @@ namespace Dash
                 foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                 {
                     doc.MakeInstance();
-                }
-            }
-        }
-
-        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                foreach (var doc in SelectionManager.GetSelectedSiblings(this))
-                {
-                    doc.DeleteDocument();
                 }
             }
         }
@@ -920,7 +783,7 @@ namespace Dash
         }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsTopLevel)
+            if (!MainPage.Instance.IsTopLevel(ViewModel))
             {
                 using (UndoManager.GetBatchHandle())
                 {
