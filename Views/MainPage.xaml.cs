@@ -52,7 +52,6 @@ namespace Dash
         public static MainPage               Instance { get; private set; }
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
 
-        public CollectionViewModel                ViewModel       => DataContext as CollectionViewModel;
         public SplitManager                       MainSplitter    => XMainSplitter;
         public Grid                               SnapshotOverlay => xSnapshotOverlay;
         public BrowserView                        WebContext      => BrowserView.Current;
@@ -112,9 +111,6 @@ namespace Dash
             Canvas.SetZIndex(xToolbar, 20);
 
             SplitFrame.ActiveDocumentChanged += frame => MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
-
-            JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
-            JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
 
             CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
             Window.Current.SetTitleBar(trickyTitleBar);
@@ -410,17 +406,7 @@ namespace Dash
             //MenuToolbar.Instance.xSubtoolbarStackPanel.HorizontalAlignment = HorizontalAlignment.Left;
             //MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
         }
-
-        private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
-        {
-            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
-        }
-        private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
-        {
-            var value = e.Value as string;
-            Debug.WriteLine("val = " + value);
-        }
-
+        
         private void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             if (args.SelectedViews.Count == 0 ||
@@ -814,29 +800,6 @@ function (d) {
             }
         }
 
-        private void NavigateToDocument(DocumentController doc)//More options
-        {
-            var tree = DocumentTree.MainPageTree;
-            var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
-            if (node?.Parent == null)
-            {
-                SplitFrame.OpenInActiveFrame(doc);
-                return;
-            }
-
-            SplitFrame.OpenDocumentInWorkspace(doc, node.Parent.ViewDocument);
-        }
-        private void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
-        {
-            DocumentController parent = docOrRegion.GetRegionDefinition();
-            (parent ?? docOrRegion).SetHidden(false);
-            NavigateToDocument(parent ?? docOrRegion);
-            if (parent != null)
-            {
-                parent.GotoRegion(docOrRegion, link);
-            }
-        }
-
         public LinkHandledResult   HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
@@ -856,7 +819,7 @@ function (d) {
                 return LinkHandledResult.HandledClose;
             }
 
-            if (linkDoc.GetLinkBehavior().Equals(LinkBehavior.ShowRegion))
+            if (linkDoc.GetLinkBehavior() == LinkBehavior.ShowRegion)
             {
                 AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
             }
@@ -866,12 +829,8 @@ function (d) {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
                 if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
                 {
-                    //    if (onScreenView.GetFirstAncestorOfType<DockedView>() == xMainDocView.GetFirstDescendantOfType<DockedView>()) // if the document was on the main screen (either visible or hidden), we toggle it's visibility
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();
-                    //AddFloatingDoc(linkDoc.GetDataDocument().GetLinkedDocument(LinkDirection.ToSource));
-                    //    else DockManager.Undock(onScreenView.GetFirstAncestorOfType<DockedView>()); // otherwise, it was in a docked pane -- instead of toggling the target's visibility, we just removed the docked pane.
-                  
-                }
+                 }
                 else // otherwise, it's a hidden region that we have to show
                 {
                     onScreenView.ViewModel.LayoutDocument.SetHidden(false);
@@ -888,13 +847,33 @@ function (d) {
             }
             else
             {
-                //Dock_Link(linkDoc, direction);
-                //target.SetHidden(false);
                 ToggleFloatingDoc(target);
                 target.GotoRegion(region, linkDoc);
             }
 
             return LinkHandledResult.HandledClose;
+        }
+        private void               NavigateToDocument(DocumentController doc)//More options
+        {
+            var tree = DocumentTree.MainPageTree;
+            var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
+            if (node?.Parent == null)
+            {
+                SplitFrame.OpenInActiveFrame(doc);
+                return;
+            }
+
+            SplitFrame.OpenDocumentInWorkspace(doc, node.Parent.ViewDocument);
+        }
+        private void               NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
+        {
+            DocumentController parent = docOrRegion.GetRegionDefinition();
+            (parent ?? docOrRegion).SetHidden(false);
+            NavigateToDocument(parent ?? docOrRegion);
+            if (parent != null)
+            {
+                parent.GotoRegion(docOrRegion, link);
+            }
         }
         private void               ToggleFloatingDoc(DocumentController doc)
         {
@@ -922,7 +901,6 @@ function (d) {
                 }
             }
         }
-
         private DocumentView       FindTargetDocumentView(DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
@@ -956,24 +934,22 @@ function (d) {
 
         private async Task<string> processTemplate(IEnumerable<DocumentController> docs, TemplateType templateType)
         {
-            var fields =
-                docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
-                Aggregate((a, b) => a.Intersect(b)).ToList();
+            var fields = docs.Select(d => d.GetDataDocument().EnumDisplayableFields().Select(f => f.Key.Name)).Aggregate((a, b) => a.Intersect(b)).ToList();
             fields.Insert(0, "");
             fields.Add("Caption"); // bcz: need default set of fields + ability to let user define a new default field
 
             ICustomTemplate templatePopup = null;
             switch (templateType)
             {
-            case TemplateType.Citation: templatePopup = new CitationPopup(fields); break;
-            case TemplateType.CaptionedImage: templatePopup = new CaptionedImage(fields); break;
-            case TemplateType.Note: templatePopup = new NotePopup(fields); break;
-            case TemplateType.Card: templatePopup = new CardPopup(fields); break;
-            case TemplateType.Title: templatePopup = new TitlePopup(fields); break;
-            case TemplateType.Profile: templatePopup = new ProfilePopup(fields); break;
-            case TemplateType.Article: templatePopup = new ArticlePopup(fields); break;
-            case TemplateType.Biography: templatePopup = new BiographyPopup(fields); break;
-            case TemplateType.Flashcard: templatePopup = new FlashcardPopup(fields); break;
+                case TemplateType.Citation:       templatePopup = new CitationPopup(fields); break;
+                case TemplateType.CaptionedImage: templatePopup = new CaptionedImage(fields); break;
+                case TemplateType.Note:           templatePopup = new NotePopup(fields); break;
+                case TemplateType.Card:           templatePopup = new CardPopup(fields); break;
+                case TemplateType.Title:          templatePopup = new TitlePopup(fields); break;
+                case TemplateType.Profile:        templatePopup = new ProfilePopup(fields); break;
+                case TemplateType.Article:        templatePopup = new ArticlePopup(fields); break;
+                case TemplateType.Biography:      templatePopup = new BiographyPopup(fields); break;
+                case TemplateType.Flashcard:      templatePopup = new FlashcardPopup(fields); break;
             }
             SetUpPopup(templatePopup);
             var customLayout = await templatePopup.GetLayout();
