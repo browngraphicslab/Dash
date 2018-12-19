@@ -155,28 +155,17 @@ namespace Dash
         }
         public void Cut(bool delete)
         {
-            if (SelectionManager.SelectedDocViewModels.Any())
-            {
-                var dataPackage = new DataPackage();
-                dataPackage.SetClipboardData(new CopyPasteModel(SelectionManager.SelectedDocViewModels.Select(vm => vm.DocumentController).ToList(), !delete));
-                Clipboard.SetContent(dataPackage);
-                if (delete)
+            var dataPackage      = new DataPackage();
+            var cutDocViewModels = SelectionManager.SelectedDocViewModels.Any() ?
+                                       SelectionManager.SelectedDocViewModels : new DocumentViewModel[] { ViewModel };
+            dataPackage.SetClipboardData(new CopyPasteModel(cutDocViewModels.Select(dvm => dvm.DocumentController).ToList(), !delete));
+            if (delete) {
+                using (UndoManager.GetBatchHandle())
                 {
-                    SelectionManager.SelectedDocViewModels.ToList().ForEach(dvm => dvm.RequestDelete());
+                    cutDocViewModels.ToList().ForEach(dvm => dvm.RequestDelete());
                 }
             }
-            else
-            {
-                var dataPackage = new DataPackage();
-                dataPackage.SetClipboardData(new CopyPasteModel(new List<DocumentController> { ViewModel.DocumentController }, !delete));
-                if (delete)
-                {
-                    DeleteDocument();
-                }
-
-                Clipboard.SetContent(dataPackage);
-            }
-
+            Clipboard.SetContent(dataPackage);
         }
         /// <summary>
         /// Copies the Document.
@@ -1112,9 +1101,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        //this won't work
-
+        
         private void XContent_OnHolding(object sender, HoldingRoutedEventArgs e)
         {
             xMenuFlyout_Opening(sender, e);
