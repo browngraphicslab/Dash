@@ -96,7 +96,7 @@ namespace Dash
                         Focus(FocusState.Keyboard);
                     }
                        
-                    SelectionManager.TryInitiateDragDrop(docView, e, null);
+                    SelectionManager.InitiateDragDrop(docView, e);
                 }
                 _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, true);
                 e.Handled = true;

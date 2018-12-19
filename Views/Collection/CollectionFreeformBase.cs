@@ -799,7 +799,7 @@ namespace Dash
                 NumFingers++;
                 ViewManipulationControls.IsPanning = false;
             }
-            if (this.GetDocumentView().AreContentsActive && !this.IsCtrlPressed() && args.IsLeftPressed())
+            if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
             {
                 GetOuterGrid().CapturePointer(args.Pointer);
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;

@@ -37,9 +37,6 @@ namespace Dash
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
 
-        public event Action<DocumentView> DocumentSelected;
-        public event Action<DocumentView> DocumentDeselected;
-
         public CollectionView    ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public DocumentViewModel ViewModel 
         {
@@ -50,14 +47,9 @@ namespace Dash
         public bool              AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || MainPage.Instance.IsTopLevel(ViewModel);
         public Action            FadeOutBegin;
 
-        void pppt(object sender, PointerRoutedEventArgs e)
-        {
-
-        }
         // == CONSTRUCTORs ==
         public DocumentView()
         {
-            AddHandler(PointerPressedEvent, new PointerEventHandler(pppt), true);
             InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
@@ -257,14 +249,6 @@ namespace Dash
         {
             xMenuFlyout.ShowAt(null, where);
         }
-        public void OnSelected()
-        {
-            DocumentSelected?.Invoke(this);
-        }
-        public void OnDeselected()
-        {
-            DocumentDeselected?.Invoke(this);
-        }
         /// <summary>
         /// Opens in Chrome the context from which the document was made.
         /// </summary>
@@ -337,8 +321,7 @@ namespace Dash
 
             var binding = !BindRenderTransform || doc == null
                 ? null
-                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
-                    new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
+                : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey))
                 {
                     Converter = new TransformGroupMultiConverter(),
                     Context = new Context(doc),
@@ -369,7 +352,7 @@ namespace Dash
                     Converter = new InverseBoolToVisibilityConverter(),
                     Document = doc,
                     Key = KeyStore.HiddenKey,
-                    Mode = BindingMode.OneWay,
+                    Mode = BindingMode.TwoWay,
                     Tag = "Visibility binding in DocumentView",
                     FallbackValue = false
                 };
@@ -379,7 +362,7 @@ namespace Dash
             {
                 Document = doc,
                 Key = KeyStore.AreContentsHitTestVisibleKey,
-                Mode = BindingMode.OneWay,
+                Mode = BindingMode.TwoWay,
                 Tag = "AreContentsHitTestVisible binding in DocumentView",
                 FallbackValue = true
             };
@@ -495,7 +478,7 @@ namespace Dash
                     ReleasePointerCapture(e.Pointer);
                     PointerMoved -= this_PointerMoved;
                     PointerReleased -= this_PointerReleased;
-                    SelectionManager.TryInitiateDragDrop(this, e, null);
+                    SelectionManager.InitiateDragDrop(this, e);
                 }
             }
         }

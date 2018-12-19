@@ -21,7 +21,6 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.PositionFieldKey] = new PointController(pos),
-                [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
                 [KeyStore.WidthFieldKey] = new NumberController(400),
                 [KeyStore.HeightFieldKey] = new NumberController(400),
                 [KeyStore.DataKey] = refToLayout

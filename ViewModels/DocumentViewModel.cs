@@ -63,8 +63,8 @@ namespace Dash
             set => SetProperty(ref _showLocalContext, value);
         }
         
-        public bool Undecorated { get; set; }
-        public bool DragAllowed { get; set; } = true;
+        public bool Undecorated     { get; set; }
+        public bool DragAllowed     { get; set; } = true;
         public bool IsDimensionless { get; set; }
         public bool AreContentsHitTestVisible
         {
@@ -85,17 +85,17 @@ namespace Dash
             get => LayoutDocument.GetPosition() ?? new Point();
             set => LayoutDocument.SetPosition(value);
         }
-        public double XPos
+        public double XPos   
         {
             get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
             set => Position = new Point(value, YPos);
         }
-        public double YPos
+        public double YPos   
         {
             get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
             set => Position = new Point(XPos, value);
         }
-        public double Width
+        public double Width  
         {
             get => IsDimensionless ? double.NaN : LayoutDocument.GetWidth();
             set {
@@ -103,18 +103,13 @@ namespace Dash
                 OnPropertyChanged("Width");
             }
         }
-        public double Height
+        public double Height 
         {
             get => IsDimensionless ? double.NaN : LayoutDocument.GetHeight();
             set => LayoutDocument.SetHeight(value);
         }
-        public Point Scale
-        {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, value, true);
-        }
-        public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
-        public Point ActualSize => LayoutDocument.GetActualSize() ?? new Point();
+        public Rect   Bounds     => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X, ActualSize.Y));
+        public Point  ActualSize => LayoutDocument.GetActualSize() ?? new Point();
 
 
         public void Resize(Point delta, Point cumulativeDelta, bool isShiftPressed, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
@@ -191,8 +186,8 @@ namespace Dash
             var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
             // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
             var newPos = new Point(
-                XPos - moveXScale * (newSize.Width - oldSize.Width) * Scale.X,
-                YPos - moveYScale * (newSize.Height - oldSize.Height) * Scale.Y);
+                XPos - moveXScale * (newSize.Width - oldSize.Width),
+                YPos - moveYScale * (newSize.Height - oldSize.Height));
 
             if (DocumentController.DocumentType.Equals(AudioBox.DocumentType))
             {

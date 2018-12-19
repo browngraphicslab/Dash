@@ -91,7 +91,7 @@ namespace Dash
             {
                 if (this.IsRightBtnPressed())
                 {
-                    SelectionManager.InitiateDragDrop(SelectionManager.SelectedDocViews.FirstOrDefault(), null, null);
+                    SelectionManager.InitiateDragDrop(SelectionManager.SelectedDocViews.FirstOrDefault(), null);
                 }
                 else
                 {
@@ -170,10 +170,6 @@ namespace Dash
 
         public void SetPositionAndSize(bool rebuildMenu = true)
         {
-            if (!_selectedDocViewModels.Any())
-            {
-                return;
-            }
             xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.Undecorated == true) ? -20 : 0, 0, 0, 0);
             var topLeft  = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);

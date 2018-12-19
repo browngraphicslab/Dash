@@ -315,14 +315,13 @@ namespace Dash
                 LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, uri, true);
 
                 var oldpoint = LayoutDocument.GetPosition() ?? new Point();
-                var scale = LayoutDocument.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
                 var oldAspect = LayoutDocument.GetActualSize().Value.X / LayoutDocument.GetActualSize().Value.Y;
                 var newaspect = width / (double)height;
                 if (newaspect > oldAspect)
                      LayoutDocument.SetHeight(LayoutDocument.GetActualSize().Value.X / newaspect);
                 else LayoutDocument.SetWidth (LayoutDocument.GetActualSize().Value.Y * newaspect);
-                var point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
-                                      oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
+                var point = new Point(oldpoint.X + _cropControl.GetBounds().X,
+                                      oldpoint.Y + _cropControl.GetBounds().Y);
 
                 LayoutDocument.SetPosition(point);
             }

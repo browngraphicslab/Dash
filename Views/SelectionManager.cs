@@ -228,82 +228,53 @@ namespace Dash
         }
 
         #region Drag Manipulation Methods
-        public static bool TryInitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe, ManipulationStartedRoutedEventArgs e)
+        public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
-            var parents = draggedView.GetAncestorsOfType<DocumentView>().ToList();
-            if (draggedView.IsSelected)
+            var parents = draggedView.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
+            foreach (var parent in parents)
             {
-                InitiateDragDrop(draggedView, pe?.GetCurrentPoint(draggedView), e);
-                return true;
-            }
-            else
-            {
-                var prevParent = draggedView;
-                foreach (var parent in parents)// bcz: Ugh.. this is ugly.
+                if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
+                    parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
+                    (_selectedDocViews.Contains(parent) || parent == parents.Last()))
                 {
-                    if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
-                        parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
-                        (_selectedDocViews.Contains(parent) || parent == parents.Last()))
-                    {
-                        InitiateDragDrop(prevParent, pe?.GetCurrentPoint(prevParent), e);
-                        return true;
-                    }
-                    prevParent = parent;
+                    break;
                 }
-            }
-            return false;
-        }
-        public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
-        {
-            if (e != null)
-            {
-                e.Handled = true;
-                e.Complete();
+                draggedView = parent;
             }
 
-            _dragViews = _selectedDocViews.Contains(draggedView) ? _selectedDocViews.ToArray().ToList() : new List<DocumentView>(new[] { draggedView });
+            _dragViews = _selectedDocViews.Contains(draggedView) ? _selectedDocViews.ToList() : new DocumentView[] { draggedView }.ToList();
 
-            if (draggedView.ViewModel.DocumentController.GetIsAdornment())
+            if (draggedView.ViewModel.DocumentController.GetIsAdornment()) // if dragging an adornment, drag all siblings that overlap it 
             {
-                var rect = new Rect(draggedView.ViewModel.XPos, draggedView.ViewModel.YPos,
-                    draggedView.ViewModel.ActualSize.X, draggedView.ViewModel.ActualSize.Y);
-                foreach (var cp in draggedView.GetFirstAncestorOfType<Canvas>()?.Children)
-                {
-                    if (cp.GetFirstDescendantOfType<DocumentView>() != null)
-                    {
-                        var dv = cp.GetFirstDescendantOfType<DocumentView>();
-                        var dvmRect = new Rect(dv.ViewModel.XPos, dv.ViewModel.YPos, dv.ViewModel.ActualSize.X,
-                            dv.ViewModel.ActualSize.Y);
-                        if (rect.Intersects(dvmRect))
-                        {
-                            _dragViews.Add(dv);
-                        }
-                    }
-                }
+                var rect         = draggedView.ViewModel.Bounds;
+                var siblingViews = draggedView.GetFirstAncestorOfType<Canvas>()?.Children.Select(c => c.GetFirstDescendantOfType<DocumentView>());
+                _dragViews.AddRange(siblingViews.Where(dv => dv != null && rect.Intersects(dv.ViewModel.Bounds)));
             }
-            draggedView.StartDragAsync(p ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView));
+            draggedView.StartDragAsync(pe?.GetCurrentPoint(draggedView) ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView));
         }
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
             LocalSqliteEndpoint.SuspendTimer = false;
-            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
-            _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
+            _dragViews?.ForEach(dv =>
+            {
+                dv.Visibility = Visibility.Visible;
+                dv.IsHitTestVisible = true;
+            });
             _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
         }
-
-        private static readonly DragEventHandler _collectionDragOverHandler = new DragEventHandler(CollectionDragOver);
-        private static void CollectionDragOver(object sender, DragEventArgs e)
+        
+        private static void       CollectionDragOver(object sender, DragEventArgs e)
         {
             if (e.DragUIOverride != null)
             {
                 e.DragUIOverride.IsContentVisible = true;
             }
-            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Collapsed);
-            (sender as FrameworkElement).RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
+            _dragViews?.ForEach(dv => dv.Visibility = Visibility.Collapsed);
+            (sender as FrameworkElement).DragOver -= CollectionDragOver;
         }
-        public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
+        public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
             if (MainPage.Instance.IsTopLevel(docView.ViewModel) && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
             {
@@ -314,8 +285,8 @@ namespace Dash
             LocalSqliteEndpoint.SuspendTimer = true;
 
             // setup the DragModel
-            var dragDocOffset = args.GetPosition(docView);
-            var relDocOffsets = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
+            var dragDocOffset  = args.GetPosition(docView);
+            var relDocOffsets  = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset) { DraggedWithLeftButton = docView.IsLeftBtnPressed() });
 
@@ -369,8 +340,8 @@ namespace Dash
                 // To avoid the jarring temporary artifact of the document appearing to be deleted, we 
                 // wait until we start getting DragOver events and then collapse the dragged document.
                 MainPage.Instance.xOuterGrid.AllowDrop = true;
-                MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
-                MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
+                MainPage.Instance.xOuterGrid.DragOver -= CollectionDragOver;
+                MainPage.Instance.xOuterGrid.DragOver += CollectionDragOver; // bcz: we rely on no one Handle'ing DragOver events
             }
             MainPage.Instance.XDocumentDecorations.VisibilityState        = Visibility.Collapsed;
             MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;

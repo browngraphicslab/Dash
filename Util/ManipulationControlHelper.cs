@@ -20,8 +20,8 @@ namespace Dash
         {
             if (++_numMovements == 2)
             {
-                if (SelectionManager.TryInitiateDragDrop(_manipulationDocumentTarget, e, null))
-                    e.Handled = true;
+                SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e);
+                e.Handled = true;
             }
         }
     }

@@ -59,10 +59,9 @@ namespace Dash
 
         private void setLinkKeys()
         {
-            var toKeys = _documentView.ViewModel.DataDocument.GetLinks(null)?.ToList() ?? new List<DocumentController>();
-            var regionKeys = _documentView.ViewModel.DataDocument.GetRegions()?.SelectMany((region) =>
-                                 region.GetDataDocument().GetLinks(null)?.ToList() ?? new List<DocumentController>()) ?? new List<DocumentController>();
-            toKeys.AddRange(regionKeys);
+            var toKeys     = _documentView?.ViewModel.DataDocument.GetLinks(null)?.ToList() ?? new List<DocumentController>();
+            var regionKeys = _documentView?.ViewModel.DataDocument.GetRegions()?.SelectMany(r => r.GetDataDocument().GetLinks(null)?.ToList() ?? new List<DocumentController>());
+            toKeys.AddRange(regionKeys ?? new List<DocumentController>());
             var matchingLinkDocs = toKeys.Where((k) => {
                 var tagName = k.GetDataDocument().GetField<TextController>(KeyStore.LinkTagKey)?.Data;
                 return tagName == _text;

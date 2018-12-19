@@ -52,7 +52,6 @@ namespace Dash
         public static KeyController ReferencesDictKey                    = KeyController.Get("_PDF Reference Mapping");
         public static KeyController ReferenceNumKey                      = KeyController.Get("Reference #");
         public static KeyController ReferenceDateKey                     = KeyController.Get("Date Published");
-        public static KeyController ScaleAmountFieldKey                  = KeyController.Get("_Scale Amount");
         public static KeyController IconTypeFieldKey                     = KeyController.Get("_IconType");
         public static KeyController SystemUriKey                         = KeyController.Get("File Path");
         public static KeyController ThumbnailFieldKey                    = KeyController.Get("_ThumbnailField");

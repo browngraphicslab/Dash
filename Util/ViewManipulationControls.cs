@@ -52,9 +52,24 @@ namespace Dash
             element.ManipulationDelta           += ElementOnManipulationDelta;
             element.PointerWheelChanged         += ElementOnPointerWheelChanged;
             element.ManipulationStarted         += ElementOnManipulationStarted;
+            element.PointerPressed              += Element_PointerPressed;
             element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
             element.ManipulationCompleted       += (sender, args) => _freeformView.GetDocumentView().ViewModel.DragAllowed = true;
-        } 
+        }
+
+        private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var docView = _freeformView.GetDocumentView();
+            if (docView.AreContentsActive &&
+                      !docView.IsShiftPressed() &&
+                      !docView.IsCtrlPressed() &&
+                      !docView.IsAltPressed() &&
+                      !(e.GetCurrentPoint(docView).PointerDevice.PointerDeviceType == BlockedInputType && FilterInput) &&
+                      !_freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
+            {
+                docView.ViewModel.DragAllowed = false;
+            }
+        }
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
@@ -101,14 +116,10 @@ namespace Dash
                     SelectionManager.Select(docView, false);
                     SelectionManager.DragManipulationCompleted += DragManipCompletedTouch;
                     DraggingDoc = true;
-                    SelectionManager.TryInitiateDragDrop(docView, null, e);
+                    e.Handled = true;
+                    e.Complete();
+                    SelectionManager.InitiateDragDrop(docView, null);
                 }
-            }
-            else if (docView.AreContentsActive &&
-                    !(e.PointerDeviceType == BlockedInputType && FilterInput) && 
-                    !_freeformView.ParentDocument.ViewModel.LayoutDocument.GetFitToParent())
-            {
-                docView.ViewModel.DragAllowed = false;
             }
             e.Handled = true;
 
@@ -121,7 +132,7 @@ namespace Dash
         {
             if (!_freeformView.GetDocumentView().ViewModel.DragAllowed)  // only try to manipulate doc contents if it can't be dragged
             {
-                if (_freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() ||
+                if (_freeformView.IsRightBtnPressed() ||
                     (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 2) || 
                     (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 && IsPanning))
                 {

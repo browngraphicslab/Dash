@@ -97,8 +97,8 @@ namespace Dash
 				//add them each to the main canvas
 				foreach (DocumentViewModel vm in vms)
                 {
-		            vm.XPos = offsetX + (vm.XPos - mostTopLeft.XPos) * vm.Scale.X;
-		            vm.YPos = offsetY + (vm.YPos - mostTopLeft.YPos) * vm.Scale.Y;
+		            vm.XPos = offsetX + (vm.XPos - mostTopLeft.XPos);
+		            vm.YPos = offsetY + (vm.YPos - mostTopLeft.YPos);
 					
                     mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
                 }

@@ -427,12 +427,6 @@ namespace Dash
             return doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointController;
         }
 
-        public static PointController GetScaleAmountField(this DocumentController doc, Context context = null)
-        {
-            context = Context.SafeInitAndAddDocument(context, doc);
-            return doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as PointController;
-        }
-
         public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys = null, List<KeyController> dontCopyKeys = null)
         {
             var refs = new List<ReferenceController>();
