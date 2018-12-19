@@ -64,7 +64,7 @@ namespace Dash
             dataDocument.SetField<DateTimeController>(KeyStore.DateCreatedKey, DateTime.Now, true);
             dataDocument.SetField<DateTimeController>(KeyStore.DateModifiedKey, DateTime.Now, true);
             dataDocument.SetField<TextController>(KeyStore.VisibleTypeKey, dataDocument.DocumentType.Type, true);
-            var author = MainPage.Instance.GetSettingsView.UserName;
+            var author = MainPage.Instance.SettingsView.UserName;
             if (author != null)
             {
                 dataDocument.SetField<TextController>(KeyStore.AuthorKey, author, true);

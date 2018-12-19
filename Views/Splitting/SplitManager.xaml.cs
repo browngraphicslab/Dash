@@ -9,9 +9,13 @@ namespace Dash
 {
     public sealed partial class SplitManager : UserControl
     {
+        static public bool IsRoot(DocumentViewModel docViewModel)
+        {
+            return MainPage.Instance.GetDescendantsOfType<SplitFrame>().Any(sf => sf.DataContext == docViewModel);
+        }
         public SplitManager()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         public void SetContent(DocumentController doc)

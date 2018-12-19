@@ -265,7 +265,7 @@ namespace Dash.Views
             var allTopLevel = true;
             foreach (var doc in SelectionManager.SelectedDocViewModels)
             {
-                if (!MainPage.Instance.IsTopLevel(doc))
+                if (!SplitManager.IsRoot(doc))
                 {
                     allTopLevel = false;
                 }

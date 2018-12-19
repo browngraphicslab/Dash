@@ -46,7 +46,7 @@ namespace Dash
                 [KeyStore.DataKey] = new PdfController(new Uri(file.Path)),
                 [KeyStore.TitleKey] = new TextController(title),
                 [KeyStore.DateCreatedKey] = new DateTimeController(),
-                [KeyStore.AuthorKey] = new TextController(MainPage.Instance.GetSettingsView.UserName)
+                [KeyStore.AuthorKey] = new TextController(MainPage.Instance.SettingsView.UserName)
             };
             var dataDoc = new DocumentController(fields, PdfType);
 

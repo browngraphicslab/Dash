@@ -147,7 +147,7 @@ namespace Dash
             PresentationView presView = MainPage.Instance.xPresentationView;
             presView.xHelpPrompt.Visibility = Visibility.Visible;
 
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+            if (MainPage.Instance.xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Collapsed) return;
 
             presView.xHelpIn.Begin();
         }
@@ -173,7 +173,7 @@ namespace Dash
             PresentationView presView = MainPage.Instance.xPresentationView;
             presView.xHelpPrompt.Visibility = Visibility.Visible;
 
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return removed;
+            if (MainPage.Instance.xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Collapsed) return removed;
 
             presView.xHelpIn.Begin();
 

@@ -274,7 +274,7 @@ namespace Dash
         }
         public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
-            if (MainPage.Instance.IsTopLevel(docView.ViewModel) && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
+            if (SplitManager.IsRoot(docView.ViewModel) && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
             {
                 args.Cancel = true;
                 return;

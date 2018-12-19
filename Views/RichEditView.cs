@@ -607,13 +607,13 @@ namespace Dash
                 MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5)));
                 var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
                 var rtn = new RichTextNote("").Document;
-                var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
+                var xaml = LayoutDocument.GetXaml();
                 if (xaml == null)
                 {
                     xaml = xamlReplies;
-                    LayoutDocument.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                    LayoutDocument.SetXaml(xaml);
                 }
-                rtn.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                rtn.SetXaml(xaml);
                 replies.Add(rtn);
                 var found = VisualTreeHelper.FindElementsInHostCoordinates((Point)MainPage.Instance.ForceFocusPoint, this).ToList().OfType<RichEditBox>();
                 e.Handled = true;

@@ -1118,11 +1118,11 @@ namespace Dash
             Debug.Assert(IsReferenced, "Making a view of an unreferenced document is usually a bad idea, as many event handlers won't be set up." +
                                        " Consider storing this document in another referenced document/list if it is an embeded view of some type, or make it a root to make it referenced");
 
-            if (GetDereferencedField<TextController>(KeyStore.XamlKey, null) is TextController xamlField)
+            if (this.GetXaml() is string xamlField)
             {
                 try
                 {
-                    var fe = (FrameworkElement)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField.Data);
+                    var fe = (FrameworkElement)Windows.UI.Xaml.Markup.XamlReader.Load(xamlField);
                     fe.Loaded += Grid_Loaded;
                     return fe;
                 }

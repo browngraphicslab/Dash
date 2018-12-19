@@ -587,7 +587,7 @@ namespace Dash
                 else if (dvp.Contains(StandardDataFormats.Html))
                 {
                     var text = await dvp.GetHtmlFormatAsync();
-                    var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.GetLayoutType() : SettingsView.Instance.WebpageLayout;
+                    var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.PromptLayoutType() : SettingsView.Instance.WebpageLayout;
 
                     if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
                         (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
@@ -767,13 +767,13 @@ namespace Dash
         {
             var dragDocModel = dragModel as DragDocumentModel;
             if (dragDocModel?.DraggedWithLeftButton == true && 
-                dragDocModel?.DraggedDocumentViews?[0] is DocumentView dragView && MainPage.Instance.IsFloaty(dragView) )
+                dragDocModel?.DraggedDocumentViews?[0] is DocumentView dragView && MainPage.Instance.IsFloatingDoc(dragView) )
             {
                 dragView.Visibility = Visibility.Visible;
                 var npos = MainPage.Instance.xCanvas.PointerPos();
                 npos.X -= dragDocModel.Offset.X;
                 npos.Y -= dragDocModel.Offset.Y;
-                MainPage.Instance.MoveFloaty(dragView, npos);
+                MainPage.Instance.MoveFloatingDoc(dragView, npos);
                 docsToAdd.Clear();
             }
             else if (isMoving && dragDocModel != null)
@@ -793,7 +793,7 @@ namespace Dash
                     {
                         if (dragDocModel.DraggedDocumentViews != null)
                         {
-                            MainPage.Instance.ClearFloaty(dragDocModel.DraggedDocumentViews[i]);
+                            MainPage.Instance.ClearFloatingDoc(dragDocModel.DraggedDocumentViews[i]);
                         }
 
                         if (dragDocModel.DraggedDocCollectionViews[i] == null)

@@ -293,7 +293,7 @@ namespace Dash
                 var docController = await parser.ParseFileAsync(imageToAdd);
                 if (docController != null)
                 {
-                    docController.SetField<TextController>(KeyStore.XamlKey,
+                    docController.SetXaml(
                         @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
                                  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
                                  xmlns:dash=""using:Dash""
@@ -308,8 +308,7 @@ namespace Dash
                                 <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
                                     <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
                                 </Border>
-                        </Grid>",
-                        true);
+                        </Grid>");
                     var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
                     docController.SetWidth(docController.GetWidth());
                     docController.SetHeight(double.NaN);

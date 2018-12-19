@@ -31,7 +31,7 @@ using Dash.Converters;
 using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 using Dash.Controllers.Functions.Operators;
-
+using TemplateType = Dash.TemplateList.TemplateType;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -42,71 +42,33 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
-        public static Windows.UI.Input.PointerPoint PointerCaptureHack;  // saves a PointerPoint to be used for switching from a UWP manipulation to a Windows Drag Drop
+        private Point?          _forceFocusPoint;
+        private DispatcherTimer _mapTimer              = new DispatcherTimer() { Interval = new TimeSpan(0,0,1) };
+        private Button          _mapActivateBtn        = new Button() { Content = "^:", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+        private Timer           _lowPriorityTimer      = new Timer(3600000);  // every hour
+        private Timer           _moderatePriorityTimer = new Timer(900000);   // every 15 minutes
+        private Timer           _highPriorityTimer     = new Timer(5000);     // every 15 seconds
 
-        public enum PresentationViewState
-        {
-            Expanded,
-            Collapsed
-        }
+        public static MainPage               Instance { get; private set; }
+        public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
 
-
-        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
-        public static MainPage Instance { get; private set; }
-
-        public BrowserView WebContext => BrowserView.Current;
-        public DocumentController MainDocument { get; private set; }
-
-        public SplitManager MainSplitter => XMainSplitter;
-
-        // relating to system wide selected items
-        public DocumentView xMapDocumentView;
-
-        public PresentationViewState CurrPresViewState
-        {
-            get => MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
-            set
-            {
-                bool state = value == PresentationViewState.Expanded;
-                MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, state, true);
-            }
-        }
-
-        private Point? _forceFocusPoint;
-        public Point? ForceFocusPoint { get => _forceFocusPoint; }
-        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
-        {
-            _forceFocusPoint = where;
-            TextPreviewer = collection;
-        }
-        public void ClearForceFocus()
-        {
-            TextPreviewer?.ClearPreview();
-            _forceFocusPoint = null;
-        }
-
-        public CollectionFreeformBase TextPreviewer = null;
-
-        public static int GridSplitterThickness { get; } = 7;
-
-        public SettingsView GetSettingsView => xSettingsView;
-
-        public InkManager InkManager { get; set; }
-
-        public DashPopup ActivePopup;
-        public Grid SnapshotOverlay => xSnapshotOverlay;
-        public Storyboard FadeIn => xFadeIn;
-        public Storyboard FadeOut => xFadeOut;
-
-        public Timer LowPriorityTimer = new Timer(3600000);     // every hour
-        public Timer ModeratePriorityTimer = new Timer(900000); // every 15 minutes
-        public Timer HighPriorityTimer = new Timer(5000);      // every 15 seconds
-
+        public CollectionViewModel                ViewModel       => DataContext as CollectionViewModel;
+        public SplitManager                       MainSplitter    => XMainSplitter;
+        public Grid                               SnapshotOverlay => xSnapshotOverlay;
+        public BrowserView                        WebContext      => BrowserView.Current;
+        public Point?                             ForceFocusPoint => _forceFocusPoint;
+        public SettingsView                       SettingsView    => xSettingsView;
+        public Storyboard                         FadeIn          => xFadeIn;
+        public Storyboard                         FadeOut         => xFadeOut;
+        public DashPopup                          ActivePopup;
+        public InkManager                         InkManager   { get; set; }
+        public DocumentController                 MainDocument { get; private set; }
+        public CollectionFreeformBase             TextPreviewer;
+        public DocumentView                       xMapDocumentView;
         public ListController<DocumentController> LowPriorityOps;
         public ListController<DocumentController> ModeratePriorityOps;
         public ListController<DocumentController> HighPriorityOps;
 
-        public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
         public MainPage()
         {
             // Set the instance to be itself, there should only ever be one MainView
@@ -120,9 +82,8 @@ namespace Dash
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
-            
 
-            SetUpToolTips();
+            ToolTipService.SetToolTip(xSearchButton, new ToolTip() { Content = "Search workspace", Placement = PlacementMode.Bottom, VerticalOffset = 5 });
 
             Loaded += (s, e) =>
             {
@@ -140,24 +101,17 @@ namespace Dash
 
             Window.Current.CoreWindow.SizeChanged += (s, e) =>
             {
-                double newHeight = e.Size.Height;
-                double newWidth = e.Size.Width;
                 if (ActivePopup != null)
                 {
-                    ActivePopup.SetHorizontalOffset((newWidth / 2) - 200 - (xLeftGrid.ActualWidth / 2));
-                    //ActivePopup.SetVerticalOffset((newHeight / 2) - 150);
+                    ActivePopup.SetHorizontalOffset((e.Size.Width  / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+                    //ActivePopup.SetVerticalOffset((e.Size.Height / 2) - 150);
                     ActivePopup.SetVerticalOffset(200);
                 }
             };
 
             Canvas.SetZIndex(xToolbar, 20);
 
-            SplitFrame.ActiveDocumentChanged += frame =>
-            {
-                MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
-            };
-
-
+            SplitFrame.ActiveDocumentChanged += frame => MainDocument.GetDataDocument().SetField(KeyStore.LastWorkspaceKey, frame.DocumentController, true);
 
             JavaScriptHack.ScriptNotify += JavaScriptHack_ScriptNotify;
             JavaScriptHack.NavigationCompleted += JavaScriptHack_NavigationCompleted;
@@ -165,6 +119,7 @@ namespace Dash
             CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
             Window.Current.SetTitleBar(trickyTitleBar);
         }
+
         public DocumentController MiscellaneousFolder
         {
             get
@@ -182,22 +137,170 @@ namespace Dash
             }
         }
 
-        public void Query(string search)
+        public void SetOverlayVisibility(Visibility visibility) { xOverlay.Visibility = visibility; }
+        public void SetSearchVisibility(Visibility visibility)  { xSearchBoxGrid.Visibility = visibility; }
+
+        public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
-            JavaScriptHack.Navigate(new Uri("https://www.google.com/search?q=" + search.Replace(' ', '+')));
+            var onScreenView = FindTargetDocumentView(doc);
+            if (onScreenView != null)
+            {
+                return;
+            }
+
+            //make doc view out of doc controller
+            var docCopy = doc.GetViewCopy();
+            if (doc.DocumentType.Equals(CollectionBox.DocumentType))
+            {
+                docCopy.SetWidth(400);
+                docCopy.SetHeight(300);
+                docCopy.SetFitToParent(true);
+            }
+            var origWidth = doc.GetWidth();
+            var origHeight = doc.GetHeight();
+            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
+            if (!doc.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                docCopy.SetWidth(size?.X ?? 150);
+                docCopy.SetHeight(size?.Y ?? 150 / aspect);
+            }
+            docCopy.SetBackgroundColor(Colors.White);
+            //put popup slightly left of center, so its not covered centered doc
+            var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
+
+            FieldControllerBase.MakeRoot(docCopy); // when do I release this?
+            var docView = new DocumentView
+            {
+                DataContext = new DocumentViewModel(docCopy),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                BindRenderTransform = false
+            };
+
+            var grid = new Grid
+            {
+                RenderTransform = new TranslateTransform() { X = defaultPt.X, Y = defaultPt.Y }
+            };
+            grid.Children.Add(docView);
+            var btn = new Button() { Content = "X" };
+            btn.Width = btn.Height = 20;
+            btn.Background = new SolidColorBrush(Colors.Red);
+            btn.HorizontalAlignment = HorizontalAlignment.Left;
+            btn.VerticalAlignment = VerticalAlignment.Top;
+            btn.Margin = new Thickness(0, -10, -10, 10);
+            btn.Click += (s, e) => xCanvas.Children.Remove(grid);
+            grid.Children.Add(btn);
+
+            xCanvas.Children.Add(grid);
+        }
+        public void ClearFloatingDoc(DocumentView dragged)
+        {
+            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach((g) =>
+                 xCanvas.Children.Remove(g));
+        }
+        public bool IsFloatingDoc(DocumentView dragged)
+        {
+            return xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).Any();
+        }
+        public void MoveFloatingDoc(DocumentView dragged, Point where)
+        {
+            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
+                ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
         }
 
-        private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
         {
-            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+            _forceFocusPoint = where;
+            TextPreviewer = collection;
+        }
+        public void ClearForceFocus()
+        {
+            TextPreviewer?.ClearPreview();
+            _forceFocusPoint = null;
         }
 
-        private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
+        public void       ThemeChange(bool nightModeOn) { RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; } //xToolbar.SwitchTheme(nightModeOn);
+        public async void Publish()
         {
-            var value = e.Value as string;
-            Debug.WriteLine("val = " + value);
+            // TODO: do the following eventually; for now it will just export everything you have
+            // var documentList = await GetDocumentsToPublish();
+            var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
+            allDocuments.Remove(MainDocument.GetDataDocument());
+
+            await new Publisher().StartPublication(allDocuments);
+        }
+        public void       SetupMapView(DocumentController mainDocumentCollection)
+        {
+            if (xMapDocumentView == null)
+            {
+                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
+                xMap.SetFitToParent(true);
+                xMap.SetWidth(double.NaN);
+                xMap.SetHeight(double.NaN);
+                xMap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                xMap.SetVerticalAlignment(VerticalAlignment.Stretch);
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true } };
+                Grid.SetColumn(xMapDocumentView, 2);
+                Grid.SetRow(xMapDocumentView, 0);
+
+                var overlay = new Grid() { Background =  new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) };
+                overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
+                overlay.Children.Add(_mapActivateBtn);
+                _mapActivateBtn.Click += (s, e) => overlay.Background = overlay.Background == null ? new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) : null;
+                Grid.SetColumn(overlay, 2);
+                Grid.SetRow(overlay, 0);
+
+                xLeftStack.Children.Add(xMapDocumentView);
+                xLeftStack.Children.Add(overlay);
+                _mapTimer.Tick += (s, e) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
+            }
+
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
+            _mapTimer.Start();
         }
 
+        public async Task<string>                                  PromptLayoutTemplate(IEnumerable<DocumentController> docs)
+        {
+            var popup = new LayoutTemplatesPopup();
+            SetUpPopup(popup);
+            //TODO: Eventually unset this popup after templatePopup, so that user can exit back
+            var templateType = await popup.GetTemplate();
+            UnsetPopup();
+            return templateType != TemplateType.None ? null : await processTemplate(docs, templateType);
+        }
+        public async Task<SettingsView.WebpageLayoutMode>          PromptLayoutType()
+        {
+            var importPopup = new HTMLRTFPopup();
+            SetUpPopup(importPopup);
+            var mode = await importPopup.GetLayoutMode();
+            UnsetPopup();
+            return mode;
+        }
+        public async Task<(string, string)>                        PromptNewTemplate()
+        {
+            var popup = new NewTemplatePopup();
+            SetUpPopup(popup);
+            var results = await popup.GetFormResults();
+            UnsetPopup();
+            return results;
+        }
+        public async Task<(List<DocumentController>,List<string>)> PromptTravelogue()
+        {
+            var traveloguePopup = new TraveloguePopup();
+            SetUpPopup(traveloguePopup);
+            var results = await traveloguePopup.GetFormResults();
+            UnsetPopup();
+            return results;
+        }
+        public async Task<(KeyController, List<KeyController>)>    PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)
+        {
+            var tablePopup = new JoinGroupMenuPopup(comparisonKeys, diffKeys, draggedKeys);
+            SetUpPopup(tablePopup);
+            var results = await tablePopup.GetFormResults();
+            UnsetPopup();
+            return results;
+        }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -220,7 +323,7 @@ namespace Dash
             }
             FieldControllerBase.MakeRoot(MainDocument);
 
-            LoadSettings();
+            xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
 
             //get current presentations if any and set data context of pres view to pres view model
             var presentations = MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, null);
@@ -258,7 +361,11 @@ namespace Dash
 
             SetupMapView(lastWorkspace);
 
-            if (CurrPresViewState == PresentationViewState.Expanded) SetPresentationState(true);
+            if (xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Expanded)
+            {
+                xPresentationView.SetPresentationState(true);
+            }
+
             InkManager = new InkManager();
 
             //OperatorScriptParser.TEST();
@@ -269,13 +376,13 @@ namespace Dash
             ModeratePriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.ModeratePriorityOpsKey);
             HighPriorityOps = MainDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.HighPriorityOpsKey);
 
-            LowPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, LowPriorityOps);
-            ModeratePriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, ModeratePriorityOps);
-            HighPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, HighPriorityOps);
+            _lowPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, LowPriorityOps);
+            _moderatePriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, ModeratePriorityOps);
+            _highPriorityTimer.Elapsed += async (sender, args) => await AgentTimerExecute(sender, args, HighPriorityOps);
 
-            LowPriorityTimer.Start();
-            ModeratePriorityTimer.Start();
-            HighPriorityTimer.Start();
+            _lowPriorityTimer.Start();
+            _moderatePriorityTimer.Start();
+            _highPriorityTimer.Start();
 
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
@@ -304,8 +411,27 @@ namespace Dash
             //MenuToolbar.Instance.xSubtoolbarStackPanel.Margin = new Thickness(100, 0, 0, 0);
         }
 
-        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e,
-            ListController<DocumentController> opList)
+        private void JavaScriptHack_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            JavaScriptHack.InvokeScriptAsync("eval", new[] { "{ let elements = document.getElementsByClassName(\"Z0LcW\"); window.external.notify( elements.length > 0 ? elements[0].innerText : \"\"); }" });
+        }
+        private void JavaScriptHack_ScriptNotify(object sender, NotifyEventArgs e)
+        {
+            var value = e.Value as string;
+            Debug.WriteLine("val = " + value);
+        }
+
+        private void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
+        {
+            if (args.SelectedViews.Count == 0 ||
+                !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.SelectedDocViewModels.Contains(dv.ViewModel)))
+            {
+                Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
+                ClearFloatingDoc(null);
+            }
+        }
+
+        private async Task<bool> AgentTimerExecute(object sender, ElapsedEventArgs e, ListController<DocumentController> opList)
         {
             if (opList.Any())
             {
@@ -333,49 +459,8 @@ namespace Dash
             return false;
         }
 
-        public void OverlayVisibility(Visibility visibility) => xOverlay.Visibility = visibility;
-
-        public bool IsTopLevel(DocumentViewModel docViewModel)
-        {
-            foreach (var s in this.GetDescendantsOfType<SplitFrame>())
-            {
-                if (s.DataContext == docViewModel)
-                    return true;
-            }
-            return false;
-        }
-
-        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
-        {
-            var op = await new DSL().Run(tappedHandler, true) as OperatorController;
-            if (op == null)
-            {
-                return null;
-            }
-            var doc = new DocumentController();
-            doc.SetField<TextController>(KeyStore.XamlKey,
-                @"
-<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-      xmlns:dash='using:Dash'
-      xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
-    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center'>
-" + (rotate ? @"
-        <TextBlock.RenderTransform>
-            <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
-        </TextBlock.RenderTransform>
-" : "") +  @"
-    </TextBlock>
-</Grid>", true);
-            doc.SetField<TextController>(KeyStore.DataKey, icon, true);
-            doc.SetField<TextController>(KeyStore.TitleKey, name, true);
-            doc.SetField<TextController>(KeyStore.ToolbarButtonNameKey, name, true);
-            doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
-
-            return doc;
-        }
-
-        private async Task InitToolbar(DocumentController toolbar)
+        #region LOAD TOOLBAR AND UPDATE SETTINGS
+        private async Task                     InitToolbar(DocumentController toolbar)
         {
             toolbar.SetBackgroundColor(ColorConverter.HexToColor("#6DA8DE"));
             var data = toolbar.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
@@ -505,43 +590,61 @@ function (d) {
 
             await Task.WhenAll(buttons.Select(async item => data.Add(await GetButton(item.icon, item.function, item.name, item.rotate))));
         }
-
-        #region LOAD AND UPDATE SETTINGS
-
-        private void LoadSettings()
+        private async Task<DocumentController> GetButton(string icon, string tappedHandler, string name, bool rotate)
         {
-            xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
-        }
+            var op = await new DSL().Run(tappedHandler, true) as OperatorController;
+            if (op == null)
+            {
+                return null;
+            }
+            var doc = new DocumentController();
+            doc.SetXaml(
+                @"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+      xmlns:dash='using:Dash'
+      xmlns:mc='http://schemas.openxmlformats.org/markup-compatibility/2006'>
+    <TextBlock x:Name='xTextFieldData' FontSize='32' FontFamily='Segoe MDL2 Assets' Foreground='White' TextAlignment='Center'>
+" + (rotate ? @"
+        <TextBlock.RenderTransform>
+            <RotateTransform Angle=""90"" CenterX=""16"" CenterY=""16"" />
+        </TextBlock.RenderTransform>
+" : "") + @"
+    </TextBlock>
+</Grid>");
+            doc.SetField<TextController>(KeyStore.DataKey, icon, true);
+            doc.SetTitle(name);
+            doc.SetField<TextController>(KeyStore.ToolbarButtonNameKey, name, true);
+            doc.SetField(KeyStore.LeftTappedOpsKey, new ListController<OperatorController> { op }, true);
 
-        private DocumentController GetAppropriateSettingsDoc()
+            return doc;
+        }
+        private DocumentController             GetAppropriateSettingsDoc()
         {
             var settingsDoc = MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.SettingsDocKey);
-            if (settingsDoc != null) return settingsDoc;
-            Debug.WriteLine("GETTING DEFAULT");
-            settingsDoc = GetDefaultSettingsDoc();
-            MainDocument.GetDataDocument().SetField(KeyStore.SettingsDocKey, settingsDoc, true);
+            if (settingsDoc == null)
+            {
+                settingsDoc = GetDefaultSettingsDoc();
+                MainDocument.GetDataDocument().SetField(KeyStore.SettingsDocKey, settingsDoc, true);
+            }
             return settingsDoc;
         }
-
-        private static DocumentController GetDefaultSettingsDoc()
+        private static DocumentController      GetDefaultSettingsDoc()
         {
             var settingsDoc = new DocumentController();
-
-            settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
-            settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
+            settingsDoc.SetField<BoolController>  (KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
+            settingsDoc.SetField<BoolController>  (KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
-            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Zoom.ToString(), true);
-            settingsDoc.SetField<TextController>(KeyStore.SettingsWebpageLayoutKey, SettingsView.WebpageLayoutMode.Default.ToString(), true);
+            settingsDoc.SetField<TextController>  (KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Zoom.ToString(), true);
+            settingsDoc.SetField<TextController>  (KeyStore.SettingsWebpageLayoutKey, SettingsView.WebpageLayoutMode.Default.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
-            settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
+            settingsDoc.SetField<TextController>  (KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, 1.0, true);
-            settingsDoc.SetField<BoolController>(KeyStore.SettingsMarkdownModeKey, false, true);
-            settingsDoc.SetField<TextController>(KeyStore.AuthorKey, "New User", true);
-
+            settingsDoc.SetField<BoolController>  (KeyStore.SettingsMarkdownModeKey, false, true);
+            settingsDoc.SetField<TextController>  (KeyStore.AuthorKey, "New User", true);
             return settingsDoc;
         }
-
         #endregion
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
@@ -605,22 +708,13 @@ function (d) {
 
             e.Handled = true;
         }
-
-        public void CollapseSearch()
-        {
-            if (FocusManager.GetFocusedElement() != xSearchButton)
-            {
-                xSearchBoxGrid.Visibility = Visibility.Collapsed;
-            }
-        }
-
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
             {
                 if (xSearchBoxGrid.Visibility == Visibility.Visible && e.VirtualKey == VirtualKey.Escape)
                 {
-                    CollapseSearch();
+                    SetSearchVisibility(Visibility.Collapsed);
                 }
                 return;
             }
@@ -649,16 +743,28 @@ function (d) {
 
             e.Handled = true;
         }
-
-        public void ThemeChange(bool nightModeOn)
+        
+        private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
-            //xToolbar.SwitchTheme(nightModeOn);
+            if (!_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
+            {
+                JavaScriptHack.Focus(FocusState.Programmatic);
+                var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+                var mapPt = e.GetPosition(mapViewCanvas);
+
+                var mainFreeform = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionFreeformView>();
+                var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+                var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
+                var mainDocCenter = new Point(SplitFrame.ActiveFrame.ActualWidth / 2 / mainFreeformXf.M11, SplitFrame.ActiveFrame.ActualHeight / 2 / mainFreeformXf.M22);
+                var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
+                mainFreeform?.SetTransformAnimated(
+                    new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth / 2, Y = -mapPt.Y + SplitFrame.ActiveFrame.ActualHeight / 2 },
+                    new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
+            }
         }
 
         private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
-
             if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
                 xFadeAnimationOut.Begin();
@@ -671,318 +777,22 @@ function (d) {
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
-
-        DispatcherTimer mapTimer = new DispatcherTimer();
-        Button _mapActivateBtn = new Button() { Content = "^:" };
-        public void SetupMapView(DocumentController mainDocumentCollection)
+        private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)     
         {
-            if (xMapDocumentView == null)
-            {
-                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
-                xMap.SetFitToParent(true);
-                xMap.SetWidth(double.NaN);
-                xMap.SetHeight(double.NaN);
-                xMap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                xMap.SetVerticalAlignment(VerticalAlignment.Stretch);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true } };
-                var overlay = new Grid();
-                overlay.Background = new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff));
-
-                _mapActivateBtn.HorizontalAlignment = HorizontalAlignment.Left;
-                _mapActivateBtn.VerticalAlignment = VerticalAlignment.Top;
-                _mapActivateBtn.Click += (s, e) => overlay.Background = overlay.Background == null ? new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) : null;
-                overlay.Children.Add(_mapActivateBtn);
-
-                Grid.SetColumn(overlay, 2);
-                Grid.SetRow(overlay, 0);
-                Grid.SetColumn(xMapDocumentView, 2);
-                Grid.SetRow(xMapDocumentView, 0);
-                xLeftStack.Children.Add(xMapDocumentView);
-                xLeftStack.Children.Add(overlay);
-                mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
-                overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-            }
-
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
-            mapTimer.Start();
+            xToolbar.ChangeVisibility(xSettingsView.Visibility != Visibility.Collapsed);
+            xSettingsView.Visibility = xToolbar.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
         }
+        private void xPresentationButton_Clicked(object sender, RoutedEventArgs e) { UIFunctions.TogglePresentation(); }
+        private void xBackButton_Clicked(object sender, RoutedEventArgs e)         { SplitFunctions.FrameHistoryBack(); }
+        private void xForwardButton_Clicked(object sender, RoutedEventArgs e)      { SplitFunctions.FrameHistoryForward(); }
 
-        private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
-                return;
-            this.JavaScriptHack.Focus(FocusState.Programmatic);
-            var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-            var mapPt = e.GetPosition(mapViewCanvas);
-
-            var mainFreeform = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionFreeformView>();
-            var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-            var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-            var mainDocCenter = new Point(SplitFrame.ActiveFrame.ActualWidth / 2 / mainFreeformXf.M11, SplitFrame.ActiveFrame.ActualHeight / 2 / mainFreeformXf.M22);
-            var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
-            mainFreeform?.SetTransformAnimated(
-                new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth / 2, Y = -mapPt.Y + SplitFrame.ActiveFrame.ActualHeight / 2 },
-                new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
-        }
-
-
-        private void xPresentationButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            Dash.UIFunctions.TogglePresentation();
-        }
-        private void xSettingsButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
-        }
-        private void xBackButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            SplitFunctions.FrameHistoryBack();
-        }
-        private void xForwardButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            SplitFunctions.FrameHistoryForward();
-        }
-
-        public void ToggleSettingsVisibility(bool changeToVisible)
-        {
-            xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
-            //Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
-            xToolbar.ChangeVisibility(!changeToVisible);
-        }
-
-        //private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
-        //{
-        //    xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
-        //}
-
-        //private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
-        //{
-        //    xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
-        //}
-
-        public void SetPresentationState(bool expand, bool animate = true)
-        {
-            //    TogglePresentationMode(expand);
-
-            if (expand)
-            {
-                CurrPresViewState = PresentationViewState.Expanded;
-                if (animate)
-                {
-                    xPresentationExpand.Begin();
-                    xPresentationExpand.Completed += (sender, o) =>
-                    {
-                        xPresentationView.xContentIn.Begin();
-                        xPresentationView.xHelpIn.Begin();
-                    };
-                    xPresentationView.xContentIn.Completed += (sender, o) => { xPresentationView.xSettingsIn.Begin(); };
-                    xPresentationView.xSettingsIn.Completed += (sender, o) =>
-                    {
-                        var isChecked = xPresentationView.xShowLinesButton.IsChecked;
-                        if (isChecked ?? false) xPresentationView.ShowLines();
-                    };
-                }
-                else
-                {
-                    xUtilTabColumn.MinWidth = 300;
-                    xPresentationView.SimulateAnimation(true);
-                }
-
-            }
-            else
-            {
-                CurrPresViewState = PresentationViewState.Collapsed;
-                //open presentation
-                if (animate)
-                {
-                    xPresentationView.TryPlayStopClick();
-                    xPresentationView.xSettingsOut.Begin();
-                    xPresentationView.xContentOut.Begin();
-                    xPresentationView.xHelpOut.Begin();
-                    xPresentationRetract.Begin();
-                }
-                else
-                {
-                    xUtilTabColumn.MinWidth = 0;
-                    xPresentationView.SimulateAnimation(false);
-                }
-
-                PresentationView presView = xPresentationView;
-                presView.xShowLinesButton.Background = new SolidColorBrush(Colors.White);
-                presView.RemoveLines();
-            }
-        }
-
-        public void PinToPresentation(DocumentController dc)
-        {
-            xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
-            if (CurrPresViewState == PresentationViewState.Collapsed)
-            {
-                TextBlock help = xPresentationView.xHelpPrompt;
-                help.Opacity = 0;
-                help.Visibility = Visibility.Collapsed;
-                SetPresentationState(true);
-            }
-            xPresentationView.DrawLinesWithNewDocs();
-        }
-
-
-        public async Task<PushpinType> GetPushpinType()
-        {
-            var typePopup = new PushpinTypePopup();
-            SetUpPopup(typePopup);
-
-            var mode = await typePopup.GetPushpinType();
-            UnsetPopup();
-
-            return mode;
-        }
-
-        public async Task<string> GetLayoutTemplate(IEnumerable<DocumentController> docs)
-        {
-            var popup = new LayoutTemplatesPopup();
-            SetUpPopup(popup);
-            //TODO: Eventually unset this popup after templatePopup, so that user can exit back
-            var templateType = await popup.GetTemplate();
-            UnsetPopup();
-
-            if (templateType == TemplateList.TemplateType.None)
-                return null;
-
-            var fields = 
-                docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
-                Aggregate((a, b) => a.Intersect(b)).ToList();
-            fields.Insert(0, "");
-
-            ICustomTemplate templatePopup;
-            switch (templateType)
-            {
-            case TemplateList.TemplateType.Citation:
-                templatePopup = new CitationPopup(fields);
-                break;
-            case TemplateList.TemplateType.CaptionedImage:
-                templatePopup = new CaptionedImage(fields);
-                break;
-            case TemplateList.TemplateType.Note:
-                templatePopup = new NotePopup(fields);
-                break;
-            case TemplateList.TemplateType.Card:
-                templatePopup = new CardPopup(fields);
-                break;
-            case TemplateList.TemplateType.Title:
-                templatePopup = new TitlePopup(fields);
-                break;
-            case TemplateList.TemplateType.Profile:
-                templatePopup = new ProfilePopup(fields);
-                break;
-            case TemplateList.TemplateType.Article:
-                templatePopup = new ArticlePopup(fields);
-                break;
-            case TemplateList.TemplateType.Biography:
-                templatePopup = new BiographyPopup(fields);
-                break;
-            case TemplateList.TemplateType.Flashcard:
-                templatePopup = new FlashcardPopup(fields);
-                break;
-            default:
-                //templatePopup = new LayoutTemplatesPopup();
-                templatePopup = null;
-                break;
-            }
-            SetUpPopup(templatePopup);
-            var customLayout = await templatePopup.GetLayout();
-            UnsetPopup();
-
-            if (customLayout == null)
-                return null;
-
-            var templateXaml = TemplateList.Templates[(int)templateType].GetField<TextController>(KeyStore.XamlKey).Data;
-
-            var splitXaml = templateXaml.Split(" ", StringSplitOptions.None);
-            for (int i = 0; i < customLayout.Count; i++)
-            {
-                for(int j=0; j<splitXaml.Length;j++)
-                {
-                    if (splitXaml[j].Contains("Field" + i))
-                    {
-                        if (customLayout[i] == "Title")
-                            customLayout[i] = "Caption";
-                        splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
-                        break;
-                    }
-                    if (splitXaml[j].Contains("PlaceHolderText" + i))
-                    {
-                        splitXaml[j] = splitXaml[j].Replace("PlaceHolderText" + i, customLayout[i]);
-                        break;
-                    }
-                }
-            }
-
-            var stringXaml = string.Join(" ", splitXaml);
-            return stringXaml;
-        }
-
-        public async Task<SettingsView.WebpageLayoutMode> GetLayoutType()
-        {
-            var importPopup = new HTMLRTFPopup();
-            SetUpPopup(importPopup);
-
-            var mode = await importPopup.GetLayoutMode();
-            UnsetPopup();
-
-            return mode;
-        }
-        public async Task<DocumentController> GetVideoFile()
-        {
-            var videoPopup = new ImportVideoPopup();
-            SetUpPopup(videoPopup);
-
-            var video = await videoPopup.GetVideoFile();
-            UnsetPopup();// we may get a URL or a storage file -- I had a hard time with getting a StorageFile from a URI, so unfortunately right now they're separated
-
-            if (video != null)
-                switch (video.Type)
-                {
-                case VideoType.StorageFile:
-                    return await new VideoToDashUtil().ParseFileAsync(video.File);
-                case VideoType.Uri:
-                    var query = HttpUtility.ParseQueryString(video.Uri.Query);
-                    var videoId = query.AllKeys.Contains("v") ? query["v"] : video.Uri.Segments.Last();
-
-                    try
-                    {
-                        var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
-                        return VideoToDashUtil.CreateVideoBoxFromUri(url.Uri);
-                    }
-                    catch (Exception)
-                    {
-                        // TODO: display error video not found
-                    }
-
-                    break;
-                }
-
-            return null;
-        }
-
-        public async Task<DocumentController> GetImageFile()
-        {
-            var imagePopup = new ImportImagePopup();
-            SetUpPopup(imagePopup);
-
-            var image = await imagePopup.GetImageFile();
-            UnsetPopup();
-
-            return image != null ? await new ImageToDashUtil().ParseFileAsync(image) : null;
-        }
+        private void Timeline_OnCompleted(object sender, object e)                 { xSnapshotOverlay.Visibility = Visibility.Collapsed; }
 
         /// <summary>
         /// This method is always called right after a new popup is instantiated, and right before it's displayed, to set up its configurations.
         /// </summary>
         /// <param name="popup"></param>
-        public void SetUpPopup(DashPopup popup)
+        private void SetUpPopup(DashPopup popup)
         {
             ActivePopup = popup;
             xOverlay.Visibility = Visibility.Visible;
@@ -991,11 +801,10 @@ function (d) {
             Grid.SetColumn(popup.Self(), 2);
             xOuterGrid.Children.Add(popup.Self());
         }
-
         /// <summary>
         /// This method is called after a popup closes, to remove it from the page.
         /// </summary>
-        public void UnsetPopup()
+        private void UnsetPopup()
         {
             xOverlay.Visibility = Visibility.Collapsed;
             if (ActivePopup != null)
@@ -1005,7 +814,7 @@ function (d) {
             }
         }
 
-        public void NavigateToDocument(DocumentController doc)//More options
+        private void NavigateToDocument(DocumentController doc)//More options
         {
             var tree = DocumentTree.MainPageTree;
             var node = tree.FirstOrDefault(n => n.ViewDocument.Equals(doc));
@@ -1017,8 +826,7 @@ function (d) {
 
             SplitFrame.OpenDocumentInWorkspace(doc, node.Parent.ViewDocument);
         }
-
-        public void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
+        private void NavigateToDocumentOrRegion(DocumentController docOrRegion, DocumentController link = null)//More options
         {
             DocumentController parent = docOrRegion.GetRegionDefinition();
             (parent ?? docOrRegion).SetHidden(false);
@@ -1029,119 +837,7 @@ function (d) {
             }
         }
 
-        public void ToggleFloatingDoc(DocumentController doc)
-        {
-            var onScreenView = GetTargetDocumentView(doc);
-
-            if (onScreenView != null)
-            {
-                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SetHighlight(true);
-                if (highlighted)
-                {
-                    onScreenView.ViewModel.LayoutDocument.ToggleHidden();
-                }
-            }
-            else
-            {
-                var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
-                if (floaty != null)
-                {
-                    xCanvas.Children.Remove(floaty);
-                }
-                else
-                {
-                    AddFloatingDoc(doc, null, new Point(xCanvas.PointerPos().X + 25, xCanvas.PointerPos().Y));
-                }
-            }
-        }
-
-
-        private void SelectionManagerSelectionChanged(DocumentSelectionChangedEventArgs args)
-        {
-            if (args.SelectedViews.Count == 0 ||
-                !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.SelectedDocViewModels.Contains(dv.ViewModel)))
-            {
-                Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
-                ClearFloaty(null);
-            }
-        }
-
-        public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
-        {
-            var onScreenView = GetTargetDocumentView(doc);
-            if (onScreenView != null)
-            {
-                return;
-            }
-
-            //make doc view out of doc controller
-            var docCopy = doc.GetViewCopy();
-            if (doc.DocumentType.Equals(CollectionBox.DocumentType))
-            {
-                docCopy.SetWidth(400);
-                docCopy.SetHeight(300);
-                docCopy.SetFitToParent(true);
-            }
-            var origWidth = doc.GetWidth();
-            var origHeight = doc.GetHeight();
-            var aspect = !double.IsNaN(origWidth) && origWidth != 0 && !double.IsNaN(origHeight) && origHeight != 0 ? origWidth / origHeight : 1;
-            if (!doc.DocumentType.Equals(RichTextBox.DocumentType))
-            {
-                docCopy.SetWidth(size?.X ?? 150);
-                docCopy.SetHeight(size?.Y ?? 150 / aspect);
-            }
-            docCopy.SetBackgroundColor(Colors.White);
-            //put popup slightly left of center, so its not covered centered doc
-            var defaultPt = position ?? new Point(xCanvas.ActualWidth / 2 - 250, xCanvas.ActualHeight / 2 - 50);
-
-            FieldControllerBase.MakeRoot(docCopy); // when do I release this?
-            var docView = new DocumentView
-            {
-                DataContext = new DocumentViewModel(docCopy),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top,
-                BindRenderTransform = false
-            };
-
-            var grid = new Grid
-            {
-                RenderTransform = new TranslateTransform() { X = defaultPt.X, Y = defaultPt.Y }
-            };
-            grid.Children.Add(docView);
-            var btn = new Button() { Content = "X" };
-            btn.Width = btn.Height = 20;
-            btn.Background = new SolidColorBrush(Colors.Red);
-            btn.HorizontalAlignment = HorizontalAlignment.Left;
-            btn.VerticalAlignment = VerticalAlignment.Top;
-            btn.Margin = new Thickness(0, -10, -10, 10);
-            btn.Click += (s, e) => xCanvas.Children.Remove(grid);
-            grid.Children.Add(btn);
-
-            xCanvas.Children.Add(grid);
-        }
-
-        public void ClearFloaty(DocumentView dragged)
-        {
-            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach((g) =>
-                 xCanvas.Children.Remove(g));
-        }
-        public bool IsFloaty(DocumentView dragged)
-        {
-            return xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).Any();
-        }
-
-        public void MoveFloaty(DocumentView dragged, Point where)
-        {
-            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
-                ForEach((g) =>
-                g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y }
-            );
-        }
-
-        #region Annotation logic
-
-        public LinkHandledResult HandleLink(DocumentController linkDoc, LinkDirection direction)
+        public LinkHandledResult   HandleLink(DocumentController linkDoc, LinkDirection direction)
         {
             var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
             var target = region.GetRegionDefinition() ?? region;
@@ -1151,7 +847,7 @@ function (d) {
                 NavigateToDocumentOrRegion(region, linkDoc);
                 return LinkHandledResult.HandledClose;
             }
-            var onScreenView = GetTargetDocumentView(target);
+            var onScreenView = FindTargetDocumentView(target);
 
             if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
@@ -1200,146 +896,113 @@ function (d) {
 
             return LinkHandledResult.HandledClose;
         }
-
-        public void DockLink(DocumentController linkDoc, LinkDirection direction, bool inContext = true)
+        private void               ToggleFloatingDoc(DocumentController doc)
         {
-            var region = linkDoc.GetDataDocument().GetLinkedDocument(direction);
-            var target = region.GetRegionDefinition() ?? region;
-            var frame = MainSplitter.GetFrameWithDoc(target, true);
-            if (frame != null)
+            var onScreenView = FindTargetDocumentView(doc);
+
+            if (onScreenView != null)
             {
-                frame.Delete();
+                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
+                onScreenView.ViewModel.SetHighlight(true);
+                if (highlighted)
+                {
+                    onScreenView.ViewModel.LayoutDocument.ToggleHidden();
+                }
             }
             else
             {
-                //TODO Splitting: Deal with inContext
-                SplitFrame.OpenInInactiveFrame(target);
+                var floaty = xCanvas.Children.OfType<Grid>().FirstOrDefault(g => g.Children.FirstOrDefault() is DocumentView dv && dv.ViewModel.DataDocument.Equals(doc.GetDataDocument()));
+                if (floaty != null)
+                {
+                    xCanvas.Children.Remove(floaty);
+                }
+                else
+                {
+                    AddFloatingDoc(doc, null, new Point(xCanvas.PointerPos().X + 25, xCanvas.PointerPos().Y));
+                }
             }
         }
 
-        public DocumentView GetTargetDocumentView(DocumentController target)
+        private DocumentView       FindTargetDocumentView(DocumentController target)
         {
             //TODO Do this search the other way around, only checking documents in view instead of checking all documents and then seeing if it is in view
-            var dataDoc = target.GetDataDocument();
+            var dataDoc  = target.GetDataDocument();
             var docViews = MainSplitter.GetDescendantsOfType<DocumentView>().Where(v => v.ViewModel != null && v.ViewModel.DataDocument.Equals(dataDoc)).ToList();
-            if (!docViews.Any())
-            {
-                return null;
-            }
-
-            DocumentView found = null;
-
+            
             foreach (var view in docViews)
             {
-                found = view;
+                var found = view;
                 foreach (var parentView in view.GetAncestorsOfType<DocumentView>())
                 {
-                    var transformedBounds = view.TransformToVisual(parentView)
-                        .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
+                    var transformedBounds = view.TransformToVisual(parentView) .TransformBounds(new Rect(0, 0, view.ActualWidth, view.ActualHeight));
                     var parentBounds = new Rect(0, 0, parentView.ActualWidth, parentView.ActualHeight);
-                    bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Top));
+                    bool containsTL = parentBounds.Contains(new Point(transformedBounds.Left,  transformedBounds.Top));
                     bool containsBR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Bottom));
                     bool containsTR = parentBounds.Contains(new Point(transformedBounds.Right, transformedBounds.Top));
-                    bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left, transformedBounds.Bottom));
+                    bool containsBL = parentBounds.Contains(new Point(transformedBounds.Left,  transformedBounds.Bottom));
                     if (!(containsTL || containsBR || containsBL || containsTR))
                     {
                         found = null;
                     }
                 }
                 if (found != null)
+                {
                     return found;
+                }
             }
 
             return null;
         }
 
-        #endregion
-
-        public void Timeline_OnCompleted(object sender, object e)
+        private async Task<string> processTemplate(IEnumerable<DocumentController> docs, TemplateType templateType)
         {
-            xSnapshotOverlay.Visibility = Visibility.Collapsed;
-        }
+            var fields =
+                docs.Select(doc => doc.GetDataDocument().EnumDisplayableFields().Select(field => field.Key.Name)).
+                Aggregate((a, b) => a.Intersect(b)).ToList();
+            fields.Insert(0, "");
+            fields.Add("Caption"); // bcz: need default set of fields + ability to let user define a new default field
 
-        private void XOnPointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            //Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = true;
-        }
-
-        private void XOnPointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            // Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
-            if (sender is Grid button && ToolTipService.GetToolTip(button) is ToolTip tip) tip.IsOpen = false;
-        }
-
-        private void XLoadingPopup_OnClosed(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        private void XLoadingPopup_OnOpened(object sender, object e)
-        {
-            xOverlay.Visibility = Visibility.Visible;
-        }
-
-        private void SetUpToolTips()
-        {
-            const PlacementMode placementMode = PlacementMode.Bottom;
-            const int offset = 5;
-
-            var search = new ToolTip()
+            ICustomTemplate templatePopup = null;
+            switch (templateType)
             {
-                Content = "Search workspace",
-                Placement = placementMode,
-                VerticalOffset = offset
-            };
-            ToolTipService.SetToolTip(xSearchButton, search);
-        }
-
-        public async Task<(string, string)> PromptNewTemplate()
-        {
-            var templatePopup = new NewTemplatePopup();
+            case TemplateType.Citation: templatePopup = new CitationPopup(fields); break;
+            case TemplateType.CaptionedImage: templatePopup = new CaptionedImage(fields); break;
+            case TemplateType.Note: templatePopup = new NotePopup(fields); break;
+            case TemplateType.Card: templatePopup = new CardPopup(fields); break;
+            case TemplateType.Title: templatePopup = new TitlePopup(fields); break;
+            case TemplateType.Profile: templatePopup = new ProfilePopup(fields); break;
+            case TemplateType.Article: templatePopup = new ArticlePopup(fields); break;
+            case TemplateType.Biography: templatePopup = new BiographyPopup(fields); break;
+            case TemplateType.Flashcard: templatePopup = new FlashcardPopup(fields); break;
+            }
             SetUpPopup(templatePopup);
-
-            var results = await templatePopup.GetFormResults();
+            var customLayout = await templatePopup.GetLayout();
             UnsetPopup();
 
-            return results;
-        }
+            if (customLayout != null)
+            {
+                var templateXaml = TemplateList.Templates[(int)templateType].GetXaml();
+                var splitXaml    = templateXaml.Split(" ", StringSplitOptions.None);
+                for (int i = 0; i < customLayout.Count; i++)
+                {
+                    for (int j = 0; j < splitXaml.Length; j++)
+                    {
+                        if (splitXaml[j].Contains("Field" + i))
+                        {
+                            splitXaml[j] = splitXaml[j].Replace(i + "", customLayout[i]);
+                            break;
+                        }
+                        if (splitXaml[j].Contains("PlaceHolderText" + i))
+                        {
+                            splitXaml[j] = splitXaml[j].Replace("PlaceHolderText" + i, customLayout[i]);
+                            break;
+                        }
+                    }
+                }
 
-        public async void Publish_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            // TODO: do the following eventually; for now it will just export everything you have
-            // var documentList = await GetDocumentsToPublish();
-
-            var allDocuments = DocumentTree.MainPageTree.Select(node => node.DataDocument).Distinct().Where(node => !node.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType)).ToList();
-            allDocuments.Remove(MainDocument.GetDataDocument());
-
-            await new Publisher().StartPublication(allDocuments);
-        }
-
-        public async Task<(List<DocumentController>, List<string>)> PromptTravelogue()
-        {
-            var traveloguePopup = new TraveloguePopup();
-            SetUpPopup(traveloguePopup);
-
-            var results = await traveloguePopup.GetFormResults();
-            UnsetPopup();
-
-            return results;
-        }
-
-        public async Task<(KeyController, List<KeyController>)> PromptJoinTables(List<KeyController> comparisonKeys, List<KeyController> diffKeys, List<KeyController> draggedKeys)
-        {
-            var tablePopup = new JoinGroupMenuPopup(comparisonKeys, diffKeys, draggedKeys);
-            SetUpPopup(tablePopup);
-
-            var results = await tablePopup.GetFormResults();
-            UnsetPopup();
-
-            return results;
+                return string.Join(" ", splitXaml);
+            }
+            return null;
         }
     }
-
-
 }

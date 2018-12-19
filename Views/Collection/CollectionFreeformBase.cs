@@ -142,7 +142,7 @@ namespace Dash
             setBackgroundOpacity -= ChangeOpacity;
             setBackgroundOpacity += ChangeOpacity;
 
-            var settingsView = MainPage.Instance.GetSettingsView;
+            var settingsView = MainPage.Instance.SettingsView;
             if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
             {
                 var storedPath = settingsView.CustomImagePath;
@@ -1199,7 +1199,7 @@ namespace Dash
             var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
             if (!string.IsNullOrEmpty(defaultXaml))
             {
-                postitNote.SetField<TextController>(KeyStore.XamlKey, defaultXaml, true);
+                postitNote.SetXaml(defaultXaml);
             }
             if (text != null)
             {

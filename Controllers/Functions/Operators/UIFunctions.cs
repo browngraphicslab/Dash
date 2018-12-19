@@ -131,12 +131,12 @@ namespace Dash
 
         public static void TogglePresentation()
         {
-            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
+            MainPage.Instance.xPresentationView.SetPresentationState(MainPage.Instance.xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Collapsed);
         }
 
         public static void ExportWorkspace()
         {
-            MainPage.Instance.Publish_OnTapped(null, null);
+            MainPage.Instance.Publish();
         }
     }
 }

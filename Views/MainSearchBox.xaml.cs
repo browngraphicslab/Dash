@@ -203,7 +203,7 @@ namespace Dash
             _selectedIndex = -1;
             if (!_arrowBlock)
             {
-                MainPage.Instance.CollapseSearch();
+                MainPage.Instance.SetSearchVisibility(Visibility.Collapsed);
                 _arrowBlock = false;
             }
         }

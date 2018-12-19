@@ -192,7 +192,7 @@ namespace Dash
 
         private void xExportButton_Click(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.Publish_OnTapped(null, null);
+            MainPage.Instance.Publish();
         }
     }
 }

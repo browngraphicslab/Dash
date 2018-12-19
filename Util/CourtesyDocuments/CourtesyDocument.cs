@@ -212,6 +212,15 @@ namespace Dash
         }
 
 
+        public static void SetXaml(this DocumentController document, string xaml)
+        {
+            document.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+        }
+        public static string GetXaml(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
+        }
+
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
             document.SetField<TextController>(KeyStore.HorizontalAlignmentKey, alignment.ToString(), true);

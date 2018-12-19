@@ -22,6 +22,11 @@ namespace Dash
 {
     public sealed partial class PresentationView
     {
+        public enum PresentationViewState
+        {
+            Expanded,
+            Collapsed
+        }
         public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
 
         private int LastSelectedIndex { get; set; }
@@ -56,6 +61,76 @@ namespace Dash
             xTitle.PropertyChanged += XTitleBox_PropertyChanged;
         }
 
+
+        public PresentationViewState CurrPresViewState
+        {
+            get => MainPage.Instance.MainDocument.GetDataDocument().GetField<BoolController>(KeyStore.PresentationViewVisibleKey)?.Data ?? false ? PresentationViewState.Expanded : PresentationViewState.Collapsed;
+            set
+            {
+                bool state = value == PresentationViewState.Expanded;
+                MainPage.Instance.MainDocument.GetDataDocument().SetField<BoolController>(KeyStore.PresentationViewVisibleKey, state, true);
+            }
+        }
+
+        public void PinToPresentation(DocumentController doc)
+        {
+            ViewModel.AddToPinnedNodesCollection(doc);
+            if (CurrPresViewState == PresentationViewState.Collapsed)
+            {
+                xHelpPrompt.Opacity = 0;
+                xHelpPrompt.Visibility = Visibility.Collapsed;
+                SetPresentationState(true);
+            }
+            DrawLinesWithNewDocs();
+        }
+        public void SetPresentationState(bool expand, bool animate = true)
+        {
+            //    TogglePresentationMode(expand);
+            if (expand)
+            {
+                CurrPresViewState = PresentationViewState.Expanded;
+                if (animate)
+                {
+                    MainPage.Instance.xPresentationExpand.Begin();
+                    MainPage.Instance.xPresentationExpand.Completed += (s, e) =>
+                    {
+                        xContentIn.Begin();
+                        xHelpIn.Begin();
+                    };
+                    xContentIn.Completed += (s, e) => xSettingsIn.Begin();
+                    xSettingsIn.Completed += (s, e) =>
+                    {
+                        if (xShowLinesButton.IsChecked ?? false) ShowLines();
+                    };
+                }
+                else
+                {
+                    MainPage.Instance.xUtilTabColumn.MinWidth = 300;
+                    SimulateAnimation(true);
+                }
+            }
+            else
+            {
+                CurrPresViewState = PresentationViewState.Collapsed;
+                //open presentation
+                if (animate)
+                {
+                    TryPlayStopClick();
+                    xSettingsOut.Begin();
+                    xContentOut.Begin();
+                    xHelpOut.Begin();
+                    MainPage.Instance.xPresentationRetract.Begin();
+                }
+                else
+                {
+                    MainPage.Instance.xUtilTabColumn.MinWidth = 0;
+                    SimulateAnimation(false);
+                }
+
+                xShowLinesButton.Background = new SolidColorBrush(Colors.White);
+                RemoveLines();
+            }
+        }
 
 
         private PresentationViewModel _oldViewModel;
@@ -184,8 +259,10 @@ namespace Dash
             }
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
-
-            NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+            if (LastSelectedIndex != -1)
+            {
+                NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+            }
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
@@ -454,7 +531,7 @@ namespace Dash
 
         private void UpdatePaths()
         {
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+            if (CurrPresViewState == PresentationViewState.Collapsed) return;
 
             //if pins changed, updating won't work
             if (_paths.Count / 2 != xPinnedNodesListView.Items.Count - 1)
@@ -529,7 +606,7 @@ namespace Dash
 
         public void DrawLines()
         {
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+            if (CurrPresViewState == PresentationViewState.Collapsed) return;
 
             var canvas = MainPage.Instance.xCanvas;
             //only recalcualte if you need to 
@@ -633,7 +710,7 @@ namespace Dash
         {
             var isChecked = xShowLinesButton.IsChecked;
             if (isChecked != null && (bool)!isChecked ||
-                MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+                CurrPresViewState == PresentationViewState.Collapsed) return;
 
             //show lines
             foreach (var viewModelPinnedNode in ViewModel.PinnedNodes)
@@ -733,7 +810,7 @@ namespace Dash
         private void XClosePresentation_OnClick(object sender, RoutedEventArgs e)
         {
             //close presentation
-            MainPage.Instance.SetPresentationState(false);
+            SetPresentationState(false);
             TryPlayStopClick();
         }
 

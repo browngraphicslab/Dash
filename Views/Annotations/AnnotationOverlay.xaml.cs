@@ -884,7 +884,7 @@ namespace Dash
                                 {
                                     overlayEmbeddings?.EmbeddedDocsList.Remove(dm.DraggedDocuments[i]);
                                 }
-                                MainPage.Instance.ClearFloaty(dm.DraggedDocumentViews[i]);
+                                MainPage.Instance.ClearFloatingDoc(dm.DraggedDocumentViews[i]);
                             }
                             
                             dm.DraggedDocCollectionViews[i]?.RemoveDocument(dm.DraggedDocuments[i]);

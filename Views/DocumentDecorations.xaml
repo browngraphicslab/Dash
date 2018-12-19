@@ -10,8 +10,8 @@
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
     AllowDrop="True"
-    DragOver="UserControl_DragOver"
-    Drop="UserControl_Drop"
+    DragOver="DocumentDecorations_DragOver"
+    Drop="DocumentDecorations_Drop"
     d:DesignHeight="300"
     d:DesignWidth="400">
     

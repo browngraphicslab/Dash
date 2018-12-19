@@ -16,7 +16,19 @@ namespace Dash
 
             switch (overrideBehavior ?? link.GetDataDocument().GetLinkBehavior())
             {
-            case LinkBehavior.Dock:     MainPage.Instance.DockLink(link, direction, linkContext); break;
+            case LinkBehavior.Dock:   
+                    var region = link.GetDataDocument().GetLinkedDocument(direction);
+                    var target = region.GetRegionDefinition() ?? region;
+                    if (MainPage.Instance.MainSplitter.GetFrameWithDoc(target, true) is SplitFrame frame)
+                    {
+                        frame.Delete();
+                    }
+                    else
+                    {
+                        SplitFrame.OpenInInactiveFrame(target); //TODO Splitting: Deal with linkContext
+                    }
+
+                break;
             case LinkBehavior.Float:    MainPage.Instance.AddFloatingDoc(document); break;
             case LinkBehavior.Overlay:  //default behavior of highlighting and toggling link visibility and docking when off screen
             case LinkBehavior.Annotate: linkHandlers.TakeWhile(hdlr => hdlr.HandleLink(link, direction) != LinkHandledResult.HandledClose).ToList(); break;

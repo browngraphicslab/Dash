@@ -26,7 +26,7 @@ namespace Dash
         [GeneratorIgnore]
         private static TextController InsertContent(TextController keyName, int templateType)
         {
-            string preXaml = TemplateList.Templates[templateType].GetField<TextController>(KeyStore.XamlKey).Data;
+            string preXaml = TemplateList.Templates[templateType].GetXaml();
             string[] splitXaml = preXaml.Split(" ", StringSplitOptions.None);
             for (int j = 0; j < splitXaml.Length; j++)
             {

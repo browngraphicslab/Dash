@@ -44,7 +44,7 @@ namespace Dash
             set => DataContext = value;
         }
         public bool              IsSelected => SelectionManager.SelectedDocViewModels.Contains(ViewModel);
-        public bool              AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || MainPage.Instance.IsTopLevel(ViewModel);
+        public bool              AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || SplitManager.IsRoot(ViewModel);
         public Action            FadeOutBegin;
 
         // == CONSTRUCTORs ==
@@ -107,7 +107,7 @@ namespace Dash
         {
             //Debug.Write("dispose DocumentView");
         }
-
+        
         public bool BindRenderTransform
         {
             get => (bool)GetValue(BindRenderTransformProperty);
@@ -755,12 +755,11 @@ namespace Dash
         }
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            if (!MainPage.Instance.IsTopLevel(ViewModel))
+            if (!SplitManager.IsRoot(ViewModel))
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    MainPage.Instance.PinToPresentation(ViewModel.DocumentController);
-                    if (ViewModel.LayoutDocument == null)
+                    MainPage.Instance.xPresentationView.PinToPresentation(ViewModel.DocumentController);                    if (ViewModel.LayoutDocument == null)
                     {
                         Debug.WriteLine("uh oh");
                     }
@@ -959,7 +958,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 var docs = SelectionManager.GetSelectedSiblings(this).Select(doc => doc.ViewModel.DocumentController);
-                var template = await MainPage.Instance.GetLayoutTemplate(docs);
+                var template = await MainPage.Instance.PromptLayoutTemplate(docs);
 
                 if (template == null)
                     return;
@@ -970,7 +969,7 @@ namespace Dash
 
                 foreach (var doc in docs)
                 {
-                    doc.SetField<TextController>(KeyStore.XamlKey, template, true);
+                    doc.SetXaml(template);
                     if (flashcard)
                     {
                         doc.SetWidth(600);
@@ -994,7 +993,7 @@ namespace Dash
         {
             this.GetFirstAncestorOfType<CollectionView>()?.ViewModel.ContainerDocument.GetDataDocument().SetField<TextController>(
                 KeyStore.DefaultTextboxXamlKey,
-                ViewModel.LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey, null)?.Data, true);
+                ViewModel.LayoutDocument.GetXaml(), true);
         }
         private async void MenuFlyoutItemAddToActionMenu_Click(object sender, RoutedEventArgs e)
         {

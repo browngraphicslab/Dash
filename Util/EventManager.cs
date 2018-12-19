@@ -13,7 +13,7 @@ namespace Dash
             if (displayXaml != null)
             {
                 eventController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                eventController.SetField<TextController>(KeyStore.XamlKey, displayXaml, true);
+                eventController.SetXaml(displayXaml);
             }
 
             EventControllers.Add(eventController);
