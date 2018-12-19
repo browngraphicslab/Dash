@@ -456,7 +456,7 @@ namespace Dash
             stackData.SetField<TextController>(wkey, wikipedia, true);
             var html = new HtmlNote(wikipedia,size:new Size(double.NaN, 700)).Document;
             html.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            var dbox = new DataBox(new DocumentReferenceController(stackData, bkey)).Document;
+            var dbox = new DataBox(stackData, bkey, new Point()).Document;
             dbox.SetField<NumberController>(KeyStore.FontSizeKey, 36, true);
             stackData.SetField(KeyStore.DataKey,
                 new ListController<DocumentController>(
@@ -791,8 +791,7 @@ namespace Dash
                 var eventDoc = new RichTextNote(text).Document;
                 var tags = "rich text, note, " + Document.Selection.Text.Substring(0, Document.Selection.Text.Length - 2);
                 eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
-                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                    this.GetDocumentView().ParentCollection.ViewModel.ContainerDocument, true);
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey, this.GetDocumentView().ParentViewModel?.ContainerDocument, true);
                 eventDoc.SetField(KeyStore.EventDisplay1Key, ViewModel.DocumentController, true);
                 var displayXaml =
                     @"<Grid

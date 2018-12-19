@@ -316,7 +316,7 @@ namespace Dash
         {
             var dragDocOffset  = args.GetPosition(sender);
             var relDocOffsets  = SelectionManager.SelectedDocViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
-            var parCollections = SelectionManager.SelectedDocViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
+            var parCollections = SelectionManager.SelectedDocViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(SelectionManager.SelectedDocViews, parCollections, relDocOffsets, dragDocOffset) { DraggingLinkButton = true });
             args.AllowedOperations =
                 DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;

@@ -25,27 +25,27 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
-        public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
+        private static readonly SolidColorBrush    SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
+        private static readonly SolidColorBrush    GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        private static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindRenderTransformChanged));
-        public event Action<DocumentView> DocumentDeleted;
         private bool              _anyBehaviors => ViewModel.LayoutDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
         private readonly Flyout   _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private bool              _doubleTapped = false;
         private Point             _down         = new Point();
         private Point             _pointerPoint = new Point(0, 0);
-        private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
-        private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
 
-        public CollectionView    ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
-        public DocumentViewModel ViewModel 
+        public CollectionView      ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+        public CollectionViewModel ParentViewModel => ParentCollection?.ViewModel;
+        public DocumentViewModel   ViewModel 
         {
             get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
-        public bool              IsSelected => SelectionManager.SelectedDocViewModels.Contains(ViewModel);
-        public bool              AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || SplitManager.IsRoot(ViewModel);
-        public Action            FadeOutBegin;
+        public bool                IsSelected => SelectionManager.SelectedDocViewModels.Contains(ViewModel);
+        public bool                AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || SplitManager.IsRoot(ViewModel);
+        public Action              FadeOutBegin;
 
         // == CONSTRUCTORs ==
         public DocumentView()
@@ -174,10 +174,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                // will this screw things up?
-                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                var doc = ViewModel.DocumentController.GetCopy(null);
-                ParentCollection?.ViewModel.AddDocument(doc);
+                ParentViewModel?.AddDocument(ViewModel.DocumentController.GetCopy(null));
             }
         }
         /// <summary>
@@ -187,9 +184,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
-                // will this screw things up?
-                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-                ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(null));
+                ParentViewModel?.AddDocument(ViewModel.DocumentController.GetDataInstance(null));
             }
         }
         /// <summary>
@@ -197,10 +192,10 @@ namespace Dash
         /// </summary>
         public void CopyViewDocument()
         {
-            // will this screw things up?
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null));
+            using (UndoManager.GetBatchHandle())
+            {
+                ParentViewModel?.AddDocument(ViewModel.DocumentController.GetViewCopy(null));
+            }
         }
         public async void MakeDocumentLink(Point where, DragDocumentModel dm)
         {
@@ -230,28 +225,13 @@ namespace Dash
         /// <summary>
         /// Opens in Chrome the context from which the document was made.
         /// </summary>
-        public void ShowContext()
-        {
-            ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
-        }
-        public void ShowContextMenu(Point where)
-        {
-            xMenuFlyout.ShowAt(null, where);
-        }
+        public void ShowContext()                { ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext(); }
+        public void ShowContextMenu(Point where) { xMenuFlyout.ShowAt(null, where); }
         /// <summary>
         /// Opens in Chrome the context from which the document was made.
         /// </summary>
-        public void ShowXaml()
-        {
-            var where = ViewModel.Position;
-            ParentCollection?.ViewModel.AddDocument(
-                new DataBox(new DocumentReferenceController(ViewModel.LayoutDocument, KeyStore.XamlKey), where.X, where.Y, 300, 400).Document
-            );
-        }
-        public void GetJson()
-        {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
-        }
+        public void ShowXaml()                   { ParentViewModel?.AddDocument(new DataBox(ViewModel.LayoutDocument, KeyStore.XamlKey, ViewModel.Position, 300,400).Document); }
+        public void GetJson()                    { Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); }
         public void HandleShiftEnter()
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -290,38 +270,35 @@ namespace Dash
         //binds the background color of the document to the ViewModel's LayoutDocument's BackgroundColorKey
         private void UpdateBackgroundColorBinding()
         {
-            if (ViewModel?.LayoutDocument != null)
+            var doc = ViewModel?.LayoutDocument;
+            var backgroundBinding = doc == null ? null :new FieldBinding<TextController>()
             {
-                var backgroundBinding = new FieldBinding<TextController>()
-                {
-                    Key = KeyStore.BackgroundColorKey,
-                    Document = ViewModel.LayoutDocument,
-                    Converter = new StringToBrushConverter(),
-                    Mode = BindingMode.TwoWay,
-                    Context = new Context(),
-                    FallbackValue = new SolidColorBrush(Colors.Transparent)
-                };
-                xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
-            }
+                Key       = KeyStore.BackgroundColorKey,
+                Document  = doc,
+                Converter = new StringToBrushConverter(),
+                Mode      = BindingMode.TwoWay,
+                Context   = new Context(),
+                FallbackValue = new SolidColorBrush(Colors.Transparent)
+            };
+            xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
         }
         private void UpdateRenderTransformBinding()
         {
             var doc = ViewModel?.LayoutDocument;
 
-            var binding = !BindRenderTransform || doc == null
-                ? null
+            var binding = !BindRenderTransform || doc == null ? null
                 : new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey))
                 {
                     Converter = new TransformGroupMultiConverter(),
-                    Context = new Context(doc),
-                    Mode = BindingMode.OneWay,
+                    Context   = new Context(doc),
+                    Mode      = BindingMode.OneWay,
                     CanBeNull = true,
-                    Tag = "RenderTransform multi binding in DocumentView"
+                    Tag       = "RenderTransform multi binding in DocumentView"
                 };
             this.AddFieldBinding(RenderTransformProperty, binding);
             if (ViewModel?.IsDimensionless == true)
             {
-                Width = double.NaN;
+                Width  = double.NaN;
                 Height = double.NaN;
             }
             else if (doc != null)
@@ -334,15 +311,13 @@ namespace Dash
         {
             var doc = ViewModel?.LayoutDocument;
 
-            var binding = doc == null
-                ? null
-                : new FieldBinding<BoolController>
+            var binding = doc == null ? null : new FieldBinding<BoolController>
                 {
                     Converter = new InverseBoolToVisibilityConverter(),
-                    Document = doc,
-                    Key = KeyStore.HiddenKey,
-                    Mode = BindingMode.TwoWay,
-                    Tag = "Visibility binding in DocumentView",
+                    Document  = doc,
+                    Key       = KeyStore.HiddenKey,
+                    Mode      = BindingMode.TwoWay,
+                    Tag       = "Visibility binding in DocumentView",
                     FallbackValue = false
                 };
             this.AddFieldBinding(VisibilityProperty, binding);
@@ -350,28 +325,26 @@ namespace Dash
             var binding3 = doc == null ? null : new FieldBinding<BoolController>
             {
                 Document = doc,
-                Key = KeyStore.AreContentsHitTestVisibleKey,
-                Mode = BindingMode.TwoWay,
-                Tag = "AreContentsHitTestVisible binding in DocumentView",
+                Key      = KeyStore.AreContentsHitTestVisibleKey,
+                Mode     = BindingMode.TwoWay,
+                Tag      = "AreContentsHitTestVisible binding in DocumentView",
                 FallbackValue = true
             };
             LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
         }
         private void UpdateAlignmentBindings()
         {
-            var doc = ViewModel?.LayoutDocument;
-
             if (ViewModel?.IsDimensionless == true)
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch;
-                VerticalAlignment = VerticalAlignment.Stretch;
+                VerticalAlignment   = VerticalAlignment.Stretch;
                 this.AddFieldBinding(HorizontalAlignmentProperty, null);
                 this.AddFieldBinding(VerticalAlignmentProperty, null);
             }
             else
             {
-                CourtesyDocument.BindHorizontalAlignment(this, doc, HorizontalAlignment.Left);
-                CourtesyDocument.BindVerticalAlignment(this, doc, VerticalAlignment.Top);
+                CourtesyDocument.BindHorizontalAlignment(this, ViewModel?.LayoutDocument, HorizontalAlignment.Left);
+                CourtesyDocument.BindVerticalAlignment  (this, ViewModel?.LayoutDocument, VerticalAlignment.Top);
             }
         }
         private void UpdateBindings()
@@ -442,17 +415,17 @@ namespace Dash
         
         private void this_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _down = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
+            e.Handled = true;
+            _down     = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
             CapturePointer(e.Pointer);
             PointerMoved    += this_PointerMoved;
             PointerReleased += this_PointerReleased;
-            e.Handled = true;
         }
         private void this_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = true;
             ReleasePointerCapture(e.Pointer);
-            PointerMoved -= this_PointerMoved;
+            PointerMoved    -= this_PointerMoved;
             PointerReleased -= this_PointerReleased;
         }
         private void this_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -460,12 +433,12 @@ namespace Dash
             if (ViewModel.DragAllowed)
             {
                 e.Handled = true;
-                var cur = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
+                var cur   = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
                 var delta = new Point(cur.X - _down.X, cur.Y - _down.Y);
                 if (ViewModel.AreContentsHitTestVisible && Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 10)
                 {
                     ReleasePointerCapture(e.Pointer);
-                    PointerMoved -= this_PointerMoved;
+                    PointerMoved    -= this_PointerMoved;
                     PointerReleased -= this_PointerReleased;
                     SelectionManager.InitiateDragDrop(this, e);
                 }
@@ -500,10 +473,9 @@ namespace Dash
                 curLayout.SetWidth (dm.DraggedDocuments.First().GetActualSize().Value.X);
                 curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
             }
-            curLayout.SetField(KeyStore.DataKey,            draggedLayout.GetField(KeyStore.DataKey), true);
-            curLayout.SetField(KeyStore.PrototypeKey,       draggedLayout.GetField(KeyStore.PrototypeKey), true);
-            curLayout.SetField(KeyStore.LayoutPrototypeKey, draggedLayout, true);
-
+            curLayout.SetField(KeyStore.DataKey,                  draggedLayout.GetField(KeyStore.DataKey), true);
+            curLayout.SetField(KeyStore.PrototypeKey,             draggedLayout.GetField(KeyStore.PrototypeKey), true);
+            curLayout.SetField(KeyStore.LayoutPrototypeKey,       draggedLayout, true);
             curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
             curLayout.DocumentType = draggedLayout.DocumentType;
             UpdateBindings();
@@ -511,9 +483,8 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
-
-            DocumentDeleted?.Invoke(this);
+            ParentViewModel?.RemoveDocument(ViewModel.DocumentController);
+            
             UndoManager.EndBatch();
         }
 
@@ -540,11 +511,10 @@ namespace Dash
                 }
 
                 MainPage.Instance.xPresentationView.TryHighlightMatches(this);
-                
-                ToFront();
 
-                if (!MainPage.Instance.IsRightBtnPressed())
+                if (!rightTapped)
                 {
+                    ToFront();
                     await System.Threading.Tasks.Task.Delay(100);
                     if (!_doubleTapped)
                     {

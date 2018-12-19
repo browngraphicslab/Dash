@@ -307,7 +307,7 @@ namespace Dash
             newdoc.Link(ViewModel.ContainerDocument, LinkBehavior.Follow, "Button");
             newdoc.SetIsButton(true);
             var thisView = this.GetDocumentView();
-            thisView.ParentCollection?.ViewModel.AddDocument(newdoc);
+            thisView.ParentViewModel?.AddDocument(newdoc);
             thisView.DeleteDocument();
         }
 

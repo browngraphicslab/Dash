@@ -223,8 +223,7 @@ namespace Dash
             foreach (var key in Keys)
             {
                 //newDoc.GetDataDocument().SetField<TextController>(key, "<empty>", true);
-                docs.Add(new DataBox(new DocumentReferenceController(newDoc.GetDataDocument(), key), 0, placement, 100,
-                    double.NaN).Document);
+                docs.Add(new DataBox(newDoc.GetDataDocument(), key, new Point(0, placement), 100,double.NaN).Document);
                 docs.Last().SetTitle(key.Name);
                 placement += 35;
             }
@@ -329,7 +328,7 @@ namespace Dash
                     }
                 }
 
-                var newDataBoxCol = new DataBox(new DocumentReferenceController(proto.GetDataDocument(), key), 0, 35 * docs.Count, double.NaN, double.NaN).Document;
+                var newDataBoxCol = new DataBox(proto.GetDataDocument(), key, new Point(0, 35 * docs.Count)).Document;
                 CollectionViewModel.RouteDataBoxReferencesThroughCollection(proto, new List<DocumentController>(new DocumentController[] { newDataBoxCol }));
                 proto.AddToListField(KeyStore.DataKey, newDataBoxCol);
                 newDataBoxCol.SetTitle(key.Name);

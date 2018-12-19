@@ -180,7 +180,7 @@ namespace Dash
                         if (view.ParentCollection != null)
                         {
                             eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                                view.ParentCollection.ViewModel.ContainerDocument, true);
+                                view.ParentViewModel?.ContainerDocument, true);
                         }
                         eventDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                         eventDoc.SetVerticalAlignment(VerticalAlignment.Stretch);

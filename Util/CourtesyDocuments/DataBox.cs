@@ -14,6 +14,11 @@ namespace Dash
 
 
         public static TypeInfo Type { get; private set; }
+        public DataBox(DocumentController docReference, KeyController refKey, Point position, double w = double.NaN, double h = double.NaN):this(
+            new DocumentReferenceController(docReference, refKey), position.X, position.Y, w, h)
+        {
+        }
+
         public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);

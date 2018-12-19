@@ -84,11 +84,11 @@ namespace Dash.Views.Collection
                 }
                 if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null) == null)
                 {
-                    containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
+                    containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(containerDoc, KeyStore.FolderPreviewKey, new Point()).Document, true);
                 }
                 if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderIconDataBoxKey, null) == null)
                 {
-                    containerDoc.SetField(KeyStore.FolderIconDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderIconKey)).Document, true);
+                    containerDoc.SetField(KeyStore.FolderIconDataBoxKey, new DataBox(containerDoc, KeyStore.FolderIconKey, new Point()).Document, true);
                 }
                 var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
                 db.SetAreContentsHitTestVisible(false);
