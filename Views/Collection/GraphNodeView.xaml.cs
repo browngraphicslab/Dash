@@ -54,10 +54,8 @@ namespace Dash
             VariableConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
             var dataDoc = ViewModel.DocumentViewModel.DataDocument;
             // default to 1 to avoid nodes with radius = 0
-            var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ??
-                                1;
-            var fromConnections =
-                dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+            var toConnections   = dataDoc.GetLinks(KeyStore.LinkToKey).Count + 1;
+            var fromConnections = dataDoc.GetLinks(KeyStore.LinkFromKey).Count + 1;
 
             var newDiam = (toConnections + fromConnections) * VariableConstantRadiusWidth;
             // keep the diameter above a lower threshold, but if it's below a higher threshold, only display the type icon
@@ -129,11 +127,9 @@ namespace Dash
             if (VariableConstantRadiusWidth != ParentGraph.ConstantRadiusWidth)
             {
                 VariableConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
-                var dataDoc = ViewModel.DocumentViewModel.DataDocument;
-                var toConnections =
-                    dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
-                var fromConnections =
-                    dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+                var dataDoc         = ViewModel.DocumentViewModel.DataDocument;
+                var toConnections   = dataDoc.GetLinks(KeyStore.LinkToKey).Count + 1;
+                var fromConnections = dataDoc.GetLinks(KeyStore.LinkFromKey).Count + 1;
 
                 // update the nodes with the new radii
                 var newDiam = (toConnections + fromConnections) * VariableConstantRadiusWidth;
@@ -238,13 +234,9 @@ namespace Dash
 
         private void CreateLinks()
         {
-            var dataDoc = ViewModel.DocumentViewModel.DataDocument;
-            // gets all the connections that are emanating outwards from the datadoc
-            var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ??
-                                1;
-            // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
-            var fromConnections =
-                dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+            var dataDoc         = ViewModel.DocumentViewModel.DataDocument;
+            var toConnections   = dataDoc.GetLinks(KeyStore.LinkToKey).Count + 1;     // gets all the connections that are emanating outwards from the datadoc
+            var fromConnections = dataDoc.GetLinks(KeyStore.LinkFromKey).Count + 1; // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
 
             var newDiam = (toConnections + fromConnections) * VariableConstantRadiusWidth;
             if (newDiam > _smallWidth)
@@ -298,8 +290,8 @@ namespace Dash
             foreach (var link in newLinks)
             {
                 // get the from and to document stored in the link
-                var fromDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)[0];
-                var toDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkToKey)[0];
+                var fromDoc = link.GetDataDocument().GetLinks(KeyStore.LinkFromKey)[0];
+                var toDoc   = link.GetDataDocument().GetLinks(KeyStore.LinkToKey)[0];
                 // get the matching from and to documents from the parent graph's collection documents
                 var matchingFromDoc =
                     ParentGraph.CollectionDocuments.FirstOrDefault(cdc =>

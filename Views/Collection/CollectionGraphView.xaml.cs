@@ -291,8 +291,8 @@ namespace Dash
             double maxNodeDiam = 0;
             var dvms = ViewModel.DocumentViewModels;
             if (dvms.Count != 0)
-                maxNodeDiam = (dvms.Max(dvm => dvm.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null)?.Count + 1 ?? 1) +
-                               dvms.Max(dvm => dvm.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)?.Count + 1 ?? 1)) *
+                maxNodeDiam = (dvms.Max(dvm => dvm.DataDocument.GetLinks(KeyStore.LinkFromKey).Count + 1) +
+                               dvms.Max(dvm => dvm.DataDocument.GetLinks(KeyStore.LinkToKey).Count + 11)) *
                               ConstantRadiusWidth + 50; // account for title height
 
             // logically divides the space into n by n grid where n is the amount of nodes

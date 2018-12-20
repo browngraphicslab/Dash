@@ -128,21 +128,7 @@ namespace Dash
         }
 
         public DocumentModel DocumentModel => Model as DocumentModel;
-
-        public string Title
-        {
-            get
-            {
-                var titleController = GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ??
-                    GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
-                if (titleController != null)
-                {
-                    return titleController;
-                }
-                return DocumentType.Type;
-            }
-        }
-
+        public string        Title         => this.GetTitle();
         public DocumentController GetDataDocument()
         {
             return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? this;
