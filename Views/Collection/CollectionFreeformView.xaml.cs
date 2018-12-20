@@ -179,7 +179,7 @@ namespace Dash
                 .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
             foreach (var template in templates)
             {
-                var avm = new ActionViewModel(template.GetTitleFieldOrSetDefault().Data,
+                var avm = new ActionViewModel(template.Title,
                     template.GetField<TextController>(KeyStore.CaptionKey).Data, actionParams  =>
                     {
                         var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);

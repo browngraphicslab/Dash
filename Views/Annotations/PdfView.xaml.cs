@@ -122,7 +122,7 @@ namespace Dash
             var pages  = new List<DocumentController>();
             var pdfDoc = new PdfDocument(new PdfReader(await _file.OpenStreamForReadAsync()));
             int n      = pdfDoc.GetNumberOfPages();
-            var title  = DataDocument.GetTitleFieldOrSetDefault().Data;
+            var title  = DataDocument.Title;
             for (int i = 1; i <= n; i++)
             {
                 var localFolder    = ApplicationData.Current.LocalFolder;

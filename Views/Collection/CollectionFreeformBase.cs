@@ -952,7 +952,7 @@ namespace Dash
                             var docss = viewModels.Select(dvm => dvm.DocumentController).ToList();
                             ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docss).Document);
 
-                            foreach (var viewModel in viewModels)
+                            foreach (var viewModel in viewModels.ToArray())
                             {
                                 viewModel.LayoutDocument.IsMovingCollections = true;
                                 viewModel.RequestDelete();

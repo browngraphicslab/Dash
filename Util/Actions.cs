@@ -39,8 +39,7 @@ namespace Dash
         {
             if (where != null)
             {
-                var pos = (Point)where;
-                docController.GetPositionField().Data = pos;
+                docController.SetPosition((Point)where);
             }
             collectionViewModel.AddDocument(docController);
         }

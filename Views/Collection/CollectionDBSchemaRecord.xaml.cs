@@ -51,8 +51,6 @@ namespace Dash
             args.Data.SetDragModel(new DragDocumentModel(dataDoc));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-
-            dataDoc.GetLayoutFromDataDocAndSetDefaultLayout();
         }
     }
 

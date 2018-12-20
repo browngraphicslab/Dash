@@ -86,7 +86,7 @@ namespace Dash
             Image.Source = new BitmapImage(new Uri(file.Path));
 
             // on replace image, change the original image value for revert
-            var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, new Context());
+            var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
             LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
             LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
             LayoutDocument.SetHeight(double.NaN);
@@ -94,7 +94,7 @@ namespace Dash
 
         private async Task<StorageFile> GetImageFile()
         {
-            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, new Context());
+            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, null);
             /*
 			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
 			 * try catch is literally the only way we can deal with regular
@@ -251,7 +251,7 @@ namespace Dash
 
             if (LayoutDocument.GetDataDocument().GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
-                var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, new Context());
+                var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
                 LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl.Copy(), true);
             }
 

@@ -12,7 +12,6 @@ namespace Dash
         //NOTE: Underscore prefacing registers the field as invisible
         public static KeyController DocumentContextKey                   = KeyController.Get("DocumentContext");
         public static KeyController AbstractInterfaceKey                 = KeyController.Get("_AbstractInterface");
-        public static KeyController LayoutListKey                        = KeyController.Get("_LayoutList");
         public static KeyController RegionsKey                           = KeyController.Get("Regions");
         public static KeyController RegionDefinitionKey                  = KeyController.Get("RegionDefinition");
         public static KeyController RegionTypeKey                        = KeyController.Get("RegionType");

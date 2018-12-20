@@ -127,9 +127,9 @@ namespace Dash
                 results.Add(returnValue);
             }
 
-            var pt = _viewDoc.GetPositionField().Data;
-            var width = _viewDoc.GetWidthField().Data;
-            var height = _viewDoc.GetHeightField().Data;
+            var pt     = _viewDoc.GetPosition() ?? new Windows.Foundation.Point();
+            var width  = _viewDoc.GetWidth();
+            var height = _viewDoc.GetHeight();
 
             var indents = new ListController<NumberController>();
             foreach (var unused in results)

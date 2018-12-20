@@ -88,7 +88,7 @@ namespace Dash
                 if (documentController != null)
                 {
                     documentController.GetDataDocument().SetTitle(files[0].Name);
-                    documentController.GetPositionField().Data = where;
+                    documentController.SetPosition(where);
                     var uri = fileType.FileUri?.AbsoluteUri ?? (dataView.AvailableFormats.Contains("UniformResourceLocator") ? (await dataView.GetWebLinkAsync())?.AbsoluteUri : null);
                     documentController.GetDataDocument()?
                         .SetField<TextController>(KeyStore.SourceUriKey, uri, true);
@@ -122,8 +122,8 @@ namespace Dash
                                 yPos += CollectionNoteOffset;
                                 xPos = 0;
                             }
-                            documentController.GetPositionField().Data = new Point(xPos, yPos);
-                            var docWidth = documentController.GetWidthField()?.Data + 10 ?? CollectionNoteOffset;
+                            documentController.SetPosition(new Point(xPos, yPos));
+                            var docWidth = double.IsNaN(documentController.GetWidth()) ? CollectionNoteOffset : documentController.GetWidth() + 10;
                             xPos += double.IsNaN(docWidth) ? CollectionNoteOffset : docWidth;
                             count++;
                         }

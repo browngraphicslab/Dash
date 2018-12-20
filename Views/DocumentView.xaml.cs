@@ -277,7 +277,6 @@ namespace Dash
                 Document  = doc,
                 Converter = new StringToBrushConverter(),
                 Mode      = BindingMode.TwoWay,
-                Context   = new Context(),
                 FallbackValue = new SolidColorBrush(Colors.Transparent)
             };
             xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);

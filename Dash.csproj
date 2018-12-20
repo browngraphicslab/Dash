@@ -957,7 +957,6 @@
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />

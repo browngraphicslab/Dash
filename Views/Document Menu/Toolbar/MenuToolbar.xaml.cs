@@ -189,9 +189,8 @@ namespace Dash
                 // Data box controls
                 if (selection.ViewModel.DocumentController.DocumentType.Equals(DataBox.DocumentType))
                 {
-                    DocumentController documentController = selection.ViewModel.DocumentController;
-                    var context = new Context(documentController);
-                    var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
+                    var documentController = selection.ViewModel.DocumentController;
+                    var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, null);
                     //switch statement for type of data
                     if (data is ImageController)
                     {
@@ -383,7 +382,7 @@ namespace Dash
 
                     var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
-                    docController.GetPositionField().Data = @where;
+                    docController.SetPosition(where);
                     mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
             }

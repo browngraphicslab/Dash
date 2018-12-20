@@ -8,38 +8,17 @@ namespace Dash
     {
         private readonly LinkedList<DocumentController> _documentContextList;
 
-        private readonly Dictionary<FieldReference, FieldControllerBase> _data;
-
         public LinkedList<DocumentController> DocContextList => _documentContextList;
-
-        /// <summary>
-        /// Create a new context with no initial values
-        /// </summary>
-        public Context()
-        {
-            _documentContextList = new LinkedList<DocumentController>();
-            _data = new Dictionary<FieldReference, FieldControllerBase>();
-        }
-
+        
         public Context(DocumentController initialContext)
         {
             _documentContextList = new LinkedList<DocumentController>();
             _documentContextList.AddLast(initialContext);
-            _data = new Dictionary<FieldReference, FieldControllerBase>();
         }
 
         public Context(Context copyFrom)
         {
-            if (copyFrom == null)
-            {
-                _documentContextList = new LinkedList<DocumentController>();
-                _data = new Dictionary<FieldReference, FieldControllerBase>();
-            }
-            else
-            {
-                _documentContextList = new LinkedList<DocumentController>(copyFrom._documentContextList);
-                _data = new Dictionary<FieldReference, FieldControllerBase>(copyFrom._data);
-            }
+            _documentContextList = new LinkedList<DocumentController>(copyFrom?._documentContextList.ToArray() ?? new DocumentController[] { });
         }
 
         /// <summary>
@@ -56,40 +35,7 @@ namespace Dash
             var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First());
             return doc.IsDelegateOf(deepestRelative); 
         }
-
-        /// <summary>
-        /// Loops through every document in the set:
-        ///    if the document has no delegates within the set, then
-        ///        returns false if the deepest relative of the document in the context is a prototype or delegate of the document
-        /// </summary>
-        /// <param name="docSet"></param>
-        /// <returns></returns>
-        //public bool IsCompatibleWith(Context c)
-        //{
-        //    if (c == null)
-        //    {
-        //        return true;
-        //    }
-        //    var docSetList = new List<DocumentController>(c.DocContextList);
-        //    for (int i = 0; i < docSetList.Count; i++)
-        //    {
-        //        var dcb = docSetList[i];
-        //        var dcbPrototype = dcb.GetAllPrototypes().First();
-        //        bool skip = false;
-        //        for (int j = i+1; j < docSetList.Count && !skip; j++)
-        //            if (docSetList[j].GetAllPrototypes().First().Equals(dcbPrototype))
-        //            {
-        //                skip = true;
-        //            }
-        //        if (!skip)
-        //        {
-        //            var deepestRelative = GetDeepestDelegateOf(dcbPrototype.GetId());
-        //            if (deepestRelative != null && deepestRelative != dcb.GetId())
-        //                return false;
-        //        }
-        //    }
-        //    return true;
-        //}
+        
 
         public FieldControllerBase Dereference(ReferenceController reference)
         {
@@ -106,25 +52,6 @@ namespace Dash
             Debug.Assert(document != null);
             _documentContextList.AddFirst(document);
         }
-
-        //public void AddData(ReferenceFieldModelController reference, FieldControllerBase data)
-        //{
-        //    _data[reference.FieldReference] = data;
-        //}
-
-        public void AddData(FieldReference reference, FieldControllerBase data)
-        {
-            _data[reference] = data;
-        }
-
-        public bool ContainsDataKey(KeyController key)
-        {
-            foreach (var d in _data)
-                if (d.Key.FieldKey == key)
-                    return true;
-            return false;
-        }
-
 
         /// <summary>
         /// Returns the id of the deepest delegate of the document associated with the passed in id.
@@ -147,24 +74,6 @@ namespace Dash
             }
 
             return found ? referenceDoc : null;
-        }
-
-        /// <summary>
-        /// Initializes a new context if the passed in <paramref name="context"/> is not null.
-        /// otherwise returns the passed in <paramref name="context"/>
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public static Context InitIfNotNull(Context context)
-        {
-            return context ?? new Context();
-        }
-
-        public static Context SafeInitAndAddDocument(Context context, DocumentController doc)
-        {
-            var newcontext = new Context(context);
-            newcontext.AddDocumentContext(doc);
-            return newcontext;
         }
     }
 }

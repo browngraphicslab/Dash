@@ -167,15 +167,13 @@ namespace Dash
         public void UpdateBucket(int changedBucket, double maxDomain)
         {
             xAutoFit.IsChecked = false;
-            var buckets =
-                ParentDocument.GetDereferencedField<ListController<NumberController>>(BucketsKey, new Context(ParentDocument));
+            var buckets =  ParentDocument.GetDereferencedField<ListController<NumberController>>(BucketsKey, null);
             buckets[changedBucket].Data = maxDomain;
         }
 
         public void UpdateSelection(int changedBar, bool selected)
         {
-            var selectedBars =
-                ParentDocument.GetDereferencedField<ListController<NumberController>>(SelectedKey, new Context(ParentDocument));
+            var selectedBars = ParentDocument.GetDereferencedField<ListController<NumberController>>(SelectedKey, null);
             bool found = false;
             foreach (var sel in selectedBars.ToList())
             {

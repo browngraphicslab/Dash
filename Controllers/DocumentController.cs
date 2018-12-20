@@ -943,7 +943,7 @@ namespace Dash
         public FieldControllerBase GetDereferencedField(KeyController key, Context context = null)
         {
             // TODO this should cause an operator to execute and return the proper value
-            context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
+            context = new Context(context); 
             context.AddDocumentContext(this);
             return new DocumentFieldReference(this, key).DereferenceToRoot(context);
         }

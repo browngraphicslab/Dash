@@ -222,12 +222,10 @@ namespace Dash
                 foreach (var param in parameters)
                 {
                     var doc = param.LayoutDocument;
-                    var position = doc.GetPositionField().Data;
-                    var width = doc.GetWidth();
-                    if (double.IsNaN(width)) width = 0;
-                    var height = doc.GetHeight();
-                    if (double.IsNaN(height)) height = 0;
-                    var points = new List<Point>
+                    var position = doc.GetPosition() ?? new Point();
+                    var width    = double.IsNaN(doc.GetWidth()) ?  0 : doc.GetWidth() ;
+                    var height   = double.IsNaN(doc.GetHeight()) ? 0 : doc.GetHeight();
+                    var points   = new List<Point>
                     {
                         position,
                         new Point(position.X + width, position.Y),
