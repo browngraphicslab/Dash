@@ -43,8 +43,7 @@ namespace Dash
             get { try { return DataContext as DocumentViewModel; } catch (Exception) { return null; } }
             set => DataContext = value;
         }
-        public bool                IsSelected => SelectionManager.SelectedDocViewModels.Contains(ViewModel);
-        public bool                AreContentsActive => SelectionManager.SelectedDocViews.Any((sel) => sel == this || sel.GetAncestors().Contains(this)) || SplitManager.IsRoot(ViewModel);
+        public bool                AreContentsActive => SelectionManager.SelectedDocViews.Any(sel => sel == this || sel.GetAncestors().Contains(this)) || SplitManager.IsRoot(ViewModel);
         public Action              FadeOutBegin;
 
         // == CONSTRUCTORs ==

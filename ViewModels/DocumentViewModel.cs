@@ -1,9 +1,8 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
-using Windows.Foundation;
 using Point = Windows.Foundation.Point;
-using Windows.UI.Xaml.Controls;
+using System.Linq;
 
 namespace Dash
 {
@@ -20,7 +19,8 @@ namespace Dash
         private DocumentController _documentController;
 
         public static Thickness    Highlighted = new Thickness(8), UnHighlighted = new Thickness(0);
-        
+        public bool                IsSelected => SelectionManager.SelectedDocViewModels.Contains(this);
+
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController) : base()
         {

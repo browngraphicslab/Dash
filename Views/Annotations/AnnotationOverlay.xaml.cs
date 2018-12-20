@@ -946,7 +946,7 @@ namespace Dash
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() && this.GetDocumentView().IsSelected)
+            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() && this.GetDocumentView().ViewModel.IsSelected)
             {
                 Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
 
@@ -956,7 +956,7 @@ namespace Dash
 
         public void AnnotationOverlayDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (this.GetDocumentView().IsSelected && CurrentAnnotationType == AnnotationType.Region)
+            if (this.GetDocumentView().ViewModel.IsSelected && CurrentAnnotationType == AnnotationType.Region)
             {
                 using (UndoManager.GetBatchHandle())
                 {

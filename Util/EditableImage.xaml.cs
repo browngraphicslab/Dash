@@ -373,7 +373,7 @@ namespace Dash
             {
                 e.Handled = true;
             }
-            else if (!IsCropping && this.GetDocumentView().IsSelected && e.IsLeftPressed())
+            else if (!IsCropping && this.GetDocumentView().AreContentsActive && e.IsLeftPressed())
             {
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
                 e.Handled = true;

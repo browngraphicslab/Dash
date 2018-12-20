@@ -57,7 +57,7 @@ namespace Dash
             {
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 var parentView = this.GetDocumentView();
-                if (parentView?.IsSelected == true)
+                if (parentView?.ViewModel.IsSelected == true)
                 {
                     SelectionManager_SelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>(), new DocumentView[] { parentView }.ToList()));
                 }
@@ -347,7 +347,7 @@ namespace Dash
         }
         private async void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            if (this.GetDocumentView()?.IsSelected == true && PdfUri != null && !_pdfTextInitialized)
+            if (this.GetDocumentView()?.ViewModel.IsSelected == true && PdfUri != null && !_pdfTextInitialized)
             {
                 var uri = PdfUri;
                 try

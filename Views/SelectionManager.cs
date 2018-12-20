@@ -228,7 +228,7 @@ namespace Dash
         #region Drag Manipulation Methods
         public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
-            var parents = draggedView.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
+            var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
                 var parentIsFreeformCollection = parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&

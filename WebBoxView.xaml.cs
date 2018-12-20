@@ -96,7 +96,7 @@ namespace Dash
         private void WebBoxView_Loaded(object s, RoutedEventArgs e)
         {
             SelectionManager.SelectionChanged += SelectionManager_SelectionChangedAsync;
-            if (this.GetDocumentView().IsSelected || xWebViewRectangleBrush.Fill == null)
+            if (this.GetDocumentView().ViewModel.IsSelected || xWebViewRectangleBrush.Fill == null)
             {
                 Unfreeze();
             }
@@ -105,7 +105,7 @@ namespace Dash
         {
             var docView = this.GetDocumentView();
 
-            if (args.SelectedViews.Contains(docView) && docView.IsSelected && SelectionManager.SelectedDocViewModels.Count() == 1)
+            if (args.SelectedViews.Contains(docView) && docView.ViewModel.IsSelected && SelectionManager.SelectedDocViewModels.Count() == 1)
             {
                 var dt = new DispatcherTimer();
                 dt.Interval = new TimeSpan(0, 0, 0, 0, 200);
@@ -280,7 +280,7 @@ namespace Dash
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetDocumentView();
-            if (!docview.IsSelected || SelectionManager.SelectedDocViewModels.Count() > 1)
+            if (!docview.ViewModel.IsSelected || SelectionManager.SelectedDocViewModels.Count() > 1)
             {
                 webBoxView?.Freeze();
             }

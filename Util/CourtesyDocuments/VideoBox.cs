@@ -54,7 +54,7 @@ namespace Dash
             
             video.TransportControls.IsCompact = true;
             video.TransportControls.Visibility = Visibility.Collapsed;
-            video.Loaded   += (s,e) => video.TransportControls.Visibility = video.GetDocumentView().IsSelected ?  Visibility.Visible : Visibility.Collapsed;
+            video.Loaded   += (s,e) => video.TransportControls.Visibility = video.GetDocumentView().ViewModel.IsSelected ?  Visibility.Visible : Visibility.Collapsed;
             video.Unloaded += (s,e) => video.MediaPlayer.Pause();
             video.PointerEntered += (s, e) =>
             {
@@ -67,7 +67,7 @@ namespace Dash
             video.Tapped         += (s, e) => video.TransportControls.Show();
             video.PointerPressed += (s, e) =>
             {
-                _manipulator = e.IsRightPressed() || !video.GetDocumentView().IsSelected ? new ManipulationControlHelper(video, true) : null;
+                _manipulator = e.IsRightPressed() || !video.GetDocumentView().ViewModel.IsSelected ? new ManipulationControlHelper(video, true) : null;
                 e.Handled = true;
             };
             video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
