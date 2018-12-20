@@ -231,8 +231,10 @@ namespace Dash
             var parents = draggedView.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
-                if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
-                    parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
+                var parentIsFreeformCollection = parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
+                    parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase;
+                var parentIsAnnotationLayer = parent.GetFirstDescendantOfType<AnnotationOverlayEmbeddings>()?.EmbeddedDocsList.Contains(draggedView.ViewModel.DocumentController) == true;
+                if ((parentIsFreeformCollection || parentIsAnnotationLayer) &&
                     (_selectedDocViews.Contains(parent) || parent == parents.Last()))
                 {
                     break;

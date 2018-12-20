@@ -57,15 +57,9 @@ namespace Dash
                         KeyController triggerKey = null;
                         switch (triggerModifierInd)
                         {
-                            case 0:
-                                triggerKey = KeyStore.LeftTappedOpsKey;
-                                break;
-                            case 1:
-                                triggerKey = KeyStore.RightTappedOpsKey;
-                                break;
-                            case 2:
-                                triggerKey = KeyStore.DoubleTappedOpsKey;
-                                break;
+                            case 0: triggerKey = KeyStore.LeftTappedOpsKey; break;
+                            case 1: triggerKey = KeyStore.RightTappedOpsKey; break;
+                            case 2: triggerKey = KeyStore.DoubleTappedOpsKey; break;
                             default:
                                 Debug.Fail($"Trigger modifier combo box index {trigger} not supported!");
                                 break;

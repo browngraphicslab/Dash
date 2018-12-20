@@ -201,6 +201,11 @@ namespace Dash
 
     public static class CourtesyDocumentExtensions
     {
+        public static  DocumentController GetDataDocument(this DocumentController document)
+        {
+            return document.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? document;
+        }
+
         public static string GetTitle(this DocumentController document)
         {
             return document.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ??
@@ -268,22 +273,6 @@ namespace Dash
         public static void    SetIsButton(this DocumentController document, bool button)
         {
             document.SetField<BoolController>(KeyStore.IsButtonKey, button, true);
-        }
-        public static void    ToggleButton(this DocumentController document)
-        {
-            var scripts = document.GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.LeftTappedOpsKey);
-            int i = 0;
-
-            for(; i < scripts.Count; ++i)
-            {
-                var operatorController = scripts[i];
-                if (operatorController is FollowLinksOperator)
-                {
-                    scripts.RemoveAt(i);
-                    return;
-                }
-            }
-            scripts.Add(new FollowLinksOperator());
         }
 
         public static bool    GetAreContentsHitTestVisible(this DocumentController document)
@@ -365,7 +354,7 @@ namespace Dash
             }
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null) ?? new ListController<DocumentController>();
         }
-        public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        public static void                               AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
             var todocs = document.GetDereferencedField<ListController<DocumentController>>(LinkFromOrToKey, null);
             if (todocs == null)
@@ -378,20 +367,11 @@ namespace Dash
             }
         }
 
-        public static TextController GetLinkTag(this DocumentController document)
-        {
-            return document.GetDereferencedField<TextController>(KeyStore.LinkTagKey, null);
-        }
-        public static void           SetLinkTag(this DocumentController document, string tag)
-        {
-            document.SetField<TextController>(KeyStore.LinkTagKey, tag, true);
-        }
-
         public static ListController<DocumentController> GetRegions(this DocumentController document)
         {
             return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
         }
-        public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
+        public static void                               AddToRegions(this DocumentController document, List<DocumentController> regions)
         {
             var curRegions = document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (curRegions == null)
@@ -400,6 +380,15 @@ namespace Dash
             }
             else
                 curRegions.AddRange(regions);
+        }
+        
+        public static TextController     GetLinkTag(this DocumentController document)
+        {
+            return document.GetDereferencedField<TextController>(KeyStore.LinkTagKey, null);
+        }
+        public static void               SetLinkTag(this DocumentController document, string tag)
+        {
+            document.SetField<TextController>(KeyStore.LinkTagKey, tag, true);
         }
 
         public static DocumentController GetRegionDefinition(this DocumentController document)
@@ -423,21 +412,21 @@ namespace Dash
                 : Enum.Parse<AnnotationType>(t.Data);
         }
 
-        public static bool GetTransient(this DocumentController document)
+        public static bool   GetTransient(this DocumentController document)
         {
             var data = document.GetDereferencedField<BoolController>(KeyStore.TransientKey, null)?.Data;
             return data ?? false;
         }
-        public static void SetTransient(this DocumentController document, bool hidden)
+        public static void   SetTransient(this DocumentController document, bool hidden)
         {
             document.SetField<BoolController>(KeyStore.TransientKey, hidden, true);
         }
 
-        public static int? GetSideCount(this DocumentController document)
+        public static int?   GetSideCount(this DocumentController document)
         {
             return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
         }
-        public static void SetSideCount(this DocumentController document, int count)
+        public static void   SetSideCount(this DocumentController document, int count)
         {
             document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }
@@ -451,7 +440,7 @@ namespace Dash
             return document.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null)?.Data ?? double.NaN;
         }
 
-        public static void SetHeight(this DocumentController document, double height)
+        public static void   SetHeight(this DocumentController document, double height)
         {
             document.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
         }
@@ -460,7 +449,7 @@ namespace Dash
             return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
         }
 
-        public static Rect GetBounds(this DocumentController document)
+        public static Rect   GetBounds(this DocumentController document)
         {
             var pos = document.GetPosition();
             return new TranslateTransform { X = pos.X, Y = pos.Y }.TransformBounds(new Rect(0, 0, document.GetActualSize().X, document.GetActualSize().Y));
@@ -476,13 +465,12 @@ namespace Dash
             return document.GetDereferencedField<TextController>(KeyStore.AuthorKey, null)?.Data;
         }
 
-        public static DocumentController GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)
+        public static DocumentController   GetLinkedDocument(this DocumentController document, LinkDirection direction, bool inverse = false)
         {
             var key = (direction == LinkDirection.ToDestination ^ inverse) ? KeyStore.LinkDestinationKey : KeyStore.LinkSourceKey;
             return document.GetDataDocument().GetDereferencedField<DocumentController>(key, null);
         }
-
-        public static void GotoRegion(this DocumentController document, DocumentController region, DocumentController link = null)
+        public static void                 GotoRegion(this DocumentController document, DocumentController region, DocumentController link = null)
         {
             if (!document.Equals(region))
             {
@@ -511,5 +499,22 @@ namespace Dash
             }
             return null;
         }
+        /// <summary>
+        /// Links this document to a target document with the specified link following behavior and an optional title.
+        /// </summary>
+        public static DocumentController  Link(this DocumentController source, DocumentController target, LinkBehavior behavior, string specTitle = null)
+        {
+            //document that represents the actual link
+            var linkDocument = new RichTextNote("New link description...").Document;
+            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).Add(new LinkDescriptionTextOperator());
+            linkDocument.GetDataDocument().SetLinkBehavior(behavior);
+            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle ?? "Annotation", true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey,      source, true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
+            target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController> { linkDocument });
+            source.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController> { linkDocument });
+            return linkDocument;
+        }
+
     }
 }

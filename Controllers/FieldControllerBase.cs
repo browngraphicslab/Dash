@@ -31,14 +31,9 @@ namespace Dash
 
         public object Tag = null;
 
-        protected FieldControllerBase(FieldModel model) : base(model)
-        {
-        }
+        protected FieldControllerBase(FieldModel model) : base(model) { }
 
-        public virtual Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public virtual Task InitializeAsync() { return Task.CompletedTask; }
 
         /// <summary>
         /// Wrapper for the event called when a field model's data is updated
@@ -50,15 +45,8 @@ namespace Dash
             FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update), context);
         }
 
-        public virtual FieldControllerBase Dereference(Context context)
-        {
-            return this;
-        }
-
-        public virtual FieldControllerBase DereferenceToRoot(Context context)
-        {
-            return this;
-        }
+        public virtual FieldControllerBase Dereference(Context context) { return this; }
+        public virtual FieldControllerBase DereferenceToRoot(Context context)  { return this; }
 
         public virtual T DereferenceToRoot<T>(Context context) where T : FieldControllerBase
         {
@@ -77,10 +65,7 @@ namespace Dash
         public abstract object GetValue();
 
 
-        public virtual bool CheckType(FieldControllerBase fmc)
-        {
-            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
-        }
+        public virtual bool CheckType(FieldControllerBase fmc) { return (fmc.TypeInfo & TypeInfo) != TypeInfo.None; }
 
         public virtual bool CheckTypeEquality(FieldControllerBase fmc) => fmc.TypeInfo == TypeInfo;
 
@@ -112,16 +97,9 @@ namespace Dash
 
         private bool _fromServer;
 
-        public void MarkFromServer()
-        {
-            _fromServer = true;
-        }
+        public void MarkFromServer() { _fromServer = true; }
 
-        protected sealed override void SaveOnServer()
-        {
-            base.SaveOnServer();
-        }
-
+        protected sealed override void SaveOnServer() { base.SaveOnServer(); }
         protected sealed override void UpdateOnServer(UndoCommand command)
         {
             if (IsReferenced)
@@ -130,10 +108,7 @@ namespace Dash
             }
         }
 
-        protected sealed override void DeleteOnServer()
-        {
-            base.DeleteOnServer();
-        }
+        protected sealed override void DeleteOnServer() { base.DeleteOnServer(); }
 
         #region Reference Counting
 

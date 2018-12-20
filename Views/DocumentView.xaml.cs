@@ -614,17 +614,6 @@ namespace Dash
             }
         }
         
-        private void MenuFlyoutItemToggleAsButton_Click(object sender, RoutedEventArgs e)
-        {
-            using (UndoManager.GetBatchHandle())
-            {
-                foreach (var docView in SelectionManager.GetSelectedSiblings(this))
-                {
-                    docView.ViewModel.DocumentController.ToggleButton();
-                    SetZLayer();
-                }
-            }
-        }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
