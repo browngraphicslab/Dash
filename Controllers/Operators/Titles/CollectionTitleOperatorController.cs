@@ -47,7 +47,7 @@ namespace Dash
             DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                firstDoc = collDocs.Where(dc => !dc.GetHidden()).OrderBy(dc => dc.GetPosition()?.Y)
+                firstDoc = collDocs.Where(dc => !dc.GetHidden()).OrderBy(dc => dc.GetPosition().Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
                 // bcz: this is a hack to avoid infinite recursion when the first document in a collection

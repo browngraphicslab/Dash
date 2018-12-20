@@ -88,7 +88,7 @@ namespace Dash
             // on replace image, change the original image value for revert
             var origImgCtrl = LayoutDocument.GetDataDocument().GetDereferencedField<ImageController>(DataFieldKey, null);
             LayoutDocument.GetDataDocument().SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
-            LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
+            LayoutDocument.SetWidth(LayoutDocument.GetActualSize().X);
             LayoutDocument.SetHeight(double.NaN);
         }
 
@@ -121,7 +121,7 @@ namespace Dash
                 if (LayoutDocument.GetDataDocument().GetField(KeyStore.OriginalImageKey) is ImageController originalImage)
                 {
                     LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, originalImage.ImageSource, true);
-                    LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Value.X);
+                    LayoutDocument.SetWidth(LayoutDocument.GetActualSize().X);
                     LayoutDocument.SetHeight(double.NaN);
                 }
             }
@@ -314,12 +314,12 @@ namespace Dash
                 var uri = new Uri(newFile.Path);
                 LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, uri, true);
 
-                var oldpoint = LayoutDocument.GetPosition() ?? new Point();
-                var oldAspect = LayoutDocument.GetActualSize().Value.X / LayoutDocument.GetActualSize().Value.Y;
+                var oldpoint  = LayoutDocument.GetPosition();
+                var oldAspect = LayoutDocument.GetActualSize().X / LayoutDocument.GetActualSize().Y;
                 var newaspect = width / (double)height;
                 if (newaspect > oldAspect)
-                     LayoutDocument.SetHeight(LayoutDocument.GetActualSize().Value.X / newaspect);
-                else LayoutDocument.SetWidth (LayoutDocument.GetActualSize().Value.Y * newaspect);
+                     LayoutDocument.SetHeight(LayoutDocument.GetActualSize().X / newaspect);
+                else LayoutDocument.SetWidth (LayoutDocument.GetActualSize().Y * newaspect);
                 var point = new Point(oldpoint.X + _cropControl.GetBounds().X,
                                       oldpoint.Y + _cropControl.GetBounds().Y);
 

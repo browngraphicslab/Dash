@@ -244,9 +244,9 @@ namespace Dash
 
             if (draggedView.ViewModel.DocumentController.GetIsAdornment()) // if dragging an adornment, drag all siblings that overlap it 
             {
-                var rect         = draggedView.ViewModel.Bounds;
+                var rect         = draggedView.ViewModel.LayoutDocument.GetBounds();
                 var siblingViews = draggedView.GetFirstAncestorOfType<Canvas>()?.Children.Select(c => c.GetFirstDescendantOfType<DocumentView>());
-                _dragViews.AddRange(siblingViews.Where(dv => dv != null && rect.Intersects(dv.ViewModel.Bounds)));
+                _dragViews.AddRange(siblingViews.Where(dv => dv != null && rect.Intersects(dv.ViewModel.LayoutDocument.GetBounds())));
             }
             draggedView.StartDragAsync(pe?.GetCurrentPoint(draggedView) ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView));
         }

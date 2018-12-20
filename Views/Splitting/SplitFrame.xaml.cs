@@ -62,7 +62,7 @@ namespace Dash
                 }
             }
 
-            DataContext = new DocumentViewModel(doc) { IsDimensionless = true, Undecorated = true, ResizersVisible = false };
+            DataContext = new DocumentViewModel(doc) { IsDimensionless = true, InsetDecorations = true, ResizersVisible = false };
             
             return doc;
         }
@@ -78,8 +78,8 @@ namespace Dash
             }
             else
             {
-                var center = document.GetPosition() ?? new Point();
-                var size = document.GetActualSize() ?? new Point();
+                var center = document.GetPosition();
+                var size = document.GetActualSize();
                 center.X += (size.X - ActualWidth) / 2;
                 center.Y += (size.Y - ActualHeight) / 2;
                 center.X = -center.X;
@@ -425,7 +425,7 @@ namespace Dash
                 _history.RemoveAt(_history.Count - 1);
                 _future.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) { IsDimensionless = true, Undecorated = true, ResizersVisible = false };
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true, InsetDecorations = true, ResizersVisible = false };
             }
         }
 
@@ -437,7 +437,7 @@ namespace Dash
                 _future.RemoveAt(_future.Count - 1);
                 _history.Add(DocumentController);
                 _changingView = true;
-                DataContext = new DocumentViewModel(doc) { IsDimensionless = true, Undecorated = true, ResizersVisible = false };
+                DataContext = new DocumentViewModel(doc) { IsDimensionless = true, InsetDecorations = true, ResizersVisible = false };
             }
         }
 

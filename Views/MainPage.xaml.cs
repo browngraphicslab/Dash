@@ -235,7 +235,7 @@ namespace Dash
                 xMap.SetHeight(double.NaN);
                 xMap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 xMap.SetVerticalAlignment(VerticalAlignment.Stretch);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) { Undecorated = true } };
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) };
                 Grid.SetColumn(xMapDocumentView, 2);
                 Grid.SetRow(xMapDocumentView, 0);
 
@@ -412,7 +412,7 @@ namespace Dash
             if (args.SelectedViews.Count == 0 ||
                 !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.SelectedDocViewModels.Contains(dv.ViewModel)))
             {
-                Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetHighlight(false));
+                Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetSearchHighlightState(false));
                 ClearFloatingDoc(null);
             }
         }
@@ -815,7 +815,7 @@ function (d) {
             if (target.GetLinkBehavior() == LinkBehavior.Overlay)
             {
                 target.GotoRegion(region, linkDoc);
-                onScreenView?.ViewModel.SetHighlight(true);
+                onScreenView?.ViewModel.SetSearchHighlightState(true);
                 return LinkHandledResult.HandledClose;
             }
 
@@ -838,10 +838,10 @@ function (d) {
                 if (onScreenView.Visibility == Visibility.Visible)
                 {
                     onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
-                    onScreenView.ViewModel.SetHighlight(true);
+                    onScreenView.ViewModel.SetSearchHighlightState(true);
                 } else
                 {
-                    onScreenView.ViewModel.SetHighlight(false);
+                    onScreenView.ViewModel.SetSearchHighlightState(false);
                     onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegions());
                 }
             }
@@ -882,7 +882,7 @@ function (d) {
             if (onScreenView != null)
             {
                 var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                onScreenView.ViewModel.SetHighlight(true);
+                onScreenView.ViewModel.SetSearchHighlightState(true);
                 if (highlighted)
                 {
                     onScreenView.ViewModel.LayoutDocument.ToggleHidden();

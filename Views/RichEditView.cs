@@ -42,7 +42,7 @@ namespace Dash
                 return base.MeasureOverride(availableSize);
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastDesiredSize;
-            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
+            if (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) && DesiredSize.Width >= ViewModel.LayoutDocument.GetWidth())
             {
                  GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = double.NaN; });
                 return base.MeasureOverride(availableSize);
@@ -395,8 +395,7 @@ namespace Dash
             }
 
             // create collection
-            var collection = new CollectionNote(this.ViewModel.Position, CollectionViewType.Stacking, 500, 500,
-                eventDocs);
+            var collection = new CollectionNote(ViewModel.LayoutDocument.GetPosition(), CollectionViewType.Stacking, 500, 500,  eventDocs);
             collection.Document.SetTitle("Travelogue Created " + DateTime.Now.ToLocalTime().ToString("f"));
 
             var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();

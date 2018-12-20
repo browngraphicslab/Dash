@@ -228,7 +228,7 @@ namespace Dash
             recognizedDocuments.AddRange(selectedDocuments.Select(view => (view.DataContext as DocumentViewModel).DocumentController));
             foreach (var doc in recognizedDocuments)
             {
-                var ogPos = doc.GetPosition() ?? new Point();
+                var ogPos  = doc.GetPosition();
                 var newPos = Util.PointTransformFromVisual(ogPos,
                     FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
                 doc.SetPosition(new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y));
@@ -452,7 +452,7 @@ namespace Dash
             foreach (var param in parameters)
             {
                 var doc = param.DocumentController;
-                var position = doc.GetPosition() ?? new Point();
+                var position = doc.GetPosition();
                 var width    = doc.GetWidth();
                 var height   = doc.GetHeight();
                 var rect = new Rect

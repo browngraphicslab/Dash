@@ -861,8 +861,10 @@ namespace Dash
         {
             if (GetItemsControl().ItemsPanelRoot != null)
             {
-                var items = GetItemsControl().ItemsPanelRoot.Children.Select(i => i.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null && marquee.IntersectsWith(dv.ViewModel.Bounds));
-                var docViewsSelected = items.Where(dv => !dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType) && dv.ViewModel.AreContentsHitTestVisible);
+                var items = GetItemsControl().ItemsPanelRoot.Children.Select(i => i.GetFirstDescendantOfType<DocumentView>()).
+                                Where(dv => dv != null && marquee.IntersectsWith(dv.ViewModel.LayoutDocument.GetBounds()));
+                var docViewsSelected = items.Where(dv => !dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType) && 
+                                                          dv.ViewModel.LayoutDocument.GetAreContentsHitTestVisible());
 
                 foreach (var dv in docViewsSelected.Any() ?  docViewsSelected : items)
                 {
@@ -878,17 +880,17 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (var dv in SelectionManager.SelectedDocViewModels)
+            foreach (var d in SelectionManager.SelectedDocViewModels.Select(dv => dv.LayoutDocument))
             {
                 isEmpty = false;
-                topLeftMostPoint.X = dv.Position.X < topLeftMostPoint.X ? dv.Position.X : topLeftMostPoint.X;
-                topLeftMostPoint.Y = dv.Position.Y < topLeftMostPoint.Y ? dv.Position.Y : topLeftMostPoint.Y;
-                var actualX = (double.IsNaN(dv.ActualSize.X) ? 0 : dv.ActualSize.X);
-                var actualY =(double.IsNaN(dv.ActualSize.Y) ? 0 : dv.ActualSize.Y);
-                bottomRightMostPoint.X = dv.Position.X + actualX > bottomRightMostPoint.X
-                    ? dv.Position.X + actualX : bottomRightMostPoint.X;
-                bottomRightMostPoint.Y = dv.Position.Y + actualY > bottomRightMostPoint.Y
-                    ? dv.Position.Y + actualY : bottomRightMostPoint.Y;
+                topLeftMostPoint.X = d.GetPosition().X < topLeftMostPoint.X ? d.GetPosition().X : topLeftMostPoint.X;
+                topLeftMostPoint.Y = d.GetPosition().Y < topLeftMostPoint.Y ? d.GetPosition().Y : topLeftMostPoint.Y;
+                var actualX = (double.IsNaN(d.GetActualSize().X) ? 0 : d.GetActualSize().X);
+                var actualY =(double.IsNaN(d.GetActualSize().Y) ? 0 : d.GetActualSize().Y);
+                bottomRightMostPoint.X = d.GetPosition().X + actualX > bottomRightMostPoint.X
+                    ? d.GetPosition().X + actualX : bottomRightMostPoint.X;
+                bottomRightMostPoint.Y = d.GetPosition().Y + actualY > bottomRightMostPoint.Y
+                    ? d.GetPosition().Y + actualY : bottomRightMostPoint.Y;
             }
 
             if (isEmpty) return Rect.Empty;
@@ -970,22 +972,22 @@ namespace Dash
                             var docDec = MainPage.Instance.XDocumentDecorations;
                             var rect = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value,docDec.ContentRow.Height.Value)));
                             var centered = MainPage.Instance.IsCtrlPressed();
-                            foreach (var v in viewModels)
+                            foreach (var d in viewModels.Select(v => v.LayoutDocument))
                             {
-                                double alignedX = v.LayoutDocument.GetPosition().Value.X;
-                                double alignedY = v.LayoutDocument.GetPosition().Value.Y;
+                                double alignedX = d.GetPosition().X;
+                                double alignedY = d.GetPosition().Y;
                                 if (centered)
                                 {
-                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up) ? (rect.Left + rect.Right) / 2 - v.ActualSize.X / 2 : alignedX;
-                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom) / 2 - v.ActualSize.Y / 2 : alignedY;
+                                    alignedX = (modifier == VirtualKey.Down || modifier == VirtualKey.Up) ? (rect.Left + rect.Right) / 2 - d.GetActualSize().X / 2 : alignedX;
+                                    alignedY = (modifier == VirtualKey.Left || modifier == VirtualKey.Right) ? (rect.Top + rect.Bottom) / 2 - d.GetActualSize().Y / 2 : alignedY;
 
                                 }
                                 else
                                 {
-                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right - v.ActualSize.X : alignedX;
-                                    alignedY = modifier == VirtualKey.Up ? rect.Top : modifier == VirtualKey.Down ? rect.Bottom - v.ActualSize.Y : alignedY;
+                                    alignedX = modifier == VirtualKey.Left ? rect.Left : modifier == VirtualKey.Right ? rect.Right - d.GetActualSize().X : alignedX;
+                                    alignedY = modifier == VirtualKey.Up ? rect.Top : modifier == VirtualKey.Down ? rect.Bottom - d.GetActualSize().Y : alignedY;
                                 }
-                                v.LayoutDocument.SetPosition(new Point(alignedX, alignedY));
+                                d.SetPosition(new Point(alignedX, alignedY));
                             }
                         });
                     }
@@ -997,8 +999,8 @@ namespace Dash
                             var sortedViewModels = views.ToList();
                             sortedViewModels.Sort((dv1, dv2) =>
                             {
-                                var v1p = dv1.LayoutDocument.GetPosition() ?? new Point();
-                                var v2p = dv2.LayoutDocument.GetPosition() ?? new Point();
+                                var v1p = dv1.LayoutDocument.GetPosition();
+                                var v2p = dv2.LayoutDocument.GetPosition();
                                 var v1 = sortY ? v1p.Y : v1p.X;
                                 var v2 = sortY ? v2p.Y : v2p.X;
                                 var v1o = sortY ? v1p.X : v1p.Y;
@@ -1011,7 +1013,7 @@ namespace Dash
                             });
 
                             var docDec       = MainPage.Instance.XDocumentDecorations;
-                            var usedDim      = sortedViewModels.Aggregate(0.0, (val, view) => val + (sortY ? view.Bounds.Height : view.Bounds.Width));
+                            var usedDim      = sortedViewModels.Aggregate(0.0, (val,view) => val + (sortY ? view.LayoutDocument.GetActualSize().Y : view.LayoutDocument.GetActualSize().X));
                             var bounds       = docDec.TransformToVisual(GetTransformedCanvas()).TransformBounds(new Rect(new Point(),new Size(docDec.ContentColumn.Width.Value, docDec.ContentRow.Height.Value)));
                             var spacing      = ((sortY ? bounds.Height: bounds.Width) -usedDim) / (sortedViewModels.Count() -1);
                             double placement = sortY ? bounds.Top : bounds.Left;
@@ -1024,13 +1026,13 @@ namespace Dash
                             {
                                 if (modifier == VirtualKey.Down || modifier == VirtualKey.Up)
                                 {
-                                    v.LayoutDocument.SetPosition(new Point(v.LayoutDocument.GetPosition().Value.X, placement));
-                                    placement += v.Bounds.Height + spacing;
+                                    v.LayoutDocument.SetPosition(new Point(v.LayoutDocument.GetPosition().X, placement));
+                                    placement += v.LayoutDocument.GetActualSize().Y + spacing;
                                 }
                                 if (modifier == VirtualKey.Left || modifier == VirtualKey.Right)
                                 {
-                                    v.LayoutDocument.SetPosition(new Point(placement, v.LayoutDocument.GetPosition().Value.Y));
-                                    placement += v.Bounds.Width + spacing;
+                                    v.LayoutDocument.SetPosition(new Point(placement, v.LayoutDocument.GetPosition().Y));
+                                    placement += v.LayoutDocument.GetActualSize().X + spacing;
                                 }
                             }
                         });
@@ -1210,7 +1212,7 @@ namespace Dash
                 MainPage.Instance.ClearForceFocus();
             }
 
-            ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition() ?? new Point(), xTransformedCanvas, MainPage.Instance));
+            ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition(), xTransformedCanvas, MainPage.Instance));
         }
 
         #endregion

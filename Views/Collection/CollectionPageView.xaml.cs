@@ -40,7 +40,7 @@ namespace Dash
                 if (_templateDocument != null)
                 {
                     templateButton.Content = "Remove Template";
-                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { Undecorated = true, IsDimensionless = true };
+                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { InsetDecorations = true, IsDimensionless = true };
                 }
                 if (ViewModel?.DocumentViewModels.Count > 0)
                 {
@@ -65,7 +65,7 @@ namespace Dash
             if(field == null) { return false; }
 
             XDocDisplay.DataContext =
-                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){ Undecorated = true, IsDimensionless = true};
+                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){ InsetDecorations = true, IsDimensionless = true};
             return true;
         }
 
@@ -275,9 +275,9 @@ namespace Dash
             var docView = this.GetDocumentView();
             if (docView.ParentCollection is CollectionView parentCollection)
             {
-                var viewModel = docView.ViewModel;
-                var where     = viewModel.Position.X + viewModel.Width + 70;
-                var point     = new Point(where, viewModel.Position.Y);
+                var layoutDoc = docView.ViewModel.LayoutDocument;
+                var where     = layoutDoc.GetPosition().X + layoutDoc.GetWidth() + 70;
+                var point     = new Point(where, layoutDoc.GetPosition().Y);
                 parentCollection.ViewModel.AddDocument(CurrentPage.DocumentController.GetKeyValueAlias(point));
             }
             if (_templateDocument == null)

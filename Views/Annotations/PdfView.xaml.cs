@@ -166,7 +166,7 @@ namespace Dash
                 tgts.ToList().ForEach((tgt) =>
                 {
                     tgt.ViewModel.LayoutDocument.ToggleHidden();
-                    tgt.ViewModel.SetHighlight(!tgt.ViewModel.LayoutDocument.GetHidden());
+                    tgt.ViewModel.SetSearchHighlightState(!tgt.ViewModel.LayoutDocument.GetHidden());
                 });
                 return LinkHandledResult.HandledClose;
             }

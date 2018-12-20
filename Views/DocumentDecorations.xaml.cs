@@ -143,7 +143,7 @@ namespace Dash
 
         public void SetPositionAndSize(bool rebuildMenu = true)
         {
-            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.Undecorated == true) ? -20 : 0, 0, 0, 0);
+            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -20 : 0, 0, 0, 0);
             var topLeft  = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
 

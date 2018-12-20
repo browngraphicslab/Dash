@@ -61,7 +61,7 @@ namespace Dash
                     target.ViewModel.LayoutDocument.ToggleHidden();
                     return LinkHandledResult.HandledClose;
                 }
-                this.GetDocumentView().ViewModel.ToggleHighlight();
+                this.GetDocumentView().ViewModel.SetSearchHighlightState(null); // toggles highlight
                 return LinkHandledResult.HandledClose;
             }
 

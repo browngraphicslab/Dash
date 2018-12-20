@@ -127,7 +127,7 @@ namespace Dash
                 results.Add(returnValue);
             }
 
-            var pt     = _viewDoc.GetPosition() ?? new Windows.Foundation.Point();
+            var pt     = _viewDoc.GetPosition();
             var width  = _viewDoc.GetWidth();
             var height = _viewDoc.GetHeight();
 

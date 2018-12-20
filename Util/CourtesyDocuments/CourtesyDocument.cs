@@ -317,9 +317,9 @@ namespace Dash
             document.SetField<TextController>(KeyStore.BackgroundColorKey, color.ToString(), true);
         }
 
-        public static Point?  GetPosition(this DocumentController document)
+        public static Point   GetPosition(this DocumentController document)
         {
-            return document.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
+            return document.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
         }
         public static void    SetPosition(this DocumentController document, Point pos)
         {
@@ -330,9 +330,9 @@ namespace Dash
         {
             document.SetField<PointController>(KeyStore.ActualSizeKey, pos, true);
         }
-        public static Point?  GetActualSize(this DocumentController document)
+        public static Point   GetActualSize(this DocumentController document)
         {
-            return document.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null)?.Data;
+            return document.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null)?.Data ?? new Point();
         }
 
         public static bool    GetHidden(this DocumentController document)
@@ -458,6 +458,12 @@ namespace Dash
         public static double GetHeight(this DocumentController document)
         {
             return document.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null)?.Data ?? double.NaN;
+        }
+
+        public static Rect GetBounds(this DocumentController document)
+        {
+            var pos = document.GetPosition();
+            return new TranslateTransform { X = pos.X, Y = pos.Y }.TransformBounds(new Rect(0, 0, document.GetActualSize().X, document.GetActualSize().Y));
         }
 
         public static string GetDocType(this DocumentController document)

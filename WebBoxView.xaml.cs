@@ -250,8 +250,8 @@ namespace Dash
                     MainPage.Instance.WebContext.SetUrl(args.Uri.AbsoluteUri);
                 else
                 {
-                    var docSize = sender.GetDocumentView().ViewModel.ActualSize;
-                    var docPos = sender.GetDocumentView().ViewModel.Position;
+                    var docSize = sender.GetDocumentView().ViewModel.LayoutDocument.GetActualSize();
+                    var docPos  = sender.GetDocumentView().ViewModel.LayoutDocument.GetPosition();
                     var docViewPt = new Point(docPos.X + docSize.X, docPos.Y);
                     var theDoc = FileDropHelper.GetFileType(args.Uri.AbsoluteUri) == FileType.Image ? new ImageNote(args.Uri, new Point()).Document :
                         new HtmlNote(args.Uri.ToString(), args.Uri.AbsoluteUri, new Point(), new Size(200, 300)).Document;

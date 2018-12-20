@@ -55,8 +55,8 @@ namespace Dash
 
         private void AnimateToDocument(DocumentController document)
         {
-            var center = document.GetPosition() ?? new Point();
-            var size = document.GetActualSize() ?? new Point();
+            var center = document.GetPosition();
+            var size   = document.GetActualSize();
             center.X += (size.X - ActualWidth) / 2;
             center.Y += (size.Y - ActualHeight) / 2;
             center.X = -center.X;
@@ -147,13 +147,13 @@ namespace Dash
             switch (highlightMode)
             {
             case HighlightMode.Highlight:
-                viewModel.SetHighlight(true);
+                viewModel.SetSearchHighlightState(true);
                 break;
             case HighlightMode.Unhighlight:
-                viewModel.SetHighlight(false);
+                viewModel.SetSearchHighlightState(false);
                 break;
             case HighlightMode.ToggleHighlight:
-                viewModel.ToggleHighlight();
+                viewModel.SetSearchHighlightState(null); // toggles Highlight
                 break;
             }
         }

@@ -34,7 +34,7 @@ namespace Dash
             };
             ManipulationDelta += (s, e) =>
             {
-                var curPos = RegionDocumentController.GetPosition() ?? new Point();
+                var curPos = RegionDocumentController.GetPosition();
                 var p = Util.DeltaTransformFromVisual(e.Delta.Translation, s as UIElement);
                 RegionDocumentController.SetPosition(new Point(curPos.X + p.X, curPos.Y + p.Y));
                 e.Handled = true;

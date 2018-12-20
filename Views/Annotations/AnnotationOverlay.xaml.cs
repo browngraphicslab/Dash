@@ -905,7 +905,7 @@ namespace Dash
                 {
                     foreach (var doc in await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where))
                     {
-                        if (doc.GetActualSize()?.X > 200 &&
+                        if (doc.GetActualSize().X > 200 &&
                             !doc.DocumentType.Equals(RichTextBox.DocumentType) && !doc.DocumentType.Equals(TextingBox.DocumentType))
                         {
                             doc.SetWidth(200);

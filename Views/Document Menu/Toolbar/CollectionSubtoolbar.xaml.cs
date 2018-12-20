@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI;
+using Windows.Foundation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -81,26 +82,25 @@ namespace Dash
                 {
                     return;
                 }
-                var vms = _collection.ViewModel.DocumentViewModels.ToList();
+                var vms         = _collection.ViewModel.DocumentViewModels.ToList();
+                var offset      = _collection.GetDocumentView()?.ViewModel?.LayoutDocument.GetPosition() ?? new Point();
+				var mostTopLeft = vms.First()?.LayoutDocument;
 
-	            var offsetX = _collection.GetDocumentView()?.ViewModel?.XPos ?? 0;
-	            var offsetY = _collection.GetDocumentView()?.ViewModel?.YPos ?? 0;
-
-				DocumentViewModel mostTopLeft = vms.First();
-
-	            foreach (DocumentViewModel vm in vms)
+	            foreach (var d in vms.Select(vm => vm.LayoutDocument))
 	            {
-		            if (vm.XPos < mostTopLeft.XPos && vm.YPos < mostTopLeft.YPos)
-			            mostTopLeft = vm;
-	            }
+		            if (d.GetPosition().X < mostTopLeft.GetPosition().X && d.GetPosition().Y < mostTopLeft.GetPosition().Y)
+                    {
+                        mostTopLeft = d;
+                    }
+                }
 
-				//add them each to the main canvas
-				foreach (DocumentViewModel vm in vms)
+                //add them each to the main canvas
+                foreach (var d in vms.Select(vm => vm.LayoutDocument))
                 {
-		            vm.XPos = offsetX + (vm.XPos - mostTopLeft.XPos);
-		            vm.YPos = offsetY + (vm.YPos - mostTopLeft.YPos);
+                    d.SetPosition(new Point(offset.X + (d.GetPosition().X - mostTopLeft.GetPosition().X), 
+                                            offset.Y + (d.GetPosition().Y - mostTopLeft.GetPosition().Y)));
 					
-                    mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
+                    mainPageCollectionView.ViewModel.AddDocument(d);
                 }
 
                 //delete the sellected collection
@@ -133,8 +133,8 @@ namespace Dash
             {
                 foreach (var d in _collection.ViewModel.DocumentViewModels)
                 {
-                    d.AreContentsHitTestVisible = !d.AreContentsHitTestVisible;
-                    xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+                    d.LayoutDocument.SetAreContentsHitTestVisible(!d.LayoutDocument.GetAreContentsHitTestVisible());
+                    xAreContentsHitTestVisibleIcon.Text = (!d.LayoutDocument.GetAreContentsHitTestVisible() ? (char)0xE77A : (char)0xE840).ToString();
                 }
             }
         }
@@ -187,7 +187,7 @@ namespace Dash
             xAreContentsHitTestVisibleIcon.Text = ((char)0xE840).ToString();
             foreach (var d in _collection.ViewModel.DocumentViewModels)
             {
-                xAreContentsHitTestVisibleIcon.Text = (!d.AreContentsHitTestVisible ? (char)0xE77A : (char)0xE840).ToString();
+                xAreContentsHitTestVisibleIcon.Text = (!d.LayoutDocument.GetAreContentsHitTestVisible() ? (char)0xE77A : (char)0xE840).ToString();
             }
         }
 

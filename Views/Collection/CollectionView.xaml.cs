@@ -70,7 +70,7 @@ namespace Dash
             if (!LocalSqliteEndpoint.SuspendTimer &&
                 ViewModel.ContainerDocument.GetFitToParent() && CurrentView is CollectionFreeformView freeform)
             {
-                var parSize = ViewModel.ContainerDocument.GetActualSize() ?? new Point();
+                var parSize = ViewModel.ContainerDocument.GetActualSize();
                 var ar = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>().Select(cp => cp.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null).
                     Aggregate(Rect.Empty, (rect, dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
 
@@ -181,7 +181,7 @@ namespace Dash
             });
             contextMenu.Items.Add(new MenuFlyoutSeparator());
 
-            var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.AreContentsHitTestVisible == true;
+            var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.LayoutDocument.GetAreContentsHitTestVisible() == true;
             contextMenu.Items.Add(new MenuFlyoutItem()
             {
                 Text = unfrozen ? "Freeze Contents" : "Unfreeze Contents",
@@ -297,13 +297,13 @@ namespace Dash
         {
             foreach (var child in ViewModel.DocumentViewModels)
             {
-                child.AreContentsHitTestVisible = unfrozen;
+                child.LayoutDocument.SetAreContentsHitTestVisible(unfrozen);
             }
         }
         private void Buttonize_OnClick()
         {
             var newdoc = new RichTextNote(ViewModel.ContainerDocument.Title,
-                ViewModel.ContainerDocument.GetPosition() ?? new Point()).Document;
+                                          ViewModel.ContainerDocument.GetPosition()).Document;
             newdoc.Link(ViewModel.ContainerDocument, LinkBehavior.Follow, "Button");
             newdoc.SetIsButton(true);
             var thisView = this.GetDocumentView();

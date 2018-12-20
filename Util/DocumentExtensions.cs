@@ -40,7 +40,7 @@ namespace Dash
         public static DocumentController GetCopy(this DocumentController doc, Point? where = null)
         {
             var copy = doc.MakeCopy(new List<KeyController>(new[] { KeyStore.DelegatesKey } ));
-            var position = copy.GetPosition();
+            var position = copy.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (position != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
                 copy.SetPosition(new Point(where?.X ?? position.Value.X + 15, where?.Y ?? position.Value.Y + 15));
@@ -67,14 +67,13 @@ namespace Dash
                 docContext = copiedData;
                 newDoc = activeLayout;
             }
-            var oldPosition = doc.GetPosition();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
                 activeLayout.SetPosition(new Point(where?.X ?? oldPosition.Value.X + 15, where?.Y ?? oldPosition.Value.Y + 15));
             }
             return newDoc;
         }
-
         /// <summary>
         /// Creates an instance of a document and overrides width/height/and position
         /// </summary>
@@ -110,7 +109,7 @@ namespace Dash
                 newLayout.MapDocuments(mapping);// point the inherited layout at the copied document
                 newDoc = newLayout;
             }
-            var oldPosition = doc.GetPosition();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
                 newLayout.SetPosition(new Point(where?.X ?? oldPosition.Value.X + 15, where?.Y ?? oldPosition.Value.Y + 15));
@@ -142,24 +141,21 @@ namespace Dash
             {
                 keyValueLayout.SetPosition(where.Value);
             }
-            var oldPosition = doc.GetPosition();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 keyValueLayout.SetPosition(
-                        new Point(where?.X ?? oldPosition.Value.X + (doc.GetActualSize()?.X ?? 0) + 70, 
+                        new Point(where?.X ?? oldPosition.Value.X + doc.GetActualSize().X + 70, 
                                   where?.Y ?? oldPosition.Value.Y));
             }
 
             return keyValueLayout;
         }
-    
-
-
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
             var docContext = doc.GetDataDocument();
             var newDoc = doc;
-            if (docContext != null || doc.GetPosition() != null)  // has DocumentContext
+            if (docContext != null)  // has DocumentContext
             {
                 newDoc = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.DelegatesKey, KeyStore.PrototypeKey }), // skip layout & delegates
                                       new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
@@ -175,7 +171,7 @@ namespace Dash
                 }
                 newDoc = newLayout;
             }
-            var oldPosition = doc.GetPosition();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 newDoc.SetPosition(new Point(where?.X ?? oldPosition.Value.X + 15, where?.Y ?? oldPosition.Value.Y + 15));
@@ -195,9 +191,12 @@ namespace Dash
                 var neighboring = neighboringRaw as ListController<TextController>;
                 if (neighboring != null && neighboring.Count > 0)
                 {
-                    var context = doc.GetFirstContext();
-                    MainPage.Instance.WebContext.SetScroll(context.Scroll);
-                    url = context.Url;
+                    var context = doc.GetAllContexts().FirstOrDefault();
+                    if (context != null)
+                    {
+                        MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                        url = context.Url;
+                    }
                 }
             } else if (type == "Text")
             {
@@ -211,7 +210,6 @@ namespace Dash
             }
 
         }
-
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
             if (doc == null)
@@ -247,9 +245,8 @@ namespace Dash
             //    neighboring.Add(new TextController(context.Serialize()));
             //}
         }
-
-
-        public static DocumentContext GetLongestViewedContext(this DocumentController doc)
+    
+        public static DocumentContext       GetLongestViewedContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
@@ -262,8 +259,7 @@ namespace Dash
             }
             return null;
         }
-
-        public static string GetLongestViewedContextUrl(this DocumentController doc)
+        public static string                GetLongestViewedContextUrl(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
@@ -278,29 +274,6 @@ namespace Dash
             }
             return null;
         }
-
-        public static DocumentContext GetLastContext(this DocumentController doc)
-        {
-            var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.Count > 0)
-            {
-                return neighboring.Last().Data.CreateObject<DocumentContext>();
-            }
-            return null;
-        }
-
-        public static DocumentContext GetFirstContext(this DocumentController doc)
-        {
-            var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.Count > 0)
-            {
-                return neighboring.First().Data.CreateObject<DocumentContext>();
-            }
-            return null;
-        }
-
         public static List<DocumentContext> GetAllContexts(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
@@ -311,7 +284,109 @@ namespace Dash
             }
             return null;
         }
-        
+
+
+        public static void Resize(this DocumentController doc, Point delta, Point cumulativeDelta, bool isShiftPressed, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
+        {
+            const double MinWidth = 25;
+            const double MinHeight = 10;
+            var isImage = doc.DocumentType.Equals(ImageBox.DocumentType) ||
+                          (doc.DocumentType.Equals(CollectionBox.DocumentType) && doc.GetFitToParent()) ||
+                          doc.DocumentType.Equals(VideoBox.DocumentType);
+
+            double extraOffsetX = 0;
+            if (!double.IsNaN(doc.GetWidth()))
+            {
+                extraOffsetX = doc.GetActualSize().X - doc.GetWidth();
+            }
+
+
+            double extraOffsetY = 0;
+
+            if (!double.IsNaN(doc.GetHeight()))
+            {
+                extraOffsetY = doc.GetActualSize().Y - doc.GetHeight();
+            }
+
+            var oldSize = new Size(doc.GetActualSize().X - extraOffsetX, doc.GetActualSize().Y - extraOffsetY);
+
+            var oldPos = doc.GetPosition();
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            var cursorXDirection = shiftLeft ? -1 : 1;
+            var cursorYDirection = shiftTop ? -1 : 1;
+            var moveXScale = shiftLeft ? 1 : 0;
+            var moveYScale = shiftTop ? 1 : 0;
+
+            cumulativeDelta.X *= cursorXDirection;
+            cumulativeDelta.Y *= cursorYDirection;
+
+            var w = doc.GetActualSize().X - extraOffsetX;
+            var h = doc.GetActualSize().Y - extraOffsetY;
+
+            double diffX;
+            double diffY;
+
+            var aspect = w / h;
+            var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
+
+            bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
+            if (cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0)
+            {
+
+                useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
+            }
+            else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            {
+                useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
+            }
+
+            var proportional = (!isImage && maintainAspectRatio)
+                ? isShiftPressed : (isShiftPressed ^ maintainAspectRatio);
+            if (useX)
+            {
+                aspect = 1 / aspect;
+                diffX = cursorXDirection * delta.X;
+                diffY = proportional
+                    ? aspect * diffX
+                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            }
+            else
+            {
+                diffY = cursorYDirection * delta.Y;
+                diffX = proportional
+                    ? aspect * diffY
+                    : cursorXDirection * delta.X;
+            }
+
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
+                doc.GetPosition().X - moveXScale * (newSize.Width - oldSize.Width),
+                doc.GetPosition().Y - moveYScale * (newSize.Height - oldSize.Height));
+
+            if (doc.DocumentType.Equals(AudioBox.DocumentType))
+            {
+                newSize.Height = oldSize.Height;
+                newPos.Y = doc.GetPosition().Y;
+            }
+
+            doc.SetPosition(newPos);
+            if (newSize.Width != doc.GetActualSize().X)
+            {
+                doc.SetWidth(newSize.Width);
+            }
+
+            if (delta.Y != 0 || isShiftPressed || isImage)
+            {
+                if (newSize.Height != doc.GetActualSize().Y)
+                {
+                    doc.SetHeight(newSize.Height);
+                }
+            }
+        }
+
+
         public static void SetLayoutDimensions(this DocumentController doc, double ? width=null, double ? height=null)
         {
             if (width.HasValue)

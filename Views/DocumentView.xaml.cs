@@ -57,6 +57,7 @@ namespace Dash
             // set bounds
             MinWidth = 25;
             MinHeight = 10;
+           
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
             {
@@ -125,7 +126,8 @@ namespace Dash
         {
             if (!MainPage.Instance.IsRightBtnPressed())
             {
-                ViewModel.Resize(Util.DeltaTransformFromVisual(e.Delta.Translation,      this), 
+                ViewModel.DocumentController.Resize(
+                                 Util.DeltaTransformFromVisual(e.Delta.Translation,      this), 
                                  Util.DeltaTransformFromVisual(e.Cumulative.Translation, this), 
                                  this.IsShiftPressed(), shiftTop, shiftLeft, maintainAspectRatio);
                 e.Handled = true;
@@ -230,7 +232,7 @@ namespace Dash
         /// <summary>
         /// Opens in Chrome the context from which the document was made.
         /// </summary>
-        public void ShowXaml()                   { ParentViewModel?.AddDocument(new DataBox(ViewModel.LayoutDocument, KeyStore.XamlKey, ViewModel.Position, 300,400).Document); }
+        public void ShowXaml()                   { ParentViewModel?.AddDocument(new DataBox(ViewModel.LayoutDocument, KeyStore.XamlKey, ViewModel.LayoutDocument.GetPosition(), 300,400).Document); }
         public void GetJson()                    { Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); }
         public void HandleShiftEnter()
         {
@@ -329,7 +331,7 @@ namespace Dash
                 Tag      = "AreContentsHitTestVisible binding in DocumentView",
                 FallbackValue = true
             };
-            LayoutRoot.AddFieldBinding(IsHitTestVisibleProperty, binding3);
+            this.AddFieldBinding(IsHitTestVisibleProperty, binding3);
         }
         private void UpdateAlignmentBindings()
         {
@@ -434,7 +436,7 @@ namespace Dash
                 e.Handled = true;
                 var cur   = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
                 var delta = new Point(cur.X - _down.X, cur.Y - _down.Y);
-                if (ViewModel.AreContentsHitTestVisible && Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 10)
+                if (ViewModel.LayoutDocument.GetAreContentsHitTestVisible() && Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 10)
                 {
                     ReleasePointerCapture(e.Pointer);
                     PointerMoved    -= this_PointerMoved;
@@ -445,7 +447,7 @@ namespace Dash
         }
         private void This_Drop(object sender, DragEventArgs e)
         {
-            if (!ViewModel.DocumentController.GetIsAdornment() && ViewModel.AreContentsHitTestVisible &&
+            if (!ViewModel.DocumentController.GetIsAdornment() && ViewModel.LayoutDocument.GetAreContentsHitTestVisible() &&
                 e.DataView.GetDragModel() is DragDocumentModel dm && dm.DraggedDocumentViews != null && dm.DraggingLinkButton)
             {
                 e.Handled = true;
@@ -465,12 +467,12 @@ namespace Dash
         private void ApplyPseudoTemplate(DragDocumentModel dm)
         {
             var curLayout     = ViewModel.LayoutDocument;
-            var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.Position);
+            var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.LayoutDocument.GetPosition());
             draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
             if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
             {
-                curLayout.SetWidth (dm.DraggedDocuments.First().GetActualSize().Value.X);
-                curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Value.Y);
+                curLayout.SetWidth (dm.DraggedDocuments.First().GetActualSize().X);
+                curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Y);
             }
             curLayout.SetField(KeyStore.DataKey,                  draggedLayout.GetField(KeyStore.DataKey), true);
             curLayout.SetField(KeyStore.PrototypeKey,             draggedLayout.GetField(KeyStore.PrototypeKey), true);
@@ -996,12 +998,11 @@ namespace Dash
         {
             if (!(xContentTransform.Matrix.OffsetX + deltaX > 0 && xContentTransform.Matrix.OffsetY + deltaY > 0))
             {
+                var actualSize = ViewModel.LayoutDocument.GetActualSize();
                 bool moveXAllowed = xContentTransform.Matrix.OffsetX + deltaX <= 0 &&
-                    xContentTransform.Matrix.M11 * ViewModel.ActualSize.X + xContentTransform.Matrix.OffsetX + deltaX + 0.2 >=
-                    ViewModel.ActualSize.X;
+                    xContentTransform.Matrix.M11 * actualSize.X + xContentTransform.Matrix.OffsetX + deltaX + 0.2 >= actualSize.X;
                 bool moveYAllowed =
-                    xContentTransform.Matrix.OffsetY + deltaY <= 0 && xContentTransform.Matrix.M22 * ViewModel.ActualSize.Y + xContentTransform.Matrix.OffsetY + deltaY + 0.2 >=
-                    ViewModel.ActualSize.Y;
+                    xContentTransform.Matrix.OffsetY + deltaY <= 0 && xContentTransform.Matrix.M22 * actualSize.Y + xContentTransform.Matrix.OffsetY + deltaY + 0.2 >= actualSize.Y;
 
                 var tgroup = new TransformGroup();
                 tgroup.Children.Add(xContentTransform);
@@ -1059,12 +1060,13 @@ namespace Dash
                 tgroup.Children.Add(scale);
                 xContentTransform.Matrix = tgroup.Value;
 
+                var actualSize = ViewModel.LayoutDocument.GetActualSize();
                 //use transform bounds to check if content has gotten out of bounds and if so, pan to compensate
-                var tb = xContentTransform.TransformBounds(new Rect(0, 0, ViewModel.ActualSize.X, ViewModel.ActualSize.Y));
+                var tb = xContentTransform.TransformBounds(new Rect(0, 0, actualSize.X, actualSize.Y));
                 if (tb.X > 0) PanContent(0 - tb.X, 0);
                 if (tb.Y > 0) PanContent(0, 0 - tb.Y);
-                if (tb.X + tb.Width < ViewModel.ActualSize.X) PanContent(ViewModel.ActualSize.X - (tb.X + tb.Width), 0);
-                if (tb.Y + tb.Height < ViewModel.ActualSize.Y) PanContent(0, ViewModel.ActualSize.Y - (tb.Y + tb.Height));
+                if (tb.X + tb.Width < actualSize.X) PanContent(actualSize.X - (tb.X + tb.Width), 0);
+                if (tb.Y + tb.Height < actualSize.Y) PanContent(0, actualSize.Y - (tb.Y + tb.Height));
 
                 e.Handled = true;
             }

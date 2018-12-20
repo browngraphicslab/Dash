@@ -131,8 +131,8 @@ namespace Dash
             if (!LocalSqliteEndpoint.SuspendTimer &&
                 ContainerDocument.GetFitToParent() && ViewType == CollectionViewType.Freeform)
             {
-                var parSize = ContainerDocument.GetActualSize() ?? new Point();
-                var r = DocumentViewModels.Aggregate(Rect.Empty, (rect, dvm) => { rect.Union(dvm.Bounds); return rect; });
+                var parSize = ContainerDocument.GetActualSize();
+                var r = DocumentViewModels.Aggregate(Rect.Empty, (rect, dvm) => { rect.Union(dvm.LayoutDocument.GetBounds()); return rect; });
                 if (!r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
                     var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
@@ -723,9 +723,9 @@ namespace Dash
                 {
                     where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xOuterGrid));
                 }
-                else if (DocumentViewModels.LastOrDefault() is DocumentViewModel last)
+                else if (DocumentViewModels.LastOrDefault()?.LayoutDocument is DocumentController last)
                 {
-                    where = new Point(last.Position.X + DocumentViewModels.Last().ActualSize.X, last.Position.Y);
+                    where = new Point(last.GetPosition().X + last.GetActualSize().X,  last.GetPosition().Y);
                 }
 
                 if (isSettingContext && dragDocModel != null && dragDocModel.DraggedDocCollectionViews?.FirstOrDefault() != this &&
