@@ -32,7 +32,7 @@ namespace Dash
             return new RectController(0, 0, 1, 1);
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

@@ -12,16 +12,14 @@ namespace Dash.Converters
     {
 
         private DocumentController _docController = null;
-        private Context _context = null;
         private TypeInfo _lastType = TypeInfo.None;
         private FrameworkElement _lastElement = null;
         private DocumentType _lastDocType = DocumentType.DefaultType;
         private DocumentController _lastDocument = null;
 
-        public DataFieldToMakeViewConverter(DocumentController docController, Context context = null)
+        public DataFieldToMakeViewConverter(DocumentController docController)
         {
             _docController = docController;
-            _context = context;
         }
 
         public override FrameworkElement ConvertDataToXaml(FieldControllerBase data, object parameter = null)
@@ -37,19 +35,19 @@ namespace Dash.Converters
             }
             if (data is ImageController img)
             {
-                currView = ImageBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = ImageBox.MakeView(_docController, KeyStore.DataKey);
             }
             if (data is PdfController)
             {
-                currView = PdfBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = PdfBox.MakeView(_docController, KeyStore.DataKey);
             }
             if (data is VideoController)
             {
-                currView = VideoBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = VideoBox.MakeView(_docController, KeyStore.DataKey);
             }
             else if (data is AudioController)
             {
-                currView = AudioBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = AudioBox.MakeView(_docController, KeyStore.DataKey);
             }
             else if (data is ListController<DocumentController> docList)
             {
@@ -58,7 +56,7 @@ namespace Dash.Converters
                     _docController.SetWidth(400);
                     _docController.SetHeight(400);
                 }
-                currView = CollectionBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = CollectionBox.MakeView(_docController, KeyStore.DataKey);
             }
             else if (data is DocumentController dc)
             {
@@ -81,11 +79,11 @@ namespace Dash.Converters
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {
-                currView = TextingBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = TextingBox.MakeView(_docController, KeyStore.DataKey);
             }
             else if (data is RichTextController)
             {
-                currView = RichTextBox.MakeView(_docController, KeyStore.DataKey, _context);
+                currView = RichTextBox.MakeView(_docController, KeyStore.DataKey);
             }
             if (currView == null) currView = new Grid();
 

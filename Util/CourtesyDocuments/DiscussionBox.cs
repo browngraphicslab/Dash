@@ -20,29 +20,28 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDiscussion);
             SetupDocument(DocumentType, PrototypeId, "DiscussionBox Prototype Layout", fields);
         }
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             // create the image
             var editableTree = new DiscussionView();
             // setup bindings on the image
-            SetupBinding(editableTree, docController, key, context);
+            SetupBinding(editableTree, docController, key);
 
             return editableTree;
         }
-        public static void SetupBinding(DiscussionView editableTree, DocumentController controller, KeyController key, Context context)
+        public static void SetupBinding(DiscussionView editableTree, DocumentController controller, KeyController key)
         {
             ///editableTree.DataFieldKey = key;
-            BindImageSource(editableTree, controller, key, context);
+            BindImageSource(editableTree, controller, key);
         }
 
-        protected static void BindImageSource(DiscussionView editableTree, DocumentController docController, KeyController key, Context context)
+        protected static void BindImageSource(DiscussionView editableTree, DocumentController docController, KeyController key)
         {
             var binding = new FieldBinding<ListController<FieldControllerBase>>
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.OneWay,
-                Context = context,
                 Converter = UriToBitmapImageConverter.Instance
             };
             //image.AddFieldBinding(Image.SourceProperty, binding);

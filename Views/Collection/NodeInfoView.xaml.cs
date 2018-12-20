@@ -49,7 +49,7 @@ namespace Dash
             foreach (var kvp in keyValuePairs)
             {
                 Keys.Add(new ListViewItem {Content = kvp.Key.Name + ":"});
-                Values.Add(new ListViewItem {Content = kvp.Value.GetValue(null)});
+                Values.Add(new ListViewItem {Content = kvp.Value.GetValue()});
             }
         }
 

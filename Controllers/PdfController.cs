@@ -76,7 +76,7 @@ namespace Dash
             return new PdfController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

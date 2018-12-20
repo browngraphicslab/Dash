@@ -86,7 +86,7 @@ namespace Dash
             var document = ViewModel.Document;
             var key = ViewModel.Key;
 
-            TableBox.BindContent(XValuePresenter, document, key, null);
+            TableBox.BindContent(XValuePresenter, document, key);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -306,7 +306,7 @@ namespace Dash
             return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
         }
 
-        public override object GetValue(Context context) => _typedData.ToList();
+        public override object GetValue() => _typedData.ToList();
 
         public override bool TrySetValue(object value)
         {

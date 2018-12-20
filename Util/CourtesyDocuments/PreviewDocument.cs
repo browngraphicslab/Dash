@@ -28,15 +28,15 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "PreviewDocument Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
-            var layout = docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
+            var layout = docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, null);
             FrameworkElement innerContent = null;
             if (layout != null)
             {
                 foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
-                innerContent = layout.MakeViewUI(context);
+                innerContent = layout.MakeViewUI();
             }
             
 
@@ -56,11 +56,11 @@ namespace Dash
                 //{
                 //    return;
                 //}
-                layout = layout ?? docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
+                layout = layout ?? docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, null);
                 var innerLayout = args.NewValue.DereferenceToRoot<DocumentController>(null);
                 foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
-                var innerCont = innerLayout.MakeViewUI(null);
+                var innerCont = innerLayout.MakeViewUI();
                 returnContent.Content = innerCont;
             });
 

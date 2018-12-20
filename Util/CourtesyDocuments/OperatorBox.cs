@@ -20,18 +20,16 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "OperatorBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController,
-            Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
-            return MakeOperatorView(docController, context);
+            return MakeOperatorView(docController);
         }
 
         /// <summary>
         /// Helper method for creating operator views which lets the callee supply a custom operator UI through customLayout
         /// </summary>
         /// <returns></returns>
-        public static FrameworkElement MakeOperatorView(DocumentController docController,
-            Context context, Func<FrameworkElement> customLayout = null)
+        public static FrameworkElement MakeOperatorView(DocumentController docController,Func<FrameworkElement> customLayout = null)
         {
 
             var data = docController.GetField(KeyStore.DataKey);
@@ -40,7 +38,7 @@ namespace Dash
             Debug.Assert(opfmc.GetFieldReference() is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
             var opView = new OperatorView()
             {
-                DataContext = opfmc.GetFieldReference().Resolve(context),
+                DataContext = opfmc.GetFieldReference().Resolve(null),
             };
 
             if (customLayout != null)

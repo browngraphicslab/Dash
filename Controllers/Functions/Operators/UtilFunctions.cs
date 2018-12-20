@@ -23,7 +23,7 @@ namespace Dash
         [OperatorReturnName("Result")]
         public static TextController ToString(FieldControllerBase input = null)
         {
-            return new TextController(input?.GetValue(null).ToString() ?? "<null>");
+            return new TextController(input?.GetValue().ToString() ?? "<null>");
         }
 
         public static DocumentController MainDocument()
@@ -61,13 +61,13 @@ namespace Dash
             {
                 return docs.OrderBy(doc => doc.Title).ToListController();
             }
-            return list.AsEnumerable().OrderBy(f => f.GetValue(null)).ToListController();
+            return list.AsEnumerable().OrderBy(f => f.GetValue()).ToListController();
         }
 
         [OperatorFunctionName("sort")]
         public static IListController SortDocs(ListController<DocumentController> docs, KeyController selector)
         {
-            return docs.OrderBy(doc => doc.GetDereferencedField(selector).GetValue(null)).ToListController();
+            return docs.OrderBy(doc => doc.GetDereferencedField(selector).GetValue()).ToListController();
         }
     }
 }

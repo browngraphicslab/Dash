@@ -15,9 +15,9 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "SearchOperatorBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context)
+        public static FrameworkElement MakeView(DocumentController documentController)
         {
-            return OperatorBox.MakeOperatorView(documentController, context, () => new SearchOperatorView());
+            return OperatorBox.MakeOperatorView(documentController,  () => new SearchOperatorView());
         }
     }
 }

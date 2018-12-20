@@ -125,7 +125,7 @@ namespace Dash.Views
                 }
 
                 _articialChange = true;
-                xValueBox.Text = val.GetValue(null).ToString();
+                xValueBox.Text = val.GetValue().ToString();
 
                 if (double.TryParse(xValueBox.Text.Trim(), out double res))
                 {

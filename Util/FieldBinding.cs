@@ -69,7 +69,7 @@ namespace Dash
             var refField = Document.GetField(Key) as ReferenceController;
             if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
             {
-                element.SetValue(property, refField.Dereference(context).GetValue(context));
+                element.SetValue(property, refField.Dereference(context).GetValue());
             }
             else
             {
@@ -82,7 +82,7 @@ namespace Dash
                         converter = GetConverter(field);
                         Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
                     }
-                    var fieldData = ValueType == BindingValueType.Value ? field.GetValue(context) : field;
+                    var fieldData = ValueType == BindingValueType.Value ? field.GetValue() : field;
                     var xamlData = converter == null || fieldData == null
                         ? fieldData
                         : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);

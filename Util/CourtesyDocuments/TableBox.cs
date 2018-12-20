@@ -24,19 +24,19 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Table Box Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController documentController, KeyController key)
         {
             //add field binding for content of content presenter
             ContentPresenter contentPresenter = new ContentPresenter();
-            BindContent(contentPresenter, documentController, key, context);
+            BindContent(contentPresenter, documentController, key);
 
             return contentPresenter;
 
         }
 
-        public static void BindContent(ContentPresenter presenter, DocumentController docController, KeyController key, Context context)
+        public static void BindContent(ContentPresenter presenter, DocumentController docController, KeyController key)
         {
-            var converter = new TableFieldToMakeViewConverter(docController, key, context);
+            var converter = new TableFieldToMakeViewConverter(docController, key);
 
             var contentBinding = new FieldBinding<FieldControllerBase, TextController>()
             {
@@ -44,7 +44,6 @@ namespace Dash
                 Document = docController,
                 Converter = converter,
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 ValueType = BindingValueType.Field,
                 CanBeNull = true
             };

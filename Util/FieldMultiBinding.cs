@@ -45,7 +45,7 @@ namespace Dash
                         foundNullField = true;
                         break;
                     }
-                    fields.Add(fieldControllerBase?.GetValue(context));
+                    fields.Add(fieldControllerBase?.GetValue());
                 }
             }
             else if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceToRoot)
@@ -58,7 +58,7 @@ namespace Dash
                         foundNullField = true;
                         break;
                     }
-                    fields.Add(fieldControllerBase?.GetValue(context));
+                    fields.Add(fieldControllerBase?.GetValue());
                 }
             }
             if (!foundNullField)

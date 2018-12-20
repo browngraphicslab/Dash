@@ -20,7 +20,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController() => new ColorController(Colors.White);
 
-        public override object GetValue(Context context) => Data;
+        public override object GetValue() => Data;
 
         public override bool TrySetValue(object value)
         {

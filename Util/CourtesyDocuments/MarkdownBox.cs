@@ -15,23 +15,22 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToRichText);
             SetupDocument(DocumentType, PrototypeId, "MarkdownBox Prototype Layout", fields);
         }
-        protected static void SetupTextBinding(EditableMarkdownBlock element, DocumentController docController, Context context)
+        protected static void SetupTextBinding(EditableMarkdownBlock element, DocumentController docController)
         {
             var binding = new FieldBinding<TextController>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 FallbackValue = "<empty>",
                 Tag = "MarkdownBox SetupTextBinding"
             };
             element.AddFieldBinding(EditableMarkdownBlock.TextProperty, binding);
         }
 
-        protected static void SetupBindings(EditableMarkdownBlock element, DocumentController docController, Context context)
+        protected static void SetupBindings(EditableMarkdownBlock element, DocumentController docController)
         {
-            SetupTextBinding(element, docController, context);
+            SetupTextBinding(element, docController);
         }
 
         /*
@@ -41,7 +40,7 @@ namespace Dash
             return rtv.GetRegionDocument();
         }*/
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
             var textController = docController.GetField(KeyStore.DataKey);
             // create the textblock
@@ -49,9 +48,8 @@ namespace Dash
             var tb = new EditableMarkdownBlock
             {
                 TargetFieldController = textController,
-                TargetDocContext = context
             };
-            SetupBindings(tb, docController, context);
+            SetupBindings(tb, docController);
 
             return tb;
         }

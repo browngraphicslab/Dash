@@ -191,7 +191,7 @@ namespace Dash
             RegionCreator[type] = makeRegionFunc;
         }
 
-        public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
+        public delegate FrameworkElement MakeViewFunc(DocumentController doc);
         public delegate Task<DocumentController> MakeRegionFunc(DocumentView view, Point? point = null);
         public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();

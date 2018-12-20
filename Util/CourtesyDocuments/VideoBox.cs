@@ -29,7 +29,7 @@ namespace Dash
         /// <summary>
         ///   Creates a MediaPlayerElement that will be binded to video reference.
         /// </summary>
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             //create the media player element 
 
@@ -73,13 +73,12 @@ namespace Dash
             video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
 
             // setup bindings on the video
-            SetupVideoBinding(video, docController, key, context);
+            SetupVideoBinding(video, docController, key);
 			
 			return video;
 		}
 
-		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key, 
-			Context context)
+		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key)
 		{
 			BindVideoSource(video, controller, key);
 		}

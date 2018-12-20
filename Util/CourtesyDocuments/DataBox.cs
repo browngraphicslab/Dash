@@ -33,20 +33,17 @@ namespace Dash
                 KeyStore.TitleKey), true);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context)
+        public static FrameworkElement MakeView(DocumentController documentController)
         {
             //add field binding for content of content presenter
             var contentPresenter = new ContentPresenter();
             BindContent(contentPresenter, documentController, KeyStore.DataKey);
             return contentPresenter;
-
-            //return new DataFieldToMakeViewConverter(documentController, context).ConvertDataToXaml(
-            //    documentController.GetDereferencedField(KeyStore.DataKey, null), null);
         }
 
 		public static void BindContent(ContentPresenter presenter, DocumentController docController, KeyController key)
 		{
-			var converter = new DataFieldToMakeViewConverter(docController, null);
+			var converter = new DataFieldToMakeViewConverter(docController);
 
 			var contentBinding = new FieldBinding<FieldControllerBase, TextController>()
 			{

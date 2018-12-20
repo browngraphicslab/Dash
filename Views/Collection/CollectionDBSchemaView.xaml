@@ -14,7 +14,7 @@
     d:DesignHeight="300"
     Drop="CollectionDBSchemaView_OnDrop"
     d:DesignWidth="400">
-    <Grid x:Name="xOuterGrid" Background="#CCFFFFFF" ManipulationMode="All" >
+    <Grid x:Name="xOuterGrid" Background="#CCFFFFFF" ManipulationMode="All" PointerPressed="xOuterGrid_PointerPressed" >
         <Grid.Resources>
             <Style x:Name="xHeaderStyle" x:FieldModifier="public" TargetType="dataprimitives:DataGridColumnHeader">
                 <Setter Property="ContentTemplate">

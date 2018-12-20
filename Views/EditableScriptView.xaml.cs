@@ -108,13 +108,13 @@ namespace Dash
 
         private string GetRootExpression()
         {
-            return ViewModel?.Reference.DereferenceToRoot(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
+            return ViewModel?.Reference.DereferenceToRoot(ViewModel.Context)?.GetValue()?.ToString();
         }
 
         private string GetExpression()
         {
             if (ViewModel.Context == null) return null;
-            return ViewModel?.Reference.Dereference(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
+            return ViewModel?.Reference.Dereference(ViewModel.Context)?.GetValue()?.ToString();
         }
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)

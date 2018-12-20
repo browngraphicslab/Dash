@@ -30,7 +30,7 @@ namespace Dash
             return new NumberController(0);
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

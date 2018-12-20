@@ -232,7 +232,7 @@ namespace Dash
 
         public FrameworkElement Content
         {
-            get => _content ?? (_content = LayoutDocument.MakeViewUI(new Context(DataDocument))); 
+            get => _content ?? (_content = LayoutDocument.MakeViewUI()); 
             private set  {
                 _content = value; // content will be recomputed when someone accesses Content
                 OnPropertyChanged(); // let everyone know that _content has changed

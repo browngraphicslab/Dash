@@ -74,7 +74,7 @@ namespace Dash
         /// <summary>
         /// Gets the value from the field as an object. 
         /// </summary>
-        public abstract object GetValue(Context context);
+        public abstract object GetValue();
 
 
         public virtual bool CheckType(FieldControllerBase fmc)
@@ -94,20 +94,6 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public abstract FieldControllerBase GetDefaultController();
-
-        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, DocumentController doc)
-        {
-            var hstack = new StackPanel { Orientation = Orientation.Horizontal };
-            var label = new TextBlock { Text = kc.Name + ": " };
-            var refField = new DocumentReferenceController(doc, kc);
-            var dBox = this is ImageController
-                ? new ImageBox(refField).Document
-                : new TextingBox(refField).Document;
-            hstack.Children.Add(label);
-            var ele = dBox.MakeViewUI(context);
-            hstack.Children.Add(ele);
-            sp.Children.Add(hstack);
-        }
 
         /// <summary>
         /// search method which should return whether this field contains the string being searched for.

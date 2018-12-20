@@ -954,7 +954,6 @@ namespace Dash
 
                             foreach (var viewModel in viewModels.ToArray())
                             {
-                                viewModel.LayoutDocument.IsMovingCollections = true;
                                 viewModel.RequestDelete();
                             }
                         });

@@ -25,8 +25,8 @@ namespace Dash
 
         public static BoolController Contains(IListController list, FieldControllerBase item)
         {
-            var val = item.GetValue(null);
-            return new BoolController(list.AsEnumerable().Any(f => Equals(val, f?.GetValue(null))));
+            var val = item.GetValue();
+            return new BoolController(list.AsEnumerable().Any(f => Equals(val, f?.GetValue())));
         }
 
         public static void Insert(IListController list, FieldControllerBase item, NumberController index)

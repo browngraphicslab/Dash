@@ -132,7 +132,7 @@ namespace Dash
             return StringSearchModel.False;
         }
 
-        public sealed override object GetValue(Context context)
+        public sealed override object GetValue()
         {
             // getvalue does not mean anything on an operator since
             // operators don't have any implicit value, the value is defind

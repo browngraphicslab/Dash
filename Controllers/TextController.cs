@@ -24,7 +24,7 @@ namespace Dash
         /// </summary>
         public TextModel TextFieldModel => Model as TextModel;
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

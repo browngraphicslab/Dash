@@ -56,7 +56,7 @@ namespace Dash
             return new AudioController(new Uri("ms-appx:///Assets/DefaultAudio.mp3"));
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

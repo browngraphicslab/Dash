@@ -82,7 +82,7 @@ namespace Dash
             if (!(args.NewValue is PresentationItemViewModel vm)) return;
             var dc = vm.Document;
 
-            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null)?.GetValue(null).ToString();
+            string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null)?.GetValue().ToString();
 
             if (string.IsNullOrEmpty(currentTitle))
             {

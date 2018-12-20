@@ -81,8 +81,8 @@ namespace Dash
 
                 if (!sourceFields.Contains(sourceKey)) continue;
 
-                var valToMatch = dataDoc.GetField(sourceKey).GetValue(null);
-                var matchedDoc = targetDocs.FirstOrDefault(k => k.GetDataDocument().GetField(targetKey).GetValue(null).Equals(valToMatch))?.GetDataDocument();
+                var valToMatch = dataDoc.GetField(sourceKey).GetValue();
+                var matchedDoc = targetDocs.FirstOrDefault(k => k.GetDataDocument().GetField(targetKey).GetValue().Equals(valToMatch))?.GetDataDocument();
 
                 if (matchedDoc == null)
                 {

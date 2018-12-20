@@ -529,9 +529,9 @@ namespace Dash
                 foreach (var doc in jdm.DraggedDocuments)
                 {
                     var draggedKey = jdm.DraggedKey;
-                    var comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null)?.GetValue(null);
+                    var comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null)?.GetValue();
                     var matchingDoc = ViewModel.DocumentViewModels.FirstOrDefault(dvm =>
-                        dvm.DocumentController.GetDataDocument().GetDereferencedField(comparisonKey, null).GetValue(null).Equals(comparisonField));
+                        dvm.DocumentController.GetDataDocument().GetDereferencedField(comparisonKey, null).GetValue().Equals(comparisonField));
                     if (matchingDoc != null)
                     {
                         foreach (var key in keysToJoin)
@@ -565,7 +565,7 @@ namespace Dash
 
                 Document = doc;
                 Key = key;
-                TableBox.BindContent(this, Document, Key, null);
+                TableBox.BindContent(this, Document, Key);
             }
         }
 
@@ -573,6 +573,12 @@ namespace Dash
         {
             xDataGrid.Columns.ToList().ForEach((c) => (c.Header as ColumnHeaderViewModel).IsSelected = Visibility.Collapsed);
             ((sender as Border).DataContext as ColumnHeaderViewModel).IsSelected = Visibility.Visible;
+        }
+
+        private void xOuterGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var header = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid).OfType<Microsoft.Toolkit.Uwp.UI.Controls.Primitives.DataGridColumnHeader>();
+            this.GetDocumentView().ViewModel.DragAllowed =  header == null || e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
         }
     }
 

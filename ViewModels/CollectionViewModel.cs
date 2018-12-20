@@ -352,14 +352,7 @@ namespace Dash
                 }
 
                 theDoc.RemoveFromListField(CollectionKey, document);
-                if (document.IsMovingCollections)
-                {
-                    document.IsMovingCollections = false;
-                }
-                else
-                {
-                    MainPage.Instance.xPresentationView.FullPinDelete(document);
-                }
+                MainPage.Instance.xPresentationView.FullPinDelete(document);
             }
         }
 
@@ -383,7 +376,7 @@ namespace Dash
                         {
                             fieldDict.Add(f.Key, new List<object>());
                         }
-                        fieldDict[f.Key].Add(f.Value.GetValue(new Context(d)));
+                        fieldDict[f.Key].Add(f.Value.GetValue());
                     }
             }
 
@@ -435,7 +428,7 @@ namespace Dash
 
         Dictionary<KeyController, List<object>> setupPivotDoc(KeyController pivotKey, Dictionary<object, Dictionary<KeyController, List<object>>> dictionary, Dictionary<object, DocumentController> pivotDictionary, DocumentController d)
         {
-            var obj = d.GetDataDocument().GetDereferencedField(pivotKey, null)?.GetValue(null);
+            var obj = d.GetDataDocument().GetDereferencedField(pivotKey, null)?.GetValue();
             DocumentController pivotDoc = null;
             if (obj != null && !dictionary.ContainsKey(obj))
             {

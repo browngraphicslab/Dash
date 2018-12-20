@@ -34,48 +34,46 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "TextingBox Prototype Layout", fields);
         }
 
-        public static void SetupBindings(FrameworkElement element, DocumentController docController, KeyController key, Context context)
+        public static void SetupBindings(FrameworkElement element, DocumentController docController, KeyController key)
         {
-            BindFontWeight(element, docController, context);
-            BindFontSize(element, docController, context);
-            BindTextAlignment(element, docController, context);
-            BindBackgroundColor(element, docController, context);
-            SetupTextBinding(element, docController, key, context);
+            BindFontWeight(element, docController);
+            BindFontSize(element, docController);
+            BindTextAlignment(element, docController);
+            BindBackgroundColor(element, docController);
+            SetupTextBinding(element, docController, key);
         }
         /// <summary>
         /// Makes the view 
         /// </summary>
         /// <param name="isEditable"> Parameter used to determine if the textingbox will be editable upon double click, or just read-only </param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             // the text field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
             var textController = docController.GetField(key);
-            var text = textController.GetValue(null);
+            var text = textController.GetValue();
             // create the textblock
             //TODO Make TargetFieldController be a FieldReference to the field instead of just the field
             var tb = new EditableTextBlock
             {
                 TargetFieldController = textController,
-                TargetDocContext = context
             };
-            SetupBindings(tb, docController, key, context);
+            SetupBindings(tb, docController, key);
 
             return tb;
         }
 
         #region Bindings
 
-        private static void SetupTextBinding(FrameworkElement element, DocumentController docController, KeyController key, Context context)
+        private static void SetupTextBinding(FrameworkElement element, DocumentController docController, KeyController key)
         {
             var binding = new FieldBinding<FieldControllerBase, TextController>()
             {
                 Document = docController,
                 Key = key,
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 GetConverter = FieldConversion.GetFieldtoStringConverter,
                 //changed fallbackvalue from "<null>" to ""
                 FallbackValue = "",
@@ -106,7 +104,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        protected static void BindTextAlignment(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindTextAlignment(FrameworkElement element, DocumentController docController)
         {
             var dataRef = new DocumentFieldReference(docController, TextAlignmentKey);
             var sideCountRef = new DocumentFieldReference(docController, KeyStore.DataKey);
@@ -115,7 +113,6 @@ namespace Dash
             {
                 Converter = new TypedTextAlignmentBinding(),
                 Mode = BindingMode.OneWay,
-                Context = context,
                 CanBeNull = true
             };
             element.AddFieldBinding(element is EditableTextBlock ? EditableTextBlock.TextAlignmentProperty :
@@ -124,7 +121,7 @@ namespace Dash
 
         }
 
-        protected static void BindBackgroundColor(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindBackgroundColor(FrameworkElement element, DocumentController docController)
         {
             var backgroundBinding = new FieldBinding<TextController>()
             {
@@ -132,7 +129,6 @@ namespace Dash
                 Document = docController,
                 Converter = new StringToBrushConverter(),
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 CanBeNull = true
             };
             if (element is EditableTextBlock edBlock)
@@ -141,7 +137,7 @@ namespace Dash
                 tbox.AddFieldBinding(TextBox.BackgroundProperty, backgroundBinding);
         }
 
-        protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindFontWeight(FrameworkElement element, DocumentController docController)
         {
             var fontWeightBinding = new FieldBinding<NumberController>()
             {
@@ -149,7 +145,6 @@ namespace Dash
                 Document = docController,
                 Converter = new DoubleToFontWeightConverter(),
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 CanBeNull = true
             };
             element.AddFieldBinding(element is EditableTextBlock ? Control.FontWeightProperty :
@@ -157,14 +152,13 @@ namespace Dash
                                     element is TextBox ? TextBox.FontWeightProperty : null, fontWeightBinding);
         }
 
-        protected static void BindFontSize(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindFontSize(FrameworkElement element, DocumentController docController)
         {
             var fontSizeBinding = new FieldBinding<NumberController>()
             {
                 Key = KeyStore.FontSizeKey,
                 Document = docController,
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 CanBeNull = true
             };
             element.AddFieldBinding(element is EditableTextBlock ? Control.FontSizeProperty :

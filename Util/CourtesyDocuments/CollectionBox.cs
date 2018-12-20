@@ -28,7 +28,7 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Collection Box Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key,  Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             return new CollectionView() { DataContext = new CollectionViewModel(docController, key) };
         }

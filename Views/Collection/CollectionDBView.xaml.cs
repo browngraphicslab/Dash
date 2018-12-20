@@ -400,7 +400,7 @@ namespace Dash
                     }
                 } else
                 {
-                    rawText += " " + field.GetValue(new Context(dataDoc));
+                    rawText += " " + field.GetValue();
                 }
 
                 var numberField = field as NumberController;

@@ -18,7 +18,7 @@ namespace Dash
             Document.SetField(KeyStore.TitleKey, new PointerReferenceController(new DocumentReferenceController(Document, KeyStore.DocumentContextKey),
                 KeyStore.TitleKey), true);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
             return new Border()
             {

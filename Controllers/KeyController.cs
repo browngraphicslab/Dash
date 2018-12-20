@@ -115,7 +115,7 @@ namespace Dash
             return false;
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Name;
         }
