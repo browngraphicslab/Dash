@@ -8,25 +8,17 @@
     mc:Ignorable="d"
     HorizontalAlignment="Center"
     VerticalAlignment="Center"
-    LostFocus="EditableImage_OnLostFocus"
     KeyDown="XGrid_OnKeyDown"
     Background="Beige" IsTabStop="True">
-
-
+    
     <Grid x:Name="xGrid" PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" DoubleTapped="OnDoubleTapped">
         <Viewbox Stretch="Fill" x:Name="xViewbox">
             <Grid AllowDrop="True" CompositeMode="SourceOver">
                 <Grid x:Name="XAnnotationGrid" CompositeMode="SourceOver">
                     <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache" />
                 </Grid>
-                <Canvas x:Name="XAnnotationGridWithEmbeddings" x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <Canvas x:Name="XAnnotationGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
             </Grid>
         </Viewbox>
-        <!--<StackPanel x:Name="xLinkStack" Visibility="Collapsed"/>-->
-        <FlyoutBase.AttachedFlyout>
-            <MenuFlyout x:Name="xLinkFlyout"/>
-        </FlyoutBase.AttachedFlyout>
-
-
     </Grid>
 </UserControl>

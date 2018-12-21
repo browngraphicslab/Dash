@@ -72,10 +72,7 @@ namespace Dash
 
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
-            if (!_currentImage.IsCropping)
-            {
-                _currentImage.StartCrop();
-            }
+            _currentImage.IsCropping = !_currentImage.IsCropping;
         }
 
         /// <summary>
@@ -140,7 +137,7 @@ namespace Dash
             _currentDocView       = selection;
             _currentImage         = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
-	        xToggleAnnotations.IsChecked = _currentImage?.AreAnnotationsVisible();
+	        xToggleAnnotations.IsChecked = _currentImage?.AreAnnotationsVisible;
             var modes = new Stretch[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill };
             var fillMode = _currentDocController.GetField<TextController>(KeyStore.ImageStretchKey)?.Data ?? "Uniform";
             xScaleOptionsDropdown.SelectedIndex = modes.Select((m) => m.ToString()).ToList().IndexOf(fillMode);

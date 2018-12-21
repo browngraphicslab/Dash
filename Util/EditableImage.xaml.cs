@@ -24,35 +24,47 @@ using Visibility = Windows.UI.Xaml.Visibility;
 namespace Dash
 {
 
-    public partial class EditableImage : INotifyPropertyChanged
+    public partial class EditableImage 
     {
-        private StateCropControl _cropControl;
-        private ImageController _imgctrl;
-        public bool IsCropping;
-        public DocumentController DataDocument => (DataContext as DocumentViewModel).DataDocument;
+        private StateCropControl  _cropControl;
+        private AnnotationOverlay _annotationOverlay;
+        private ImageController   _imgctrl;
+
+        public DocumentController DataDocument   => (DataContext as DocumentViewModel).DataDocument;
         public DocumentController LayoutDocument => (DataContext as DocumentViewModel).LayoutDocument;
 
-        // interface-required event to communicate with the AnnotationManager about when it's okay to start annotating
-
-        public Image Image => xImage;
-        public Viewbox Viewbox => xViewbox;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private AnnotationOverlay _annotationOverlay;
-
-        public Stretch Stretch
+        public bool               AreAnnotationsVisible =>  _annotationOverlay?.Visibility == Visibility.Visible;
+        public Image              Image                 => xImage;
+        public Stretch            Stretch               => xImage.Stretch;
+        public Viewbox            Viewbox               => xViewbox;
+        public bool               IsCropping   
         {
-            get => xImage.Stretch;
-            set => xImage.Stretch = value;
-        }
+            get => _cropControl != null;
+            set
+            {
+                if (value != IsCropping)
+                {
+                    if (value)
+                    {
+                        _cropControl = new StateCropControl(LayoutDocument, this);
+                        Focus(FocusState.Programmatic);
+                        xGrid.Children.Add(_cropControl);
+                    }
+                    else
+                    {
+                        xGrid.Children.Remove(_cropControl);
+                        _cropControl = null;
 
-        public KeyController DataFieldKey { get; set; }
+                    }
+                }
+            }
+        }
+        public KeyController      DataFieldKey { get; set; }
 
         public EditableImage()
         {
             InitializeComponent();
-            Image.Loaded += Image_Loaded;
+            LostFocus += (s, e) => IsCropping = false;
             Image.ImageOpened += (sender, args) =>
             {
                 var source = Image.Source as BitmapSource;
@@ -76,6 +88,24 @@ namespace Dash
             };
         }
 
+        public async Task<DocumentController> GetRegionDocument(Point? docViewPoint)
+        {
+            Point calculateClosestPointOnImage(Point p)
+            {
+                return new Point(p.X < 0 ? 30 : p.X > _annotationOverlay.ActualWidth ? _annotationOverlay.ActualWidth - 30 : p.X,
+                                 p.Y < 0 ? 30 : p.Y > _annotationOverlay.ActualHeight ? _annotationOverlay.ActualHeight - 30 : p.Y);
+            }
+            var regionDoc = await _annotationOverlay.CreateRegionFromPreviewOrSelection();
+            if (regionDoc == null && docViewPoint != null)
+            {
+                var pointInAnnotationOverlayCoords = Util.PointTransformFromVisual(docViewPoint.Value, this.GetDocumentView(), _annotationOverlay);
+                regionDoc = _annotationOverlay.CreatePinRegion(calculateClosestPointOnImage(pointInAnnotationOverlayCoords));
+            }
+            return regionDoc;
+        }
+        public async Task Rotate()           { await transformImage(Rect.Empty, BitmapRotation.Clockwise90Degrees, BitmapFlip.None); }
+        public async Task MirrorHorizontal() { await MirrorImage(BitmapFlip.Horizontal); }
+        public async Task MirrorVertical()   { await MirrorImage(BitmapFlip.Vertical); }
         public async Task ReplaceImage()
         {
             // get the file from the current image controller
@@ -91,29 +121,7 @@ namespace Dash
             LayoutDocument.SetWidth(LayoutDocument.GetActualSize().X);
             LayoutDocument.SetHeight(double.NaN);
         }
-
-        private async Task<StorageFile> GetImageFile()
-        {
-            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, null);
-            /*
-			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
-			 * try catch is literally the only way we can deal with regular
-			 * local uris, absolute uris, and website uris as the same time
-			 */
-            try
-            {
-                // method of getting file from local uri
-                return await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
-            }
-            catch (Exception)
-            {
-                // method of getting file from absolute uri
-                return await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
-            }
-        }
-
-
-        public void Revert()
+        public async void Revert()
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -121,19 +129,24 @@ namespace Dash
                 if (LayoutDocument.GetDataDocument().GetField(KeyStore.OriginalImageKey) is ImageController originalImage)
                 {
                     LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, originalImage.ImageSource, true);
-                    LayoutDocument.SetWidth(LayoutDocument.GetActualSize().X);
+                    var file = await GetImageFile();
+                    var fileProperties = await file.Properties.GetImagePropertiesAsync();
+                    if (Math.Sign(-1+1.0*fileProperties.Width / fileProperties.Height) != 
+                        Math.Sign(-1+1.0*LayoutDocument.GetActualSize().X / LayoutDocument.GetActualSize().Y))
+                    {
+                        LayoutDocument.SetWidth(LayoutDocument.GetWidth() / (LayoutDocument.GetActualSize().X / LayoutDocument.GetActualSize().Y));
+                    }
                     LayoutDocument.SetHeight(double.NaN);
                 }
             }
         }
-
-        private void Image_Loaded(object sender, RoutedEventArgs e)
+        public void       SetRegionVisibility(Visibility state)
         {
-            // initialize values that rely on the image
-            //_cropControl = new StateCropControl(LayoutDocument, this);
+            _annotationOverlay.Visibility = state;
+            XAnnotationGridWithEmbeddings.Visibility = state;
         }
 
-        private void GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void      GoToUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             if (args.NewValue != null)
             {
@@ -143,46 +156,11 @@ namespace Dash
             }
         }
 
-        public async Task Rotate()
-        {
-            await transformImage(Rect.Empty, BitmapRotation.Clockwise90Degrees, BitmapFlip.None);
-        }
-
-        public async Task MirrorHorizontal()
-        {
-            await MirrorImage(BitmapFlip.Horizontal);
-        }
-
-        public async Task MirrorVertical()
-        {
-            await MirrorImage(BitmapFlip.Vertical);
-        }
-
-        private async Task MirrorImage(BitmapFlip flip)
+        private async Task  MirrorImage(BitmapFlip flip)
         {
             await transformImage(Rect.Empty, BitmapRotation.None, flip);
         }
-
-        // called when the cropclick action is invoked in the image subtoolbar
-        public void StartCrop()
-        {
-            _cropControl = new StateCropControl(LayoutDocument, this);
-            // make sure that we aren't already cropping
-            if (!xGrid.Children.Contains(_cropControl))
-            {
-                Focus(FocusState.Programmatic);
-                xGrid.Children.Add(_cropControl);
-                IsCropping = true;
-            }
-        }
-
-        private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
-        {
-            // prevent the image from being moved while being cropped
-            if (IsCropping) e.Handled = true;
-        }
-
-        public async Task Crop(Rect rectangleGeometry)
+        private async Task  Crop(Rect rectangleGeometry)
         {
             var scaling = 1.0 * Image.ActualWidth / ActualWidth;
             var scaledRect = new Rect(rectangleGeometry.X * scaling, rectangleGeometry.Y * scaling, rectangleGeometry.Width * scaling, rectangleGeometry.Height * scaling);
@@ -194,59 +172,56 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        private async Task transformImage(Rect rect, BitmapRotation rot, BitmapFlip flip)
+        private async Task  transformImage(Rect rect, BitmapRotation rot, BitmapFlip flip)
         {
-            var rectangleGeometry = rect != Rect.Empty ? rect : new Rect(0,0, Math.Floor(Image.ActualHeight),Math.Floor(Image.ActualWidth));
-            var file = await GetImageFile();
-            var fileProperties = await file.Properties.GetImagePropertiesAsync();
-            var fileRot = fileProperties.Orientation;  
+            var rectGeometry = rect != Rect.Empty ? rect : new Rect(0,0, Math.Floor(Image.ActualWidth),Math.Floor(Image.ActualHeight));
+            var file         = await GetImageFile();
+            var fileProps    = await file.Properties.GetImagePropertiesAsync();
+            var fileRot      = fileProps.Orientation;  
 
             // retrieves data from rectangle
-            var startPointX = (uint)(rectangleGeometry.X      / Image.ActualWidth  * fileProperties.Width);
-            var startPointY = (uint)(rectangleGeometry.Y      / Image.ActualHeight * fileProperties.Height);
-            var height      = (uint)(rectangleGeometry.Height / Image.ActualHeight * fileProperties.Height);
-            var width       = (uint)(rectangleGeometry.Width  / Image.ActualWidth  * fileProperties.Width);
+            var startPointX = (uint)(rectGeometry.X      / Image.ActualWidth  * fileProps.Width);
+            var startPointY = (uint)(rectGeometry.Y      / Image.ActualHeight * fileProps.Height);
+            var height      = (uint)(rectGeometry.Height / Image.ActualHeight * fileProps.Height);
+            var width       = (uint)(rectGeometry.Width  / Image.ActualWidth  * fileProps.Width);
             switch (rot)
             {
-            case BitmapRotation.None:
-                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
-                     rot = BitmapRotation.None;
-                else if (fileRot == PhotoOrientation.Rotate90)
-                     rot = BitmapRotation.Clockwise270Degrees;
-                else if (fileRot == PhotoOrientation.Rotate180)
-                     rot = BitmapRotation.Clockwise180Degrees;
-                else rot = BitmapRotation.Clockwise90Degrees;
-                break;
-            case BitmapRotation.Clockwise90Degrees:
-                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
-                     rot = BitmapRotation.Clockwise90Degrees;
-                else if (fileRot == PhotoOrientation.Rotate90)
-                     rot = BitmapRotation.None;
-                else if (fileRot == PhotoOrientation.Rotate180)
-                     rot = BitmapRotation.Clockwise270Degrees;
-                else rot = BitmapRotation.Clockwise180Degrees;
-                break;
-            case BitmapRotation.Clockwise180Degrees:
-                var tmp = width; // bcz: can't quite figure out why I need to flip width/height, but I do...
-                width  = height;
-                height = tmp;
-                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
-                     rot = BitmapRotation.Clockwise180Degrees;
-                else if (fileRot == PhotoOrientation.Rotate90)
-                     rot = BitmapRotation.Clockwise90Degrees;
-                else if (fileRot == PhotoOrientation.Rotate180)
-                     rot = BitmapRotation.None;
-                else rot = BitmapRotation.Clockwise270Degrees;
-                break;
-            case BitmapRotation.Clockwise270Degrees:
-                if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
-                     rot = BitmapRotation.Clockwise270Degrees;
-                else if (fileRot == PhotoOrientation.Rotate90)
-                     rot = BitmapRotation.Clockwise180Degrees;
-                else if (fileRot == PhotoOrientation.Rotate180)
-                     rot = BitmapRotation.Clockwise90Degrees;
-                else rot = BitmapRotation.None;
-                break;
+                case BitmapRotation.None:
+                    if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                         rot = BitmapRotation.None;
+                    else if (fileRot == PhotoOrientation.Rotate90)
+                         rot = BitmapRotation.Clockwise270Degrees;
+                    else if (fileRot == PhotoOrientation.Rotate180)
+                         rot = BitmapRotation.Clockwise180Degrees;
+                    else rot = BitmapRotation.Clockwise90Degrees;
+                    break;
+                case BitmapRotation.Clockwise90Degrees:
+                    if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                         rot = BitmapRotation.Clockwise90Degrees;
+                    else if (fileRot == PhotoOrientation.Rotate90)
+                         rot = BitmapRotation.None;
+                    else if (fileRot == PhotoOrientation.Rotate180)
+                         rot = BitmapRotation.Clockwise270Degrees;
+                    else rot = BitmapRotation.Clockwise180Degrees;
+                    break;
+                case BitmapRotation.Clockwise180Degrees:
+                    if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                         rot = BitmapRotation.Clockwise180Degrees;
+                    else if (fileRot == PhotoOrientation.Rotate90)
+                         rot = BitmapRotation.Clockwise90Degrees;
+                    else if (fileRot == PhotoOrientation.Rotate180)
+                         rot = BitmapRotation.None;
+                    else rot = BitmapRotation.Clockwise270Degrees;
+                    break;
+                case BitmapRotation.Clockwise270Degrees:
+                    if (fileRot == PhotoOrientation.Normal || fileRot == PhotoOrientation.Unspecified)
+                         rot = BitmapRotation.Clockwise270Degrees;
+                    else if (fileRot == PhotoOrientation.Rotate90)
+                         rot = BitmapRotation.Clockwise180Degrees;
+                    else if (fileRot == PhotoOrientation.Rotate180)
+                         rot = BitmapRotation.Clockwise90Degrees;
+                    else rot = BitmapRotation.None;
+                    break;
             }
 
             if (LayoutDocument.GetDataDocument().GetField<ImageController>(KeyStore.OriginalImageKey) == null)
@@ -259,30 +234,24 @@ namespace Dash
             using (var stream = await file.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
-
+                var rotated = rot == BitmapRotation.Clockwise270Degrees || rot == BitmapRotation.Clockwise90Degrees;
                 // sets the boundaries for how we are cropping the bitmap image
-                var bitmapTransform = new BitmapTransform() { Rotation = rot, Flip = flip, ScaledHeight = decoder.PixelHeight, ScaledWidth = decoder.PixelWidth };
-                bitmapTransform.Bounds = new BitmapBounds {
-                        X = startPointX,
-                        Y = startPointY,
-                        Width = width,
-                        Height = height
-                    };
+                var bmpXform = new BitmapTransform() { Rotation = rot, Flip = flip, ScaledHeight = decoder.PixelHeight, ScaledWidth = decoder.PixelWidth,
+                                                       Bounds = new BitmapBounds { X = startPointX, Y = startPointY, Width = rotated ? height: width, Height = rotated? width:height } };
 
                 // creates a new bitmap image with those boundaries
                 var pix = await decoder.GetPixelDataAsync(
                     BitmapPixelFormat.Bgra8,
                     BitmapAlphaMode.Straight,
-                    bitmapTransform,
+                    bmpXform,
                     ExifOrientationMode.IgnoreExifOrientation,
                     ColorManagementMode.ColorManageToSRgb
                 );
                 
-                SaveCroppedImageAsync(width, height, decoder, pix.DetachPixelData());
+                SaveCroppedImageAsync(bmpXform.Bounds.Width, bmpXform.Bounds.Height, decoder, pix.DetachPixelData(), rot);
             }
         }
-
-        private async void SaveCroppedImageAsync(uint width, uint height, BitmapDecoder decoder, byte[] pixels)
+        private async void  SaveCroppedImageAsync(uint width, uint height, BitmapDecoder decoder, byte[] pixels, BitmapRotation rot)
         {
             using (UndoManager.GetBatchHandle())
             {
@@ -293,12 +262,10 @@ namespace Dash
                 Image.Source = cropBmp;
                 
                 var newFile = await ImageToDashUtil.CreateUniqueLocalFile();
-                var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
-
                 // load the file with the iamge information
                 using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
+                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, newStream);
 
                     encoder.SetPixelData(
                         BitmapPixelFormat.Bgra8,
@@ -311,26 +278,32 @@ namespace Dash
                     await encoder.FlushAsync();
                 }
                 
-                var uri = new Uri(newFile.Path);
-                LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, uri, true);
+                LayoutDocument.GetDataDocument().SetField<ImageController>(DataFieldKey, new Uri(newFile.Path), true);
 
-                var oldpoint  = LayoutDocument.GetPosition();
-                var oldAspect = LayoutDocument.GetActualSize().X / LayoutDocument.GetActualSize().Y;
-                var newaspect = width / (double)height;
-                if (newaspect > oldAspect)
-                     LayoutDocument.SetHeight(LayoutDocument.GetActualSize().X / newaspect);
-                else LayoutDocument.SetWidth (LayoutDocument.GetActualSize().Y * newaspect);
-                var point = new Point(oldpoint.X + _cropControl.GetBounds().X,
-                                      oldpoint.Y + _cropControl.GetBounds().Y);
-
-                LayoutDocument.SetPosition(point);
+                var oldpoint   = LayoutDocument.GetPosition();
+                var actualSize = LayoutDocument.GetActualSize();
+                if (rot == BitmapRotation.Clockwise90Degrees || rot == BitmapRotation.Clockwise270Degrees)
+                {
+                    LayoutDocument.SetWidth(actualSize.Y);
+                    if (!double.IsNaN(LayoutDocument.GetHeight()))
+                    {
+                        LayoutDocument.SetHeight(actualSize.X);
+                    }
+                }
+                else if (rot == BitmapRotation.Clockwise180Degrees)
+                { }
+                else
+                {
+                    var oldAspect = LayoutDocument.GetActualSize().X / LayoutDocument.GetActualSize().Y;
+                    var newaspect = width / (double)height;
+                    if (newaspect > oldAspect)
+                         LayoutDocument.SetHeight(LayoutDocument.GetActualSize().X / newaspect);
+                    else LayoutDocument.SetWidth(LayoutDocument.GetActualSize().Y * newaspect);
+                }
+                
+                LayoutDocument.SetPosition(new Point(oldpoint.X + (_cropControl?.GetBounds().X ?? 0),
+                                                     oldpoint.Y + (_cropControl?.GetBounds().Y ?? 0)));
             }
-        }
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         // functionality for saving a crop and for moving the cropping boxes with directional keys
@@ -341,10 +314,8 @@ namespace Dash
                 switch (e.Key)
                 {
                     case VirtualKey.Enter: // crop the image!
-                        IsCropping = false;
-                        xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
-
+                        IsCropping = false;
                         break;
                     case VirtualKey.Left:
                     case VirtualKey.Right:
@@ -353,16 +324,6 @@ namespace Dash
                         break;
                 }
                 e.Handled = true;
-            }
-        }
-
-        // removes the cropping controls and allows image to be moved and used when focus is lost
-        private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
-        {
-            if (IsCropping)
-            {
-                IsCropping = false;
-                xGrid.Children.Remove(_cropControl);
             }
         }
 
@@ -392,7 +353,6 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             var point = e.GetCurrentPoint(_annotationOverlay);
@@ -406,44 +366,29 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             _annotationOverlay.AnnotationOverlayDoubleTapped(sender, e);
         }
 
-        public async Task<DocumentController> GetRegionDocument(Point? docViewPoint)
+        private async Task<StorageFile> GetImageFile()
         {
-            var regionDoc = await _annotationOverlay.CreateRegionFromPreviewOrSelection();
-            if (regionDoc == null)
+            _imgctrl = LayoutDocument.GetDereferencedField<ImageController>(DataFieldKey, null);
+            /*
+			 * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
+			 * try catch is literally the only way we can deal with regular
+			 * local uris, absolute uris, and website uris as the same time
+			 */
+            try
             {
-                if (docViewPoint != null)
-                {
-                    //else, make a new push pin region closest to given point
-                    var overlayPoint = Util.PointTransformFromVisual(docViewPoint.Value, this.GetDocumentView(), _annotationOverlay);
-                    var newPoint = calculateClosestPointOnImage(overlayPoint);
-
-                    regionDoc = _annotationOverlay.CreatePinRegion(newPoint);
-                }
-                else
-                    regionDoc = LayoutDocument;
+                // method of getting file from local uri
+                return await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
             }
-            return regionDoc;
-        }
-        private Point calculateClosestPointOnImage(Point p)
-        {
-            return new Point(p.X < 0 ? 30 : p.X > this._annotationOverlay.ActualWidth ? this._annotationOverlay.ActualWidth - 30 : p.X,
-                             p.Y < 0 ? 30 : p.Y > this._annotationOverlay.ActualHeight ? this._annotationOverlay.ActualHeight - 30 : p.Y);
-        }
-        public void SetRegionVisibility(Visibility state)
-        {
-            _annotationOverlay.Visibility = state;
-            XAnnotationGridWithEmbeddings.Visibility = state;
-        }
-        
-        public bool AreAnnotationsVisible()
-        {
-            return _annotationOverlay?.Visibility == Visibility.Visible;
+            catch (Exception)
+            {
+                // method of getting file from absolute uri
+                return await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+            }
         }
     }
 }
