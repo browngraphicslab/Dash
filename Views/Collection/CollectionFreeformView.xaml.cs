@@ -58,6 +58,7 @@ namespace Dash
         public CollectionViewModel      ViewModel      => DataContext as CollectionViewModel;
         public CollectionViewType       ViewType       => CollectionViewType.Freeform;
         public DocumentView             ParentDocument => this.GetDocumentView();
+        public bool                     IsMarqueeActive=> _isMarqueeActive;
         public double                   Zoom           => ViewManipulationControls.ElementScale;
         public UserControl              UserControl    => this;
         public ViewManipulationControls ViewManipulationControls { get; set; }
@@ -98,7 +99,7 @@ namespace Dash
 
             Loaded += OnBaseLoaded;
             Unloaded += OnBaseUnload;
-            KeyDown += _marquee_KeyDown;
+            KeyDown += OnKeyDown;
 
             previewTextbox = new TextBox
             {
@@ -116,16 +117,18 @@ namespace Dash
             //Debug.WriteLine("FINALIZING CollectionFreeFormView");
         }
         
-        public Panel            GetTransformedCanvas()          { return xTransformedCanvas; }
-        public ItemsControl     GetItemsControl()               { return xItemsControl; }
-        public ContentPresenter GetBackgroundContentPresenter() { return xBackgroundContentPresenter;  }
-        public Grid             GetOuterGrid()                  { return xOuterGrid;  }
-        public Canvas           GetSelectionCanvas()            { return _selectionCanvas; }
-        public Rectangle        GetDropIndicationRectangle()    { return XDropIndicationRectangle;  }
-        public Canvas           GetInkHostCanvas()              { return InkHostCanvas; }
+        public Panel            GetTransformedCanvas()            { return xTransformedCanvas; }
+        public ItemsControl     GetItemsControl()                 { return xItemsControl; }
+        public ContentPresenter GetBackgroundContentPresenter()   { return xBackgroundContentPresenter;  }
+        public Grid             GetOuterGrid()                    { return xOuterGrid;  }
+        public Canvas           GetSelectionCanvas()              { return _selectionCanvas; }
+        public Rectangle        GetDropIndicationRectangle()      { return XDropIndicationRectangle;  }
+        public Canvas           GetInkHostCanvas()                { return InkHostCanvas; }
+        public void             SetDropIndicationFill(Brush fill) { GetDropIndicationRectangle().Fill = fill; }
         public void             SetupContextMenu(MenuFlyout contextMenu) { }
-        public void             OnDocumentSelected(bool selected)  { }
-        public void             AddToMenu(ActionMenu menu)
+        public void             OnDocumentSelected(bool selected) { }
+
+        public void              AddToMenu(ActionMenu menu) 
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
@@ -148,7 +151,6 @@ namespace Dash
                 menu.AddAction("CUSTOM", avm);
             }
         }
-
         private       Task<bool> AddTextNote        (ActionFuncParams actionParams)
         {
             var postitNote = new RichTextNote().Document;
@@ -657,7 +659,6 @@ namespace Dash
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
-
         #endregion
 
         #region BackgroundTiling
@@ -695,7 +696,6 @@ namespace Dash
         /// All of the following background image updating logic was sourced from this article --> https://microsoft.github.io/Win2D/html/LoadingResourcesOutsideCreateResources.htm
         /// </summary>
         #region LOADING AND REDRAWING BACKUP ASYNC
-
         private Task _backgroundTask;
 
         // 1
@@ -877,8 +877,49 @@ namespace Dash
         private Rectangle   _marquee;
         private Point       _marqueeAnchor;
         private bool        _isMarqueeActive;
-        private MarqueeInfo mInfo;
+        private MarqueeInfo _mInfo;
 
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
+            {
+                var pos = args.GetCurrentPoint(_selectionCanvas).Position;
+                if (StartMarquee(pos))
+                {
+                    args.Handled = true;
+                }
+            }
+
+        }
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !_handledTouch.Contains(args))
+            {
+                _handledTouch.Add(args);
+                NumFingers++;
+                ViewManipulationControls.IsPanning = false;
+            }
+            if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
+            {
+                GetOuterGrid().CapturePointer(args.Pointer);
+                _marqueeAnchor = args.GetCurrentPoint(_selectionCanvas).Position;
+                _isMarqueeActive = true;
+                previewTextbox.Visibility = Visibility.Collapsed;
+                args.Handled = true;
+                GetOuterGrid().PointerMoved -= OnPointerMoved;
+                GetOuterGrid().PointerMoved += OnPointerMoved;
+            }
+        }
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !_handledTouch.Contains(e))
@@ -905,7 +946,6 @@ namespace Dash
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
-
         private void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
         {
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !_handledTouch.Contains(e))
@@ -924,6 +964,29 @@ namespace Dash
                 if (e != null) e.Handled = true;
             }
             if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
+        }
+        private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            var MarqueeKeys = new List<VirtualKey>
+            {
+                VirtualKey.A,
+                VirtualKey.Back,
+                VirtualKey.C,
+                VirtualKey.Delete,
+                VirtualKey.G,
+                VirtualKey.R,
+                VirtualKey.T,
+                VirtualKey.Left,
+                VirtualKey.Right,
+                VirtualKey.Up,
+                VirtualKey.Down,
+            };
+            if (!(FocusManager.GetFocusedElement() is RichEditBox) && !(FocusManager.GetFocusedElement() is TextBox))
+            {
+                var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
+                TriggerActionFromSelection(e.Key, useMarquee);
+            }
+            PreviewTextBuffer += Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
         }
 
         public bool  StartMarquee(Point pos)
@@ -964,8 +1027,8 @@ namespace Dash
                     _marquee.AllowFocusOnInteraction = true;
                     _selectionCanvas?.Children.Add(_marquee);
 
-                    mInfo = new MarqueeInfo();
-                    _selectionCanvas?.Children.Add(mInfo);
+                    _mInfo = new MarqueeInfo();
+                    _selectionCanvas?.Children.Add(_mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -975,87 +1038,16 @@ namespace Dash
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
 
-                    Canvas.SetLeft(mInfo, newAnchor.X);
-                    Canvas.SetTop(mInfo, newAnchor.Y - 32);
+                    Canvas.SetLeft(_mInfo, newAnchor.X);
+                    Canvas.SetTop(_mInfo, newAnchor.Y - 32);
 
                     return true;
                 }
             }
             return false;
         }
-
-        /// <summary>
-        /// Handles mouse movement.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
-        {
-            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
-            {
-                var pos = args.GetCurrentPoint(_selectionCanvas).Position;
-                if (StartMarquee(pos))
-                {
-                    args.Handled = true;
-                }
-            }
-
-        }
-
-        /// <summary>
-        /// Handles mouse movement. Starts drawing Marquee selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !_handledTouch.Contains(args))
-            {
-                _handledTouch.Add(args);
-                NumFingers++;
-                ViewManipulationControls.IsPanning = false;
-            }
-            if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
-            {
-                GetOuterGrid().CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(_selectionCanvas).Position;
-                _isMarqueeActive = true;
-                previewTextbox.Visibility = Visibility.Collapsed;
-                args.Handled = true;
-                GetOuterGrid().PointerMoved -= OnPointerMoved;
-                GetOuterGrid().PointerMoved += OnPointerMoved;
-            }
-        }
-
-        private static readonly List<VirtualKey> MarqueeKeys = new List<VirtualKey>
-        {
-            VirtualKey.A,
-            VirtualKey.Back,
-            VirtualKey.C,
-            VirtualKey.Delete,
-            VirtualKey.G,
-            VirtualKey.R,
-            VirtualKey.T,
-            VirtualKey.Left,
-            VirtualKey.Right,
-            VirtualKey.Up,
-            VirtualKey.Down,
-        };
-
-        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (!(FocusManager.GetFocusedElement() is RichEditBox) && !(FocusManager.GetFocusedElement() is TextBox))
-            {
-                var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
-                TriggerActionFromSelection(e.Key, useMarquee);
-            }
-            PreviewTextBuffer += Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
-        }
-
-        public bool IsMarqueeActive => _isMarqueeActive;
-
         // called by SelectionManager to reset this collection's internal selection-based logic
-        public void ResetMarquee(bool hardClear)
+        public void  ResetMarquee(bool hardClear)
         {
             if (hardClear)
             {
@@ -1072,7 +1064,6 @@ namespace Dash
                 }
             }
         }
-
         public IEnumerable<DocumentView> DocsInMarquee(Rect marquee)
         {
             if (GetItemsControl().ItemsPanelRoot != null)
@@ -1088,8 +1079,7 @@ namespace Dash
                 }
             }
         }
-
-        public Rect GetBoundingRectFromSelection()
+        public Rect  GetBoundingRectFromSelection()
         {
             var topLeftMostPoint = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var bottomRightMostPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
@@ -1109,7 +1099,10 @@ namespace Dash
                     ? d.GetPosition().Y + actualY : bottomRightMostPoint.Y;
             }
 
-            if (isEmpty) return Rect.Empty;
+            if (isEmpty)
+            {
+                return Rect.Empty;
+            }
 
             return new Rect(topLeftMostPoint, bottomRightMostPoint);
         }
@@ -1275,15 +1268,6 @@ namespace Dash
             {
                 SelectionManager.DeselectAll();
             }
-        }
-
-        #endregion
-
-        #region DragAndDrop
-
-        public void SetDropIndicationFill(Brush fill)
-        {
-            GetDropIndicationRectangle().Fill = fill;
         }
 
         #endregion
