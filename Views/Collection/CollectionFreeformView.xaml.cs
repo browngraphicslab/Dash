@@ -41,14 +41,19 @@ namespace Dash
     {
         private static event SetBackgroundOpacity setBackgroundOpacity;
         private static event SetBackground        setBackground;
-        private double _scaleX;
-        private double _scaleY;
+
+        public FreeformInkControl   _inkControl;
+        public InkCanvas            _xInkCanvas;
+        public Canvas               _selectionCanvas;
+        public bool                 _doubleTapped = false;
+        private double              _scaleX;
+        private double              _scaleY;
         private CoreCursor          _arrow = new CoreCursor(CoreCursorType.Arrow, 1);
         private Mutex               _mutex = new Mutex();
+        private CollectionViewModel _lastViewModel;
         private CanvasControl       _backgroundCanvas;
-        private CollectionViewModel _lastViewModel = null;
         private MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
-        private List<PointerRoutedEventArgs> handledTouch = new List<PointerRoutedEventArgs>();
+        private List<PointerRoutedEventArgs> _handledTouch = new List<PointerRoutedEventArgs>();
 
         public CollectionViewModel      ViewModel      => DataContext as CollectionViewModel;
         public CollectionViewType       ViewType       => CollectionViewType.Freeform;
@@ -71,7 +76,7 @@ namespace Dash
 
         public delegate void SetBackgroundOpacity(float opacity);
         public delegate void SetBackground(object backgroundImagePath);
-        public  static int NumFingers; //records number of fingers on screen for touch interactions
+        public static   int  NumFingers; //records number of fingers on screen for touch interactions
 
         public CollectionFreeformView()
         {
@@ -115,18 +120,12 @@ namespace Dash
         public ItemsControl     GetItemsControl()               { return xItemsControl; }
         public ContentPresenter GetBackgroundContentPresenter() { return xBackgroundContentPresenter;  }
         public Grid             GetOuterGrid()                  { return xOuterGrid;  }
-        public Canvas           GetSelectionCanvas()            { return SelectionCanvas; }
+        public Canvas           GetSelectionCanvas()            { return _selectionCanvas; }
         public Rectangle        GetDropIndicationRectangle()    { return XDropIndicationRectangle;  }
         public Canvas           GetInkHostCanvas()              { return InkHostCanvas; }
-
-        private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
-            {
-                Window.Current.CoreWindow.PointerCursor = _arrow;
-            }
-        }
-        public void AddToMenu(ActionMenu menu)
+        public void             SetupContextMenu(MenuFlyout contextMenu) { }
+        public void             OnDocumentSelected(bool selected)  { }
+        public void             AddToMenu(ActionMenu menu)
         {
             ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
             menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
@@ -149,24 +148,22 @@ namespace Dash
                 menu.AddAction("CUSTOM", avm);
             }
         }
-        public void SetupContextMenu(MenuFlyout contextMenu) { }
-        public void OnDocumentSelected(bool selected)  { }
 
-        private       Task<bool> AddTextNote(ActionFuncParams actionParams)
+        private       Task<bool> AddTextNote        (ActionFuncParams actionParams)
         {
             var postitNote = new RichTextNote().Document;
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
             Actions.DisplayDocument(ViewModel, postitNote, colPoint);
             return Task.FromResult(true);
         }
-        private       Task<bool> AddCollection(ActionFuncParams actionParams)
+        private       Task<bool> AddCollection      (ActionFuncParams actionParams)
         {
             var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
             var cnote = new CollectionNote(new Point(), CollectionViewType.Icon, 200, 75).Document;
             Actions.DisplayDocument(ViewModel, cnote, colPoint);
             return Task.FromResult(true);
         }
-        private async Task<bool> AddMultipleImages(ActionFuncParams actionParams)
+        private async Task<bool> AddMultipleImages  (ActionFuncParams actionParams)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -213,7 +210,7 @@ namespace Dash
 
             return true;
         }
-        private async Task<bool> AddDiscussion(ActionFuncParams actionParams)
+        private async Task<bool> AddDiscussion      (ActionFuncParams actionParams)
         {
             var pt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
             var docController = new DiscussionNote("testing...", pt).Document;
@@ -282,7 +279,13 @@ namespace Dash
             return true;
         }
 
-
+        private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            {
+                Window.Current.CoreWindow.PointerCursor = _arrow;
+            }
+        }
         private void XOuterGrid_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Add && this.IsCtrlPressed())
@@ -366,11 +369,11 @@ namespace Dash
             GetInkHostCanvas().Children.Add(previewTextbox);
 
             //make and add selectioncanvas 
-            SelectionCanvas = new Canvas();
-            Canvas.SetLeft(SelectionCanvas, -30000);
-            Canvas.SetTop(SelectionCanvas, -30000);
+            _selectionCanvas = new Canvas();
+            Canvas.SetLeft(_selectionCanvas, -30000);
+            Canvas.SetTop(_selectionCanvas, -30000);
             //Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
-            GetInkHostCanvas().Children.Add(SelectionCanvas);
+            GetInkHostCanvas().Children.Add(_selectionCanvas);
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
@@ -393,6 +396,23 @@ namespace Dash
             }
 
             BackgroundOpacity = settingsView.BackgroundImageOpacity;
+        }
+        private void MakeInkCanvas()
+        {
+
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                _xInkCanvas = new InkCanvas()
+                {
+                    Width = 60000,
+                    Height = 60000
+                };
+
+                _inkControl = new FreeformInkControl(this, _xInkCanvas, _selectionCanvas);
+                Canvas.SetLeft(_xInkCanvas, -30000);
+                Canvas.SetTop(_xInkCanvas, -30000);
+                GetInkHostCanvas().Children.Add(_xInkCanvas);
+            }
         }
 
         private void backgroundCanvas_LayoutUpdated(object sender, object e)
@@ -861,9 +881,9 @@ namespace Dash
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !_handledTouch.Contains(e))
             {
-                handledTouch.Add(e);
+                _handledTouch.Add(e);
                 if (NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
@@ -888,9 +908,9 @@ namespace Dash
 
         private void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !_handledTouch.Contains(e))
             {
-                handledTouch.Add(e);
+                _handledTouch.Add(e);
                 if (NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
@@ -942,10 +962,10 @@ namespace Dash
                     this.IsTabStop = true;
                     this.Focus(FocusState.Pointer);
                     _marquee.AllowFocusOnInteraction = true;
-                    SelectionCanvas?.Children.Add(_marquee);
+                    _selectionCanvas?.Children.Add(_marquee);
 
                     mInfo = new MarqueeInfo();
-                    SelectionCanvas?.Children.Add(mInfo);
+                    _selectionCanvas?.Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -973,7 +993,7 @@ namespace Dash
         {
             if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
             {
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                var pos = args.GetCurrentPoint(_selectionCanvas).Position;
                 if (StartMarquee(pos))
                 {
                     args.Handled = true;
@@ -989,16 +1009,16 @@ namespace Dash
         /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
+            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !_handledTouch.Contains(args))
             {
-                handledTouch.Add(args);
+                _handledTouch.Add(args);
                 NumFingers++;
                 ViewManipulationControls.IsPanning = false;
             }
             if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
             {
                 GetOuterGrid().CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = args.GetCurrentPoint(_selectionCanvas).Position;
                 _isMarqueeActive = true;
                 previewTextbox.Visibility = Visibility.Collapsed;
                 args.Handled = true;
@@ -1039,13 +1059,13 @@ namespace Dash
         {
             if (hardClear)
             {
-                SelectionCanvas?.Children?.Clear();
+                _selectionCanvas?.Children?.Clear();
                 _marquee = null;
                 _isMarqueeActive = false;
             }
             else
             {
-                foreach (var selectionCanvasChild in SelectionCanvas.Children)
+                foreach (var selectionCanvasChild in _selectionCanvas.Children)
                 {
                     //This is a hack because modifying the visual tree during a manipulation seems to screw up UWP
                     selectionCanvasChild.Visibility = Visibility.Collapsed;
@@ -1106,7 +1126,7 @@ namespace Dash
                 if (fromMarquee)
                 {
                     var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                                                          SelectionCanvas, GetItemsControl().ItemsPanelRoot);
+                                                          _selectionCanvas, GetItemsControl().ItemsPanelRoot);
                     var size = new Size(_marquee.Width, _marquee.Height);
                     using (UndoManager.GetBatchHandle())
                     {
@@ -1267,29 +1287,6 @@ namespace Dash
         }
 
         #endregion
-
-        public FreeformInkControl InkControl;
-        public InkCanvas          XInkCanvas;
-        public Canvas             SelectionCanvas;
-        public bool              _doubleTapped = false;
-
-        private void MakeInkCanvas()
-        {
-
-            if (MainPage.Instance.xSettingsView.UseInkCanvas)
-            {
-                XInkCanvas = new InkCanvas()
-                {
-                    Width = 60000,
-                    Height = 60000
-                };
-
-                InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
-                Canvas.SetLeft(XInkCanvas, -30000);
-                Canvas.SetTop(XInkCanvas, -30000);
-                GetInkHostCanvas().Children.Add(XInkCanvas);
-            }
-        }
 
         #region TextInputBox
 

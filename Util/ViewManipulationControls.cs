@@ -150,7 +150,7 @@ namespace Dash
                 else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformView.NumFingers == 1 &&
                            SplitManager.IsRoot(_freeformView.GetDocumentView()?.ViewModel))
                 {
-                    var point = _freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);
+                    var point = _freeformView.TransformToVisual(_freeformView._selectionCanvas).TransformPoint(e.Position);
                     //gets funky with nested collections, but otherwise works
                     ////handle touch interactions with just one finger - equivalent to drag without ctr
                     if (_freeformView.StartMarquee(point))
