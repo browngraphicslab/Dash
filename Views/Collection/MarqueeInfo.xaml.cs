@@ -21,7 +21,7 @@ namespace Dash.Views.Collection
 
         private void Collection_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             collection?.TriggerActionFromSelection(VirtualKey.C, true);
             e.Handled = true;
         }
@@ -80,7 +80,7 @@ namespace Dash.Views.Collection
         {
             //TestSpeech();
 
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             collection?.TriggerActionFromSelection(VirtualKey.G, true);
             e.Handled = true;
         }

@@ -63,7 +63,7 @@ namespace Dash
             center.Y = -center.Y;
 
             var col = ViewModel.Content as CollectionView;
-            var ffv = col?.CurrentView as CollectionFreeformBase;
+            var ffv = col?.CurrentView as CollectionFreeformView;
             ffv?.SetTransformAnimated(new TranslateTransform
             {
                 X = center.X,

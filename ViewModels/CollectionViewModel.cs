@@ -719,7 +719,7 @@ namespace Dash
                 RemoveDragDropIndication(sender as CollectionView);
 
                 var where = new Point();
-                if ((sender as CollectionView)?.CurrentView is CollectionFreeformBase freeformBase)
+                if ((sender as CollectionView)?.CurrentView is CollectionFreeformView freeformBase)
                 {
                     where = Util.GetCollectionFreeFormPoint(freeformBase, e.GetPosition(MainPage.Instance.xOuterGrid));
                 }

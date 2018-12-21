@@ -13,13 +13,13 @@ namespace Dash
         private Point _rootPoint;
         private SortedDictionary<double, Point> _sortedPoints;
         private Stack<Point> _hullPoints;
-        private CollectionFreeformBase _view;
+        private CollectionFreeformView _view;
         private Polygon _hull;
         private Polygon _visualHull;
         private MenuFlyout _menu = new MenuFlyout();
         private Grid _flyoutBase;
 
-        public LassoSelectHelper(CollectionFreeformBase view)
+        public LassoSelectHelper(CollectionFreeformView view)
         {
             _view = view;
             //var delete = new MenuFlyoutItem {Text = "Delete"};

@@ -34,10 +34,7 @@ namespace Dash
         {
         }
 
-        public void SetupContextMenu(MenuFlyout contextMenu)
-        {
-
-        }
+        public void SetupContextMenu(MenuFlyout contextMenu) { }
 
         public UserControl UserControl => this;
 

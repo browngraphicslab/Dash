@@ -8,13 +8,13 @@ namespace Dash
     {
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
             collection.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Elliptical, where));
         }
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
             
             collection.ViewModel.AddDocument(new CollectionNote(where, CollectionViewType.Freeform).Document);

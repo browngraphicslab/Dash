@@ -27,7 +27,7 @@ namespace Dash
                 () =>
                 {
                     var doc = new PdfToDashUtil().GetPDFDoc(file);
-                    if (SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase cfb)
+                    if (SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView cfb)
                     {
                         var point = Util.GetCollectionFreeFormPoint(cfb, new Point(
                             (SplitFrame.ActiveFrame.ActualWidth - MainPage.Instance.xMainTreeView.ActualWidth) / 2,

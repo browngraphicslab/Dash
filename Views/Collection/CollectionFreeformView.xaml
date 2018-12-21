@@ -1,4 +1,4 @@
-﻿<local:CollectionFreeformBase
+﻿<UserControl
     x:Class="Dash.CollectionFreeformView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,7 +8,8 @@
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     Background="Transparent"
-    ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
+    ManipulationMode="All" 
+    d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     Tapped="OnTapped"
     DoubleTapped="OnDoubleTapped"
@@ -42,4 +43,4 @@
             </ItemsControl>
         </Canvas>
     </Grid>
-</local:CollectionFreeformBase>
+</UserControl>

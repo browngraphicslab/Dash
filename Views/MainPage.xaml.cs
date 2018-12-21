@@ -62,7 +62,7 @@ namespace Dash
         public DashPopup                          ActivePopup;
         public InkManager                         InkManager   { get; set; }
         public DocumentController                 MainDocument { get; private set; }
-        public CollectionFreeformBase             TextPreviewer;
+        public CollectionFreeformView             TextPreviewer;
         public DocumentView                       xMapDocumentView;
         public ListController<DocumentController> LowPriorityOps;
         public ListController<DocumentController> ModeratePriorityOps;
@@ -204,7 +204,7 @@ namespace Dash
                 ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
         }
 
-        public void SetForceFocusPoint(CollectionFreeformBase collection, Point where)
+        public void SetForceFocusPoint(CollectionFreeformView collection, Point where)
         {
             _forceFocusPoint = where;
             TextPreviewer = collection;
@@ -709,7 +709,7 @@ function (d) {
             {
                 var pos = this.RootPointerPos();
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
-                if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformBase freeformView)
+                if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
                 {
                     TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();

@@ -38,14 +38,14 @@ namespace Dash
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
-        public CollectionFreeformBase FreeformView;
+        public CollectionFreeformView FreeformView;
         public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
         public InkCanvas TargetInkCanvas { get; set; }
         public InkRecognitionHelper InkRecognitionHelper { get; }
 
 
-        public FreeformInkControl(CollectionFreeformBase view, InkCanvas canvas, Canvas selectionCanvas)
+        public FreeformInkControl(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
         {
             TargetInkCanvas = canvas;
             FreeformView = view;

@@ -381,7 +381,7 @@ namespace Dash
                     if (docController == null) continue;
 
                     var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.SetPosition(where);
                     mainPageCollectionView.ViewModel.AddDocument(docController);
                 }

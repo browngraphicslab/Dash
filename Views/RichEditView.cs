@@ -778,7 +778,7 @@ namespace Dash
                 Document.Selection.SetRange(Document.Selection.StartPosition,
                                                          Document.Selection.StartPosition + hashcount + extracount);
                 if (Document.Selection.StartPosition == 0)
-                    CollectionFreeformBase.PreviewFormatString = Document.Selection.Text;
+                    CollectionFreeformView.PreviewFormatString = Document.Selection.Text;
                 Document.Selection.Text = "";
                 Document.Selection.SetRange(Document.Selection.StartPosition, s2);
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;

@@ -495,9 +495,9 @@ namespace Dash
             }
 
             //get right collection
-            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>().GetTransformedCanvas();
-            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformBase>().GetTransformedCanvas();
-            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>().Reverse();
+            var docViewA = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformView>().GetTransformedCanvas();
+            var docViewB = MainPage.Instance.MainSplitter.GetFirstDescendantOfType<CollectionFreeformView>().GetTransformedCanvas();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformView>().Reverse();
             foreach (var col in allCollections)
             {
                 foreach (var doc in col.GetImmediateDescendantsOfType<DocumentView>())
@@ -733,7 +733,7 @@ namespace Dash
         public void ShowLines()
         {
             //show lines
-            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformView>();
             //xShowLinesButton.Background = new SolidColorBrush(Colors.LightGray);
 
             DrawLines();
@@ -756,7 +756,7 @@ namespace Dash
         private void ShowLinesButton_OnUnchecked(object sender, RoutedEventArgs e)
         {
             //hide lines
-            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformBase>();
+            var allCollections = MainPage.Instance.MainSplitter.GetDescendantsOfType<CollectionFreeformView>();
             //xShowLinesButton.Background = new SolidColorBrush(Colors.White);
 
             //remove all paths

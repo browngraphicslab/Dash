@@ -235,7 +235,7 @@ namespace Dash
         public void GetJson()                    { Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); }
         public void HandleShiftEnter()
         {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null)
             {
@@ -528,7 +528,7 @@ namespace Dash
                 if (SelectionManager.SelectedDocViewModels.Count() > 1)
                 {
                     // move focus to container if multiple documents are selected (otherwise focus remains where it was)
-                    (ParentCollection?.CurrentView as CollectionFreeformBase)?.Focus(FocusState.Programmatic);
+                    (ParentCollection?.CurrentView as CollectionFreeformView)?.Focus(FocusState.Programmatic);
                 }
             }
         }

@@ -23,7 +23,7 @@ namespace Dash
     /// </summary>
     public class ViewManipulationControls : IDisposable
     {
-        private readonly CollectionFreeformBase _freeformView;
+        private readonly CollectionFreeformView _freeformView;
         private bool DraggingDoc;
         private bool IsMouseScrollOn => SettingsView.Instance.MouseScrollOn == SettingsView.MouseFuncMode.Scroll;
 
@@ -45,7 +45,7 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ViewManipulationControls(CollectionFreeformBase element)
+        public ViewManipulationControls(CollectionFreeformView element)
         {
             _freeformView = element;
             element.ManipulationMode             = ManipulationModes.All;
@@ -100,7 +100,7 @@ namespace Dash
         
         private void DragManipCompletedTouch(object sender, EventArgs e)
         {
-            CollectionFreeformBase.NumFingers--;
+            CollectionFreeformView.NumFingers--;
             DraggingDoc = false;
             SelectionManager.DragManipulationCompleted -= DragManipCompletedTouch;
         }
@@ -108,7 +108,7 @@ namespace Dash
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var docView = _freeformView.GetDocumentView();
-            if (docView != null && CollectionFreeformBase.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !SplitManager.IsRoot(docView.ViewModel) && !DraggingDoc)
+            if (docView != null && CollectionFreeformView.NumFingers == 1 && e.PointerDeviceType == PointerDeviceType.Touch && !SplitManager.IsRoot(docView.ViewModel) && !DraggingDoc)
             {
                 //drag document 
                 if (!SelectionManager.IsSelected(docView.ViewModel))
@@ -133,8 +133,8 @@ namespace Dash
             if (!_freeformView.GetDocumentView().ViewModel.DragAllowed)  // only try to manipulate doc contents if it can't be dragged
             {
                 if (_freeformView.IsRightBtnPressed() ||
-                    (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 2) || 
-                    (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 && IsPanning))
+                    (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformView.NumFingers == 2) || 
+                    (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformView.NumFingers == 1 && IsPanning))
                 {
                     var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                     var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
@@ -147,7 +147,7 @@ namespace Dash
                     IsPanning = true;
                     e.Handled = true;
                 }
-                else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformBase.NumFingers == 1 &&
+                else if (e.PointerDeviceType == PointerDeviceType.Touch && CollectionFreeformView.NumFingers == 1 &&
                            SplitManager.IsRoot(_freeformView.GetDocumentView()?.ViewModel))
                 {
                     var point = _freeformView.TransformToVisual(_freeformView.SelectionCanvas).TransformPoint(e.Position);

@@ -200,7 +200,7 @@ namespace Dash
                 rv.TransportControls.Visibility = Visibility.Collapsed);
         }
 
-        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
+        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformView collection)
         {
             return _selectedDocViews.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
         }
@@ -210,7 +210,7 @@ namespace Dash
          */
         public static List<DocumentView> GetSelectedSiblings(DocumentView view)
         {
-            if (view.ParentCollection != null && view.ParentCollection.CurrentView is CollectionFreeformBase cfb)
+            if (view.ParentCollection != null && view.ParentCollection.CurrentView is CollectionFreeformView cfb)
             {
                 var marqueeDocs = GetSelectedDocumentsInCollection(cfb).ToList();
                 if (marqueeDocs.Contains(view))
@@ -232,7 +232,7 @@ namespace Dash
             foreach (var parent in parents)
             {
                 var parentIsFreeformCollection = parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
-                    parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase;
+                    parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView;
                 var parentIsAnnotationLayer = parent.GetFirstDescendantOfType<AnnotationOverlayEmbeddings>()?.EmbeddedDocsList.Contains(draggedView.ViewModel.DocumentController) == true;
                 if ((parentIsFreeformCollection || parentIsAnnotationLayer) &&
                     (_selectedDocViews.Contains(parent) || parent == parents.Last()))

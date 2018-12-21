@@ -353,7 +353,6 @@
     <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
       <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />

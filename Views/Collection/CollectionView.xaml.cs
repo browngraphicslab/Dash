@@ -265,7 +265,7 @@ namespace Dash
         {
             var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
             var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, topPoint);
             var note = new DishScriptBox(@where.X, @where.Y).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
@@ -273,7 +273,7 @@ namespace Dash
         {
             var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
             var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, topPoint);
             DocumentController note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
