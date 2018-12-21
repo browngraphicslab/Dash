@@ -42,10 +42,8 @@ namespace Dash
         private static event SetBackgroundOpacity setBackgroundOpacity;
         private static event SetBackground        setBackground;
 
-        public FreeformInkControl   _inkControl;
-        public InkCanvas            _xInkCanvas;
-        public Canvas               _selectionCanvas;
-        public bool                 _doubleTapped = false;
+        private InkCanvas           _xInkCanvas;
+        private bool                _doubleTapped = false;
         private double              _scaleX;
         private double              _scaleY;
         private CoreCursor          _arrow = new CoreCursor(CoreCursorType.Arrow, 1);
@@ -62,6 +60,8 @@ namespace Dash
         public double                   Zoom           => ViewManipulationControls.ElementScale;
         public UserControl              UserControl    => this;
         public ViewManipulationControls ViewManipulationControls { get; set; }
+        public FreeformInkControl       InkControl;
+        public Canvas                   SelectionCanvas;
 
         //SET BACKGROUND IMAGE OPACITY
 
@@ -112,16 +112,13 @@ namespace Dash
             previewTextbox.LostFocus += (s, e) => previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.KeyDown += PreviewTextbox_KeyDown;
         }
-        ~CollectionFreeformView()
-        {
-            //Debug.WriteLine("FINALIZING CollectionFreeFormView");
-        }
+        ~CollectionFreeformView() {  /* Debug.WriteLine("FINALIZING CollectionFreeFormView"); */ }
         
         public Panel            GetTransformedCanvas()            { return xTransformedCanvas; }
         public ItemsControl     GetItemsControl()                 { return xItemsControl; }
         public ContentPresenter GetBackgroundContentPresenter()   { return xBackgroundContentPresenter;  }
         public Grid             GetOuterGrid()                    { return xOuterGrid;  }
-        public Canvas           GetSelectionCanvas()              { return _selectionCanvas; }
+        public Canvas           GetSelectionCanvas()              { return SelectionCanvas; }
         public Rectangle        GetDropIndicationRectangle()      { return XDropIndicationRectangle;  }
         public Canvas           GetInkHostCanvas()                { return InkHostCanvas; }
         public void             SetDropIndicationFill(Brush fill) { GetDropIndicationRectangle().Fill = fill; }
@@ -371,11 +368,11 @@ namespace Dash
             GetInkHostCanvas().Children.Add(previewTextbox);
 
             //make and add selectioncanvas 
-            _selectionCanvas = new Canvas();
-            Canvas.SetLeft(_selectionCanvas, -30000);
-            Canvas.SetTop(_selectionCanvas, -30000);
+            SelectionCanvas = new Canvas();
+            Canvas.SetLeft(SelectionCanvas, -30000);
+            Canvas.SetTop(SelectionCanvas, -30000);
             //Canvas.SetZIndex(GetInkHostCanvas(), 2);//Uncomment this to get the Marquee on top, but it causes issues with regions
-            GetInkHostCanvas().Children.Add(_selectionCanvas);
+            GetInkHostCanvas().Children.Add(SelectionCanvas);
 
             if (ViewModel.InkController == null)
                 ViewModel.ContainerDocument.SetField<InkController>(KeyStore.InkDataKey, new List<InkStroke>(), true);
@@ -410,7 +407,7 @@ namespace Dash
                     Height = 60000
                 };
 
-                _inkControl = new FreeformInkControl(this, _xInkCanvas, _selectionCanvas);
+                InkControl = new FreeformInkControl(this, _xInkCanvas, SelectionCanvas);
                 Canvas.SetLeft(_xInkCanvas, -30000);
                 Canvas.SetTop(_xInkCanvas, -30000);
                 GetInkHostCanvas().Children.Add(_xInkCanvas);
@@ -873,7 +870,6 @@ namespace Dash
         #endregion
 
         #region Marquee Select
-
         private Rectangle   _marquee;
         private Point       _marqueeAnchor;
         private bool        _isMarqueeActive;
@@ -888,7 +884,7 @@ namespace Dash
         {
             if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
             {
-                var pos = args.GetCurrentPoint(_selectionCanvas).Position;
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 if (StartMarquee(pos))
                 {
                     args.Handled = true;
@@ -912,7 +908,7 @@ namespace Dash
             if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
             {
                 GetOuterGrid().CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(_selectionCanvas).Position;
+                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
                 _isMarqueeActive = true;
                 previewTextbox.Visibility = Visibility.Collapsed;
                 args.Handled = true;
@@ -1025,10 +1021,10 @@ namespace Dash
                     this.IsTabStop = true;
                     this.Focus(FocusState.Pointer);
                     _marquee.AllowFocusOnInteraction = true;
-                    _selectionCanvas?.Children.Add(_marquee);
+                    SelectionCanvas?.Children.Add(_marquee);
 
                     _mInfo = new MarqueeInfo();
-                    _selectionCanvas?.Children.Add(_mInfo);
+                    SelectionCanvas?.Children.Add(_mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -1051,13 +1047,13 @@ namespace Dash
         {
             if (hardClear)
             {
-                _selectionCanvas?.Children?.Clear();
+                SelectionCanvas?.Children?.Clear();
                 _marquee = null;
                 _isMarqueeActive = false;
             }
             else
             {
-                foreach (var selectionCanvasChild in _selectionCanvas.Children)
+                foreach (var selectionCanvasChild in SelectionCanvas.Children)
                 {
                     //This is a hack because modifying the visual tree during a manipulation seems to screw up UWP
                     selectionCanvasChild.Visibility = Visibility.Collapsed;
@@ -1119,7 +1115,7 @@ namespace Dash
                 if (fromMarquee)
                 {
                     var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                                                          _selectionCanvas, GetItemsControl().ItemsPanelRoot);
+                                                          SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                     var size = new Size(_marquee.Width, _marquee.Height);
                     using (UndoManager.GetBatchHandle())
                     {
@@ -1269,7 +1265,6 @@ namespace Dash
                 SelectionManager.DeselectAll();
             }
         }
-
         #endregion
 
         #region TextInputBox
