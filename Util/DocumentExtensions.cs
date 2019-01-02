@@ -179,6 +179,16 @@ namespace Dash
 
             return newDoc;
         }
+        public static DocumentController GetLinkCollection(this DocumentController doc, Point? where = null)
+        {
+            var links = doc.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+            if (links != null)
+            {
+                var cnote = new CollectionNote(where ?? new Point() , CollectionViewType.Schema, 400, 200, links).Document;
+                return cnote;
+            }
+            return null;
+        }
 
         public static void RestoreNeighboringContext(this DocumentController doc)
         {

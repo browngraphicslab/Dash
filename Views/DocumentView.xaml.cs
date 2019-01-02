@@ -220,7 +220,8 @@ namespace Dash
                 //TODO: ADD SUPPORT FOR MAINTAINING COLOR FOR LINK BUBBLES
                 dropDoc?.SetField(KeyStore.IsAnnotationScrollVisibleKey, new BoolController(true), true);
             }
-            MainPage.Instance.XDocumentDecorations.SetPositionAndSize(true);
+            MainPage.Instance.XDocumentDecorations.RebuildMenu();
+            MainPage.Instance.XDocumentDecorations.SetPositionAndSize();
             MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(dm.DraggedLinkType, lastLinkDoc);
         }
         /// <summary>
@@ -396,7 +397,7 @@ namespace Dash
         }
         private void this_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (ViewModel.DragAllowed)
+            if (ViewModel?.DragAllowed == true)
             {
                 e.Handled = true;
                 var cur   = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
@@ -488,6 +489,10 @@ namespace Dash
                         {
                             SelectionManager.Select(this, this.IsShiftPressed());
                         }
+                        else if (!SelectionManager.SelectedDocViews.Any(dv => dv.GetFirstAncestorOfType<SplitFrame>() == null)) // clear the floating documents unless the newly selected document is a floating document
+                        {
+                            MainPage.Instance.ClearFloatingDoc(null);
+                        }
                     }
                 }
 
@@ -501,7 +506,7 @@ namespace Dash
 
         private async Task<bool> ExhibitBehaviors(KeyController behaviorKey)
         {
-            var scripts = ViewModel.DocumentController.GetBehaviors(behaviorKey);
+            var scripts = ViewModel?.DocumentController.GetBehaviors(behaviorKey);
             if (scripts != null && scripts.Any())
             {
                 using (UndoManager.GetBatchHandle())
@@ -544,6 +549,17 @@ namespace Dash
                 {
                     var kvp = doc.ViewModel.DocumentController.GetKeyValueAlias();
                     MainPage.Instance.AddFloatingDoc(kvp, new Point(500, 300), MainPage.Instance.xCanvas.PointerPos());
+                }
+            }
+        }
+        private void MenuFlyoutItemLinks_Click(object sender, RoutedEventArgs e)
+        {
+            var linkColl = ViewModel.DataDocument.GetLinkCollection();
+            if (linkColl != null)
+            {
+                using (UndoManager.GetBatchHandle())
+                {
+                    MainPage.Instance.AddFloatingDoc(linkColl, new Point(500, 300), MainPage.Instance.xCanvas.PointerPos());
                 }
             }
         }
@@ -713,6 +729,12 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Database }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemFields_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Links",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Link }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemLinks_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = "Open",
@@ -1038,7 +1060,8 @@ namespace Dash
 
         private void LayoutRootHideTooltip(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = false;
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip && tip.IsOpen)
+                tip.IsOpen = false;
         }
     }
 }

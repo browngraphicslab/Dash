@@ -53,10 +53,14 @@ namespace Dash
 
             xAddColumnEntry.AddKeyHandler(VirtualKey.Enter, args => AddNewColumn());
             xGridSplitter.PointerPressed += (s,e) => this.GetDocumentView().ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
-
+            AddHandler(PointerPressedEvent, new PointerEventHandler(pev), true);
+            AddHandler(PointerReleasedEvent, new PointerEventHandler(pev), true);
             Loaded += OnLoaded;
         }
-
+        void pev(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
         static public void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
             var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;

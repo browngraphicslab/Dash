@@ -12,7 +12,7 @@ namespace Dash
 {
     public class CollectionDBSchemaColumnViewModel : ViewModelBase
     {
-        double _width;
+        private double       _width;
         private ScrollViewer _viewModelScrollViewer;
         public KeyController Key { get; } // GET ONLY FOR SAFETY
 

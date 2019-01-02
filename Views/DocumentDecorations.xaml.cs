@@ -23,39 +23,27 @@ namespace Dash
 {
     public sealed partial class DocumentDecorations : UserControl, INotifyPropertyChanged
     {
+        private bool                           _parentIsFreeform = false;
+        private bool                           _showPDFcontrols = false;
         private bool                           _doubleTapped = false;
         private Visibility                     _resizerVisibilityState = Visibility.Collapsed;
-        private Visibility                     _visibilityState;
         private ToolTip                        _titleTip = new ToolTip { Placement = PlacementMode.Top };
         private IEnumerable<DocumentViewModel> _selectedDocViewModels => SelectionManager.SelectedDocViewModels;
 
-        public Visibility                        VisibilityState
+        public bool                              ShowPDFControls
         {
-            get => _visibilityState;
-            set
-            {
-                if (value != _visibilityState)
-                {
-                    _visibilityState = value;
-                    OnPropertyChanged(nameof(VisibilityState));
-                }
-            }
+            get => _showPDFcontrols;
+            set => SetProperty(ref _showPDFcontrols, value);
+        }
+        public bool                              ParentIsFreeform
+        {
+            get => _parentIsFreeform;
+            set => SetProperty(ref _parentIsFreeform, value);
         }
         public Visibility                        ResizerVisibilityState
         {
             get => _resizerVisibilityState;
-            set
-            {
-                if (_resizerVisibilityState != value)
-                {
-                    _resizerVisibilityState = value;
-                    if (value == Visibility.Visible)
-                    {
-                        SetPositionAndSize();
-                    }
-                    OnPropertyChanged(nameof(ResizerVisibilityState));
-                }
-            }
+            set => SetProperty(ref _resizerVisibilityState, value);
         }
         public List<LinkButton>                  LinkButtons    = new List<LinkButton>();
         public static KeyController              HeaderFieldKey = KeyStore.TitleKey;
@@ -63,10 +51,10 @@ namespace Dash
 
         public DocumentDecorations()
         {
-            void keyHdlr(object sender, KeyRoutedEventArgs e)     { SetPositionAndSize(false); }
-            void ptrHdlr(object sender, PointerRoutedEventArgs e) { SetPositionAndSize(false); }
-            void tapHdlr(object sender, TappedRoutedEventArgs e)  { SetPositionAndSize(false); }
-            PointerEntered += (s,e) => VisibilityState = Visibility.Visible;
+            DataContext = this;
+            void keyHdlr(object sender, KeyRoutedEventArgs e)     { SetPositionAndSize(); }
+            void ptrHdlr(object sender, PointerRoutedEventArgs e) { SetPositionAndSize(); }
+            void tapHdlr(object sender, TappedRoutedEventArgs e)  { SetPositionAndSize(); }
             
             MainPage.Instance.xOuterGrid.AddHandler(PointerMovedEvent,        new PointerEventHandler(ptrHdlr), true);
             MainPage.Instance.xOuterGrid.AddHandler(PointerReleasedEvent,     new PointerEventHandler(ptrHdlr), true);
@@ -75,7 +63,6 @@ namespace Dash
             MainPage.Instance.xOuterGrid.AddHandler(KeyDownEvent,             new KeyEventHandler(keyHdlr), true);
             MainPage.Instance.xOuterGrid.AddHandler(KeyUpEvent,               new KeyEventHandler(keyHdlr), true);
             InitializeComponent();
-            _visibilityState  = Visibility.Collapsed;
             _titleTip.Content = HeaderFieldKey.Name;
             ToolTipService.SetToolTip(xHeaderText, _titleTip);
             xHeaderText.PointerEntered += (s,e) => _titleTip.IsOpen = true;
@@ -138,70 +125,41 @@ namespace Dash
                     }
                 };
             }
-            SelectionManager.DragManipulationStarted += (s, e) => ResizerVisibilityState = Visibility.Collapsed;
+            SelectionManager.DragManipulationStarted += (s, e) => Visibility = Visibility.Collapsed;
         }
 
-        public void SetPositionAndSize(bool rebuildMenu = true)
+        public void SetPositionAndSize()
         {
-            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -20 : 0, 0, 0, 0);
-            var topLeft  = new Point(double.PositiveInfinity, double.PositiveInfinity);
-            var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
-
-            var parentIsFreeform = true;
-            var showPDFControls = false;
+            Visibility = _selectedDocViewModels.Any() ? Visibility.Visible : Visibility.Collapsed;
             try
             {
+                var topLeft  = new Point(double.PositiveInfinity, double.PositiveInfinity);
+                var botRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
                 foreach (var docView in SelectionManager.SelectedDocViews)
                 {
-                    if (docView.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType)==true)
-                    {
-                        showPDFControls = true;
-                    }
-                    if (docView.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
-                    {
-                        parentIsFreeform = false;
-                    }
                     var viewModelBounds = docView.TransformToVisual(MainPage.Instance.xCanvas).TransformBounds(new Rect(new Point(), new Size(docView.ActualWidth, docView.ActualHeight)));
 
-                    topLeft.X = Math.Min(viewModelBounds.Left, topLeft.X);
-                    topLeft.Y = Math.Min(viewModelBounds.Top, topLeft.Y);
+                    topLeft.X  = Math.Min(viewModelBounds.Left, topLeft.X);
+                    topLeft.Y  = Math.Min(viewModelBounds.Top, topLeft.Y);
 
                     botRight.X = Math.Max(viewModelBounds.Right, botRight.X);
                     botRight.Y = Math.Max(viewModelBounds.Bottom, botRight.Y);
                 }
-            }
-            catch (Exception e) {
-                Debug.WriteLine("Got Exception:" + e);
-            }
-            xHeaderText.Visibility      = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            xURISource.Visibility       = parentIsFreeform ? Visibility.Visible : Visibility.Collapsed;
-            xScrollNavStack.Visibility  = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
-            xPageButtonStack.Visibility = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
-            xSearchStack.Visibility     = showPDFControls ? Visibility.Visible : Visibility.Collapsed;
-            ResizerVisibilityState      = _selectedDocViewModels.FirstOrDefault()?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
-
-            if (rebuildMenu)
-            {
-                RebuildMenuIfNeeded();
-            }
-
-            if (!double.IsPositiveInfinity(topLeft.X) && !double.IsPositiveInfinity(topLeft.Y) &&
-                !double.IsNegativeInfinity(botRight.X) && !double.IsNegativeInfinity(botRight.Y))
-            {
-                if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                if (SelectionManager.SelectedDocViews.Any())
                 {
-                    botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
-                }
+                    if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
+                    {
+                        botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+                    }
 
-                RenderTransform     = new TranslateTransform { X = topLeft.X, Y = topLeft.Y };
-                ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
-                ContentRow.Height   = new GridLength(botRight.Y - topLeft.Y);
+                    RenderTransform     = new TranslateTransform { X = topLeft.X, Y = topLeft.Y };
+                    ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
+                    ContentRow.Height   = new GridLength(botRight.Y - topLeft.Y);
+                }
             }
+            catch (Exception e) { Debug.WriteLine("Got Exception:" + e); }
         }
-        public void SetSearchBoxFocus()
-        {
-            this.xSearchBox.Focus(FocusState.Programmatic);
-        }
+        public void SetSearchBoxFocus() { xSearchBox.Focus(FocusState.Programmatic); }
         /// <summary>
         /// adds a button for a link type to appear underneath the link button
         /// </summary>
@@ -230,7 +188,7 @@ namespace Dash
         /// <summary>
         /// Rebuilds the different link dots when the menu is refreshed or one is added
         /// </summary>
-        public void RebuildMenuIfNeeded()
+        public void RebuildMenu()
         {
             xButtonsPanel.Children.Clear();
             LinkButtons.Clear();
@@ -285,17 +243,38 @@ namespace Dash
         }
         private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
         {
-            xMultiSelectBorder.BorderThickness = new Thickness(_selectedDocViewModels.Count() > 1 ? 2 : 0);
+            RebuildMenu();
             SetPositionAndSize();
             ResetHeader(); // force header field to update
-            VisibilityState = (_selectedDocViewModels.Any() && !this.IsRightBtnPressed()) ? Visibility.Visible : Visibility.Collapsed;
 
+            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -20 : 0, 0, 0, 0);
+            ParentIsFreeform = true;
+            ShowPDFControls  = false;
+            try
+            {
+                foreach (var docView in SelectionManager.SelectedDocViews)
+                {
+                    if (docView.ViewModel.LayoutDocument.DocumentType.Equals(PdfBox.DocumentType) == true)
+                    {
+                        ShowPDFControls = true;
+                    }
+                    if (docView.GetFirstAncestorOfType<CollectionView>()?.CurrentView.ViewType != CollectionViewType.Freeform)
+                    {
+                        ParentIsFreeform = false;
+                    }
+                }
+            } catch (Exception e) {  }
+            ResizerVisibilityState = _selectedDocViewModels.FirstOrDefault()?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
             if (_selectedDocViewModels.Count() == 1)
             {
                 xSearchBox.Text = _selectedDocViewModels.First().DocumentController.GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
             }
+            Visibility = _selectedDocViewModels.Any() ? Visibility.Visible : Visibility.Collapsed;
         }
-        private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) { SelectionManager.DeleteSelected(); }
+        private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) { 
+            SelectionManager.SelectedDocViews.ToList().ForEach((dv) => MainPage.Instance.ClearFloatingDoc(dv));
+            SelectionManager.DeleteSelected();
+        }
 
         private async void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -606,5 +585,23 @@ namespace Dash
             </Grid>
         </Grid>
         */
+
+
+        /// <summary>
+        ///  pulled from ViewModelBase
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="storage"></param>
+        /// <param name="value"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = "")
+        {
+            if (EqualityComparer<T>.Default.Equals(storage, value))
+                return false;
+            storage = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
     }
 }

@@ -43,6 +43,8 @@ namespace Dash
         public static KeyController PositionFieldKey                     = KeyController.Get("Position");
         public static KeyController LinkFromKey                          = KeyController.Get("LinkFrom");
         public static KeyController LinkToKey                            = KeyController.Get("LinkTo");
+        public static KeyController LinkDestinationTitleKey              = KeyController.Get("LinkDestinationTitle"); // bcz: title of link destination used to compute the link document's title
+        public static KeyController LinkSourceTitleKey                   = KeyController.Get("LinkSourceTitle");// bcz: title of link source used to compute the link document's title
         public static KeyController LinkDestinationKey                   = KeyController.Get("LinkDestination");
         public static KeyController LinkSourceKey                        = KeyController.Get("LinkSource");
         public static KeyController LinkBehaviorKey                      = KeyController.Get("LinkBehavior");
@@ -155,7 +157,7 @@ namespace Dash
         public static KeyController TitleMatchKey                        = KeyController.Get("Title Match");
         public static KeyController TagsKey                              = KeyController.Get("Tags");
         public static KeyController RecentTagsKey                        = KeyController.Get("Recent Tags");
-        public static KeyController LinkTagKey                           = KeyController.Get("List of tags");
+        public static KeyController LinkTagKey                           = KeyController.Get("LinkTag"); // bcz: changed from List of Tags
         public static KeyController SelectedSchemaRow                    = KeyController.Get("SelectedElement");
         public static KeyController SchemaDisplayedColumns               = KeyController.Get("_Displayed Columns");
         public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");

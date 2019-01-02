@@ -240,8 +240,7 @@ namespace Dash
             destinationDoc.GetDataDocument().GetLinks(KeyStore.LinkFromKey).Remove(linkDoc);
             sourceDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey).Remove(linkDoc);
             setLinkKeys();
-            MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
-            //xLinkList.Items.Remove((sender as SymbolIcon).DataContext);
+            MainPage.Instance.XDocumentDecorations.RebuildMenu();
         }
 
         private void XLinkList_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -266,7 +265,7 @@ namespace Dash
 
         private void XFlyout_OnClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
         {
-            MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
+            MainPage.Instance.XDocumentDecorations.RebuildMenu();
         }
     }
 }

@@ -507,9 +507,13 @@ namespace Dash
             //document that represents the actual link
             var linkDocument = new RichTextNote("<add link description here>").Document;
             linkDocument.GetDataDocument().RemoveOperatorForKey(KeyStore.TitleKey);
-            //linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, true).Add(new RichTextTitleOperatorController());
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceTitleKey,
+                new PointerReferenceController(new DocumentReferenceController(linkDocument.GetDataDocument(), KeyStore.LinkSourceKey), KeyStore.TitleKey), true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationTitleKey,
+                new PointerReferenceController(new DocumentReferenceController(linkDocument.GetDataDocument(), KeyStore.LinkDestinationKey), KeyStore.TitleKey), true);
             linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).
                                    AddRange(new OperatorController[] { new LinkTitleOperatorController(), new LinkDescriptionTextOperator() });
+
             linkDocument.GetDataDocument().SetLinkBehavior(behavior);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey,      source, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
@@ -517,28 +521,80 @@ namespace Dash
             target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController> { linkDocument });
             source.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController> { linkDocument });
             linkDocument.SetXaml(
-@"<Grid
+//@"<Grid
+//    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+//    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+//    xmlns:dash=""using:Dash""
+//    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+
+//    <Grid Padding=""10"" Background=""LightGray"">
+//        <Grid.RowDefinitions>
+//            <RowDefinition Height=""25""/>
+//            <RowDefinition/>
+//        </Grid.RowDefinitions>
+//        <dash:RichEditView x:Name=""xRichTextFieldData"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" VerticalAlignment=""Top"" />
+
+//        <Grid Grid.Row=""1"">
+//            <Grid.ColumnDefinitions >
+//                <ColumnDefinition MinWidth=""200"" />
+//                <ColumnDefinition MinWidth=""200"" />
+//            </Grid.ColumnDefinitions>
+//            <dash:DocumentView x:Name=""xDocumentFieldLinkSource"" Grid.Column=""0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top"" />
+//            <dash:DocumentView x:Name=""xDocumentFieldLinkDestination"" Grid.Column=""1"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+//        </Grid>
+//    </Grid>
+//</Grid>");
+@"<Grid 
     xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
     xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:controls= ""using:Microsoft.Toolkit.Uwp.UI.Controls""
     xmlns:dash=""using:Dash""
-    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
-
-    <Grid Padding=""10"">
-        <Grid.RowDefinitions>
-            <RowDefinition Height=""25""/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <dash:RichEditView x:Name=""xRichTextFieldData"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" VerticalAlignment=""Top"" />
-
-        <Grid Grid.Row=""1"">
-            <Grid.ColumnDefinitions >
-                <ColumnDefinition MinWidth=""200"" />
-                <ColumnDefinition MinWidth=""200"" />
-            </Grid.ColumnDefinitions>
-            <dash:DocumentView x:Name=""xDocumentFieldLinkSource"" Grid.Column=""0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top"" />
-            <dash:DocumentView x:Name=""xDocumentFieldLinkDestination"" Grid.Column=""1"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
-        </Grid>
-    </Grid>
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
+    >
+    <Grid.RowDefinitions>
+        <RowDefinition Height=""Auto""/>
+        <RowDefinition Height=""Auto""/>
+        <RowDefinition Height=""*""/>
+    </Grid.RowDefinitions>
+    <controls:Expander Padding=""10"" Grid.Row=""0"">
+        <controls:Expander.Header>
+            <RelativePanel>
+                <TextBlock x:Name=""xSrc"" Text=""Source: "" />
+                <Grid RelativePanel.RightOf=""xSrc"">
+                    <dash:EditableTextBlock x:Name=""xTextFieldLinkSource__Title"" />
+                </Grid>
+            </RelativePanel>
+        </controls:Expander.Header>
+        <controls:Expander.Content>
+            <dash:DocumentView x:Name=""xDocumentFieldLinkSource"" Grid.Row=""0""/>
+        </controls:Expander.Content>
+    </controls:Expander>
+    <controls:Expander Padding=""10"" Grid.Row=""1"" IsExpanded=""True"">
+        <controls:Expander.Header>
+            <RelativePanel>
+                <TextBlock x:Name=""xTarget"" Text=""Target: "" />
+                <Grid RelativePanel.RightOf=""xTarget"">
+                    <dash:EditableTextBlock x:Name=""xTextFieldLinkDestination__Title"" />
+                </Grid>
+            </RelativePanel>
+        </controls:Expander.Header>
+        <controls:Expander.Content>
+            <dash:DocumentView x:Name=""xDocumentFieldLinkDestination"" Grid.Row=""0""/>
+        </controls:Expander.Content>
+    </controls:Expander>
+    <controls:Expander Padding=""10"" Grid.Row=""2"" >
+        <controls:Expander.Header>
+            <RelativePanel>
+                <TextBlock x:Name=""xDesc"" Text=""Description: "" />
+                <Grid RelativePanel.RightOf=""xDesc"">
+                    <dash:EditableTextBlock x:Name=""xTextFieldLinkTag"" />
+                </Grid>
+            </RelativePanel>
+        </controls:Expander.Header>
+        <controls:Expander.Content>
+            <dash:RichEditView x:Name=""xRichTextFieldData"" MinWidth=""100"" RelativePanel.RightOf=""xSource""/>
+        </controls:Expander.Content>
+    </controls:Expander>
 </Grid>");
 
             return linkDocument;

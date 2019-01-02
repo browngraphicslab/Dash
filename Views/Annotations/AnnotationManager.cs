@@ -29,7 +29,7 @@ namespace Dash
                     }
 
                 break;
-            case LinkBehavior.Float:    MainPage.Instance.AddFloatingDoc(document); break;
+            case LinkBehavior.Float:    MainPage.Instance.ToggleFloatingDoc(document); break;
             case LinkBehavior.Overlay:  //default behavior of highlighting and toggling link visibility and docking when off screen
             case LinkBehavior.Annotate: linkHandlers.TakeWhile(hdlr => hdlr.HandleLink(link, direction) != LinkHandledResult.HandledClose).ToList(); break;
             case LinkBehavior.Follow:   //navigate to link

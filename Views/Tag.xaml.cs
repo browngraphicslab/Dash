@@ -241,7 +241,7 @@ namespace Dash
                     if (_linkMenu.LinkDoc.DataDocument.GetLinkTag().Equals(Text))
                     {
                         _linkMenu.LinkDoc.DataDocument.SetLinkTag("Annotation");
-                        MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
+                        MainPage.Instance.XDocumentDecorations.RebuildMenu();
                     }
                     
                     //tyler it's this section right here
@@ -249,7 +249,7 @@ namespace Dash
                     {
                         button.AllKeys.ForEach(link => link.GetDataDocument().SetLinkTag("Annotation"));
                     }
-                    MainPage.Instance.XDocumentDecorations.RebuildMenuIfNeeded();
+                    MainPage.Instance.XDocumentDecorations.RebuildMenu();
                 }
             }
         }

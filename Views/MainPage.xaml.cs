@@ -167,22 +167,25 @@ namespace Dash
                 DataContext = new DocumentViewModel(docCopy),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
-                BindRenderTransform = false
+                BindRenderTransform = false,
             };
 
             var grid = new Grid
             {
+                Padding = new Thickness(5),
+                Background = new SolidColorBrush(Color.FromArgb(0x20, 0x10, 0x10, 0x10)),
+                CornerRadius = new CornerRadius(10),
                 RenderTransform = new TranslateTransform() { X = defaultPt.X, Y = defaultPt.Y }
             };
             grid.Children.Add(docView);
-            var btn = new Button() { Content = "X" };
-            btn.Width = btn.Height = 20;
-            btn.Background = new SolidColorBrush(Colors.Red);
-            btn.HorizontalAlignment = HorizontalAlignment.Left;
-            btn.VerticalAlignment = VerticalAlignment.Top;
-            btn.Margin = new Thickness(0, -10, -10, 10);
-            btn.Click += (s, e) => xCanvas.Children.Remove(grid);
-            grid.Children.Add(btn);
+            //var btn = new Button() { Content = "X" };
+            //btn.Width = btn.Height = 20;
+            //btn.Background = new SolidColorBrush(Colors.Red);
+            //btn.HorizontalAlignment = HorizontalAlignment.Left;
+            //btn.VerticalAlignment = VerticalAlignment.Top;
+            //btn.Margin = new Thickness(0, -10, -10, 10);
+            //btn.Click += (s, e) => xCanvas.Children.Remove(grid);
+            //grid.Children.Add(btn);
 
             xCanvas.Children.Add(grid);
         }
@@ -399,7 +402,10 @@ namespace Dash
                 !xCanvas.Children.OfType<Grid>().Any(g => g.Children.FirstOrDefault() is DocumentView dv && SelectionManager.SelectedDocViewModels.Contains(dv.ViewModel)))
             {
                 Instance.GetDescendantsOfType<DocumentView>().Where((dv) => dv.ViewModel?.IsHighlighted ?? false).ToList().ForEach((dv) => dv.ViewModel?.SetSearchHighlightState(false));
-                ClearFloatingDoc(null);
+                if (!args.SelectedViews.Any(dv => dv.GetFirstAncestorOfType<SplitFrame>() == null)) // clear the floating documents unless the newly selected document is a floating document
+                {
+                    ClearFloatingDoc(null);
+                }
             }
         }
 
@@ -849,7 +855,7 @@ function (d) {
                 parent.GotoRegion(docOrRegion, link);
             }
         }
-        private void               ToggleFloatingDoc(DocumentController doc)
+        public void                ToggleFloatingDoc(DocumentController doc)
         {
             var onScreenView = FindTargetDocumentView(doc);
 

@@ -67,7 +67,9 @@
                             HorizontalAlignment="Left">
                         <!-- This Border handles the dragging -->
                         <Border x:Name="DraggingBorder" ManipulationMode="TranslateX, TranslateY, TranslateInertia"  >
-                            <ContentPresenter />
+                            <Grid CornerRadius="20" Background="Yellow">
+                                <ContentPresenter />
+                            </Grid>
                         </Border>
                     </Canvas>
                 </ControlTemplate>

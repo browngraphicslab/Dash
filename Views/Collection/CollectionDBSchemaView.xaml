@@ -16,9 +16,9 @@
     Drop="OnDrop"
     d:DesignWidth="400">
 
-    <Grid x:Name="LayoutRoot" Background="Transparent" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid x:Name="LayoutRoot" Background="LightGray" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="550" MinWidth="50" />
+            <ColumnDefinition Width="Auto" MinWidth="50" />
             <ColumnDefinition Width="5"/>
             <ColumnDefinition MinWidth="50" Width="*"/>
         </Grid.ColumnDefinitions>

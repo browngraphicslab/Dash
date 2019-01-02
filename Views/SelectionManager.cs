@@ -272,8 +272,7 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
             _dragViews?.ForEach(dv => dv.Visibility = Visibility.Collapsed);
-            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
+            MainPage.Instance.XDocumentDecorations.Visibility = Visibility.Collapsed;
             (sender as FrameworkElement).DragOver -= CollectionDragOver;
         }
         public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)

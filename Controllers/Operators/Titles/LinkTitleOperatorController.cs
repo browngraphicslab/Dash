@@ -21,17 +21,17 @@ namespace Dash
         private static readonly KeyController TypeKey = KeyController.Get("Link Title");
 
         //Input keys
-        public static readonly KeyController Title1Key   = KeyStore.LinkSourceKey;
+        public static readonly KeyController Title1Key   = KeyStore.LinkSourceTitleKey;
         public static readonly KeyController RelationKey = KeyStore.LinkTagKey;
-        public static readonly KeyController Title2Key   = KeyStore.LinkDestinationKey;
+        public static readonly KeyController Title2Key   = KeyStore.LinkDestinationTitleKey;
 
         //Output keys
         public static readonly KeyController ComputedTitle = KeyStore.TitleKey;
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            new KeyValuePair<KeyController, IOInfo>(Title1Key, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(Title1Key,   new IOInfo(TypeInfo.PointerReference, true)),
             new KeyValuePair<KeyController, IOInfo>(RelationKey, new IOInfo(TypeInfo.Text, true)),
-            new KeyValuePair<KeyController, IOInfo>(Title2Key, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(Title2Key,   new IOInfo(TypeInfo.PointerReference, true)),
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -42,11 +42,11 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            if (inputs[Title1Key]   is DocumentController title1 &&
+            if (inputs[Title1Key]   is TextController title1 &&
                 inputs[RelationKey] is TextController relation &&
-                inputs[Title2Key]   is DocumentController title2)
+                inputs[Title2Key]   is TextController title2)
             {
-                outputs[ComputedTitle] = new TextController(title1.Title + " => " + relation + " => " + title2.Title) { ReadOnly = true };
+                outputs[ComputedTitle] = new TextController(title1 + " => " + relation + " => " + title2) { ReadOnly = true };
             }
             else
             {
