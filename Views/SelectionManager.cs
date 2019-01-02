@@ -48,7 +48,7 @@ namespace Dash
         private static List<DocumentView> _dragViews;
         private static List<DocumentView> _selectedDocViews = new List<DocumentView>();
 
-        public static IEnumerable<DocumentView>        SelectedDocViews => _selectedDocViews.Where(s => s.IsInVisualTree());
+        public static IEnumerable<DocumentView>        SelectedDocViews => _selectedDocViews.Where(s => s.IsInVisualTree() && s.ViewModel != null);
         public static IEnumerable<DocumentViewModel>   SelectedDocViewModels => _selectedDocViews.Select(dv => dv.ViewModel).Where(dvm => dvm != null);
 
         public static bool IsSelected(DocumentViewModel docViewModel) { return SelectedDocViewModels.Contains(docViewModel); }
