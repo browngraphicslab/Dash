@@ -244,7 +244,7 @@ namespace Dash
 
             _dragViews = _selectedDocViews.Contains(draggedView) ? _selectedDocViews.ToList() : new DocumentView[] { draggedView }.ToList();
 
-            if (draggedView.ViewModel.DocumentController.GetIsAdornment()) // if dragging an adornment, drag all siblings that overlap it 
+            if (draggedView.ViewModel.DocumentController.GetIsAdornment() && !SelectedDocViewModels.Contains(draggedView.ViewModel)) // if dragging an adornment, drag all siblings that overlap it 
             {
                 var rect         = draggedView.ViewModel.LayoutDocument.GetBounds();
                 var siblingViews = draggedView.GetFirstAncestorOfType<Canvas>()?.Children.Select(c => c.GetFirstDescendantOfType<DocumentView>());
@@ -272,6 +272,8 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
             _dragViews?.ForEach(dv => dv.Visibility = Visibility.Collapsed);
+            MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
+            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
             (sender as FrameworkElement).DragOver -= CollectionDragOver;
         }
         public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
@@ -343,8 +345,6 @@ namespace Dash
                 MainPage.Instance.xOuterGrid.DragOver -= CollectionDragOver;
                 MainPage.Instance.xOuterGrid.DragOver += CollectionDragOver; // bcz: we rely on no one Handle'ing DragOver events
             }
-            MainPage.Instance.XDocumentDecorations.VisibilityState        = Visibility.Collapsed;
-            MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
         }
 
         private static async Task CreateDragDropBitmap(DocumentView docView, FrameworkElement renderTarget, DragStartingEventArgs args, Rect dragBounds)
