@@ -42,7 +42,6 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
-        private Point?          _forceFocusPoint;
         private DispatcherTimer _mapTimer              = new DispatcherTimer() { Interval = new TimeSpan(0,0,1) };
         private Button          _mapActivateBtn        = new Button() { Content = "^:", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
         private Timer           _lowPriorityTimer      = new Timer(3600000);  // every hour
@@ -55,14 +54,12 @@ namespace Dash
         public SplitManager                       MainSplitter    => XMainSplitter;
         public Grid                               SnapshotOverlay => xSnapshotOverlay;
         public BrowserView                        WebContext      => BrowserView.Current;
-        public Point?                             ForceFocusPoint => _forceFocusPoint;
         public SettingsView                       SettingsView    => xSettingsView;
         public Storyboard                         FadeIn          => xFadeIn;
         public Storyboard                         FadeOut         => xFadeOut;
         public DashPopup                          ActivePopup;
         public InkManager                         InkManager   { get; set; }
         public DocumentController                 MainDocument { get; private set; }
-        public CollectionFreeformView             TextPreviewer;
         public DocumentView                       xMapDocumentView;
         public ListController<DocumentController> LowPriorityOps;
         public ListController<DocumentController> ModeratePriorityOps;
@@ -202,17 +199,6 @@ namespace Dash
         {
             xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
                 ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
-        }
-
-        public void SetForceFocusPoint(CollectionFreeformView collection, Point where)
-        {
-            _forceFocusPoint = where;
-            TextPreviewer = collection;
-        }
-        public void ClearForceFocus()
-        {
-            TextPreviewer?.ClearPreview();
-            _forceFocusPoint = null;
         }
 
         public void       ThemeChange(bool nightModeOn) { RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; } //xToolbar.SwitchTheme(nightModeOn);

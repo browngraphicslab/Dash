@@ -233,40 +233,6 @@ namespace Dash
         /// </summary>
         public void ShowXaml()                   { ParentViewModel?.AddDocument(new DataBox(ViewModel.LayoutDocument, KeyStore.XamlKey, ViewModel.LayoutDocument.GetPosition(), 300,400).Document); }
         public void GetJson()                    { Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); }
-        public void HandleShiftEnter()
-        {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
-            var docCanvas = this.GetFirstAncestorOfType<Canvas>();
-            if (collection == null)
-            {
-                return;
-            }
-
-            var where = TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
-
-            // special case for search operators
-            if (ViewModel.DataDocument.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
-            {
-                if (ViewModel.DataDocument.GetField(KeyStore.OperatorKey) is SearchOperatorController)
-                {
-                    var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
-
-                    operatorDoc.SetField(SearchOperatorController.InputCollection,
-                        new DocumentReferenceController(ViewModel.DataDocument,
-                            SearchOperatorController.ResultsKey), true);
-
-                    // TODO connect output to input
-
-                    Actions.DisplayDocument(collection.ViewModel, operatorDoc, where);
-                    return;
-                }
-            }
-
-            using (UndoManager.GetBatchHandle())
-            {
-                collection.LoadNewActiveTextBox("", where);
-            }
-        }
         
         //binds the background color of the document to the ViewModel's LayoutDocument's BackgroundColorKey
         private void UpdateBackgroundColorBinding()

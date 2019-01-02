@@ -44,6 +44,7 @@ namespace Dash
 
         private InkCanvas           _xInkCanvas;
         private bool                _doubleTapped = false;
+        private TextBox             _previewTextbox = null;
         private double              _scaleX;
         private double              _scaleY;
         private CoreCursor          _arrow = new CoreCursor(CoreCursorType.Arrow, 1);
@@ -59,6 +60,7 @@ namespace Dash
         public bool                     IsMarqueeActive=> _isMarqueeActive;
         public double                   Zoom           => ViewManipulationControls.ElementScale;
         public UserControl              UserControl    => this;
+        public string                   PreviewTextBuffer { get; set; } = "";
         public ViewManipulationControls ViewManipulationControls { get; set; }
         public FreeformInkControl       InkControl;
         public Canvas                   SelectionCanvas;
@@ -101,7 +103,7 @@ namespace Dash
             Unloaded += OnBaseUnload;
             KeyDown += OnKeyDown;
 
-            previewTextbox = new TextBox
+            _previewTextbox = new TextBox
             {
                 Width = 200,
                 Height = 50,
@@ -109,8 +111,8 @@ namespace Dash
                 Visibility = Visibility.Collapsed,
                 ManipulationMode = ManipulationModes.All
             };
-            previewTextbox.LostFocus += (s, e) => previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.KeyDown += PreviewTextbox_KeyDown;
+            _previewTextbox.LostFocus += (s, e) => _previewTextbox.Visibility = Visibility.Collapsed;
+            _previewTextbox.KeyDown += PreviewTextbox_KeyDown;
         }
         ~CollectionFreeformView() {  /* Debug.WriteLine("FINALIZING CollectionFreeFormView"); */ }
         
@@ -365,7 +367,7 @@ namespace Dash
             _backgroundCanvas.VerticalAlignment = VerticalAlignment.Stretch;
 
             GetInkHostCanvas().Children.Clear();
-            GetInkHostCanvas().Children.Add(previewTextbox);
+            GetInkHostCanvas().Children.Add(_previewTextbox);
 
             //make and add selectioncanvas 
             SelectionCanvas = new Canvas();
@@ -910,7 +912,7 @@ namespace Dash
                 GetOuterGrid().CapturePointer(args.Pointer);
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
                 _isMarqueeActive = true;
-                previewTextbox.Visibility = Visibility.Collapsed;
+                _previewTextbox.Visibility = Visibility.Collapsed;
                 args.Handled = true;
                 GetOuterGrid().PointerMoved -= OnPointerMoved;
                 GetOuterGrid().PointerMoved += OnPointerMoved;
@@ -957,7 +959,7 @@ namespace Dash
                 GetSelectionCanvas().Children.Remove(_marquee);
                 _marquee = null;
                 _isMarqueeActive = false;
-                if (e != null) e.Handled = true;
+                e.Handled = true;
             }
             if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
         }
@@ -1268,20 +1270,7 @@ namespace Dash
         #endregion
 
         #region TextInputBox
-
-        static public string PreviewFormatString = "#";
-        public string   PreviewTextBuffer { get; set; } = "";
-        private TextBox previewTextbox  = null;
-        public void     ClearPreview()
-        {
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.Text = string.Empty;
-        }
-
-        private void       OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            _doubleTapped = true;
-        }
+        private void       OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)  { _doubleTapped = true; }
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             _doubleTapped = false;
@@ -1291,27 +1280,23 @@ namespace Dash
                 _isMarqueeActive = false;
                 if (!this.IsShiftPressed())
                 {
-                    var pt = e.GetPosition(xTransformedCanvas);
-                    ShowPreviewTextbox(pt);
+                    showPreviewTextbox(e.GetPosition(xTransformedCanvas));
                 }
-                foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
-                {
-                    rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
-                }
+                Content.GetDescendantsOfType<RichEditView>().ToList().ForEach(r => r.Document.Selection.Collapse(false));
             }
         }
-        private void       ShowPreviewTextbox(Point where)
+        private void       showPreviewTextbox(Point where)
         {
             PreviewTextBuffer = PreviewFormatString;
-            if (previewTextbox != null)
+            if (_previewTextbox != null)
             {
-                MainPage.Instance.ClearForceFocus();
-                Canvas.SetLeft(previewTextbox, where.X);
-                Canvas.SetTop(previewTextbox, where.Y);
-                previewTextbox.Visibility = Visibility.Visible;
-                previewTextbox.Text = PreviewFormatString;
-                previewTextbox.SelectionStart = PreviewFormatString.Length;
-                previewTextbox.Focus(FocusState.Pointer);
+                CollectionFreeformView.ClearForceFocus();
+                Canvas.SetLeft(_previewTextbox, where.X);
+                Canvas.SetTop(_previewTextbox, where.Y);
+                _previewTextbox.Visibility = Visibility.Visible;
+                _previewTextbox.Text = PreviewFormatString;
+                _previewTextbox.SelectionStart = PreviewFormatString.Length;
+                _previewTextbox.Focus(FocusState.Pointer);
             }
         }
         private void       PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -1319,17 +1304,17 @@ namespace Dash
             if (e.Key.Equals(VirtualKey.Escape))
             {
                 e.Handled = true;
-                previewTextbox.Visibility = Visibility.Collapsed;
+                _previewTextbox.Visibility = Visibility.Collapsed;
             }
             else if (e.Key == VirtualKey.Back)
             {
-                PreviewTextBuffer = PreviewTextBuffer == PreviewFormatString ? "" : PreviewTextBuffer;
-                previewTextbox.Text = PreviewTextBuffer;
+                PreviewTextBuffer   = PreviewTextBuffer == PreviewFormatString ? "" : PreviewTextBuffer;
+                _previewTextbox.Text = PreviewTextBuffer;
             }
             else
             {
                 var text = Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
-                if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
+                if (!string.IsNullOrEmpty(text) && _previewTextbox.Visibility == Visibility.Visible)
                 {
                     e.Handled = true;
                     convertPreviewToRealText(this.IsCtrlPressed() && e.Key == VirtualKey.V ? null : text);
@@ -1338,7 +1323,7 @@ namespace Dash
         }
         private void       convertPreviewToRealText(string text)
         {
-            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            var where = new Point(Canvas.GetLeft(_previewTextbox), Canvas.GetTop(_previewTextbox));
             using (UndoManager.GetBatchHandle())
             {
                 if (text == null && Clipboard.GetContent()?.HasClipboardData() == true) // clipboard will have data if from outside of Dash, otherwise fall through to paste from within dash
@@ -1351,18 +1336,23 @@ namespace Dash
                 else
                 {
                     PreviewTextBuffer += text;
-                    if (MainPage.Instance.ForceFocusPoint == null)
+                    if (CollectionFreeformView.ForceFocusPoint == null)
                     {
-                        LoadNewActiveTextBox(text, where);
+                        loadNewActiveTextBox(text, where);
                     }
                 }
                 if (text == null)
                 {
-                    previewTextbox.Visibility = Visibility.Collapsed;
+                    _previewTextbox.Visibility = Visibility.Collapsed;
                 }
             }
         }
-        public async void  LoadNewActiveTextBox(string text, Point where)
+        private void       clearPreview()
+        {
+            _previewTextbox.Visibility = Visibility.Collapsed;
+            _previewTextbox.Text = string.Empty;
+        }
+        private async void loadNewActiveTextBox(string text, Point where)
         {
             var postitNote  = text == null ? await ViewModel.Paste(Clipboard.GetContent(), where) : SettingsView.Instance.MarkdownEditOn ? new MarkdownNote(text: text).Document : new RichTextNote(text: text).Document;
             var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
@@ -1372,16 +1362,30 @@ namespace Dash
             }
             if (text != null)
             {
-                MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
+                SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
 
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
             else
             {
-                MainPage.Instance.ClearForceFocus();
+                ClearForceFocus();
             }
 
             ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition(), xTransformedCanvas, MainPage.Instance));
+        }
+        
+        public static CollectionFreeformView TextPreviewer;
+        public static Point?  ForceFocusPoint     { get; private set; }
+        public static string  PreviewFormatString { get; set; } = "#";
+        public static void    SetForceFocusPoint(CollectionFreeformView collection, Point where)
+        {
+            ForceFocusPoint = where;
+            TextPreviewer   = collection;
+        }
+        public static void    ClearForceFocus()
+        {
+            TextPreviewer?.clearPreview();
+            ForceFocusPoint = null;
         }
 
         #endregion
