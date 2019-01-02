@@ -650,18 +650,6 @@ function (d) {
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
 
-            var focused = FocusManager.GetFocusedElement() as DocumentView ?? (FocusManager.GetFocusedElement() as FrameworkElement)?.GetDocumentView();
-            if (focused?.ViewModel != null && !e.Handled)
-            {
-                if (this.IsShiftPressed() && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
-                {
-                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                    if (!focused.ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
-                        !focused.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                        focused.HandleShiftEnter();
-                }
-            }
-
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
                 if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
