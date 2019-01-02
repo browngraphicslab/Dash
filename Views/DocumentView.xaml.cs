@@ -851,7 +851,7 @@ namespace Dash
             {
                 cView.SetupContextMenu(xMenuFlyout);
             }
-            if ((ViewModel.Content is ContentPresenter cpresent) &&
+            else if ((ViewModel.Content is ContentPresenter cpresent) &&
                 (cpresent.Content is CollectionView collectionView2))
             {
                 collectionView2.SetupContextMenu(xMenuFlyout);
