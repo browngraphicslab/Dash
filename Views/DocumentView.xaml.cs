@@ -331,7 +331,7 @@ namespace Dash
                 Placement = PlacementMode.Bottom,
                 VerticalOffset = 10
             };
-            ToolTipService.SetToolTip(xMasterStack, label);
+            ToolTipService.SetToolTip(LayoutRoot, label);
         }
         /// <summary>
         /// Brings the element to the front of its containing parent canvas.
@@ -1031,12 +1031,12 @@ namespace Dash
             xMenuFlyout_Opening(sender, e);
         }
 
-        private void MasterStackShowTooltip(object sender, PointerRoutedEventArgs e)
+        private void LayoutRootShowTooltip(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = true;
         }
 
-        private void MasterStackHideTooltip(object sender, PointerRoutedEventArgs e)
+        private void LayoutRootHideTooltip(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = false;
         }
