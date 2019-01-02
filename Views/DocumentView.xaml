@@ -23,7 +23,7 @@
     <Grid x:Name="LayoutRoot" BorderThickness="0">
         <Grid.Resources>
             <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
-                <FadeOutThemeAnimation TargetName="Root"/>
+                <FadeOutThemeAnimation TargetName="LayoutRoot"/>
             </Storyboard>
             <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
