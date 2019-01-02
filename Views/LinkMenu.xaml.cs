@@ -118,14 +118,14 @@ namespace Dash
             }
 
             //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            var binding = new FieldBinding<FieldControllerBase, TextController>
+           var binding = new FieldBinding<FieldControllerBase, RichTextController>
             {
                 Document = LinkDoc.DataDocument,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay
             };
             xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
-            String text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey).Data;
+            var text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
 
             foreach (var tag in xTagContainer.Children)
             {

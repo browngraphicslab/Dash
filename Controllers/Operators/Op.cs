@@ -97,6 +97,7 @@ namespace Dash
             // collections
             coll,
             coll_title,
+            link_title,
             rtf_title,
             inside,
             join,

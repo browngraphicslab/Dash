@@ -68,7 +68,7 @@ namespace Dash
         public static IEnumerable<DependencyObject> GetDescendants(this DependencyObject start)
         {
             var queue = new Queue<DependencyObject>();
-            var count = VisualTreeHelper.GetChildrenCount(start);
+            var count = start != null ? VisualTreeHelper.GetChildrenCount(start) : 0;
 
             for (int i = 0; i < count; i++)
             {
@@ -118,7 +118,7 @@ namespace Dash
 
         public static IEnumerable<DependencyObject> GetAncestors(this DependencyObject start)
         {
-            var parent = VisualTreeHelper.GetParent(start);
+            var parent = start != null ? VisualTreeHelper.GetParent(start) : null;
 
             while (parent != null)
             {

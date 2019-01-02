@@ -639,7 +639,7 @@ namespace Dash
             return true;
         }
 
-        private void RemoveOperatorForKey(KeyController key)
+        public void RemoveOperatorForKey(KeyController key)
         {
             var opFields = GetField<ListController<OperatorController>>(KeyStore.OperatorKey,        false) ?? new ListController<OperatorController>();
             var rmFields = GetField<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, false) ?? new ListController<OperatorController>();
@@ -1011,7 +1011,8 @@ namespace Dash
             {
                 var fieldName = fieldReplacement.Name.Replace("xDocumentField", "");
                 var fieldKey = KeyController.Get(fieldName);
-                fieldReplacement.DataContext = new DocumentViewModel(GetDereferencedField<DocumentController>(fieldKey,null));
+                var doc = this.GetDereferencedField<DocumentController>(fieldKey,null) ?? this.GetDataDocument().GetDereferencedField<DocumentController>(fieldKey,null);
+                fieldReplacement.DataContext = new DocumentViewModel(doc);
             }
         }
         #endregion

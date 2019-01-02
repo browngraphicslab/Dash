@@ -135,7 +135,7 @@ namespace Dash
             {
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
-                if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey.Equals(KeyStore.DataKey))
+                if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey?.Equals(KeyStore.DataKey) == true)
                 {
                     if (!SelectionManager.IsSelected(ViewModel))
                     {
@@ -859,7 +859,6 @@ namespace Dash
 
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
-            //DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
             if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
             {
                 CollectionFreeformView.ClearForceFocus();
@@ -868,7 +867,7 @@ namespace Dash
             }
             else
             {
-                IsEnabled = false;
+                IsEnabled = (Tag?.Equals("HACK") == true);
             }
             if (DataDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
             {
@@ -903,7 +902,7 @@ namespace Dash
             Document.SetText(TextSetOptions.None, text);
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
-            SelectionManager.Select(getDocView(), false);
+            //SelectionManager.Select(getDocView(), false);
         }
 
         #endregion

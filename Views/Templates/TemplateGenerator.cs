@@ -244,6 +244,34 @@ namespace Dash
 </Page>"),
                     }, DocumentType.DefaultType),
                     new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
+                        [KeyStore.TitleKey] = new TextController("LinkTemplate.xaml"),
+                        [KeyStore.XamlKey] = new TextController(@"
+<Page
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+
+    <Grid Padding=""10"">
+        <Grid.RowDefinitions>
+            <RowDefinition Height=""25"" />
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <dash:RichEditView x:Name=""xRichTextFieldData"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" VerticalAlignment=""Top"" />
+
+        <Grid Grid.Row=""1"">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth=""200""/>
+                <ColumnDefinition MinWidth=""200""/>
+            </Grid.ColumnDefinitions>
+            <ContentPresenter x:Name=""xDocumentFieldLinkSource"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+            <ContentPresenter x:Name=""xDocumentFieldLinkDestination"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </Grid>
+    </Grid>
+</Page>
+"),
+                    }, DocumentType.DefaultType),
+                    new DocumentController(new Dictionary<KeyController, FieldControllerBase>{
                         [KeyStore.TitleKey] = new TextController("NoteTemplate.xaml"),
                         [KeyStore.XamlKey] = new TextController(@"
 <Grid
@@ -354,6 +382,7 @@ namespace Dash
              Content,
              Flashcard,
              Image,
+             Link,
              Note,
              Profile,
              Title,

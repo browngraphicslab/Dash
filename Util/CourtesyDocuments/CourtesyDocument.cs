@@ -505,16 +505,43 @@ namespace Dash
         public static DocumentController  Link(this DocumentController source, DocumentController target, LinkBehavior behavior, string specTitle = null)
         {
             //document that represents the actual link
-            var linkDocument = new RichTextNote("New link description...").Document;
-            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).Add(new LinkDescriptionTextOperator());
+            var linkDocument = new RichTextNote("<add link description here>").Document;
+            linkDocument.GetDataDocument().RemoveOperatorForKey(KeyStore.TitleKey);
+            //linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.RemoveOperatorsKey, true).Add(new RichTextTitleOperatorController());
+            linkDocument.GetDataDocument().GetFieldOrCreateDefault<ListController<OperatorController>>(KeyStore.OperatorKey, true).
+                                   AddRange(new OperatorController[] { new LinkTitleOperatorController(), new LinkDescriptionTextOperator() });
             linkDocument.GetDataDocument().SetLinkBehavior(behavior);
-            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle ?? "Annotation", true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkSourceKey,      source, true);
             linkDocument.GetDataDocument().SetField(KeyStore.LinkDestinationKey, target, true);
-            target?.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController> { linkDocument });
+            linkDocument.GetDataDocument().SetField<TextController>(KeyStore.LinkTagKey, specTitle ?? "Annotation", true);
+            target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController> { linkDocument });
             source.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController> { linkDocument });
+            linkDocument.SetXaml(
+@"<Grid
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:dash=""using:Dash""
+    xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"">
+
+    <Grid Padding=""10"">
+        <Grid.RowDefinitions>
+            <RowDefinition Height=""25""/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <dash:RichEditView x:Name=""xRichTextFieldData"" Foreground=""White"" HorizontalAlignment=""Stretch"" Grid.Row=""0"" VerticalAlignment=""Top"" />
+
+        <Grid Grid.Row=""1"">
+            <Grid.ColumnDefinitions >
+                <ColumnDefinition MinWidth=""200"" />
+                <ColumnDefinition MinWidth=""200"" />
+            </Grid.ColumnDefinitions>
+            <dash:DocumentView x:Name=""xDocumentFieldLinkSource"" Grid.Column=""0"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top"" />
+            <dash:DocumentView x:Name=""xDocumentFieldLinkDestination"" Grid.Column=""1"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Top""/>
+        </Grid>
+    </Grid>
+</Grid>");
+
             return linkDocument;
         }
-
     }
 }
