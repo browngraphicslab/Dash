@@ -531,7 +531,8 @@ namespace Dash
                 return true;
             }
 
-            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey))
+            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey) &&
+                !ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
             {
                 MenuFlyoutItemOpen_OnClick(null, null);
                 _doubleTapped = true;

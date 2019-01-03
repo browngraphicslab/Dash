@@ -254,7 +254,7 @@ namespace Dash
         }
 
         // determines the document controller of the region and calls on annotationManager to handle the linking procedure
-        public async void RegionSelected(Point pointPressed)
+        public async Task<bool> RegionSelected(Point pointPressed)
         {
             var target = getHyperlinkTargetForSelection();
             if (target != null)
@@ -273,7 +273,9 @@ namespace Dash
                 {
                     await Launcher.LaunchUriAsync(new Uri(target));
                 }
+                return true;
             }
+            return false;
         }
 
         private DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
@@ -302,10 +304,9 @@ namespace Dash
             return nearest;
         }
 
-        private void this_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void this_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = false;
-            RegionSelected(e.GetPosition(MainPage.Instance));
+            e.Handled = await RegionSelected(e.GetPosition(MainPage.Instance));
         }
 
         private void CursorToEnd()
