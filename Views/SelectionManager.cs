@@ -115,37 +115,29 @@ namespace Dash
         /// This will often be roughly equivalent to whether Shift is pressed</param>
         public static void SelectDocuments(IEnumerable<DocumentView> views, bool keepPrevious)
         {
-            var selectedDocs = new List<DocumentView>();
-            var documentViews = views.ToList();
-            foreach (var documentView in documentViews)
+            var documentViews = (views ?? SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>()).ToList();
+            var selectedDocs  = new List<DocumentView>();
+            foreach (var docView in documentViews.Where(dv => !_selectedDocViews.Contains(dv)))
             {
-                if (_selectedDocViews.Contains(documentView))
-                {
-                    continue;
-                }
-
-                SelectHelper(documentView);
-                selectedDocs.Add(documentView);
+                SelectHelper(docView);
+                selectedDocs.Add(docView);
                 if (keepPrevious)
                 {
-                    _selectedDocViews.Add(documentView);
+                    _selectedDocViews.Add(docView);
                 }
             }
 
             var deselectedDocs = new List<DocumentView>();
             if (!keepPrevious)
             {
-                foreach (var documentView in _selectedDocViews)
+                foreach (var docView in _selectedDocViews.Where(dv => !documentViews.Contains(dv)))
                 {
-                    if (!documentViews.Contains(documentView))
-                    {
-                        DeselectHelper(documentView);
-                        deselectedDocs.Add(documentView);
-                    }
+                    DeselectHelper(docView);
+                    deselectedDocs.Add(docView);
                 }
-
                 _selectedDocViews = documentViews;
             }
+            MainPage.Instance.SinkFocus();
 
             OnSelectionChanged(new DocumentSelectionChangedEventArgs(deselectedDocs, selectedDocs));
         }

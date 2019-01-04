@@ -676,6 +676,9 @@ namespace Dash
                 }
 
                 break;
+            case VirtualKey.Escape:
+                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                break;
             }
         }
 

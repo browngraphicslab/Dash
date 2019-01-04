@@ -128,6 +128,12 @@ namespace Dash
             }
         }
 
+        public void SinkFocus() { this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic); }
+        public void OpenSearchBox()
+        {
+            xSearchBoxGrid.Visibility = Visibility.Visible;
+            xMainSearchBox.Focus(FocusState.Programmatic);
+        }
         public void SetOverlayVisibility(Visibility visibility) { xOverlay.Visibility = visibility; }
         public void SetSearchVisibility(Visibility visibility)  { xSearchBoxGrid.Visibility = visibility; }
         public void SetMapVisibility(Visibility visibility)     { xMapView.SetVisibility(visibility, xLeftGrid); }
@@ -203,6 +209,7 @@ namespace Dash
             xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
                 ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
         }
+
 
         public void       ThemeChange(bool nightModeOn) { RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; } //xToolbar.SwitchTheme(nightModeOn);
         public async void Publish()
@@ -595,8 +602,8 @@ function (d) {
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            if (!(xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()) &&
-                !(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is MarkdownTextBlock )))
+            if (!xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()) &&
+                !(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is MarkdownTextBlock ))
             {
                 if (this.IsCtrlPressed())
                 {
@@ -604,17 +611,8 @@ function (d) {
                     {
                         case VirtualKey.Z: UndoManager.UndoOccured(); break;
                         case VirtualKey.Y: UndoManager.RedoOccured(); break;
-                        case VirtualKey.A:
-                        {
-                            SelectionManager.SelectDocuments(SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>(), this.IsShiftPressed());
-                            break;
-                        }
-                        case VirtualKey.F:
-                        {
-                            xSearchBoxGrid.Visibility = Visibility.Visible;
-                            xMainSearchBox.Focus(FocusState.Programmatic);
-                            break;
-                        }
+                        case VirtualKey.A: SelectionManager.SelectDocuments(null, this.IsShiftPressed()); break;
+                        case VirtualKey.F: OpenSearchBox(); break;
                     }
                 }
                 else if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
@@ -623,7 +621,7 @@ function (d) {
                 } 
                 else if (e.VirtualKey == VirtualKey.Escape)
                 {
-                    this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                    SinkFocus();
                 }
             }
             //if (xTabCanvas.Children.Contains(TabMenu.Instance)) { TabMenu.Instance.HandleKeyDown(sender, e); }

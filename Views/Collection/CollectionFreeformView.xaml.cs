@@ -1306,6 +1306,11 @@ namespace Dash
                 e.Handled = true;
                 _previewTextbox.Visibility = Visibility.Collapsed;
             }
+            else if (e.Key == VirtualKey.F && this.IsCtrlPressed())
+            {
+                MainPage.Instance.OpenSearchBox();
+                e.Handled = true;
+            }
             else if (e.Key == VirtualKey.Back)
             {
                 PreviewTextBuffer   = PreviewTextBuffer == PreviewFormatString ? "" : PreviewTextBuffer;

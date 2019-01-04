@@ -275,7 +275,11 @@ namespace Dash.Views
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
 
-            if (animation == xQuickEntryIn) xKeyValueBorder.Width = double.NaN;
+            if (animation == xQuickEntryIn)
+            {
+                xKeyValueBorder.Visibility = Visibility.Visible;
+                xKeyValueBorder.Width = double.NaN;
+            }
 
             _animationBusy = true;
             //_selectedDocs.ForEach(d =>
@@ -299,8 +303,8 @@ namespace Dash.Views
                 animation.Completed -= AnimationCompleted;
                 if (animation == xQuickEntryOut)
                 {
-                    xKeyValueBorder.Width = 0;
-                    Focus(FocusState.Programmatic);
+                    xKeyValueBorder.Visibility = Visibility.Collapsed;
+                    // Focus(FocusState.Programmatic);
                 }
                 else
                 {
