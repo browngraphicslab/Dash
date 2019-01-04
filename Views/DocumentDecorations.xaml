@@ -27,6 +27,9 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
+        <Grid x:Name="xPinPanel" Tapped="xPinPanel_Tapped">
+            <SymbolIcon x:Name="xPinSymbol" Symbol="Pin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-35 -30 0 0"></SymbolIcon>
+        </Grid>
         <Grid x:Name="xPdfControlsPanel"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
             <StackPanel  Visibility="{x:Bind  ShowPDFControls, Mode=OneWay}"  Background="White" BorderBrush="#55000000" BorderThickness="1"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
                 <AutoSuggestBox x:Name="xSearchBox" Foreground="White" MinWidth="150" MaxWidth="250" FontSize="10" PlaceholderText="Search" QueryIcon="Find"

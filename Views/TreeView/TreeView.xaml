@@ -27,7 +27,7 @@
         </ToggleSwitch>
         <ToggleSwitch x:Name="XMapActiveSwitch" Grid.Row="2" HorizontalAlignment="Left" Foreground="White" OnContent="Active" OffContent="Hidden" Toggled="XMapActiveSwitch_Toggled" >
             <ToggleSwitch.Header>
-                <TextBlock Text="Map Active" Foreground="White"/>
+                <TextBlock Text="Minimap" Foreground="White"/>
             </ToggleSwitch.Header>
             </ToggleSwitch>
         </StackPanel>

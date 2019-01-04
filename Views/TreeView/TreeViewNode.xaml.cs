@@ -282,7 +282,7 @@ namespace Dash.Views.TreeView
             //if (treeView.UseActiveFrame)
             //{
             SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
-            MainPage.Instance.SetupMapView(SplitFrame.ActiveFrame.DocumentController);
+            MainPage.Instance.SetMapTarget(SplitFrame.ActiveFrame.DocumentController);
             //}
 
             treeView.ViewModel.ContainerDocument.SetField(KeyStore.CollectionOutputKey, ViewModel.DocumentController, true);

@@ -833,6 +833,10 @@
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MapView.xaml.cs">
+      <DependentUpon>MapView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MinimapView.cs" />
     <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
       <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
     </Compile>
@@ -1219,6 +1223,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\TemplatePopups\FlashcardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MapView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -125,18 +125,14 @@
                     <RowDefinition Height="7" x:Name="xTreeSplitter"/>
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Grid x:Name="xLeftStack" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="xLeftStack_OnSizeChanged">
-                    <Grid.Clip>
-                        <RectangleGeometry x:Name="xLeftStackClip" Rect="0 0 0 0"/>
-                    </Grid.Clip>
-                </Grid>
+                <local:MapView x:Name="xMapView" Visibility="Collapsed" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
                 <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
                 <localMicrosoft:GridSplitter  Grid.Row="1" Height="7"/>
             </Grid>
 
             <local:PresentationView x:Name="xPresentationView" Grid.Column="3"  HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
 
-            <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public"  CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
+            <local:MenuToolbar x:Name="xToolbar" x:FieldModifier="public" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
         </Grid>
         <Grid x:Name="customTitleBar" VerticalAlignment="Top" Height="42" Background="White">
 
@@ -155,6 +151,15 @@
 
             <Grid  HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right" Margin="0,-10,180,0" >
+                    <Button  Name="xToolbarButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Click="xToolbarButton_Clicked" >
+                        <SymbolIcon Symbol="Bookmarks" Foreground="White"/>
+                    </Button>
+                    <Button  Name="xUndoButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Click="xUndoButton_Clicked" >
+                        <SymbolIcon Symbol="Undo" Foreground="White"/>
+                    </Button>
+                    <Button  Name="xRedoButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Click="xRedoButton_Clicked" >
+                        <SymbolIcon Symbol="Redo" Foreground="White"/>
+                    </Button>
                     <Button  Name="xSearchButton" Background="Transparent" Foreground="White" Padding="0" BorderThickness="0" Click="xSearchButton_Clicked" >
                         <SymbolIcon Symbol="Find" Foreground="White"/>
                     </Button>

@@ -485,7 +485,7 @@ namespace Dash
                     await System.Threading.Tasks.Task.Delay(100);
                     if (!_doubleTapped)
                     {
-                        if (!SelectionManager.SelectedDocViewModels.Contains(ViewModel) || this.IsShiftPressed())
+                        if (!SelectionManager.SelectedDocViews.Contains(this) || this.IsShiftPressed())
                         {
                             SelectionManager.Select(this, this.IsShiftPressed());
                         }

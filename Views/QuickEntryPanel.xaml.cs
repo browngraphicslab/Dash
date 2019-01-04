@@ -270,7 +270,7 @@ namespace Dash.Views
                     allTopLevel = false;
                 }
             }
-            if (_animationBusy || allTopLevel || Equals(MainPage.Instance.xMapDocumentView)) return;
+            if (_animationBusy || allTopLevel /*|| Equals(MainPage.Instance.xMapDocumentView)*/) return;
 
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;

@@ -15,8 +15,7 @@ namespace Dash
         #region Navigation
         public static DocumentController OpenInActiveFrame(DocumentController doc)
         {
-            var newDoc = ActiveFrame.OpenDocument(doc);
-            return newDoc;
+            return ActiveFrame.OpenDocument(doc);
         }
 
         public static DocumentController OpenInInactiveFrame(DocumentController doc)

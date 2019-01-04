@@ -43,11 +43,9 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page, ILinkHandler
     {
-        private DispatcherTimer _mapTimer              = new DispatcherTimer() { Interval = new TimeSpan(0,0,1) };
-        private Button          _mapActivateBtn        = new Button() { Content = "^:", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
-        private Timer           _lowPriorityTimer      = new Timer(3600000);  // every hour
-        private Timer           _moderatePriorityTimer = new Timer(900000);   // every 15 minutes
-        private Timer           _highPriorityTimer     = new Timer(5000);     // every 15 seconds
+        private Timer _lowPriorityTimer      = new Timer(3600000);  // every hour
+        private Timer _moderatePriorityTimer = new Timer(900000);   // every 15 minutes
+        private Timer _highPriorityTimer     = new Timer(5000);     // every 15 seconds
 
         public static MainPage               Instance { get; private set; }
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
@@ -61,7 +59,6 @@ namespace Dash
         public DashPopup                          ActivePopup;
         public InkManager                         InkManager   { get; set; }
         public DocumentController                 MainDocument { get; private set; }
-        public DocumentView                       xMapDocumentView;
         public ListController<DocumentController> LowPriorityOps;
         public ListController<DocumentController> ModeratePriorityOps;
         public ListController<DocumentController> HighPriorityOps;
@@ -90,6 +87,7 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
+                xToolbar.Visibility = Visibility.Collapsed;
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
@@ -133,23 +131,8 @@ namespace Dash
 
         public void SetOverlayVisibility(Visibility visibility) { xOverlay.Visibility = visibility; }
         public void SetSearchVisibility(Visibility visibility)  { xSearchBoxGrid.Visibility = visibility; }
-        public void SetMapVisibility(Visibility visibility) {
-            xLeftStack.Visibility = visibility;
-            if (visibility == Visibility.Collapsed)
-            {
-                (_mapActivateBtn.Parent as Panel)?.Children.Remove(_mapActivateBtn);
-                xLeftStack.Children.Clear();
-                xMapDocumentView = null;
-                _mapTimer.Stop();
-                xLeftGrid.RowDefinitions.Last().Height = new GridLength(0);
-            }
-            else
-            {
-                xLeftGrid.RowDefinitions.Last().Height = new GridLength(300);
-                _mapTimer.Start();
-                SetupMapView(SplitFrame.ActiveFrame.ViewModel.LayoutDocument);
-            }
-        }
+        public void SetMapVisibility(Visibility visibility)     { xMapView.SetVisibility(visibility, xLeftGrid); }
+        public void SetMapTarget(DocumentController layoutDocument) { xMapView.SetTarget(layoutDocument); }
 
         public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
@@ -222,7 +205,6 @@ namespace Dash
                 ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
         }
 
-
         public void       ThemeChange(bool nightModeOn) { RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; } //xToolbar.SwitchTheme(nightModeOn);
         public async void Publish()
         {
@@ -232,123 +214,6 @@ namespace Dash
             allDocuments.Remove(MainDocument.GetDataDocument());
 
             await new Publisher().StartPublication(allDocuments);
-        }
-        static Grid rect = null;
-        public class PointToMapConverter : SafeDataToXamlConverter<List<object>, TranslateTransform>
-        {
-            private DocumentView _mapView;
-            public override TranslateTransform ConvertDataToXaml(List<object> data, object parameter = null)
-            {
-                var srcMapPt = (Point) data[0];
-                var srcMapZoom = (Point) data[1];
-
-                var mapViewCanvas = _mapView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-                var mapPan  = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                var mapZoom = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1,1);
-
-                var mapPt = new Point(
-                  (mapPan.X  - srcMapPt.X*mapZoom.X/srcMapZoom.X),
-                  (mapPan.Y  - srcMapPt.Y*mapZoom.Y/srcMapZoom.Y)  );
-                return new TranslateTransform
-                {
-                    X = mapPt.X,
-                    Y = mapPt.Y
-                };
-            }
-            public override List<object> ConvertXamlToData(TranslateTransform xaml, object parameter = null)
-            {
-                throw new NotImplementedException();
-            }
-            public PointToMapConverter(DocumentView mapView)
-            {
-                _mapView = mapView;
-            }
-        }
-        public class DimToMapConverter : SafeDataToXamlConverter<List<object>, double>
-        {
-            private DocumentView _mapView;
-            private bool _isWidth = false;
-            public override double ConvertDataToXaml(List<object> data, object parameter = null)
-            {
-                var mapSize = (Point)data[1];
-                var mapViewCanvas = _mapView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-                var mapPan        = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                var mapZoom       = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1,1);
-                return _isWidth ? Instance.xCanvas.ActualWidth * mapZoom.X / mapSize.X : Instance.xCanvas.ActualHeight * mapZoom.Y / mapSize.Y;
-            }
-
-            public override List<object> ConvertXamlToData(double xaml, object parameter = null)
-            {
-                throw new NotImplementedException();
-            }
-
-            public DimToMapConverter(DocumentView mapView, bool width)
-            {
-                _isWidth = width;
-                _mapView = mapView;
-            }
-        }
-        public void       SetupMapView(DocumentController mainDocumentCollection)
-        {
-            if (xLeftStack.Visibility == Visibility.Collapsed)
-                return;
-            if (xMapDocumentView == null)
-            {
-                var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
-                xMap.SetFitToParent(true);
-                xMap.SetWidth(double.NaN);
-                xMap.SetHeight(double.NaN);
-                xMap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                xMap.SetVerticalAlignment(VerticalAlignment.Stretch);
-                xMap.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(xMap, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) };
-                Grid.SetColumn(xMapDocumentView, 2);
-                Grid.SetRow(xMapDocumentView, 0);
-
-                var overlay = new Grid() { Background =  new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) };
-                overlay.AddHandler(TappedEvent, new TappedEventHandler(XMapDocumentView_Tapped), true);
-                overlay.Children.Add(_mapActivateBtn);
-                _mapActivateBtn.Click += (s, e) => overlay.Background = overlay.Background == null ? new SolidColorBrush(Color.FromArgb(0x70, 0xff, 0xff, 0xff)) : null;
-                Grid.SetColumn(overlay, 2);
-                Grid.SetRow(overlay, 0);
-
-                rect  = new Grid() { Background =  new SolidColorBrush(Color.FromArgb(0x20, 0, 0, 0)), BorderBrush = new SolidColorBrush(Colors.Black), BorderThickness =new Thickness(0.5)};
-                rect.Width = rect.Height = 50;
-                rect.HorizontalAlignment = HorizontalAlignment.Left;
-                rect.VerticalAlignment = VerticalAlignment.Top;
-                rect.IsHitTestVisible = false;
-
-                xLeftStack.Children.Add(xMapDocumentView);
-                xLeftStack.Children.Add(overlay);
-                xLeftStack.Children.Add(rect);
-                _mapTimer.Tick += (s, e) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
-            }
-            
-            var panPosRef        = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanPositionKey);
-            var panZoomRef       = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanZoomKey);
-            var transformBinding = new FieldMultiBinding<TranslateTransform>(panPosRef, panZoomRef)
-            {
-                Converter = new PointToMapConverter(xMapDocumentView),
-                Mode = BindingMode.OneWay,
-                FallbackValue = new TranslateTransform()
-            };
-            var bindingw = new FieldMultiBinding<double>(panPosRef, panZoomRef)
-            {
-                Mode      = BindingMode.OneWay,
-                Converter = new DimToMapConverter(xMapDocumentView, true),
-                FallbackValue = 50
-            };
-            var bindingh = new FieldMultiBinding<double>(panPosRef, panZoomRef)
-            {
-                Mode      = BindingMode.OneWay,
-                Converter = new DimToMapConverter(xMapDocumentView, false),
-                FallbackValue = 50
-            };
-            rect.AddFieldBinding(RenderTransformProperty, transformBinding);
-            rect.AddFieldBinding(WidthProperty,  bindingw);
-            rect.AddFieldBinding(HeightProperty, bindingh);
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
-            _mapTimer.Start();
         }
 
         public async Task<string>                                  PromptLayoutTemplate(IEnumerable<DocumentController> docs)
@@ -633,16 +498,16 @@ function(d) {
     redo();
 }
 "),
-//                ("\uF57C", "Split Horizontal", false, @"
-//function (d) {
-//    split_horizontal();
-//}
-//"),
-//                ("\uE985", "Split Vertical", false, @"
-//function (d) {
-//    split_vertical();
-//}
-//"),
+                ("\uF57C", "Split Horizontal", false, @"
+function (d) {
+    split_horizontal();
+}
+"),
+                ("\uE985", "Split Vertical", false, @"
+function (d) {
+    split_vertical();
+}
+"),
                 ("\uE8BB", "Close Split", false, @"
 function (d) {
     close_split();
@@ -813,30 +678,6 @@ function (d) {
 
             e.Handled = true;
         }
-        
-        private void XMapDocumentView_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (!_mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
-            {
-                JavaScriptHack.Focus(FocusState.Programmatic);
-                var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-                var mapPt = e.GetPosition(mapViewCanvas);
-
-                var mainFreeform = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionFreeformView>();
-                var mainFreeFormCanvas = mainFreeform?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
-                var mainFreeformXf = ((mainFreeFormCanvas?.RenderTransform ?? new MatrixTransform()) as MatrixTransform)?.Matrix ?? new Matrix();
-                var mainDocCenter = new Point(SplitFrame.ActiveFrame.ActualWidth / 2 / mainFreeformXf.M11, SplitFrame.ActiveFrame.ActualHeight / 2 / mainFreeformXf.M22);
-                var mainScale = new Point(mainFreeformXf.M11, mainFreeformXf.M22);
-                mainFreeform?.SetTransformAnimated(
-                    new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth / 2, Y = -mapPt.Y + SplitFrame.ActiveFrame.ActualHeight / 2 },
-                    new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
-            }
-        }
-
-        private void xLeftStack_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xLeftStackClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-        }
 
         private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
         {
@@ -860,6 +701,9 @@ function (d) {
         private void xPresentationButton_Clicked(object sender, RoutedEventArgs e) { UIFunctions.TogglePresentation(); }
         private void xBackButton_Clicked(object sender, RoutedEventArgs e)         { SplitFunctions.FrameHistoryBack(); }
         private void xForwardButton_Clicked(object sender, RoutedEventArgs e)      { SplitFunctions.FrameHistoryForward(); }
+        private void xUndoButton_Clicked(object sender, RoutedEventArgs e)         { UndoManager.UndoOccured(); }
+        private void xRedoButton_Clicked(object sender, RoutedEventArgs e)         { UndoManager.RedoOccured(); }
+        private void xToolbarButton_Clicked(object sender, RoutedEventArgs e)      { xToolbar.Visibility = xToolbar.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible; }
 
         private void Timeline_OnCompleted(object sender, object e)                 { xSnapshotOverlay.Visibility = Visibility.Collapsed; }
 
@@ -1069,5 +913,6 @@ function (d) {
             }
             return null;
         }
+
     }
 }

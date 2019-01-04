@@ -262,6 +262,7 @@ namespace Dash
                     {
                         ParentIsFreeform = false;
                     }
+                    xPinSymbol.Symbol = docView.ViewModel.LayoutDocument.GetAreContentsHitTestVisible() ? Symbol.Pin : Symbol.UnPin;
                 }
             } catch (Exception e) {  }
             ResizerVisibilityState = _selectedDocViewModels.FirstOrDefault()?.ResizersVisible == true ? Visibility.Visible : Visibility.Collapsed;
@@ -274,6 +275,20 @@ namespace Dash
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) { 
             SelectionManager.SelectedDocViews.ToList().ForEach((dv) => MainPage.Instance.ClearFloatingDoc(dv));
             SelectionManager.DeleteSelected();
+        }
+
+        private void xPinPanel_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xPinSymbol.Symbol == Symbol.Pin)
+            {
+                xPinSymbol.Symbol = Symbol.UnPin;
+                SelectionManager.SelectedDocViewModels.ToList().ForEach(vm => vm.LayoutDocument.SetAreContentsHitTestVisible(false));
+            }
+            else
+            {
+                SelectionManager.SelectedDocViewModels.ToList().ForEach(vm => vm.LayoutDocument.SetAreContentsHitTestVisible(true));
+                xPinSymbol.Symbol = Symbol.Pin;
+            }
         }
 
         private async void XAnnotateEllipseBorder_OnTapped(object sender, TappedRoutedEventArgs e)
