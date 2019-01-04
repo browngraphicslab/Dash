@@ -19,10 +19,17 @@
             <local:TreeViewList x:Name="XRootList" FilterFunc="{x:Bind FilterFunc, Mode=OneWay}"></local:TreeViewList>
         </ScrollViewer>
         <Line Grid.Row="1" HorizontalAlignment="Center" X2="150" StrokeThickness="1" Stroke="White"/>
-        <ToggleSwitch x:Name="XActiveFrameSwitch" Grid.Row="2" HorizontalAlignment="Right" Foreground="White" OnContent="Attached" OffContent="Detached" >
+        <StackPanel Orientation="Horizontal" Grid.Row="2">
+        <ToggleSwitch x:Name="XActiveFrameSwitch" Grid.Row="2" HorizontalAlignment="Left" Foreground="White" OnContent="Attached" OffContent="Detached" >
             <ToggleSwitch.Header>
                 <TextBlock Text="Active Frame" Foreground="White"/>
             </ToggleSwitch.Header>
         </ToggleSwitch>
+        <ToggleSwitch x:Name="XMapActiveSwitch" Grid.Row="2" HorizontalAlignment="Left" Foreground="White" OnContent="Active" OffContent="Hidden" Toggled="XMapActiveSwitch_Toggled" >
+            <ToggleSwitch.Header>
+                <TextBlock Text="Map Active" Foreground="White"/>
+            </ToggleSwitch.Header>
+            </ToggleSwitch>
+        </StackPanel>
     </Grid>
 </UserControl>

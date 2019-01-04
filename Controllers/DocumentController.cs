@@ -55,7 +55,7 @@ namespace Dash
 
         private DocumentController(DocumentModel model) : base(model) { _initialized = false; }
         public  DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
-        public  DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type, string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Id, kv => kv.Value.Id), type, id))
+        public  DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type, string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Id, kv => kv.Value?.Id), type, id))
         {
             //TODO RefCount
             //_fields = new Dictionary<KeyController, FieldControllerBase>(fields);

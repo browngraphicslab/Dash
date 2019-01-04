@@ -89,11 +89,6 @@ namespace Dash
             SetupBindings(rtv, docController, key);
             return rtv;
         }
-
-        private static ReferenceController GetTextReference(DocumentController docController)
-        {
-            return docController.GetField(KeyStore.DataKey) as ReferenceController;
-        }
     }
 
 }

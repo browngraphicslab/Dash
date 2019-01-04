@@ -32,6 +32,7 @@ using Dash.Popups.TemplatePopups;
 using static Dash.DocumentController;
 using Dash.Controllers.Functions.Operators;
 using TemplateType = Dash.TemplateList.TemplateType;
+using Windows.UI.Xaml.Data;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -132,6 +133,23 @@ namespace Dash
 
         public void SetOverlayVisibility(Visibility visibility) { xOverlay.Visibility = visibility; }
         public void SetSearchVisibility(Visibility visibility)  { xSearchBoxGrid.Visibility = visibility; }
+        public void SetMapVisibility(Visibility visibility) {
+            xLeftStack.Visibility = visibility;
+            if (visibility == Visibility.Collapsed)
+            {
+                (_mapActivateBtn.Parent as Panel)?.Children.Remove(_mapActivateBtn);
+                xLeftStack.Children.Clear();
+                xMapDocumentView = null;
+                _mapTimer.Stop();
+                xLeftGrid.RowDefinitions.Last().Height = new GridLength(0);
+            }
+            else
+            {
+                xLeftGrid.RowDefinitions.Last().Height = new GridLength(300);
+                _mapTimer.Start();
+                SetupMapView(SplitFrame.ActiveFrame.ViewModel.LayoutDocument);
+            }
+        }
 
         public void AddFloatingDoc(DocumentController doc, Point? size = null, Point? position = null)
         {
@@ -204,6 +222,7 @@ namespace Dash
                 ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
         }
 
+
         public void       ThemeChange(bool nightModeOn) { RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; } //xToolbar.SwitchTheme(nightModeOn);
         public async void Publish()
         {
@@ -214,8 +233,65 @@ namespace Dash
 
             await new Publisher().StartPublication(allDocuments);
         }
+        static Grid rect = null;
+        public class PointToMapConverter : SafeDataToXamlConverter<List<object>, TranslateTransform>
+        {
+            private DocumentView _mapView;
+            public override TranslateTransform ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                var srcMapPt = (Point) data[0];
+                var srcMapZoom = (Point) data[1];
+
+                var mapViewCanvas = _mapView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+                var mapPan  = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var mapZoom = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1,1);
+
+                var mapPt = new Point(
+                  (mapPan.X  - srcMapPt.X*mapZoom.X/srcMapZoom.X),
+                  (mapPan.Y  - srcMapPt.Y*mapZoom.Y/srcMapZoom.Y)  );
+                return new TranslateTransform
+                {
+                    X = mapPt.X,
+                    Y = mapPt.Y
+                };
+            }
+            public override List<object> ConvertXamlToData(TranslateTransform xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+            public PointToMapConverter(DocumentView mapView)
+            {
+                _mapView = mapView;
+            }
+        }
+        public class DimToMapConverter : SafeDataToXamlConverter<List<object>, double>
+        {
+            private DocumentView _mapView;
+            private bool _isWidth = false;
+            public override double ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                var mapSize = (Point)data[1];
+                var mapViewCanvas = _mapView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
+                var mapPan        = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var mapZoom       = _mapView.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1,1);
+                return _isWidth ? Instance.xCanvas.ActualWidth * mapZoom.X / mapSize.X : Instance.xCanvas.ActualHeight * mapZoom.Y / mapSize.Y;
+            }
+
+            public override List<object> ConvertXamlToData(double xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+
+            public DimToMapConverter(DocumentView mapView, bool width)
+            {
+                _isWidth = width;
+                _mapView = mapView;
+            }
+        }
         public void       SetupMapView(DocumentController mainDocumentCollection)
         {
+            if (xLeftStack.Visibility == Visibility.Collapsed)
+                return;
             if (xMapDocumentView == null)
             {
                 var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
@@ -224,6 +300,7 @@ namespace Dash
                 xMap.SetHeight(double.NaN);
                 xMap.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 xMap.SetVerticalAlignment(VerticalAlignment.Stretch);
+                xMap.SetField(KeyStore.DataKey, new PointerReferenceController(new DocumentReferenceController(xMap, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap) };
                 Grid.SetColumn(xMapDocumentView, 2);
                 Grid.SetRow(xMapDocumentView, 0);
@@ -235,13 +312,42 @@ namespace Dash
                 Grid.SetColumn(overlay, 2);
                 Grid.SetRow(overlay, 0);
 
+                rect  = new Grid() { Background =  new SolidColorBrush(Color.FromArgb(0x20, 0, 0, 0)), BorderBrush = new SolidColorBrush(Colors.Black), BorderThickness =new Thickness(0.5)};
+                rect.Width = rect.Height = 50;
+                rect.HorizontalAlignment = HorizontalAlignment.Left;
+                rect.VerticalAlignment = VerticalAlignment.Top;
+                rect.IsHitTestVisible = false;
+
                 xLeftStack.Children.Add(xMapDocumentView);
                 xLeftStack.Children.Add(overlay);
+                xLeftStack.Children.Add(rect);
                 _mapTimer.Tick += (s, e) => (xMapDocumentView.ViewModel.Content as CollectionView)?.FitContents();
             }
-
+            
+            var panPosRef        = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanPositionKey);
+            var panZoomRef       = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanZoomKey);
+            var transformBinding = new FieldMultiBinding<TranslateTransform>(panPosRef, panZoomRef)
+            {
+                Converter = new PointToMapConverter(xMapDocumentView),
+                Mode = BindingMode.OneWay,
+                FallbackValue = new TranslateTransform()
+            };
+            var bindingw = new FieldMultiBinding<double>(panPosRef, panZoomRef)
+            {
+                Mode      = BindingMode.OneWay,
+                Converter = new DimToMapConverter(xMapDocumentView, true),
+                FallbackValue = 50
+            };
+            var bindingh = new FieldMultiBinding<double>(panPosRef, panZoomRef)
+            {
+                Mode      = BindingMode.OneWay,
+                Converter = new DimToMapConverter(xMapDocumentView, false),
+                FallbackValue = 50
+            };
+            rect.AddFieldBinding(RenderTransformProperty, transformBinding);
+            rect.AddFieldBinding(WidthProperty,  bindingw);
+            rect.AddFieldBinding(HeightProperty, bindingh);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
             _mapTimer.Start();
         }
 
@@ -343,8 +449,6 @@ namespace Dash
             }
 
             MenuToolbar.Instance.SetCollection(toolbar);
-
-            SetupMapView(lastWorkspace);
 
             if (xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Expanded)
             {
@@ -475,20 +579,20 @@ namespace Dash
 //    }
 //}
 //"),
-                ("\uE840", "Pin", false, @"
-function (d) {
-    for(var doc in get_selected_docs()) {
-        doc.Document.AreContentsHitTestVisible = false;
-    }
-}
-"),
-                ("\uE77A", "Unpin", false, @"
-function (d) {
-    for(var doc in get_selected_docs()) {
-        doc.Document.AreContentsHitTestVisible = true;
-    }
-}
-"),
+//                ("\uE840", "Pin", false, @"
+//function (d) {
+//    for(var doc in get_selected_docs()) {
+//        doc.Document.AreContentsHitTestVisible = false;
+//    }
+//}
+//"),
+//                ("\uE77A", "Unpin", false, @"
+//function (d) {
+//    for(var doc in get_selected_docs()) {
+//        doc.Document.AreContentsHitTestVisible = true;
+//    }
+//}
+//"),
                 ("\uEC8F", "Fit Width", true, @"
 function (d) {
     for(var doc in get_selected_docs()) {
@@ -529,16 +633,16 @@ function(d) {
     redo();
 }
 "),
-                ("\uF57C", "Split Horizontal", false, @"
-function (d) {
-    split_horizontal();
-}
-"),
-                ("\uE985", "Split Vertical", false, @"
-function (d) {
-    split_vertical();
-}
-"),
+//                ("\uF57C", "Split Horizontal", false, @"
+//function (d) {
+//    split_horizontal();
+//}
+//"),
+//                ("\uE985", "Split Vertical", false, @"
+//function (d) {
+//    split_vertical();
+//}
+//"),
                 ("\uE8BB", "Close Split", false, @"
 function (d) {
     close_split();
@@ -727,6 +831,11 @@ function (d) {
                     new TranslateTransform() { X = -mapPt.X + SplitFrame.ActiveFrame.ActualWidth / 2, Y = -mapPt.Y + SplitFrame.ActiveFrame.ActualHeight / 2 },
                     new ScaleTransform { CenterX = mapPt.X, CenterY = mapPt.Y, ScaleX = mainScale.X, ScaleY = mainScale.Y });
             }
+        }
+
+        private void xLeftStack_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xLeftStackClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
         }
 
         private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
