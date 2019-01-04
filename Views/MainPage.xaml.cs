@@ -91,9 +91,8 @@ namespace Dash
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
-            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
-            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
+            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
             Window.Current.CoreWindow.SizeChanged += (s, e) =>
             {
                 if (ActivePopup != null)
@@ -596,87 +595,38 @@ function (d) {
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
-                return;
-
-            if (!(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is Dash.Views.TreeView.TreeViewNode))
+            if (!(xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()) &&
+                !(FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is MarkdownTextBlock )))
             {
                 if (this.IsCtrlPressed())
                 {
-                    if (e.VirtualKey == VirtualKey.Z)
+                    switch (e.VirtualKey)
                     {
-                        UndoManager.UndoOccured();
-                    }
-                    else if (e.VirtualKey == VirtualKey.Y)
-                    {
-                        UndoManager.RedoOccured();
+                        case VirtualKey.Z: UndoManager.UndoOccured(); break;
+                        case VirtualKey.Y: UndoManager.RedoOccured(); break;
+                        case VirtualKey.A:
+                        {
+                            SelectionManager.SelectDocuments(SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>(), this.IsShiftPressed());
+                            break;
+                        }
+                        case VirtualKey.F:
+                        {
+                            xSearchBoxGrid.Visibility = Visibility.Visible;
+                            xMainSearchBox.Focus(FocusState.Programmatic);
+                            break;
+                        }
                     }
                 }
-            }
-
-            if (xTabCanvas.Children.Contains(TabMenu.Instance))
-            {
-                TabMenu.Instance.HandleKeyDown(sender, e);
-            }
-
-            if (this.IsCtrlPressed() && e.VirtualKey.Equals(VirtualKey.F))
-            {
-                xSearchBoxGrid.Visibility = Visibility.Visible;
-                xMainSearchBox.Focus(FocusState.Programmatic);
-            }
-
-            if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
-            {
-                if (!(FocusManager.GetFocusedElement() is TextBox || FocusManager.GetFocusedElement() is RichEditBox || FocusManager.GetFocusedElement() is MarkdownTextBlock))
+                else if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
                 {
                     SelectionManager.DeleteSelected();
-                }
-            }
-
-            //activateall selected docs
-            if (e.VirtualKey == VirtualKey.A && this.IsCtrlPressed())
-            {
-
-                var docs = SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>();
-                SelectionManager.SelectDocuments(docs, this.IsShiftPressed());
-            }
-
-            e.Handled = true;
-        }
-        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
-        {
-            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
-            {
-                if (xSearchBoxGrid.Visibility == Visibility.Visible && e.VirtualKey == VirtualKey.Escape)
+                } 
+                else if (e.VirtualKey == VirtualKey.Escape)
                 {
-                    SetSearchVisibility(Visibility.Collapsed);
-                }
-                return;
-            }
-            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) &&
-                !(FocusManager.GetFocusedElement() is TextBox))
-            {
-                var pos = this.RootPointerPos();
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
-                if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
-                {
-                    TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
-                    TabMenu.Instance?.AddGoToTabItems();
+                    this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
                 }
             }
-
-            // TODO propagate the event to the tab menu
-            if (xTabCanvas.Children.Contains(TabMenu.Instance))
-            {
-                TabMenu.Instance.HandleKeyUp(sender, e);
-            }
-
-            if (e.VirtualKey == VirtualKey.Escape)
-            {
-                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
-            }
-
-            e.Handled = true;
+            //if (xTabCanvas.Children.Contains(TabMenu.Instance)) { TabMenu.Instance.HandleKeyDown(sender, e); }
         }
 
         private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)
@@ -914,5 +864,29 @@ function (d) {
             return null;
         }
 
+
+
+        //private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
+        //{
+        //if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox) &&
+        //    !(FocusManager.GetFocusedElement() is TextBox))
+        //{
+        //    var pos = this.RootPointerPos();
+        //    var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
+        //    if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
+        //    {
+        //        TabMenu.ConfigureAndShow(freeformView, new Point(pos.X - xTreeMenuColumn.ActualWidth, pos.Y), xTabCanvas, true);
+        //        TabMenu.Instance?.AddGoToTabItems();
+        //    }
+        //}
+
+        //// TODO propagate the event to the tab menu
+        //if (xTabCanvas.Children.Contains(TabMenu.Instance))
+        //{
+        //    TabMenu.Instance.HandleKeyUp(sender, e);
+        //}
+
+        //    e.Handled = true;
+        //}
     }
 }

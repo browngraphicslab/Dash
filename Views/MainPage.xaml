@@ -117,17 +117,17 @@
 
             <localMicrosoft:GridSplitter x:Name="xSplitter"  Grid.Column="1" Width="15"/>
 
-            <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1"  x:FieldModifier="public"></Canvas>
+            <Canvas x:Name="xTabCanvas" Grid.Column="2" Grid.ColumnSpan="1"  x:FieldModifier="public" />
 
             <Grid x:Name="xLeftGrid" x:FieldModifier="public" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="7" x:Name="xTreeSplitter"/>
+                    <RowDefinition Height="7" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <local:MapView x:Name="xMapView" Visibility="Collapsed" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
-                <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
-                <localMicrosoft:GridSplitter  Grid.Row="1" Height="7"/>
+                <local:CollectionTreeView    Grid.Row="0" x:Name="xMainTreeView" x:FieldModifier="public"/>
+                <localMicrosoft:GridSplitter Grid.Row="1" Height="7"/>
+                <local:MapView               Grid.Row="2" x:Name="xMapView" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
             </Grid>
 
             <local:PresentationView x:Name="xPresentationView" Grid.Column="3"  HorizontalAlignment="Stretch" x:FieldModifier="public" Canvas.ZIndex="1"/>
