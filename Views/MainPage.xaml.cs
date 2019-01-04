@@ -229,7 +229,7 @@ namespace Dash
             //TODO: Eventually unset this popup after templatePopup, so that user can exit back
             var templateType = await popup.GetTemplate();
             UnsetPopup();
-            return templateType != TemplateType.None ? null : await processTemplate(docs, templateType);
+            return templateType == TemplateType.None ? null : await processTemplate(docs, templateType);
         }
         public async Task<SettingsView.WebpageLayoutMode>          PromptLayoutType()
         {
