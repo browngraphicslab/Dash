@@ -354,6 +354,7 @@
     <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
       <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
@@ -836,7 +837,6 @@
     <Compile Include="Views\MapView.xaml.cs">
       <DependentUpon>MapView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MinimapView.cs" />
     <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
       <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
     </Compile>
@@ -961,6 +961,7 @@
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
+    <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
@@ -1227,8 +1228,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MapView.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Templates\CaptionedImageTemplate.xaml">
       <SubType>Designer</SubType>
@@ -1707,10 +1708,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Templates\ImageTemplate.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Templates\LinkTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
