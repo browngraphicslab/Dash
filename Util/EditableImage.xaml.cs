@@ -81,10 +81,10 @@ namespace Dash
                     XAnnotationGrid.Height = Image.ActualHeight;
                 }
 
-                _annotationOverlay = new AnnotationOverlay(LayoutDocument);
-                _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
-                XAnnotationGrid.Children.Add(_annotationOverlay);
-                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
+                //_annotationOverlay = new AnnotationOverlay(LayoutDocument);
+                //_annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+                //XAnnotationGrid.Children.Add(_annotationOverlay);
+                //XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
         }
 
@@ -329,25 +329,26 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var point = e.GetCurrentPoint(_annotationOverlay);
-            if (_annotationOverlay == null || IsCropping)
+            if (IsCropping)
             {
                 e.Handled = true;
             }
-            else if (!IsCropping && this.GetDocumentView().AreContentsActive && e.IsLeftPressed())
+            else if (!IsCropping && this.GetDocumentView().AreContentsActive && e.IsLeftPressed() && _annotationOverlay != null)
             {
+                var point = e.GetCurrentPoint(_annotationOverlay);
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
                 e.Handled = true;
             }
         }
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var point = e.GetCurrentPoint(_annotationOverlay);
             if (_annotationOverlay == null || IsCropping)
             {
                 e.Handled = true;
+                return;
             }
-            else if (!IsCropping && point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
+            var point = e.GetCurrentPoint(_annotationOverlay);
+            if (point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
             {
                 _annotationOverlay.UpdateAnnotation(point.Position);
                 e.Handled = true;
