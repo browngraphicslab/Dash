@@ -58,6 +58,7 @@ namespace Dash
         void pev(object sender, PointerRoutedEventArgs e)
         {
             var documentView = this.GetDocumentView();
+            xGridSplitter.ManipulationMode = documentView.ViewModel.IsSelected && !e.GetCurrentPoint(null).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             documentView.ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed || !documentView.ViewModel.IsSelected;
         }
         static public void AddDataBoxForKey(KeyController key, DocumentController dvm)
@@ -97,6 +98,7 @@ namespace Dash
         private void UpdateSort()
         {
             var docViewModels = ViewModel.DocumentViewModels;
+            var sindex = xDataGrid.SelectedItem;
             switch (_sortColumn?.SortDirection)
             {
             case DataGridSortDirection.Ascending:
@@ -111,6 +113,7 @@ namespace Dash
                 xDataGrid.ItemsSource = docViewModels.ToArray();
                 break;
             }
+            xDataGrid.SelectedItem = sindex;
         }
         private void AddKey(KeyController key)
         {
@@ -454,9 +457,10 @@ namespace Dash
 
         private void       xOuterGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var header = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid).OfType<Microsoft.Toolkit.Uwp.UI.Controls.Primitives.DataGridColumnHeader>();
+            var hitObjects = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid);
+            var header = hitObjects.OfType<Microsoft.Toolkit.Uwp.UI.Controls.Primitives.DataGridColumnHeader>();
             this.GetDocumentView().ViewModel.DragAllowed = header == null || e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
-            xDataGrid.SelectedIndex = -1;
+            xDataGrid.SelectedIndex = header != null || hitObjects.Any(obj => obj is DataGridCell) ? xDataGrid.SelectedIndex : -1;
         }
 
         private void       xColumnFlyout_ColumnVisibilityChanged(object sender, RoutedEventArgs e)

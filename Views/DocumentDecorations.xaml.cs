@@ -151,9 +151,10 @@ namespace Dash
                 if (SelectionManager.SelectedDocViews.Any())
                 {
                     if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-                    {
-                        botRight = new Point(MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+                    { // 20 = 2 * resizeFrame border width
+                        botRight = new Point(MainPage.Instance.ActualWidth - 20 - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
                     }
+                    else botRight = new Point(botRight.X - 10 , botRight.Y);
 
                     RenderTransform     = new TranslateTransform { X = topLeft.X, Y = topLeft.Y };
                     ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
@@ -255,7 +256,7 @@ namespace Dash
             SetPositionAndSize();
             ResetHeader(); // force header field to update
 
-            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -6 : 0, 
+            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -32 : 0, 
                                                   _selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ?  6 : 0, 0, 0);
             ParentIsFreeform = true;
             ShowPDFControls  = false;
