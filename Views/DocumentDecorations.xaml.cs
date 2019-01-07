@@ -96,34 +96,37 @@ namespace Dash
             }
 
             foreach (var handle in new[] {
-                xTopLeftResizeControl, xTopResizeControl, xTopRightResizeControl,
-                xLeftResizeControl, xRightResizeControl,
-                xBottomLeftResizeControl, xBottomRightResizeControl, xBottomResizeControl })
+                (xTopLeftResizeControl, SplitDirection.InPlace), (xTopResizeControl, SplitDirection.Up), (xTopRightResizeControl, SplitDirection.InPlace),
+                (xLeftResizeControl, SplitDirection.Left), (xRightResizeControl, SplitDirection.Right),
+                (xBottomLeftResizeControl, SplitDirection.InPlace), (xBottomRightResizeControl, SplitDirection.InPlace), (xBottomResizeControl, SplitDirection.Down) })
             {
-                handle.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-                handle.DoubleTapped += (s, e) =>
+                handle.Item1.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+                if (handle.Item2 != SplitDirection.InPlace)
                 {
-                    _doubleTapped = true;
-                    var vm = _selectedDocViewModels.FirstOrDefault();
-                    var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(vm?.DocumentController, true);
-                    if (frame != null)
+                    handle.Item1.DoubleTapped += (s, e) =>
                     {
-                        frame.Delete();
-                    }
-                    else
+                        _doubleTapped = true;
+                        var vm = _selectedDocViewModels.FirstOrDefault();
+                        var frame = MainPage.Instance.MainSplitter.GetFrameWithDoc(vm?.DocumentController, true);
+                        if (frame != null)
+                        {
+                            frame.Delete();
+                        }
+                        else
+                        {
+                            // bcz: frame location should be determined by which part of the resize rectangle is tapped (e.g., left, right, top, bottom)
+                            SplitFrame.OpenInInactiveFrame(vm.DocumentController, handle.Item2);
+                        }
+                    };
+                    handle.Item1.Tapped += async (s, e) =>
                     {
-                        // bcz: frame location should be determined by which part of the resize rectangle is tapped (e.g., left, right, top, bottom)
-                        SplitFrame.OpenInInactiveFrame(vm.DocumentController);
-                    }
-                };
-                handle.Tapped += async (s, e) =>
-                {
-                    _doubleTapped = false;
-                    await System.Threading.Tasks.Task.Delay(100);
-                    if (!_doubleTapped)
-                    {
-                    }
-                };
+                        _doubleTapped = false;
+                        await System.Threading.Tasks.Task.Delay(100);
+                        if (!_doubleTapped)
+                        {
+                        }
+                    };
+                }
             }
             SelectionManager.DragManipulationStarted += (s, e) => Visibility = Visibility.Collapsed;
         }

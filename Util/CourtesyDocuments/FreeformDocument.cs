@@ -70,7 +70,7 @@ namespace Dash
         {
             foreach (var layoutDocument in docs)
             {
-                var layoutView = layoutDocument.MakeViewUI(context);
+                var layoutView = layoutDocument.MakeViewUI();
                 // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
                 // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
                 // TODO it helps the freeformdocument position elements correctly
@@ -83,7 +83,6 @@ namespace Dash
 
         private static ListController<DocumentController> GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
-            context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<ListController<DocumentController>>(context);
         }

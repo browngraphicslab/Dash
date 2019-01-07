@@ -522,16 +522,16 @@ namespace Dash
             }
             else
             {
-                var ff    = this as CollectionFreeformView;
-                var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
-                var scale = mat?.Matrix.M11 ?? 1;
-                // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
-                _bgBrush.Opacity = _bgOpacity;
+                //var ff    = this as CollectionFreeformView;
+                //var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
+                //var scale = mat?.Matrix.M11 ?? 1;
+                //// If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
+                //_bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
+                //_bgBrush.Opacity = _bgOpacity;
 
-                // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Size.Height));
-                args.DrawingSession.FillRectangle(drawRect, _bgBrush);
+                //// Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
+                //var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Size.Height));
+                //args.DrawingSession.FillRectangle(drawRect, _bgBrush);
             }
         }
 
@@ -1088,7 +1088,7 @@ namespace Dash
                     Height = 60000
                 };
 
-                InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+                //InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
                 Canvas.SetLeft(XInkCanvas, -30000);
                 Canvas.SetTop(XInkCanvas, -30000);
                 GetInkHostCanvas().Children.Add(XInkCanvas);
@@ -1134,7 +1134,7 @@ namespace Dash
             PreviewTextBuffer = PreviewFormatString;
             if (previewTextbox != null)
             {
-                MainPage.Instance.ClearForceFocus();
+                //MainPage.Instance.ClearForceFocus();
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
                 previewTextbox.Visibility = Visibility.Visible;
@@ -1182,10 +1182,10 @@ namespace Dash
                 else
                 {
                     PreviewTextBuffer += text;
-                    if (MainPage.Instance.ForceFocusPoint == null)
-                    {
-                        LoadNewActiveTextBox(text, where);
-                    }
+                    //if (MainPage.Instance.ForceFocusPoint == null)
+                    //{
+                    //    LoadNewActiveTextBox(text, where);
+                    //}
                 }
                 if (text == null)
                 {
@@ -1204,12 +1204,12 @@ namespace Dash
             }
             if (text != null)
             {
-                MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
+                //MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
 
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             } else
             {
-                MainPage.Instance.ClearForceFocus();
+                //MainPage.Instance.ClearForceFocus();
             }
 
             ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition(), xTransformedCanvas, MainPage.Instance));

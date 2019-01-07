@@ -268,10 +268,12 @@ namespace Dash
                 return FileType.Image;
 			if (filepath.EndsWith(".mp4") ||
 				filepath.EndsWith(".avi") ||
-				filepath.EndsWith(".mov"))
+				filepath.EndsWith(".mov") ||
+			    filepath.EndsWith(".wmv"))
                 return FileType.Video;
             if (filepath.EndsWith(".mp3") ||
-                filepath.EndsWith(".wav"))
+                filepath.EndsWith(".wav") ||
+                filepath.EndsWith(".wma"))
                 return FileType.Audio;
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;

@@ -123,8 +123,10 @@ namespace Dash
 
         private void SetActive(bool active)
         {
-            XTopRightResizer.Fill = active ? ActiveBrush : InactiveBrush;
-            XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
+            //XTopRightResizer.Fill = active ? ActiveBrush : InactiveBrush;
+            //XBottomLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
+            XTopLeftResizer.Fill = active ? ActiveBrush : InactiveBrush;
+            XBottomRightResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
         public DocumentController Split(SplitDirection dir, DocumentController doc = null, bool autosize = false)
@@ -141,23 +143,60 @@ namespace Dash
             return this.GetFirstAncestorOfTypeFast<SplitManager>()?.Split(this, dir, doc, autosize);
         }
 
-        private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //{
+        //    var x = e.Cumulative.Translation.X;
+        //    var y = e.Cumulative.Translation.Y;
+        //    var angle = Math.Atan2(y, x);
+        //    angle = angle * 180 / Math.PI;
+        //    if (angle > 135 || angle < -150)
+        //    {
+        //        Split(SplitDirection.Right);
+        //        var pane = (SplitPane) Parent;
+        //        var currentDef = SplitPane.GetSplitLocation(this);
+        //        var index = currentDef.Parent.Children.IndexOf(currentDef);
+        //        var nextDef = currentDef.Parent.Children[index + 1];
+        //        _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
+        //        XTopRightResizer.ManipulationDelta += _manipulationDeltaHandler;
+        //    }
+        //    else if (angle <= 135 && angle > 60)
+        //    {
+        //        Split(SplitDirection.Up);
+        //        var pane = (SplitPane) Parent;
+        //        var currentDef = SplitPane.GetSplitLocation(this);
+        //        var index = currentDef.Parent.Children.IndexOf(currentDef);
+        //        var prevDef = currentDef.Parent.Children[index - 1];
+        //        _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
+        //        XTopRightResizer.ManipulationDelta += _manipulationDeltaHandler;
+        //    }
+        //    else if (angle <= 60 && angle > -45)
+        //    {
+        //        CurrentSplitMode = DragSplitMode.HorizontalCollapseNext;
+        //    }
+        //    else
+        //    {
+        //        CurrentSplitMode = DragSplitMode.VerticalCollapsePrevious;
+        //    }
+
+        //}
+
+        private void TopLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var x = e.Cumulative.Translation.X;
             var y = e.Cumulative.Translation.Y;
             var angle = Math.Atan2(y, x);
             angle = angle * 180 / Math.PI;
-            if (angle > 135 || angle < -150)
+            if (angle >= -60 && angle < 45)
             {
-                Split(SplitDirection.Right);
+                Split(SplitDirection.Left);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
-                var nextDef = currentDef.Parent.Children[index + 1];
-                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
-                XTopRightResizer.ManipulationDelta += _manipulationDeltaHandler;
+                var previousDef = currentDef.Parent.Children[index - 1];
+                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(previousDef, currentDef, args.Delta.Translation);
+                XTopLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
-            else if (angle <= 135 && angle > 60)
+            else if (angle >= 45 && angle < 150)
             {
                 Split(SplitDirection.Up);
                 var pane = (SplitPane) Parent;
@@ -165,11 +204,11 @@ namespace Dash
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
                 var prevDef = currentDef.Parent.Children[index - 1];
                 _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
-                XTopRightResizer.ManipulationDelta += _manipulationDeltaHandler;
+                XTopLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
-            else if (angle <= 60 && angle > -45)
+            else if (angle >= 150 || angle < -135)
             {
-                CurrentSplitMode = DragSplitMode.HorizontalCollapseNext;
+                CurrentSplitMode = DragSplitMode.HorizontalCollapsePrevious;
             }
             else
             {
@@ -178,24 +217,62 @@ namespace Dash
 
         }
 
-        private void BottomLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //private void BottomLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //{
+        //    var x = e.Cumulative.Translation.X;
+        //    var y = e.Cumulative.Translation.Y;
+        //    var angle = Math.Atan2(y, x);
+        //    angle = angle * 180 / Math.PI;
+        //    if (angle < 30 && angle > -45)
+        //    {
+        //        Split(SplitDirection.Left);
+
+        //        var pane = (SplitPane) Parent;
+        //        var currentDef = SplitPane.GetSplitLocation(this);
+        //        var index = currentDef.Parent.Children.IndexOf(currentDef);
+        //        var prevDef = currentDef.Parent.Children[index - 1];
+        //        _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
+        //        XBottomLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
+        //    }
+        //    else if (angle <= -45 && angle > -120)
+        //    {
+        //        Split(SplitDirection.Down);
+
+        //        var pane = (SplitPane) Parent;
+        //        var currentDef = SplitPane.GetSplitLocation(this);
+        //        var index = currentDef.Parent.Children.IndexOf(currentDef);
+        //        var nextDef = currentDef.Parent.Children[index + 1];
+        //        _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
+        //        XBottomLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
+        //    }
+        //    else if (angle <= -120 || angle > 135)
+        //    {
+        //        CurrentSplitMode = DragSplitMode.HorizontalCollapsePrevious;
+        //    }
+        //    else
+        //    {
+        //        CurrentSplitMode = DragSplitMode.VerticalCollapseNext;
+        //    }
+        //}
+
+        private void BottomRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var x = e.Cumulative.Translation.X;
             var y = e.Cumulative.Translation.Y;
             var angle = Math.Atan2(y, x);
             angle = angle * 180 / Math.PI;
-            if (angle < 30 && angle > -45)
+            if (angle > 120 || angle < -135)
             {
-                Split(SplitDirection.Left);
+                Split(SplitDirection.Right);
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
-                var prevDef = currentDef.Parent.Children[index - 1];
-                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
-                XBottomLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
+                var nextDef = currentDef.Parent.Children[index + 1];
+                _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
+                XBottomRightResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
-            else if (angle <= -45 && angle > -120)
+            else if (angle >= -135 && angle < -30)
             {
                 Split(SplitDirection.Down);
 
@@ -204,11 +281,11 @@ namespace Dash
                 var index = currentDef.Parent.Children.IndexOf(currentDef);
                 var nextDef = currentDef.Parent.Children[index + 1];
                 _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
-                XBottomLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
+                XBottomRightResizer.ManipulationDelta += _manipulationDeltaHandler;
             }
-            else if (angle <= -120 || angle > 135)
+            else if (angle >= -30 && angle < 45)
             {
-                CurrentSplitMode = DragSplitMode.HorizontalCollapsePrevious;
+                CurrentSplitMode = DragSplitMode.HorizontalCollapseNext;
             }
             else
             {
@@ -222,8 +299,10 @@ namespace Dash
         {
             if (_manipulationDeltaHandler != null)
             {
-                XTopRightResizer.ManipulationDelta -= _manipulationDeltaHandler;
-                XBottomLeftResizer.ManipulationDelta -= _manipulationDeltaHandler;
+                //XTopRightResizer.ManipulationDelta -= _manipulationDeltaHandler;
+                //XBottomLeftResizer.ManipulationDelta -= _manipulationDeltaHandler;
+                XTopLeftResizer.ManipulationDelta -= _manipulationDeltaHandler;
+                XBottomRightResizer.ManipulationDelta -= _manipulationDeltaHandler;
             }
 
             if (CurrentSplitMode == DragSplitMode.None)

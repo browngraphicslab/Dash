@@ -18,12 +18,12 @@ namespace Dash
             return ActiveFrame.OpenDocument(doc);
         }
 
-        public static DocumentController OpenInInactiveFrame(DocumentController doc)
+        public static DocumentController OpenInInactiveFrame(DocumentController doc, SplitDirection preferedDirection = SplitDirection.Right)
         {
             var frames = MainPage.Instance.MainSplitter.GetChildFrames().Where(sf => sf != ActiveFrame).ToList();
             if (frames.Count == 0)
             {
-                return ActiveFrame.Split(SplitDirection.Right, doc, true);
+                return ActiveFrame.Split(preferedDirection, doc, true);
             }
             else
             {
