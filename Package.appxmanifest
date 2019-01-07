@@ -29,6 +29,12 @@
         <uap:Extension Category="windows.appService">
           <uap:AppService Name="OfficeInteropService" />
         </uap:Extension>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="dash">
+            <uap:Logo>images\Icon.png</uap:Logo>
+            <uap:DisplayName>DASH Uri Scheme</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
       </Extensions>
       <uap:ApplicationContentUriRules>
         <uap:Rule Match="http://*" Type="include" WindowsRuntimeAccess="all" />

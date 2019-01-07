@@ -199,6 +199,16 @@ namespace Dash
         private void OnResuming(object sender, object o)
         {
         }
-
+        protected override void OnActivated(IActivatedEventArgs args)
+        {
+            if (args.Kind == ActivationKind.Protocol)
+            {
+                var eventArgs = args as ProtocolActivatedEventArgs;
+                var docId = eventArgs.Uri.AbsolutePath;
+                var doc = RESTClient.Instance.Fields.GetController<DocumentController>(docId);
+                var target = doc.GetRegionDefinition() ?? doc;
+                MainPage.ShowTarget(target, null, null);
+            }
+        }
     }
 }

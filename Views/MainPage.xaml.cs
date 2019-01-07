@@ -707,24 +707,7 @@ function (d) {
 
             if (onScreenView != null) // we found the hyperlink target being displayed somewhere *onscreen*.  If it's hidden, show it.  If it's shown in the main workspace, hide it. If it's show in a docked pane, remove the docked pane.
             {
-                var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
-                if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true)) // if the target is a document or a visible region ...
-                {
-                    onScreenView.ViewModel.LayoutDocument.ToggleHidden();
-                 }
-                else // otherwise, it's a hidden region that we have to show
-                {
-                    onScreenView.ViewModel.LayoutDocument.SetHidden(false);
-                }
-                if (onScreenView.Visibility == Visibility.Visible)
-                {
-                    onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
-                    onScreenView.ViewModel.SetSearchHighlightState(true);
-                } else
-                {
-                    onScreenView.ViewModel.SetSearchHighlightState(false);
-                    onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegions());
-                }
+                ShowTarget(target, linkDoc, region);
             }
             else
             {
@@ -734,6 +717,31 @@ function (d) {
 
             return LinkHandledResult.HandledClose;
         }
+
+        public static void ShowTarget(DocumentController target, DocumentController linkDoc, DocumentController region)
+        {
+            var onScreenView = MainPage.Instance.FindTargetDocumentView(target);
+            var highlighted = onScreenView.ViewModel.SearchHighlightState != DocumentViewModel.UnHighlighted;
+            if (highlighted && (target.Equals(region) || target.GetField<DocumentController>(KeyStore.GoToRegionKey)?.Equals(region) == true || region == null)) // if the target is a document or a visible region ...
+            {
+                onScreenView.ViewModel.LayoutDocument.ToggleHidden();
+            }
+            else // otherwise, it's a hidden region that we have to show
+            {
+                onScreenView.ViewModel.LayoutDocument.SetHidden(false);
+            }
+            if (onScreenView.Visibility == Visibility.Visible)
+            {
+                onScreenView.ViewModel.LayoutDocument.GotoRegion(region, linkDoc);
+                onScreenView.ViewModel.SetSearchHighlightState(true);
+            }
+            else
+            {
+                onScreenView.ViewModel.SetSearchHighlightState(false);
+                onScreenView.GetDescendantsOfType<AnnotationOverlay>().ToList().ForEach((ann) => ann.DeselectRegions());
+            }
+        }
+
         private void               NavigateToDocument(DocumentController doc)//More options
         {
             var tree = DocumentTree.MainPageTree;
