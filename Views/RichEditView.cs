@@ -133,6 +133,10 @@ namespace Dash
 
             LostFocus += (s, e) =>
             {
+                if (!ViewModel.IsSelected)
+                {
+                    IsEnabled = false;
+                }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
                 if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey?.Equals(KeyStore.DataKey) == true)
@@ -228,25 +232,6 @@ namespace Dash
                 rtv.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
                 rtv._lastXamlRTFText = rtv.getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
             }
-            if (rtv.GetDocumentView() != null)
-            {
-                if (rtv.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
-                {
-                    var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
-                    var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
-
-                    //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
-
-                    rtv.Document.Selection.CharacterFormat.Size = 9;
-                    rtv.Document.Selection.FindText(HyperlinkMarker, rtv.getRtfText().Length, FindOptions.Case);
-                    rtv.Document.Selection.CharacterFormat.Size = 8;
-                    rtv.Document.Selection.Text = link;
-                    rtv.Document.Selection.Link = "\"" + url + "\"";
-                    rtv.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
-                    rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
-                }
-            }
             if (double.IsNaN(rtv.Width))
             {
                 rtv.InvalidateMeasure();
@@ -259,9 +244,9 @@ namespace Dash
             var target = getHyperlinkTargetForSelection();
             if (target != null)
             {
-                var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target);
-                if (theDoc != null)
+                if (target.Scheme == "dash")
                 {
+                    var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target.AbsolutePath);
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.Contains(theDoc) == true)
                     {
                         // get region doc
@@ -269,9 +254,9 @@ namespace Dash
                         AnnotationManager.FollowRegion(this, theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
-                else if (target.StartsWith("http"))
+                else if (target.Scheme == "http")
                 {
-                    await Launcher.LaunchUriAsync(new Uri(target));
+                    await Launcher.LaunchUriAsync(target);
                 }
                 return true;
             }
@@ -834,7 +819,13 @@ namespace Dash
                     dataPackage.SetText(await clipboardContent.GetTextAsync());
                     //set RichEditView property to this view
                     dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
-                    Clipboard.SetContent(dataPackage);
+                    try
+                    {
+                        Clipboard.SetContent(dataPackage);
+                    } catch (Exception ex)
+                    {
+                        Debug.WriteLine("Exception in clipboard: " + ex.Message);
+                    }
                 }
             }
             Clipboard.ContentChanged += Clipboard_ContentChanged;
@@ -844,8 +835,6 @@ namespace Dash
         #endregion
 
         #region load/unload
-        public const string HyperlinkMarker = "<hyperlink marker>";
-        public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -873,26 +862,6 @@ namespace Dash
             if (DataDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
             {
                 CreateActionMenu(this);
-            }
-            if (this.GetDocumentView() != null)
-            {
-                Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
-                if (Document.Selection.StartPosition != Document.Selection.EndPosition)
-                {
-                    var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
-                    var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
-
-                    //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
-
-                    Document.Selection.CharacterFormat.Size = 9;
-                    Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
-                    Document.Selection.CharacterFormat.Size = 8;
-                    Document.Selection.Text = link;
-                    Document.Selection.Link = "\"" + url + "\"";
-                    Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
-                    Document.Selection.EndPosition = Document.Selection.StartPosition;
-                }
             }
         }
         private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
@@ -927,7 +896,7 @@ namespace Dash
             return LayoutDocument;
         }
 
-        private string getHyperlinkTargetForSelection()
+        private Uri getHyperlinkTargetForSelection()
         {
             var s1 = Document.Selection.StartPosition;
             var s2 = Document.Selection.EndPosition;
@@ -936,7 +905,7 @@ namespace Dash
                 Document.Selection.SetRange(s1, s2 + 1);
             }
 
-            string target = Document.Selection.Link.Length > 1 ? Document.Selection.Link.Split('\"')[1] : null;
+            var target = !string.IsNullOrEmpty(Document.Selection.Link) ? new Uri(Document.Selection.Link.Split("\"")[1]) : null;
 
             if (Document.Selection.EndPosition != s2)
                 Document.Selection.SetRange(s1, s2);
@@ -950,9 +919,9 @@ namespace Dash
 
             using (UndoManager.GetBatchHandle())
             {
-                if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+                if (string.IsNullOrEmpty(getSelected()?.First()?.Data) && theDoc != null && s1 == s2)
                 {
-                    if (theDoc != null && s1 == s2) Document.Selection.Text = theDoc.Title;
+                    Document.Selection.Text = theDoc.Title;
                 }
 
 
@@ -970,7 +939,7 @@ namespace Dash
             var selectedText = Document.Selection.Text;
             var start = Document.Selection.StartPosition;
             var length = Document.Selection.EndPosition - start;
-            string link = null;
+            Uri link = null;
             DocumentController targetRegionDocument = null;
 
             var origStart = start;
@@ -981,7 +950,7 @@ namespace Dash
                 for (int i = 0; i <= length; i++)
                 {
                     Document.Selection.SetRange(start + i, start + i + 1);
-                    if (Document.Selection.Link != "")
+                    if (Document.Selection.Link != null)
                     {
                         if (Document.Selection.Link.StartsWith("\"http"))
                         {
@@ -1026,7 +995,7 @@ namespace Dash
                         link = getTargetLink(selectedText, out targetRegionDocument);
                     }
                     var cursize = Document.Selection.EndPosition - Document.Selection.StartPosition;
-                    Document.Selection.Link = link;
+                    Document.Selection.Link = link.AbsoluteUri;
                     var newsize = Document.Selection.EndPosition - Document.Selection.StartPosition;
                     newstart += (newsize - cursize);
                     Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
@@ -1052,7 +1021,7 @@ namespace Dash
                 }
                 Document.Selection.SetRange(start, start + length);
                 // set the hyperlink for the matched text
-                Document.Selection.Link = link;
+                Document.Selection.Link = "\"" + link.AbsoluteUri +"\"";
                 endpos = Document.Selection.EndPosition;
                 Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
             }
@@ -1060,41 +1029,16 @@ namespace Dash
             return targetRegionDocument;
         }
 
-        private string getTargetLink(string selectedText, out DocumentController theDoc)
+        private Uri getTargetLink(string selectedText, out DocumentController theDoc)
         {
             theDoc = new RichTextNote(selectedText).Document;
             theDoc.SetRegionDefinition(LayoutDocument);
-            var link = "\"" + theDoc.Id + "\"";
+            var link = new Uri("dash:"+theDoc.Id);
             if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.HtmlDocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
-                link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
+                link = new Uri("http:" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data);
             }
             return link;
-        }
-
-        private string getHyperlinkText(int atPos, int s2)
-        {
-            Document.Selection.SetRange(atPos + 1, s2 - 1);
-            string refText;
-            Document.Selection.GetText(TextGetOptions.None, out refText);
-
-            return refText;
-        }
-
-        private int findPreviousHyperlinkStartMarker(string allText, int s1)
-        {
-            Document.Selection.SetRange(0, allText.Length);
-            var atPos = -1;
-            while (Document.Selection.FindText("@", 0, FindOptions.None) > 0)
-            {
-                if (Document.Selection.StartPosition < s1)
-                {
-                    atPos = Document.Selection.StartPosition;
-                    Document.Selection.SetRange(atPos + 1, allText.Length);
-                }
-                else break;
-            }
-            return atPos;
         }
 
         #endregion

@@ -207,27 +207,32 @@ namespace Dash
             
             xButtonsCanvas.Height = xButtonsPanel.Children.Aggregate(xAnnotateEllipseBorder.ActualHeight, (hgt, child) => hgt += (child as FrameworkElement).Height);
 
-            var htmlAddress = theDoc?.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
-            if (!string.IsNullOrEmpty(htmlAddress))  
+            var uriString = theDoc?.GetDereferencedField<TextController>(KeyStore.SourceUriKey,null)?.Data;
+            if (!string.IsNullOrEmpty(uriString))  
             {
-                xURISource.Text = "From:";     // add a hyperlink that points to the source webpage.
+                Uri uri = null;
                 try
                 {
-                    var hyperlink = new Hyperlink { NavigateUri = new Uri(htmlAddress) };
-                    hyperlink.Inlines.Add(new Run { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
-                    xURISource.Inlines.Add(hyperlink);
+                    uri = new Uri(uriString);
                 }
-                catch (Exception)
+                catch (Exception) { uri = new Uri("dash:" + uriString); }  // bcz: for backward compatibility
+
+                var hyperlink = new Hyperlink();
+                if (uri.Scheme == "dash")
                 {
-                    if (RESTClient.Instance.Fields.GetController<DocumentController>(htmlAddress) is DocumentController htmlDoc)
+                    if (RESTClient.Instance.Fields.GetController<DocumentController>(uri.AbsolutePath) is DocumentController doc)
                     {
-                        var regDef = htmlDoc.GetDataDocument().GetRegionDefinition() ?? htmlDoc;
-                        xURISource.Text += " " + regDef?.Title;
-                        //var hyperlink = new Hyperlink() { NavigateUri = new System.Uri(htmlAddress) };
-                        //hyperlink.Inlines.Add(new Run() { Text = " " + HtmlToDashUtil.GetTitlesUrl(htmlAddress) });
-                        //xURISource.Inlines.Add(hyperlink);
+                        hyperlink.Click += (s, e) => Launcher.LaunchUriAsync(uri, new LauncherOptions() { LimitPickerToCurrentAppAndAppUriHandlers = false });
+                        hyperlink.Inlines.Add(new Run() { Text = (doc.GetDataDocument().GetRegionDefinition() ?? doc).Title });
                     }
                 }
+                else
+                {
+                    hyperlink.NavigateUri = uri;
+                    hyperlink.Inlines.Add(new Run { Text = " " + HtmlToDashUtil.GetTitlesUrl(uriString) });
+                }
+                xURISource.Text = "From:";     // add a hyperlink that points to the source webpage.
+                xURISource.Inlines.Add(hyperlink);
             }
             else
             {

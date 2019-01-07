@@ -552,7 +552,7 @@ namespace Dash
                                 postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
                                     sourceDoc.Title, true);
                                 postitNote.GetDataDocument()
-                                    .SetField<TextController>(KeyStore.SourceUriKey, region.Id, true);
+                                    .SetField<TextController>(KeyStore.SourceUriKey, "dash:"+region.Id, true);
                                 postitNote.GetDataDocument().AddToRegions(new List<DocumentController> { region });
 
                                 region.SetRegionDefinition(sourceDoc);
@@ -625,7 +625,7 @@ namespace Dash
                                 var region = new RichTextNote("Rich text region").Document;
 
                                 //add link to region of sourceDoc
-                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: region.Id);
+                                var postitView = new RichTextNote(text: text, size: new Size(300, double.NaN), urlSource: ("dash:"+region.Id));
                                 postitNote = postitView.Document;
                                 postitNote.GetDataDocument().SetField<TextController>(KeyStore.SourceTitleKey,
                                     sourceDoc.Title, true);
