@@ -255,7 +255,8 @@ namespace Dash
             SetPositionAndSize();
             ResetHeader(); // force header field to update
 
-            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -20 : 0, 0, 0, 0);
+            xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -6 : 0, 
+                                                  _selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ?  6 : 0, 0, 0);
             ParentIsFreeform = true;
             ShowPDFControls  = false;
             try
