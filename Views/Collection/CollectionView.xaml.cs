@@ -77,6 +77,9 @@ namespace Dash
                 if (ar is Rect r && !r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
                     var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    var docs = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>()
+                        .Select(cp => cp.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null).ToList();
+                    var pos = docs.Select(dv => dv.ViewModel.LayoutDocument.GetPosition()).ToList();
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
                     var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
                     var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
