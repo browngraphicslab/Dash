@@ -289,22 +289,28 @@ namespace Dash
                 var type = docView.ViewModel.DocumentController.GetDocType();
                 switch (type)
                 {
-                    case "Image Box":
-                    case "Video Box":
-                        try
-                        {
-                            var uri = type == "Image Box" ? docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data :
+                case "Image Box":
+                case "Video Box":
+                    try
+                    {
+                        var uri = type == "Image Box" ? docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data :
                                                             docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
-                            var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
+                        var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
                                         ? await StorageFile.GetFileFromApplicationUriAsync(uri)
                                         : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                            args.Data.SetStorageItems(new HashSet<StorageFile>(new StorageFile[] { sf }));
-                        }
-                        catch (Exception ex) { }
+                        args.Data.SetStorageItems(new HashSet<StorageFile>(new StorageFile[] { sf }));
+                    }
+                    catch (Exception ex) { }
 
-                        break;
-                    default:
-                        break;
+                    break;
+                case "Rich Text Box":
+                    var richText = docView.ViewModel.DataDocument.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
+                    var text = docView.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+                    args.Data.SetRtf(richText);
+                    args.Data.SetText(text);
+                    break;
+                default:
+                    break;
                 }
             }
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move| DataPackageOperation.Copy;
