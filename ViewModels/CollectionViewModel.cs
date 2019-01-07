@@ -811,6 +811,9 @@ namespace Dash
                     if (docsToAdd[i].DocumentType.Equals(CollectionBox.DocumentType))
                         docsToAdd[i].SetFitToParent(true);
                 }
+                //TODO This is a hack to compensate for SelectionManager.DropCompleted being called after CVM.Drop
+                docsToAdd[i].SetHidden(false);
+                docsToAdd[i].SetAreContentsHitTestVisible(true);
             }
 
             if (collectionViewModel?.IsTemplate ?? false)

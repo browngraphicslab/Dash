@@ -101,7 +101,7 @@ namespace Dash
                 var pointInAnnotationOverlayCoords = Util.PointTransformFromVisual(docViewPoint.Value, this.GetDocumentView(), _annotationOverlay);
                 regionDoc = _annotationOverlay.CreatePinRegion(calculateClosestPointOnImage(pointInAnnotationOverlayCoords));
             }
-            return regionDoc;
+            return regionDoc ?? LayoutDocument;
         }
         public async Task Rotate()           { await transformImage(Rect.Empty, BitmapRotation.Clockwise90Degrees, BitmapFlip.None); }
         public async Task MirrorHorizontal() { await MirrorImage(BitmapFlip.Horizontal); }

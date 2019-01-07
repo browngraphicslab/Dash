@@ -52,14 +52,13 @@ namespace Dash
             xDataGrid.SelectionChanged += XDataGrid_SelectionChanged;
 
             xAddColumnEntry.AddKeyHandler(VirtualKey.Enter, args => AddNewColumn());
-            xGridSplitter.PointerPressed += (s,e) => this.GetDocumentView().ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
-            AddHandler(PointerPressedEvent, new PointerEventHandler(pev), true);
-            AddHandler(PointerReleasedEvent, new PointerEventHandler(pev), true);
+            PointerPressed += pev;
             Loaded += OnLoaded;
         }
         void pev(object sender, PointerRoutedEventArgs e)
         {
-            e.Handled = true;
+            var documentView = this.GetDocumentView();
+            documentView.ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed || !documentView.ViewModel.IsSelected;
         }
         static public void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
