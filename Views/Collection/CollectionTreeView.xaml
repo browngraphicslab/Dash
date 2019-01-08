@@ -25,15 +25,23 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Background="{StaticResource DashDarkDarkBlueBrush}">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Foreground="White"  x:Name="XTitleBlock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" />
-                <Button x:Name="xExportButton" Background="Transparent" Padding="20 0 0 0 " Click="xExportButton_Click">
+        <Grid x:Name="xTitleBarGrid" Grid.Row="0" Background="{StaticResource DashDarkDarkBlueBrush}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="xExportButton" Background="Transparent" Padding="20 0 20 0 " Click="xExportButton_Click">
                     <SymbolIcon Foreground="White"  Symbol="Upload"/>
                 </Button>
-              </StackPanel>
+              <TextBlock Foreground="White"  x:Name="XTitleBlock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" />
+                </StackPanel>
         </Grid>
-        <Grid Grid.Row="1" HorizontalAlignment="Stretch" Margin="0 10 0 10">
+        <Grid x:Name="xLibraryGrid" Grid.Row="0" Background="{StaticResource DashDarkDarkBlueBrush}" Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="xLibraryButton" Background="Transparent" Padding="20 0 20 0 " Click="xExportButton_Click">
+                    <SymbolIcon Foreground="White"  Symbol="Download"/>
+                </Button>
+             <TextBlock Foreground="White"  x:Name="xLibraryBlock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Text="Library" Padding="0,7" />
+               </StackPanel>
+        </Grid>
+        <Grid x:Name="xFilterBarGrid" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0 10 0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -93,7 +101,7 @@
                 VerticalAlignment="Center"/>
         </Grid>
 
-        <treeView:TreeView x:Name="XTreeView" Grid.Row="2"></treeView:TreeView>
+        <treeView:TreeView x:Name="XTreeView" Grid.Row="2"/>
 
     </Grid>
 </UserControl>

@@ -126,21 +126,25 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Click="Back_Click">
+                    <Button Grid.Column="0" Click="Back_Click" DoubleTapped="Button_DoubleTapped">
                         <SymbolIcon Symbol="Back" RenderTransform="0.5 0 0 0.5 5 5"  />
                     </Button>
-                    <Button Grid.Column="1"  Click="Forward_Click">
+                    <Button Grid.Column="1"  Click="Forward_Click" DoubleTapped="Button_DoubleTapped">
                         <SymbolIcon Symbol="Forward" RenderTransform="0.5 0 0 0.5 5 5"  />
                     </Button>
-                    <Button Grid.Column="2" Click="Up_Click">
+                    <Button Grid.Column="2" Click="Up_Click" DoubleTapped="Button_DoubleTapped">
                         <SymbolIcon Symbol="Up" RenderTransform="0.5 0 0 0.5 5 5" />
                     </Button>
-                    <Button Grid.Column="3"  Click="Down_Click">
+                    <Button Grid.Column="3"  Click="Down_Click" DoubleTapped="Button_DoubleTapped">
                         <SymbolIcon Symbol="Download" RenderTransform="0.5 0 0 0.5 5 5" />
                     </Button>
-                    <StackPanel x:Name="xDocPath" Grid.Column="4" Height="22">
+                    <Button Grid.Column="4"  Click="Open_Click" DoubleTapped="Button_DoubleTapped">
+                        <SymbolIcon Symbol="OpenPane" RenderTransform="0.5 0 0 0.5 5 5" />
+                    </Button>
+                    <StackPanel x:Name="xDocPath" Grid.Column="5" Height="22">
                         
                     </StackPanel>
                 </Grid>

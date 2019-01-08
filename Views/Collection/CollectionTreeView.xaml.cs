@@ -190,9 +190,40 @@ namespace Dash
             });
         }
 
+        private DocumentView _xLibraryView = null;
         private void xExportButton_Click(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.Publish();
+            if (XTreeView.Visibility == Visibility.Visible)
+            {
+                xTitleBarGrid.Visibility = Visibility.Collapsed;
+                XTreeView.Visibility = Visibility.Collapsed;
+                xFilterBarGrid.Visibility = Visibility.Collapsed;
+                xLibraryGrid.Visibility = Visibility.Visible;
+
+                if (_xLibraryView == null)
+                {
+                    var docs = SearchFunctions.Library();
+                    var col  = new CollectionBox(docs, viewType: CollectionViewType.Schema).Document;
+                    col.SetField<TextController>(KeyStore.ScriptSourceKey, "library()", true);
+                    _xLibraryView = new DocumentView() { DataContext = new DocumentViewModel(col) { IsDimensionless = true, ResizersVisible = false } };
+                    Grid.SetRow(_xLibraryView, 2);
+                }
+                else
+                {
+                    _xLibraryView.Visibility = Visibility.Visible;
+                }
+                xTreeGrid.Children.Add(_xLibraryView);
+            }
+            else
+            {
+
+                xLibraryGrid.Visibility = Visibility.Collapsed;
+                xTitleBarGrid.Visibility = Visibility.Visible;
+                xFilterBarGrid.Visibility = Visibility.Visible;
+                XTreeView.Visibility = Visibility.Visible;
+                xTreeGrid.Children.Remove(_xLibraryView);
+            }
+           // MainPage.Instance.Publish();
         }
     }
 }

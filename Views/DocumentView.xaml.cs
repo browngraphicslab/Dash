@@ -97,7 +97,6 @@ namespace Dash
             RightTapped   += (s, e) => { e.Handled = true; TappedHandler(true); };
             Tapped        += (s, e) => { e.Handled = true; TappedHandler(false); };
             DoubleTapped  += (s, e) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
-            RightTapped   += (s, e) => ExhibitBehaviors(KeyStore.RightTappedOpsKey);
             PointerPressed += (s, e) => this_PointerPressed(s, e);
 
             ToFront();

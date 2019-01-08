@@ -49,7 +49,7 @@ namespace Dash
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
             InitializeFilters();
 
-            _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
+            _searchTimer.Interval = TimeSpan.FromMilliseconds(3000);
             _searchTimer.Tick += SearchTimerOnTick;
         }
 
@@ -161,7 +161,10 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                _searchTimer.Start();
+                // _searchTimer.Start();
+
+                var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
+                itemsSource?.Clear();
 
             }
         }
@@ -178,7 +181,12 @@ namespace Dash
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
+            if (!(args.ChosenSuggestion is SearchResultViewModel resultVm))
+            {
+                ExecuteDishSearch(xAutoSuggestBox);
+                _searchTimer.Stop();
+                return;
+            }
 
             SplitFrame.HighlightDoc(resultVm.ViewDocument, SplitFrame.HighlightMode.Highlight, false);
 
@@ -275,10 +283,10 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
+            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).DistinctBy(dn => dn.GetDataDocument()).ToList();
 
             var searchString = xAutoSuggestBox.Text;
-            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection =>
+            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Schema, collection =>
             {
                 collection.GetDataDocument().SetField<TextController>(KeyStore.SearchStringKey, searchString, true);
                 var fields = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);

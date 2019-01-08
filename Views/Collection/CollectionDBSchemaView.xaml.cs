@@ -59,7 +59,7 @@ namespace Dash
         void pev(object sender, PointerRoutedEventArgs e)
         {
             var documentView = this.GetDocumentView();
-            xGridSplitter.ManipulationMode = documentView.ViewModel.IsSelected && !e.GetCurrentPoint(null).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            xGridSplitter.ManipulationMode = (!documentView.GetAncestorsOfType<SplitFrame>().Any() ||  documentView.AreContentsActive || documentView.ViewModel.IsSelected) && !e.GetCurrentPoint(null).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             documentView.ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed || !documentView.ViewModel.IsSelected;
         }
         public static void AddDataBoxForKey(KeyController key, DocumentController dvm)
@@ -245,7 +245,7 @@ namespace Dash
         private void UpdatePath()
         {
             var sel = xDataGrid.SelectedItem as DocumentViewModel;
-            var doc = _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex][_pathsToDocs[_pathIndex].Count - _stackLevel - 1] : sel?.DocumentController;
+            var doc = _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex][Math.Max(0,_pathsToDocs[_pathIndex].Count - _stackLevel - 1)] : sel?.DocumentController;
             XDocDisplay.DataContext = doc != null ? new DocumentViewModel(doc) { IsDimensionless = true } : null;
             xPathControls.Visibility = Visibility.Visible;
             int ind   = 0;
@@ -608,6 +608,23 @@ namespace Dash
             _pathIndex = _pathIndex - 1 < 0 ? _pathsToDocs.Count - 1 : _pathIndex - 1;
             _stackLevel = Math.Min(_stackLevel, _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count : 0);
             UpdatePath();
+        }
+
+        private void Open_Click(object sender, RoutedEventArgs e)
+        {
+            if (XDocDisplay.ViewModel != null)
+            {
+               var openDoc = SplitFrame.OpenInActiveFrame(XDocDisplay.ViewModel.LayoutDocument);
+                if (XDocDisplay.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data is Point ppos) {
+                    openDoc.SetField<PointController>(KeyStore.PanPositionKey,  ppos, true);
+                    openDoc.SetField<PointController>(KeyStore.PanZoomKey, XDocDisplay.ViewModel.LayoutDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1,1), true);
+                }
+            }
+        }
+
+        private void Button_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
 
         private void Down_Click(object sender, RoutedEventArgs e)
