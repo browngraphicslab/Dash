@@ -754,7 +754,7 @@ namespace Dash
         /// <summary>
         /// Returns the Field from stored from key within the given context.
         /// </summary>
-        public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
+        public T GetDereferencedField<T>(KeyController key, Context context = null) where T : FieldControllerBase
         {
             // TODO: this should cause an operator to execute and return the proper value
             return GetDereferencedField(key, context) as T;

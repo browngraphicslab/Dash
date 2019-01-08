@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -177,6 +178,7 @@ namespace Dash
             System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             DrawLinesWithNewDocs();
+            ViewModel.UpdateList();
         }
 
         private void PlayStopButton_Click(object sender, RoutedEventArgs e) => PlayStopClick();
@@ -891,9 +893,11 @@ namespace Dash
         private void XPresentations_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //update CurrPres accordingly
+            ViewModel.PinnedNodes.CollectionChanged -= PinnedNodes_CollectionChanged;
             ViewModel.CurrPres.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.DataKey, ViewModel.PinnedNodes.Select(pn => pn.Document), true);
             ViewModel.CurrPres = (xPresentations.SelectedItem as DocumentController);
             if (ViewModel?.CurrPres != null) xTitle.Text = ViewModel.CurrPres.Title;
+            ViewModel.PinnedNodes.CollectionChanged += PinnedNodes_CollectionChanged;
         }
 
         /// <summary>
@@ -971,7 +975,5 @@ namespace Dash
         {
             ViewModel.DeletePresentation(ViewModel.CurrPres);
         }
-
-
     }
 }

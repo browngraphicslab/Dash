@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -217,6 +218,16 @@ namespace Dash
         public void RenamePres(DocumentController pres, string newName)
         {
             pres.SetTitle(newName);
+        }
+
+        public void UpdateList()
+        {
+            //TODO This is pretty inefficient. It's probably ok for now because presentations should be short, 
+            // but it is not elegant
+            var docs = PinnedNodes.Select(pivm => pivm.Document);
+            var presList = CurrPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey);
+            presList.Clear();
+            presList.AddRange(docs);
         }
     }
 }

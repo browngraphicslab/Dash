@@ -244,6 +244,7 @@ namespace Dash
                 index = CheckedIndex(index, _typedData);
 
                 var prevElement = _typedData[index]; // for undo and event args
+                if(prevElement == value) return;
                 ReleaseContainedField(prevElement);
 
                 _typedData[index] = value;
