@@ -114,7 +114,37 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <local:DocumentView x:Name="XDocDisplay" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <local:DocumentView x:Name="XDocDisplay" />
+                <Grid x:Name="xPathControls"  Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Click="Back_Click">
+                        <SymbolIcon Symbol="Back" RenderTransform="0.5 0 0 0.5 5 5"  />
+                    </Button>
+                    <Button Grid.Column="1"  Click="Forward_Click">
+                        <SymbolIcon Symbol="Forward" RenderTransform="0.5 0 0 0.5 5 5"  />
+                    </Button>
+                    <Button Grid.Column="2" Click="Up_Click">
+                        <SymbolIcon Symbol="Up" RenderTransform="0.5 0 0 0.5 5 5" />
+                    </Button>
+                    <Button Grid.Column="3"  Click="Down_Click">
+                        <SymbolIcon Symbol="Download" RenderTransform="0.5 0 0 0.5 5 5" />
+                    </Button>
+                    <StackPanel x:Name="xDocPath" Grid.Column="4" Height="22">
+                        
+                    </StackPanel>
+                </Grid>
+            </Grid>
             <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
                                  PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
                                  IsSpellCheckEnabled="False" AcceptsReturn="True" Visibility="Collapsed"

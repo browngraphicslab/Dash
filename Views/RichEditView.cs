@@ -133,7 +133,7 @@ namespace Dash
 
             LostFocus += (s, e) =>
             {
-                if (!ViewModel.IsSelected)
+                if (ViewModel?.IsSelected != true)
                 {
                     IsEnabled = false;
                 }
