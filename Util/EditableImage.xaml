@@ -13,9 +13,9 @@
     
     <Grid x:Name="xGrid" PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" DoubleTapped="OnDoubleTapped">
         <Viewbox Stretch="Fill" x:Name="xViewbox">
-            <Grid AllowDrop="True" CompositeMode="SourceOver">
-                <Grid x:Name="XAnnotationGrid" CompositeMode="SourceOver">
-                    <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache" />
+            <Grid AllowDrop="True">
+                <Grid x:Name="XAnnotationGrid" >
+                    <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" />
                 </Grid>
                 <Canvas x:Name="XAnnotationGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
             </Grid>

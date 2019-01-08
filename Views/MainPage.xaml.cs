@@ -195,14 +195,15 @@ namespace Dash
 
             xCanvas.Children.Add(grid);
         }
+
         public void ClearFloatingDoc(DocumentView dragged)
         {
             xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach((g) =>
                  xCanvas.Children.Remove(g));
         }
-        public bool IsFloatingDoc(DocumentView dragged)
+        public bool IsFloatingDoc(DocumentView docView)
         {
-            return xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).Any();
+            return docView.GetAncestors().Contains(xCanvas);
         }
         public void MoveFloatingDoc(DocumentView dragged, Point where)
         {

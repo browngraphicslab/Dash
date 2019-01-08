@@ -36,7 +36,7 @@ namespace Dash
         public bool               AreAnnotationsVisible =>  _annotationOverlay?.Visibility == Visibility.Visible;
         public Image              Image                 => xImage;
         public Stretch            Stretch               => xImage.Stretch;
-        public Viewbox            Viewbox               => xViewbox;
+        public Viewbox Viewbox => xViewbox;
         public bool               IsCropping   
         {
             get => _cropControl != null;
@@ -81,10 +81,10 @@ namespace Dash
                     XAnnotationGrid.Height = Image.ActualHeight;
                 }
 
-                //_annotationOverlay = new AnnotationOverlay(LayoutDocument);
-                //_annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
-                //XAnnotationGrid.Children.Add(_annotationOverlay);
-                //XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
+                _annotationOverlay = new AnnotationOverlay(LayoutDocument);
+                _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+                XAnnotationGrid.Children.Add(_annotationOverlay);
+                XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
         }
 
@@ -369,7 +369,10 @@ namespace Dash
         }
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            _annotationOverlay.AnnotationOverlayDoubleTapped(sender, e);
+            if (_annotationOverlay != null)
+            {
+                _annotationOverlay.AnnotationOverlayDoubleTapped(sender, e);
+            }
         }
 
         private async Task<StorageFile> GetImageFile()

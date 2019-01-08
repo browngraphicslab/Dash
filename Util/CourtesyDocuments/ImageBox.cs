@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Dash.Converters;
 
@@ -53,6 +54,7 @@ namespace Dash
                 Converter = UriToBitmapImageConverter.Instance
             };
             editableImage.Image.AddFieldBinding(Image.SourceProperty, binding);
+            //editableImage.Image.Source = new BitmapImage(ImageBox.DefaultImageUri);
             var binding2 = new FieldBinding<TextController>
             {
                 Document = docController,

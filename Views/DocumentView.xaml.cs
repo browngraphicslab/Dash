@@ -368,7 +368,7 @@ namespace Dash
             {
                 var cp = this.GetFirstAncestorOfType<ContentPresenter>();
                 int curZ = 0;
-                var parCanvas = cp.GetFirstDescendantOfType<Canvas>();
+                var parCanvas = cp.GetFirstAncestorOfTypeFast<Canvas>();
                 if (parCanvas != null)
                 {
                     foreach (var c in parCanvas.Children)

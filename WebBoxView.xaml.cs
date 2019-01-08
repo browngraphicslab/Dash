@@ -154,7 +154,7 @@ namespace Dash
 
         private void constructWebBrowserViewer()
         {
-            _xWebView = new WebView(WebViewExecutionMode.SeparateThread);
+            _xWebView = new WebView(WebViewExecutionMode.SeparateThread) {MinWidth = 200};
             _xWebView.Name = "_xWebView";
             var html = LayoutDocument.GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?.Data;
             var htmlAddress = LayoutDocument.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey)?.Data;
@@ -218,6 +218,7 @@ namespace Dash
                 var splits = (e.Value as string).Split(' ');
                 parent.ViewModel.LayoutDocument.SetWidth (Math.Max(200, double.Parse(splits[0])));
                 parent.ViewModel.LayoutDocument.SetHeight(Math.Min(500, double.Parse(splits[1])));
+                web.MinWidth = 0;
                 web.UpdateLayout();
 
                 //var shiftState = web.IsShiftPressed();

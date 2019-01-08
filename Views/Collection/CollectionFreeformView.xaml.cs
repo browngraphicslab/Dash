@@ -1159,10 +1159,13 @@ namespace Dash
                 case VirtualKey.C:
                     DoAction((viewModels, where, size) =>
                     {
-                        var docss = viewModels.Select(dvm => dvm.DocumentController).ToList();
+                        var documentViewModels = viewModels.ToList();
+                        var docss = documentViewModels.Select(dvm => dvm.DocumentController).ToList();
                         ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docss).Document);
 
-                        foreach (var viewModel in viewModels.ToArray())
+                        SelectionManager.DeselectAll();
+
+                        foreach (var viewModel in documentViewModels)
                         {
                             viewModel.RequestDelete();
                         }
@@ -1248,7 +1251,12 @@ namespace Dash
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
-                    DoAction((viewModels, where, size) => viewModels.ToList().ForEach(dvm => dvm.RequestDelete()));
+                    DoAction((viewModels, where, size) =>
+                    {
+                        var vms = viewModels.ToList();
+                        SelectionManager.DeselectAll();
+                        vms.ForEach(dvm => dvm.RequestDelete());
+                    });
                     deselect = true;
                     break;
                 case VirtualKey.G:

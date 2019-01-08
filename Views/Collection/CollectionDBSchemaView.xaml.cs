@@ -53,15 +53,33 @@ namespace Dash
             xDataGrid.SelectionChanged += XDataGrid_SelectionChanged;
 
             xAddColumnEntry.AddKeyHandler(VirtualKey.Enter, args => AddNewColumn());
-            PointerPressed += pev;
+            PointerPressed += OnPointerPressed;
+            xGridSplitter.PointerPressed += XGridSplitter_PointerPressed;
             Loaded += OnLoaded;
         }
-        void pev(object sender, PointerRoutedEventArgs e)
+
+        private void XGridSplitter_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var documentView = this.GetDocumentView();
-            xGridSplitter.ManipulationMode = (!documentView.GetAncestorsOfType<SplitFrame>().Any() ||  documentView.AreContentsActive || documentView.ViewModel.IsSelected) && !e.GetCurrentPoint(null).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
-            documentView.ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed || !documentView.ViewModel.IsSelected;
+            var right = e.IsRightPressed(); 
+            var selected     = documentView.AreContentsActive;
+            var splitFrame = documentView.GetAncestorsOfType<SplitFrame>().Any();
+            xGridSplitter.ManipulationMode = !right && (!splitFrame || selected) ? ManipulationModes.All : ManipulationModes.None;
+            if (xGridSplitter.ManipulationMode == ManipulationModes.All)
+                e.Handled = true;
         }
+
+        void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var documentView = this.GetDocumentView();
+            var right        = e.IsRightPressed(); 
+            var floating     = MainPage.Instance.IsFloatingDoc(documentView);
+            var selected     = documentView.AreContentsActive;
+            var splitFrame   = documentView.GetAncestorsOfType<SplitFrame>().Any();
+            var leftPane     = !splitFrame && !floating;
+            documentView.ViewModel.DragAllowed = !leftPane && (right || !selected);
+        }
+
         public static void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
             var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
