@@ -17,6 +17,7 @@ using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
 using Task = System.Threading.Tasks.Task;
 using TextBlock = Windows.UI.Xaml.Controls.TextBlock;
 using Point = Windows.Foundation.Point;
+using Windows.UI.Text;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -225,10 +226,44 @@ namespace Dash
             return keys;
         }
 
+        private int _pathIndex = 0, _stackLevel = 0;
+        private List<List<DocumentController>> _pathsToDocs = new List<List<DocumentController>>();
         private void       XDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var added = e.AddedItems.FirstOrDefault() as DocumentViewModel;
-            XDocDisplay.DataContext = added != null ? new DocumentViewModel(added.DocumentController) { IsDimensionless = true } : added;
+            var added = (e.AddedItems.FirstOrDefault() as DocumentViewModel)?.DocumentController;
+            if (added.GetField(KeyStore.SearchOriginKey) != null)
+            {
+                added = added.GetField<DocumentController>(KeyStore.SearchOriginKey);
+            }
+            var leafDocs = ViewModel.DocumentViewModels.Select(dv => dv.LayoutDocument);
+            _pathsToDocs = DocumentTree.GetPathsToDocuments(added)?.Where(d => !leafDocs.Contains(d.LastOrDefault())).ToList() ?? new List<List<DocumentController>>();
+            _pathsToDocs = _pathsToDocs.Select(path => path.Where((doc,ind) => ind > 0).ToList()).ToList();
+            _pathIndex = 0;
+            _stackLevel = 0;
+            UpdatePath();
+        }
+
+        private void UpdatePath()
+        {
+            var sel = xDataGrid.SelectedItem as DocumentViewModel;
+            var doc = _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex][_pathsToDocs[_pathIndex].Count - _stackLevel - 1] : sel?.DocumentController;
+            XDocDisplay.DataContext = doc != null ? new DocumentViewModel(doc) { IsDimensionless = true } : null;
+            xPathControls.Visibility =  Visibility.Visible;
+            int ind   = 0;
+            int count = _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count : 0;
+            xDocPath.Children.Clear();
+            xDocPath.Orientation = Orientation.Horizontal;
+            if (count > 0) {
+                _pathsToDocs[_pathIndex].ForEach(d => 
+                    xDocPath.Children.Add(new TextBlock() { Text = "/" + d.Title, FontWeight = (++ind == count-_stackLevel) ? FontWeights.Bold : FontWeights.Normal }));
+
+                if (_stackLevel > 0)
+                {
+                    var pos = _pathsToDocs[_pathIndex][count - _stackLevel].GetPosition();
+                    // bcz: 100 is a hack -- need to determine the width/height of the container in its parent coordinates / 2
+                    XDocDisplay.ViewModel.LayoutDocument.SetField<PointController>(KeyStore.PanPositionKey, new Point(-pos.X + 100 , -pos.Y + 100), true);
+                }
+            }
         }
         private void       XDataGrid_Sorting(object sender, DataGridColumnEventArgs e)
         {
@@ -534,6 +569,43 @@ namespace Dash
         {
             xDataGrid.Columns.ToList().ForEach((c) => (c.Header as ColumnHeaderViewModel).IsSelected = Visibility.Collapsed);
             ((sender as Border).DataContext as ColumnHeaderViewModel).IsSelected = Visibility.Visible;
+        }
+        
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            _stackLevel++;
+            if (_pathsToDocs.Count > 0 && _stackLevel > _pathsToDocs[_pathIndex].Count - 1)
+            {
+                _stackLevel = _pathsToDocs[_pathIndex].Count - 1;
+            }
+
+            UpdatePath();
+        }
+
+        private void Forward_Click(object sender, RoutedEventArgs e)
+        {
+            _stackLevel--;
+            if (_stackLevel < 0)
+            {
+                _stackLevel = 0;
+            }
+
+            UpdatePath();
+        }
+
+        private void Up_Click(object sender, RoutedEventArgs e)
+        {
+            _pathIndex = _pathIndex - 1 < 0 ? _pathsToDocs.Count - 1 : _pathIndex - 1;
+            _stackLevel = Math.Min(_stackLevel, _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count :0);
+            UpdatePath();
+        }
+
+        private void Down_Click(object sender, RoutedEventArgs e)
+        {
+            _pathIndex = _pathsToDocs.Count == 0 ? 0 : (_pathIndex + 1) % _pathsToDocs.Count;
+            _stackLevel = Math.Min(_stackLevel, _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count : 0);
+            UpdatePath();
         }
     }
 
