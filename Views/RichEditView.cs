@@ -350,7 +350,29 @@ namespace Dash
             menu.AddAction("BASIC",      new ActionViewModel("Google",     "Google Clip",          GoogleClip,       source));
             menu.AddAction("BASIC",      new ActionViewModel("Bio",        "Google Bio",           GoogleBio,        source));
             menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue",    CreateTravelogue, source));
+            menu.AddAction("LIBRARY",    new ActionViewModel("Library - L", "Dock Library on left", LibraryLeft, source));
+            menu.AddAction("LIBRARY",    new ActionViewModel("Library - R", "Dock Library on right", LibraryRight, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
+        }
+
+        private Task<bool> LibraryLeft(ActionFuncParams actionFuncParams)
+        {
+            return Library(actionFuncParams, SplitDirection.Left);
+        }
+
+        private Task<bool> LibraryRight(ActionFuncParams actionFuncParams)
+        {
+            return Library(actionFuncParams, SplitDirection.Right);
+        }
+
+        private Task<bool> Library(ActionFuncParams afp, SplitDirection dir)
+        {
+            var docs = SearchFunctions.Library();
+            docs.Remove(LayoutDocument);
+            var col = new CollectionBox(docs, viewType: CollectionViewType.Schema).Document;
+            col.SetField<TextController>(KeyStore.ScriptSourceKey, "library()", true);
+            this.GetFirstAncestorOfTypeFast<SplitFrame>()?.Split(dir, col, true, false);
+            return Task.FromResult(true);
         }
 
         private async Task<bool> CreateTravelogue(ActionFuncParams actionParams)

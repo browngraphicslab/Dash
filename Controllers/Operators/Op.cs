@@ -237,7 +237,8 @@ namespace Dash
             export_workspace,
             and,
             or,
-            not
+            not,
+            library
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

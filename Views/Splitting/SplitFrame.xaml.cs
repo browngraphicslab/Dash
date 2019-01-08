@@ -44,7 +44,7 @@ namespace Dash
             }
         }
 
-        public DocumentController OpenDocument(DocumentController doc)
+        public DocumentController OpenDocument(DocumentController doc, bool? viewCopy = null)
         {
             if (doc.GetDataDocument().Equals(ViewModel?.DataDocument))
             {
@@ -53,7 +53,17 @@ namespace Dash
 
             if (doc.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                doc = !this.IsShiftPressed() ?  doc.GetViewCopy() : doc;  // bcz: think about this some more.... causes problems when trying to view the same collection twice or because of setting parameters like FitToParent
+                if (viewCopy is bool b)
+                {
+                    doc = b ? doc.GetViewCopy() : doc;
+                }
+                else
+                {
+                    doc = !this.IsShiftPressed()
+                        ? doc.GetViewCopy()
+                        : doc; // bcz: think about this some more.... causes problems when trying to view the same collection twice or because of setting parameters like FitToParent
+                }
+
                 doc.SetFitToParent(false);
                 var openViewType = doc.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data;
                 if (openViewType != null)
@@ -129,18 +139,18 @@ namespace Dash
             XBottomRightResizer.Fill = active ? ActiveBrush : InactiveBrush;
         }
 
-        public DocumentController Split(SplitDirection dir, DocumentController doc = null, bool autosize = false)
+        public DocumentController Split(SplitDirection dir, DocumentController doc = null, bool autosize = false, bool? viewCopy = null)
         {
             if (dir == SplitDirection.InPlace)
             {
-                return OpenDocument(doc ?? DocumentController);
+                return OpenDocument(doc ?? DocumentController, viewCopy);
             }
 
             if (doc == null && this.IsCtrlPressed())
             {
                 doc = DocumentController;
             }
-            return this.GetFirstAncestorOfTypeFast<SplitManager>()?.Split(this, dir, doc, autosize);
+            return this.GetFirstAncestorOfTypeFast<SplitManager>()?.Split(this, dir, doc, autosize, viewCopy);
         }
 
         //private void TopRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)

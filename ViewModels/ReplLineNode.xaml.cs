@@ -193,16 +193,26 @@ namespace Dash
 
         private void XNode_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var output = (sender as FrameworkElement)?.DataContext as ReplLineViewModel;
-            FieldControllerBase outputData = output?.Value;
-            if (outputData?.GetType().BaseType.FullName == "Dash.BaseListController")
+            if (!((sender as FrameworkElement)?.DataContext is ReplLineViewModel output))
+            {
+                args.Cancel = true;
+                return;
+            }
+            var outputData = output.Value;
+            if (outputData.GetType().BaseType.FullName == "Dash.BaseListController")
             {
                 //make list output readable
                 outputData = new TextController(outputData.ToString());
 
             }
-            DocumentController dataBox = new DataBox(outputData).Document;
-            dataBox.SetWidth(80.0);
+            var dataBox = new DataBox(outputData).Document;
+            dataBox.SetField<TextController>(KeyStore.ScriptSourceKey, output.LineText, true);
+            if (outputData is IListController)
+            {
+                dataBox.SetField<TextController>(KeyStore.CollectionViewTypeKey, CollectionViewType.Schema.ToString(), true);
+                dataBox.SetHeight(200.0);
+            }
+            dataBox.SetWidth(150.0);
             args.Data.SetDragModel(new DragDocumentModel(dataBox));
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;

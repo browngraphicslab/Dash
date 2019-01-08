@@ -285,6 +285,10 @@ namespace Dash
             }
             FieldControllerBase.MakeRoot(MainDocument);
 
+            if (RESTClient.Instance.Fields is CachedEndpoint ce)
+            {
+                //await ce.Cleanup();
+            }
             xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
 
             //get current presentations if any and set data context of pres view to pres view model

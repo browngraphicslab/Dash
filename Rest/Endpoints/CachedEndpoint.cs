@@ -21,7 +21,7 @@ namespace Dash
             //_cleanupTimer = new Timer(Cleanup, null, 30 * 1000, 30 * 1000);
         }
 
-        private async void Cleanup(object state)
+        public async Task Cleanup()
         {
             //TODO Make this use ids so we don't create a ton of field models for no reason
             var docs = (await GetDocumentsByQuery(new EverythingQuery<FieldModel>())).Where(fm => !_cache.ContainsKey(fm.Id)).ToList();

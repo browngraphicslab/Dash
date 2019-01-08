@@ -807,6 +807,30 @@ namespace Dash
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemGetScript_Click;
 
+            var scriptSource = ViewModel.DocumentController.GetField<TextController>(KeyStore.ScriptSourceKey);
+            if (scriptSource != null)
+            {
+                var lineIndex = scriptSource.Data.IndexOfAny(new[] {'\r', '\n'});
+                xMenuFlyout.Items.Add(new MenuFlyoutItem
+                {
+                    Text = lineIndex == -1 ? "Refresh: " + scriptSource.Data : "Refresh script",
+                    Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.Code }
+                });
+                (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += async (o, args) =>
+                {
+                    var (field, error) = await ExecutionEnvironment.Run(scriptSource.Data);
+                    if (error != null)
+                    {
+                        Debug.WriteLine($"Error executing script\n{scriptSource.Data}\nError: {error.GetHelpfulString()}");
+                    }
+
+                    if (field != null)
+                    {
+                        ViewModel.DataDocument.SetField(KeyStore.DataKey, field, true);
+                    }
+                };
+            }
+
             xMenuFlyout.Items.Add(new MenuFlyoutSeparator());
             
             xMenuFlyout.Items.Add(new MenuFlyoutItem()

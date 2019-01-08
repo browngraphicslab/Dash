@@ -157,7 +157,7 @@ namespace Dash
         public static KeyController TitleMatchKey                        = KeyController.Get("Title Match");
         public static KeyController TagsKey                              = KeyController.Get("Tags");
         public static KeyController RecentTagsKey                        = KeyController.Get("Recent Tags");
-        public static KeyController LinkTagKey                           = KeyController.Get("LinkTag"); // bcz: changed from List of Tags
+        public static KeyController LinkTagKey                           = KeyController.Get("List of tags"); // bcz: changed from List of Tags // tfs: changed back from LinkTag
         public static KeyController SelectedSchemaRow                    = KeyController.Get("SelectedElement");
         public static KeyController SchemaDisplayedColumns               = KeyController.Get("_Displayed Columns");
         public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");
@@ -186,6 +186,7 @@ namespace Dash
         public static KeyController SearchStringKey                      = KeyController.Get("SearchStringOrigin");
         public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
         public static KeyController SearchIndexKey                       = KeyController.Get("SearchIndex");
+        public static KeyController ScriptSourceKey                      = KeyController.Get("ScriptSource");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {

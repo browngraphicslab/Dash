@@ -48,4 +48,41 @@ public sealed class AliasOfOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.library)]
+public sealed class LibraryOperator : OperatorController
+{
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public LibraryOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public LibraryOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("LibraryOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new LibraryOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.List,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var output0 = Dash.SearchFunctions.Library();
+        outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
 }
