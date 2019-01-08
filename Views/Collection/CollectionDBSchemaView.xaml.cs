@@ -4,20 +4,20 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Data;
-using Microsoft.Toolkit.Uwp.UI.Controls;
 using CheckBox = Windows.UI.Xaml.Controls.CheckBox;
 using FrameworkElement = Windows.UI.Xaml.FrameworkElement;
+using Point = Windows.Foundation.Point;
 using Task = System.Threading.Tasks.Task;
 using TextBlock = Windows.UI.Xaml.Controls.TextBlock;
-using Point = Windows.Foundation.Point;
-using Windows.UI.Text;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -29,10 +29,10 @@ namespace Dash
         private ListController<KeyController> _keys;
         private CollectionViewModel           _oldViewModel;
 
-        public CollectionViewModel ViewModel   => DataContext as CollectionViewModel;
-        public DataGrid            DataGrid    => xDataGrid;
-        public UserControl         UserControl => this;
-        public CollectionViewType  ViewType    => CollectionViewType.Schema;
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+        public DataGrid DataGrid => xDataGrid;
+        public UserControl UserControl => this;
+        public CollectionViewType ViewType => CollectionViewType.Schema;
 
         public CollectionDBSchemaView()
         {
@@ -62,7 +62,7 @@ namespace Dash
             xGridSplitter.ManipulationMode = documentView.ViewModel.IsSelected && !e.GetCurrentPoint(null).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             documentView.ViewModel.DragAllowed = e.GetCurrentPoint(null).Properties.IsRightButtonPressed || !documentView.ViewModel.IsSelected;
         }
-        static public void AddDataBoxForKey(KeyController key, DocumentController dvm)
+        public static void AddDataBoxForKey(KeyController key, DocumentController dvm)
         {
             var proto = dvm.GetDereferencedField<DocumentController>(KeyStore.LayoutPrototypeKey, null) ??  dvm;
             var docs  = proto.GetField<ListController<DocumentController>>(KeyStore.DataKey);
@@ -99,7 +99,7 @@ namespace Dash
         private void UpdateSort()
         {
             var docViewModels = ViewModel.DocumentViewModels;
-            var sindex = xDataGrid.SelectedItem;
+            object sindex = xDataGrid.SelectedItem;
             switch (_sortColumn?.SortDirection)
             {
             case DataGridSortDirection.Ascending:
@@ -136,7 +136,7 @@ namespace Dash
         }
         private void RemoveKey(KeyController key)
         {
-            var index = _keys.IndexOf(key);
+            int index = _keys.IndexOf(key);
             if (index != -1)
             {
                 _keys.RemoveAt(index);
@@ -228,16 +228,15 @@ namespace Dash
 
         private int _pathIndex = 0, _stackLevel = 0;
         private List<List<DocumentController>> _pathsToDocs = new List<List<DocumentController>>();
-        private void       XDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void XDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var added = (e.AddedItems.FirstOrDefault() as DocumentViewModel)?.DocumentController;
             if (added.GetField(KeyStore.SearchOriginKey) != null)
             {
                 added = added.GetField<DocumentController>(KeyStore.SearchOriginKey);
             }
-            var leafDocs = ViewModel.DocumentViewModels.Select(dv => dv.LayoutDocument);
-            _pathsToDocs = DocumentTree.GetPathsToDocuments(added)?.Where(d => !leafDocs.Contains(d.LastOrDefault())).ToList() ?? new List<List<DocumentController>>();
-            _pathsToDocs = _pathsToDocs.Select(path => path.Where((doc,ind) => ind > 0).ToList()).ToList();
+            _pathsToDocs = DocumentTree.GetPathsToDocuments(added)?.Where(d => d.Count < 2 || !d[d.Count - 2].Equals(ViewModel.ContainerDocument)).ToList() ?? new List<List<DocumentController>>();
+            _pathsToDocs = _pathsToDocs.Select(path => path.Where((doc, ind) => ind > 0).ToList()).ToList();
             _pathIndex = 0;
             _stackLevel = 0;
             UpdatePath();
@@ -248,24 +247,33 @@ namespace Dash
             var sel = xDataGrid.SelectedItem as DocumentViewModel;
             var doc = _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex][_pathsToDocs[_pathIndex].Count - _stackLevel - 1] : sel?.DocumentController;
             XDocDisplay.DataContext = doc != null ? new DocumentViewModel(doc) { IsDimensionless = true } : null;
-            xPathControls.Visibility =  Visibility.Visible;
+            xPathControls.Visibility = Visibility.Visible;
             int ind   = 0;
             int count = _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count : 0;
             xDocPath.Children.Clear();
             xDocPath.Orientation = Orientation.Horizontal;
-            if (count > 0) {
-                _pathsToDocs[_pathIndex].ForEach(d => 
-                    xDocPath.Children.Add(new TextBlock() { Text = "/" + d.Title, FontWeight = (++ind == count-_stackLevel) ? FontWeights.Bold : FontWeights.Normal }));
+            if (count > 0)
+            {
+                _pathsToDocs[_pathIndex].ForEach(d =>
+                    xDocPath.Children.Add(new TextBlock() { Text = "/" + d.Title, FontWeight = (++ind == count - _stackLevel) ? FontWeights.Bold : FontWeights.Normal }));
 
                 if (_stackLevel > 0)
                 {
-                    var pos = _pathsToDocs[_pathIndex][count - _stackLevel].GetPosition();
-                    // bcz: 100 is a hack -- need to determine the width/height of the container in its parent coordinates / 2
-                    XDocDisplay.ViewModel.LayoutDocument.SetField<PointController>(KeyStore.PanPositionKey, new Point(-pos.X + 100 , -pos.Y + 100), true);
+                    //TODO This code is copied from SplitFrame, it should probably be extracted somewhere
+                    var document = _pathsToDocs[_pathIndex][count - _stackLevel];
+                    var workspace = XDocDisplay.ViewModel.LayoutDocument;
+                    var center = document.GetPosition();
+                    var size = document.GetActualSize();
+                    center.X += (size.X - ActualWidth) / 2;
+                    center.Y += (size.Y - ActualHeight) / 2;
+                    center.X = -center.X;
+                    center.Y = -center.Y;
+                    workspace.SetField<PointController>(KeyStore.PanPositionKey, center, true);
+                    workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(1, 1), true);
                 }
             }
         }
-        private void       XDataGrid_Sorting(object sender, DataGridColumnEventArgs e)
+        private void XDataGrid_Sorting(object sender, DataGridColumnEventArgs e)
         {
             var sortColumn  = (WindowsDictionaryColumn)e.Column;
             var colHeaderVM = sortColumn.Header as ColumnHeaderViewModel;
@@ -284,23 +292,23 @@ namespace Dash
                 _sortColumn = sortColumn;
                 switch (e.Column.SortDirection)
                 {
-                case DataGridSortDirection.Ascending:  _sortColumn.SortDirection = DataGridSortDirection.Descending; break;
+                case DataGridSortDirection.Ascending: _sortColumn.SortDirection = DataGridSortDirection.Descending; break;
                 case DataGridSortDirection.Descending: _sortColumn.SortDirection = null; break;
-                default:                               _sortColumn.SortDirection = DataGridSortDirection.Ascending; break;
+                default: _sortColumn.SortDirection = DataGridSortDirection.Ascending; break;
                 }
 
                 //ViewModel.ContainerDocument.SetField<ListController<TextController>>(KeyStore.ColumnSortingKey, new List<string>(new string[] { _sortColumn.Key.Name, _sortColumn.SortDirection?.ToString() ?? "" }), true);
                 UpdateSort();
             }
         }
-        private void       XDataGridOnColumnReordered(object sender, DataGridColumnEventArgs dataGridColumnEventArgs)
+        private void XDataGridOnColumnReordered(object sender, DataGridColumnEventArgs dataGridColumnEventArgs)
         {
             var col     = (WindowsDictionaryColumn)dataGridColumnEventArgs.Column;
-            var removed = _keys.Remove(col.Key);
+            bool removed = _keys.Remove(col.Key);
             Debug.Assert(removed);
             _keys.Insert(col.DisplayIndex, col.Key);
         }
-        private void       XDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        private void XDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
         {
             e.Row.CanDrag = true;
             e.Row.DragStarting -= RowOnDragStarting;
@@ -324,13 +332,13 @@ namespace Dash
             }
         }
 
-        private void       RowOnDragStarting(UIElement sender, DragStartingEventArgs args)
+        private void RowOnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var dvm = (DocumentViewModel)((FrameworkElement)sender).DataContext;
             args.Data.SetDragModel(new DragDocumentModel(dvm.LayoutDocument)
-                {DraggedDocCollectionViews = new List<CollectionViewModel> {ViewModel}});
+            { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
         }
-        private void       Join_DragStarting(UIElement sender, DragStartingEventArgs args)
+        private void Join_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var docViewModels = ViewModel.DocumentViewModels;
             var columnKey     = ((sender as FrameworkElement).DataContext as ColumnHeaderViewModel).Key;
@@ -340,7 +348,8 @@ namespace Dash
             args.Data.SetJoinModel(new JoinDragModel(ViewModel.ContainerDocument, docs, columnKey));
 
             var grouped       = docViewModels.GroupBy(dvm => dvm.DocumentController.GetDataDocument().GetDereferencedField(columnKey, null)?.ToString() ?? "");
-            var collections   = grouped.Select(val => {
+            var collections   = grouped.Select(val =>
+            {
                 var cnote = new CollectionNote(new Point(), CollectionViewType.Stacking, 300, 200, val.Select(dvm => dvm.DocumentController)).Document;
                 cnote.SetTitle(columnKey.ToString()+"="+val.Key);
                 return cnote;
@@ -356,7 +365,7 @@ namespace Dash
             args.Data.SetDragModel(dfm);
         }
 
-        private void       OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             if (ViewModel != null)
             {
@@ -372,7 +381,7 @@ namespace Dash
                 }
             }
         }
-        private void       OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (ViewModel == _oldViewModel)
             {
@@ -414,7 +423,7 @@ namespace Dash
             ViewModel.DocumentViewModels.CollectionChanged -= OnDocumentViewModelsCollectionChanged;
             ViewModel.DocumentViewModels.CollectionChanged += OnDocumentViewModelsCollectionChanged;
         }
-        private void       OnDocumentViewModelsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnDocumentViewModelsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (ViewModel != null)
             {
@@ -425,11 +434,11 @@ namespace Dash
                 _oldViewModel.DocumentViewModels.CollectionChanged -= OnDocumentViewModelsCollectionChanged;
             }
         }
-        private void       OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        private void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (this.IsCtrlPressed())
             {
-                var delta = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
+                int delta = e.GetCurrentPoint(null).Properties.MouseWheelDelta;
                 ViewModel.CellFontSize = Math.Max(2, ViewModel.CellFontSize * (delta > 0 ? 0.95 : 1.05));
             }
             e.Handled = true;
@@ -468,7 +477,7 @@ namespace Dash
                 foreach (var doc in jdm.DraggedDocuments)
                 {
                     var draggedKey = jdm.DraggedKey;
-                    var comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null)?.GetValue();
+                    object comparisonField = doc.GetDataDocument().GetDereferencedField(draggedKey, null)?.GetValue();
                     var matchingDoc = ViewModel.DocumentViewModels.FirstOrDefault(dvm =>
                         dvm.DocumentController.GetDataDocument().GetDereferencedField(comparisonKey, null).GetValue().Equals(comparisonField));
                     if (matchingDoc != null)
@@ -490,7 +499,7 @@ namespace Dash
             }
         }
 
-        private void       xOuterGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void xOuterGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var hitObjects = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid);
             var header = hitObjects.OfType<Microsoft.Toolkit.Uwp.UI.Controls.Primitives.DataGridColumnHeader>();
@@ -498,7 +507,7 @@ namespace Dash
             xDataGrid.SelectedIndex = header != null || hitObjects.Any(obj => obj is DataGridCell) ? xDataGrid.SelectedIndex : -1;
         }
 
-        private void       xColumnFlyout_ColumnVisibilityChanged(object sender, RoutedEventArgs e)
+        private void xColumnFlyout_ColumnVisibilityChanged(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
             var key = checkBox.DataContext as KeyController;
@@ -511,7 +520,7 @@ namespace Dash
                 RemoveKey(key);
             }
         }
-        private void       xColumnFlyout_OnOpening(object sender, object e)
+        private void xColumnFlyout_OnOpening(object sender, object e)
         {
             xColumnsList.ItemsSource = null;
             if (ViewModel != null)
@@ -533,19 +542,19 @@ namespace Dash
                 xColumnsList.ItemsSource = new ObservableCollection<KeyController>(keys);
             }
         }
-        private void       xColumnFlyoutCheckBox_OnLoaded(object sender, RoutedEventArgs e)
+        private void xColumnFlyoutCheckBox_OnLoaded(object sender, RoutedEventArgs e)
         {
             if (sender is CheckBox checkBox && checkBox.DataContext != null)
             {
                 checkBox.IsChecked = _keys.Contains(checkBox.DataContext as KeyController);
 
-                checkBox.Checked   += xColumnFlyout_ColumnVisibilityChanged;
+                checkBox.Checked += xColumnFlyout_ColumnVisibilityChanged;
                 checkBox.Unchecked += xColumnFlyout_ColumnVisibilityChanged;
             }
         }
 
-        private void       xAddColumnButton_OnTapped(object sender, TappedRoutedEventArgs e) { AddNewColumn(); }
-        private void       xAddRow_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void xAddColumnButton_OnTapped(object sender, TappedRoutedEventArgs e) { AddNewColumn(); }
+        private void xAddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var newDoc = new CollectionNote(new Point(), CollectionViewType.Stacking, 200, 200).Document;
             var docs = newDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
@@ -565,12 +574,12 @@ namespace Dash
             ViewModel.AddDocument(newDoc);
             e.Handled = true;
         }
-        private void       xColumnHeaderBorder_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xColumnHeaderBorder_Tapped(object sender, TappedRoutedEventArgs e)
         {
             xDataGrid.Columns.ToList().ForEach((c) => (c.Header as ColumnHeaderViewModel).IsSelected = Visibility.Collapsed);
             ((sender as Border).DataContext as ColumnHeaderViewModel).IsSelected = Visibility.Visible;
         }
-        
+
 
         private void Back_Click(object sender, RoutedEventArgs e)
         {
@@ -597,7 +606,7 @@ namespace Dash
         private void Up_Click(object sender, RoutedEventArgs e)
         {
             _pathIndex = _pathIndex - 1 < 0 ? _pathsToDocs.Count - 1 : _pathIndex - 1;
-            _stackLevel = Math.Min(_stackLevel, _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count :0);
+            _stackLevel = Math.Min(_stackLevel, _pathsToDocs.Count > 0 ? _pathsToDocs[_pathIndex].Count : 0);
             UpdatePath();
         }
 
@@ -620,20 +629,20 @@ namespace Dash
             return (string)obj.GetValue(FontSizeProperty);
         }
 
-        public static void   SetFontSize(DependencyObject obj, string value)
+        public static void SetFontSize(DependencyObject obj, string value)
         {
             obj.SetValue(FontSizeProperty, value);
         }
 
-        private static void  FontSizePropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        private static void FontSizePropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue is string propertyPath)
             {
                 // ugh ... the textBlock's dataContext is it's row's document view model, so we need to get the collection view model from the tag
                 if (obj is TextBlock textBlock && textBlock.Tag is CollectionViewModel collectionViewModel)
                 {
-                    BindingOperations.SetBinding(textBlock,  TextBlock.FontSizeProperty,
-                                           new Binding { Source = collectionViewModel, Path = new PropertyPath(propertyPath)});
+                    BindingOperations.SetBinding(textBlock, TextBlock.FontSizeProperty,
+                                           new Binding { Source = collectionViewModel, Path = new PropertyPath(propertyPath) });
                 }
                 if (obj is ActionTextBox aTextBox && aTextBox.Tag is CollectionViewModel collectionViewModel2)
                 {
@@ -643,19 +652,16 @@ namespace Dash
             }
         }
     }
-    public class ColumnHeaderViewModel :ViewModelBase
+    public class ColumnHeaderViewModel : ViewModelBase
     {
         private Visibility          _isSelected = Visibility.Collapsed;
-        public Visibility            IsSelected
+        public Visibility IsSelected
         {
             get => _isSelected;
-            set
-            {
-                SetProperty<Visibility>(ref _isSelected, value);
-            }
+            set => SetProperty<Visibility>(ref _isSelected, value);
         }
-        public KeyController         Key                 { get; private set; }
-        public CollectionViewModel   CollectionViewModel { get; private set; }
+        public KeyController Key { get; private set; }
+        public CollectionViewModel CollectionViewModel { get; private set; }
         public ColumnHeaderViewModel(CollectionViewModel cvm, KeyController key)
         {
             CollectionViewModel = cvm;
