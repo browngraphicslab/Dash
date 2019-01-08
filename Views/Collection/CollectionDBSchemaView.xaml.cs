@@ -255,7 +255,7 @@ namespace Dash
             if (count > 0)
             {
                 _pathsToDocs[_pathIndex].ForEach(d =>
-                    xDocPath.Children.Add(new TextBlock() { Text = "/" + d.Title, FontWeight = (++ind == count - _stackLevel) ? FontWeights.Bold : FontWeights.Normal }));
+                    xDocPath.Children.Add(new TextBlock() { Text = "/" + d.Title, Margin=new Thickness(0,-4,0,0), FontWeight = (++ind == count - _stackLevel) ? FontWeights.Bold : FontWeights.Normal }));
 
                 if (_stackLevel > 0)
                 {

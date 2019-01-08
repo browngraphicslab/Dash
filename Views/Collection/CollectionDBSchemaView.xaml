@@ -142,9 +142,9 @@
                         <SymbolIcon Symbol="Download" RenderTransform="0.5 0 0 0.5 5 5" />
                     </Button>
                     <Button Grid.Column="4"  Click="Open_Click" DoubleTapped="Button_DoubleTapped">
-                        <SymbolIcon Symbol="OpenPane" RenderTransform="0.5 0 0 0.5 5 5" />
+                        <SymbolIcon Symbol="OpenFile" RenderTransform="0.5 0 0 0.5 5 5" />
                     </Button>
-                    <StackPanel x:Name="xDocPath" Grid.Column="5" Height="22">
+                    <StackPanel x:Name="xDocPath" Grid.Column="5" Height="24" Padding="0">
                         
                     </StackPanel>
                 </Grid>
