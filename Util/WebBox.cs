@@ -16,7 +16,7 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "WebBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
            return new WebBoxView(docController);
         }

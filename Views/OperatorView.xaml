@@ -42,7 +42,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left" Foreground="{ThemeResource MainText}" FontSize="{StaticResource DefaultFontSize}"/>
-                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" CanDrag="True" PointerPressed="OutputEllipse_PointerPressed" DragStarting="OutputEllipse_OnDragStarting">
+                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" CanDrag="True" DragStarting="OutputEllipse_OnDragStarting">
                                 <ToolTipService.ToolTip>
                                     <local:FieldPreview Loading="FieldPreview_OnLoading"></local:FieldPreview>
                                 </ToolTipService.ToolTip>

@@ -28,8 +28,8 @@ namespace Dash
     public sealed partial class AnnotationOverlayEmbeddings : UserControl, ILinkHandler
     {
         public readonly DocumentController MainDocument;
-        public AnnotationOverlay AnnotationOverlay;
-        public ListController<DocumentController> EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
+        public AnnotationOverlay                       AnnotationOverlay;
+        public ListController<DocumentController>      EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
         public ObservableCollection<DocumentViewModel> EmbeddedViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AnnotationOverlayEmbeddings([NotNull] AnnotationOverlay annotationOverlay)
         {
@@ -61,7 +61,7 @@ namespace Dash
                     target.ViewModel.LayoutDocument.ToggleHidden();
                     return LinkHandledResult.HandledClose;
                 }
-                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ToggleHighlight();
+                this.GetDocumentView().ViewModel.SetSearchHighlightState(null); // toggles highlight
                 return LinkHandledResult.HandledClose;
             }
 
@@ -69,31 +69,18 @@ namespace Dash
         }
         private void embeddedDocsListOnFieldModelUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs args)
         {
-            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs && listArgs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+            if (args is DocumentController.DocumentFieldUpdatedEventArgs dargs && 
+                dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs listArgs)
             {
                 switch (listArgs.ListAction)
                 {
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    listArgs.NewItems.ForEach((reg) =>
-                    EmbeddedViewModels.Add(
-                        new DocumentViewModel(reg)
-                        {
-                            ResizersVisible = true,
-                            DragWithinParentBounds = false
-                        }));
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    listArgs.OldItems.ForEach((Action<DocumentController>)((removedDoc) =>
-                    {
-                        foreach (var em in Enumerable.ToArray<DocumentViewModel>(EmbeddedViewModels))
-                        {
-                            if (em.LayoutDocument.Equals(removedDoc))
-                            {
-                                EmbeddedViewModels.Remove(em);
-                            }
-                        }
-                    }));
-                    break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                        listArgs.NewItems.ForEach(reg => EmbeddedViewModels.Add(new DocumentViewModel(reg) { ResizersVisible = true }));
+                        break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                        listArgs.OldItems.ForEach(removedDoc =>
+                            EmbeddedViewModels.Where(em => em.DocumentController.Equals(removedDoc)).ToList().ForEach(em => EmbeddedViewModels.Remove(em)));
+                        break;
                 }
             }
         }

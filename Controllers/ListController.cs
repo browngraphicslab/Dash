@@ -86,6 +86,8 @@ namespace Dash
             //OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, targetList, prevList));
         }
 
+        public bool ContainsBase(FieldControllerBase element) => element is T checkedElement && Contains(checkedElement);
+
         public void Set(IEnumerable<FieldControllerBase> fmcs)
         {
             Set(fmcs.OfType<T>());
@@ -242,6 +244,7 @@ namespace Dash
                 index = CheckedIndex(index, _typedData);
 
                 var prevElement = _typedData[index]; // for undo and event args
+                if(prevElement == value) return;
                 ReleaseContainedField(prevElement);
 
                 _typedData[index] = value;
@@ -304,7 +307,7 @@ namespace Dash
             return $"[{string.Join(", ", this.Take(Math.Min(cutoff, Count))) + suffix}]";
         }
 
-        public override object GetValue(Context context) => _typedData.ToList();
+        public override object GetValue() => _typedData.ToList();
 
         public override bool TrySetValue(object value)
         {
@@ -352,6 +355,11 @@ namespace Dash
         public void AddBase(FieldControllerBase element)
         {
             if (element is T checkedElement) Add(checkedElement);
+        }
+
+        public void InsertBase(int index, FieldControllerBase element)
+        {
+            if (element is T checkedElement) Insert(index, checkedElement);
         }
 
         // @IList<T> //

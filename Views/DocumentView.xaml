@@ -1,67 +1,45 @@
 ﻿<UserControl
     x:Class="Dash.DocumentView"
-    x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:Dash"
-    xmlns:views="using:Dash.Views"
-    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     d:DesignWidth="400"
     d:DesignHeight="400"
     AllowDrop="True"
     Drop="This_Drop"
+    SizeChanged="LayoutRoot_OnSizeChanged" 
+    Holding="XContent_OnHolding" 
+    IsHoldingEnabled="True" 
+    PointerMoved="LayoutRoot_OnPointerMoved"  
+    PointerEntered="LayoutRootShowTooltip" 
+    PointerExited="LayoutRootHideTooltip" 
+    PointerPressed="LayoutRootHideTooltip"
+    ManipulationMode="None"
     UseLayoutRounding="False">
-    <UserControl.Resources>
-        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
-            <FadeOutThemeAnimation TargetName="Root"/>
-        </Storyboard>
-        <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-        <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
-    </UserControl.Resources>
-
-    <Grid x:Name="xMasterStack" RightTapped='XMasterStack_OnRightTapped'>
-        <!--Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
-        <FlyoutBase.AttachedFlyout>
+    <Grid x:Name="LayoutRoot" BorderThickness="0">
+        <Grid.Resources>
+            <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
+                <FadeOutThemeAnimation TargetName="LayoutRoot"/>
+            </Storyboard>
+            <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+            <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
+        </Grid.Resources>
+        <Grid.ContextFlyout>
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
-        </FlyoutBase.AttachedFlyout>
-        <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" Visibility="Visible" VerticalAlignment="Stretch" />
-        <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False" />
-        <Grid x:Name="LayoutRoot" BorderThickness="0" SizeChanged="LayoutRoot_OnSizeChanged" PointerMoved="LayoutRoot_OnPointerMoved">
-            <Grid.Clip>
-                <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"></RectangleGeometry>
-            </Grid.Clip>
-
-            <ContentPresenter Content="{Binding Content}" Holding="XContent_OnHolding" IsHoldingEnabled="True">
-                <ContentPresenter.RenderTransform>
-                    <MatrixTransform x:Name="xContentTransform"/>
-                </ContentPresenter.RenderTransform>
-            </ContentPresenter>
-        </Grid>
-
-        <!-- border to highlight search results-->
-        <Border x:Name="xDocHighlight" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" >
-            <Border.Resources>
-                <Storyboard x:Name="xToRed">
-                    <ColorAnimation 
-                    Storyboard.TargetName="xDocHighlight"
-                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                    To="DarkRed"
-                    Duration="0:0:0.2"
-                    EnableDependentAnimation="True"/>
-                </Storyboard>
-                <Storyboard x:Name="xToYellow">
-                    <ColorAnimation 
-                    Storyboard.TargetName="xDocHighlight"
-                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                    To="Yellow"
-                    Duration="0:0:0.2"
-                    EnableDependentAnimation="True"/>
-                </Storyboard>
-            </Border.Resources>
-        </Border>
+        </Grid.ContextFlyout>
+        <Rectangle   x:Name="xDocumentBackground"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False"/>
+        <ContentPresenter Content="{Binding Content}" >
+            <ContentPresenter.Clip>
+                <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"/>
+            </ContentPresenter.Clip>
+            <ContentPresenter.RenderTransform>
+                <MatrixTransform x:Name="xContentTransform"/>
+            </ContentPresenter.RenderTransform>
+        </ContentPresenter>
+        <Border x:Name="xDocHighlight" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" />
     </Grid>
 </UserControl>

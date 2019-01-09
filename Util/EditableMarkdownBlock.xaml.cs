@@ -72,7 +72,7 @@ namespace Dash
 
         private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
         {
-            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
             {
                 MakeEditable();
             }
@@ -123,9 +123,9 @@ namespace Dash
 
         private void XMarkdownBox_OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
             {
-                MainPage.Instance.ClearForceFocus();
+                CollectionFreeformView.ClearForceFocus();
                 XMarkdownBox.Focus(FocusState.Programmatic);
             }
             XMarkdownBlock.Visibility = Visibility.Collapsed;
@@ -145,7 +145,7 @@ namespace Dash
             var reference = TargetFieldController?.Dereference(TargetDocContext);
             if (reference is DocumentReferenceController dref && (dref.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite)
                 return XMarkdownBlock.Text;
-            return reference?.GetValue(TargetDocContext)?.ToString();
+            return reference?.GetValue()?.ToString();
         }
 
         private void SetExpression(string expression)

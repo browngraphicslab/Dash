@@ -18,7 +18,7 @@ namespace Dash.Views
     /// </summary>
     public sealed partial class InkSelectionRect : UserControl
     {
-        private CollectionFreeformBase _freeformView;
+        private CollectionFreeformView _freeformView;
         private ScrollViewer _scroller;
         private InkStrokeContainer _strokeContainer;
         private Size _startSize;
@@ -38,7 +38,7 @@ namespace Dash.Views
             return new Point(Canvas.GetLeft(this) + 25, Canvas.GetTop(this) + 25);
         }
         
-        public InkSelectionRect(CollectionFreeformBase view, InkStrokeContainer strokes, ScrollViewer scroller = null)
+        public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes, ScrollViewer scroller = null)
         {
             this.InitializeComponent();
             _freeformView = view;

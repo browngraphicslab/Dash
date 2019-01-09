@@ -14,5 +14,13 @@ namespace Dash
             var aliases = DocumentTree.MainPageTree.Where(dn => dn.DataDocument == dataDoc).Select(dn => dn.ViewDocument);
             return aliases.ToListController();
         }
+
+        public static ListController<DocumentController> Library()
+        {
+            var documentControllers = DocumentTree.MainPageTree.DistinctBy(dn => dn.DataDocument)
+                .Select(dn => dn.ViewDocument).ToListController();
+            documentControllers.Remove(MainPage.Instance.MainDocument);
+            return documentControllers;
+        }
     }
 }

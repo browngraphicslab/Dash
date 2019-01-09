@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Border x:Name="xKeyValueBorder" Grid.Row="2" Height="0" Width="0" Background="#60000000">
+    <Border x:Name="xKeyValueBorder" Grid.Row="2" Height="0" Width="0" Visibility="Collapsed" Background="#60000000">
         <Border.Resources>
             <Storyboard x:Name="xQuickEntryIn">
                 <DoubleAnimation 

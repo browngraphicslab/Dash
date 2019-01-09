@@ -13,7 +13,7 @@ namespace Dash
 {
     public sealed partial class DocumentPathView : UserControl
     {
-        private bool _useDataDocument;
+        private bool _useDataDocument = true;
         private DocumentController _document;
 
         public bool UseDataDocument

@@ -4,28 +4,21 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:dash="using:Dash"
-    xmlns:views="using:Dash.Views"
     x:Name="xCanvas"
     mc:Ignorable="d"
-    LostFocus="EditableImage_OnLostFocus"
-   
+    HorizontalAlignment="Center"
+    VerticalAlignment="Center"
     KeyDown="XGrid_OnKeyDown"
     Background="Beige" IsTabStop="True">
-
-
+    
     <Grid x:Name="xGrid" PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" DoubleTapped="OnDoubleTapped">
-        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center"  Stretch="Fill" CacheMode="BitmapCache" />
-        <Viewbox Stretch="Fill" x:Name="AnnotationViewbox">
-            <Grid x:Name="XAnnotationGridWithEmbeddings" CompositeMode="SourceOver">
-                <Grid x:Name="XAnnotationGrid" CompositeMode="SourceOver"/>
+        <Viewbox Stretch="Fill" x:Name="xViewbox">
+            <Grid AllowDrop="True">
+                <Grid x:Name="XAnnotationGrid" >
+                    <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Grid>
+                <Canvas x:Name="XAnnotationGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
             </Grid>
         </Viewbox>
-        <!--<StackPanel x:Name="xLinkStack" Visibility="Collapsed"/>-->
-        <FlyoutBase.AttachedFlyout>
-            <MenuFlyout x:Name="xLinkFlyout"/>
-        </FlyoutBase.AttachedFlyout>
-
-
     </Grid>
 </UserControl>

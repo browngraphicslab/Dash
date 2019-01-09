@@ -9,9 +9,13 @@ namespace Dash
 {
     public sealed partial class SplitManager : UserControl
     {
+        static public bool IsRoot(DocumentViewModel docViewModel)
+        {
+            return MainPage.Instance.GetDescendantsOfType<SplitFrame>().Any(sf => sf.DataContext == docViewModel);
+        }
         public SplitManager()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         public void SetContent(DocumentController doc)
@@ -62,15 +66,15 @@ namespace Dash
             }
         }
 
-        private SplitFrame MakeFrame(DocumentController doc)
+        private SplitFrame MakeFrame(DocumentController doc, bool? viewCopy = null)
         {
             var frame = new SplitFrame();
-            frame.OpenDocument(doc);
+            frame.OpenDocument(doc, viewCopy);
             return frame;
 
         }
 
-        public DocumentController Split(SplitFrame frame, SplitDirection dir, DocumentController doc, bool autoSize)
+        public DocumentController Split(SplitFrame frame, SplitDirection dir, DocumentController doc, bool autoSize, bool? viewCopy = null)
         {
             SplitMode targetMode;
             if (dir == SplitDirection.Left || dir == SplitDirection.Right)
@@ -83,7 +87,7 @@ namespace Dash
             }
             var split = SplitPane.GetSplitLocation(frame);
             var par = split.Parent;
-            var newFrame = MakeFrame(doc ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document);
+            var newFrame = MakeFrame(doc ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document, viewCopy);
             if (par != null && par.Mode == targetMode)
             {
                 var offset = dir == SplitDirection.Up || dir == SplitDirection.Left ? 0 : 1;

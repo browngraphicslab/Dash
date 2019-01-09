@@ -97,6 +97,7 @@ namespace Dash
             // collections
             coll,
             coll_title,
+            link_title,
             rtf_title,
             inside,
             join,
@@ -113,6 +114,11 @@ namespace Dash
             apply,
             set_template,
             templates,
+
+            //Flash card
+            content_template,
+            image_template,
+            text_template,
 
             // PDFs
             references,
@@ -210,6 +216,7 @@ namespace Dash
             rand,
             rand_i,
             remove,
+            insert,
             instance,
             view_copy,
             active_document,
@@ -227,7 +234,11 @@ namespace Dash
             split,
             sort,
             toggle_presentation,
-            export_workspace
+            export_workspace,
+            and,
+            or,
+            not,
+            library
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;

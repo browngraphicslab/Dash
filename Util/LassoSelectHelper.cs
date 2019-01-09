@@ -13,13 +13,13 @@ namespace Dash
         private Point _rootPoint;
         private SortedDictionary<double, Point> _sortedPoints;
         private Stack<Point> _hullPoints;
-        private CollectionFreeformBase _view;
+        private CollectionFreeformView _view;
         private Polygon _hull;
         private Polygon _visualHull;
         private MenuFlyout _menu = new MenuFlyout();
         private Grid _flyoutBase;
 
-        public LassoSelectHelper(CollectionFreeformBase view)
+        public LassoSelectHelper(CollectionFreeformView view)
         {
             _view = view;
             //var delete = new MenuFlyoutItem {Text = "Delete"};
@@ -222,12 +222,10 @@ namespace Dash
                 foreach (var param in parameters)
                 {
                     var doc = param.LayoutDocument;
-                    var position = doc.GetPositionField().Data;
-                    var width = doc.GetWidth();
-                    if (double.IsNaN(width)) width = 0;
-                    var height = doc.GetHeight();
-                    if (double.IsNaN(height)) height = 0;
-                    var points = new List<Point>
+                    var position = doc.GetPosition();
+                    var width    = double.IsNaN(doc.GetWidth()) ?  0 : doc.GetWidth() ;
+                    var height   = double.IsNaN(doc.GetHeight()) ? 0 : doc.GetHeight();
+                    var points   = new List<Point>
                     {
                         position,
                         new Point(position.X + width, position.Y),

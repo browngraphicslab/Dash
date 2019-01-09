@@ -119,7 +119,7 @@ namespace Dash
         /// <param name="freeform"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionFreeFormPoint(CollectionFreeformBase freeform, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformView freeform, Point absolutePosition)
         {
             if (freeform == null) return absolutePosition;
 

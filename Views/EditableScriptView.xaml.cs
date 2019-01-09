@@ -108,13 +108,13 @@ namespace Dash
 
         private string GetRootExpression()
         {
-            return ViewModel?.Reference.DereferenceToRoot(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
+            return ViewModel?.Reference.DereferenceToRoot(ViewModel.Context)?.GetValue()?.ToString();
         }
 
         private string GetExpression()
         {
             if (ViewModel.Context == null) return null;
-            return ViewModel?.Reference.Dereference(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
+            return ViewModel?.Reference.Dereference(ViewModel.Context)?.GetValue()?.ToString();
         }
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -131,9 +131,9 @@ namespace Dash
             XTextBox.Focus(FocusState.Programmatic);
             XTextBox.Text = GetExpression() ?? XTextBlock.Text;
             XTextBox.SelectAll();
-            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
             {
-                MainPage.Instance.ClearForceFocus();
+                CollectionFreeformView.ClearForceFocus();
                 MakeEditable();
             }
         }

@@ -15,8 +15,14 @@ namespace Dash
             Expression = expression;
         }
 
+        public ExecutionEnvironment(string script)
+        {
+            Expression = TypescriptToOperatorParser.ParseToExpression(script);
+        }
+
         public async Task<(FieldControllerBase, ScriptErrorModel)> Execute(Scope scope)
         {
+            scope = scope ?? new DictionaryScope();
             try
             {
                 var (field, _) = await Expression.Execute(scope);
@@ -39,6 +45,11 @@ namespace Dash
         public static Task<(FieldControllerBase, ScriptErrorModel)> Run(ScriptExpression expression, Scope scope = null)
         {
             return new ExecutionEnvironment(expression).Execute(scope);
+        }
+
+        public static Task<(FieldControllerBase, ScriptErrorModel)> Run(string script, Scope scope = null)
+        {
+            return new ExecutionEnvironment(script).Execute(scope);
         }
 
         public static async Task<(FieldControllerBase, ScriptErrorModel)> Run(OperatorController op,

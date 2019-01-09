@@ -44,19 +44,19 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
             var pathBox = new Viewbox { Stretch = Stretch.Fill };
             var corePath = new Path { StrokeThickness = 0 };
             pathBox.Child = corePath;
 
-            BindPathShape(corePath, docController, context);
-            BindPathFill(corePath, docController, context);
+            BindPathShape(corePath, docController);
+            BindPathFill(corePath, docController);
 
             return pathBox;
         }
 
-        private static void BindPathShape(Path corePath, DocumentController docController, Context context)
+        private static void BindPathShape(Path corePath, DocumentController docController)
         {
             var dataRef = new DocumentFieldReference(docController, KeyStore.DataKey);
             var sideCountRef = new DocumentFieldReference(docController, KeyStore.SideCountKey);
@@ -65,12 +65,11 @@ namespace Dash
             {
                 Converter = new ShapeInformationToGeometryConverter(),
                 Mode = BindingMode.OneWay,
-                Context = context,
             };
             corePath.AddFieldBinding(Path.DataProperty, shapeBinding);
         }
 
-        private static void BindPathFill(Path corePath, DocumentController docController, Context context)
+        private static void BindPathFill(Path corePath, DocumentController docController)
         {
             var fillBinding = new FieldBinding<TextController>()
             {
@@ -78,7 +77,6 @@ namespace Dash
                 Document = docController,
                 Key = KeyStore.GroupBackgroundColorKey,
                 Converter = new StringToBrushConverter(),
-                Context = context,
                 Tag = "BackgroundShape Fill"
             };
             corePath.AddFieldBinding(Shape.FillProperty, fillBinding);

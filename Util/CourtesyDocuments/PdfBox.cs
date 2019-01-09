@@ -32,10 +32,10 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "PdfBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             var pdfView = new PdfView();
-            SetupPdfBinding(pdfView, docController, key, context);
+            SetupPdfBinding(pdfView, docController, key);
             return pdfView;
         }
         public static Task<DocumentController> MakeRegionDocument(DocumentView documentView, Point? point = null)
@@ -43,19 +43,18 @@ namespace Dash
             return documentView.GetFirstDescendantOfType<PdfView>().GetRegionDocument(point);
         }
 
-        public static void SetupPdfBinding(PdfView pdf, DocumentController controller, KeyController key, Context context)
+        public static void SetupPdfBinding(PdfView pdf, DocumentController controller, KeyController key)
         {
-            BindPdfSource(pdf, controller, key, context);
+            BindPdfSource(pdf, controller, key);
         }
 
-        protected static void BindPdfSource(PdfView pdf, DocumentController docController, KeyController key, Context context)
+        protected static void BindPdfSource(PdfView pdf, DocumentController docController, KeyController key)
         {
             var binding = new FieldBinding<PdfController>()
             {
                 Document = docController,
                 Key = key,
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 //Converter = UriToStreamConverter.Instance
             };
             pdf.AddFieldBinding(PdfView.PdfUriProperty, binding);

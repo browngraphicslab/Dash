@@ -23,7 +23,7 @@ namespace Dash
         {
 
             // convert references to a string representation
-            var fieldData = DereferenceData ? (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context) : refField as ReferenceController;
+            var fieldData = DereferenceData ? (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue() : refField as ReferenceController;
             if (fieldData == null && !(refField is ReferenceController))
             {
                 fieldData = refField;

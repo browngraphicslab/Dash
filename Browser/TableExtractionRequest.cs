@@ -50,7 +50,6 @@ namespace Dash
                 }
                 
                 var listOfColumns = new List<KeyController>();
-                int count = 0;
                 KeyController primaryKey = null;
                 foreach (var keyValuePair in rows.First())
                 {

@@ -14,6 +14,11 @@ namespace Dash
 
 
         public static TypeInfo Type { get; private set; }
+        public DataBox(DocumentController docReference, KeyController refKey, Point position, double w = double.NaN, double h = double.NaN):this(
+            new DocumentReferenceController(docReference, refKey), position.X, position.Y, w, h)
+        {
+        }
+
         public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
@@ -28,20 +33,17 @@ namespace Dash
                 KeyStore.TitleKey), true);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context)
+        public static FrameworkElement MakeView(DocumentController documentController)
         {
             //add field binding for content of content presenter
             var contentPresenter = new ContentPresenter();
             BindContent(contentPresenter, documentController, KeyStore.DataKey);
             return contentPresenter;
-
-            //return new DataFieldToMakeViewConverter(documentController, context).ConvertDataToXaml(
-            //    documentController.GetDereferencedField(KeyStore.DataKey, null), null);
         }
 
 		public static void BindContent(ContentPresenter presenter, DocumentController docController, KeyController key)
 		{
-			var converter = new DataFieldToMakeViewConverter(docController, null);
+			var converter = new DataFieldToMakeViewConverter(docController);
 
 			var contentBinding = new FieldBinding<FieldControllerBase, TextController>()
 			{

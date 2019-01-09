@@ -13,15 +13,25 @@
 
     <Grid x:Name="Grid">
         <local:DocumentView x:Name="XDocView" />
-        <Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
+        <!--<Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
                  Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="TopRightOnManipulationStarted"
+                 ManipulationCompleted="OnManipulationCompleted"/>-->
+        <Polygon x:Name="XTopLeftResizer" Fill="Black" Points="0,0,0,25,25,0" HorizontalAlignment="Left" VerticalAlignment="Top"
+                 Canvas.ZIndex="2"
+                 ManipulationMode="TranslateX,TranslateY"
+                 ManipulationStarted="TopLeftOnManipulationStarted"
                  ManipulationCompleted="OnManipulationCompleted"/>
-        <Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+        <!--<Polygon x:Name="XBottomLeftResizer" Fill="Black" Points="0,25,25,25,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                  Canvas.ZIndex="2"
                  ManipulationMode="TranslateX,TranslateY"
                  ManipulationStarted="BottomLeftOnManipulationStarted"
+                 ManipulationCompleted="OnManipulationCompleted"/>-->
+        <Polygon x:Name="XBottomRightResizer" Fill="Black" Points="0,25,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 Canvas.ZIndex="2"
+                 ManipulationMode="TranslateX,TranslateY"
+                 ManipulationStarted="BottomRightOnManipulationStarted"
                  ManipulationCompleted="OnManipulationCompleted"/>
         <Rectangle x:Name="XRightDropTarget" Width="15" Canvas.ZIndex="1" Fill="#10101010" HorizontalAlignment="Right"
                    Visibility="Collapsed"

@@ -211,6 +211,7 @@
     <Compile Include="Controllers\Functions\Operators\SelectionFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\SplitFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\StringFunctions.cs" />
+    <Compile Include="Controllers\Functions\Operators\TemplateFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UIFunctions.cs" />
     <Compile Include="Controllers\Functions\Operators\UtilFunctions.cs" />
     <Compile Include="Controllers\Functions\OperatorTemplate1.cs">
@@ -228,6 +229,9 @@
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\StringFunctions.Operator.cs">
+      <DependentUpon>OperatorTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Functions\TemplateFunctions.Operator.cs">
       <DependentUpon>OperatorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Functions\UIFunctions.Operator.cs">
@@ -252,6 +256,7 @@
     <Compile Include="Controllers\Operators\Point\XOperator.cs" />
     <Compile Include="Controllers\Operators\Point\YOperator.cs" />
     <Compile Include="DashVoiceCommand.cs" />
+    <Compile Include="Controllers\Operators\Titles\LinkTitleOperatorController.cs" />
     <Compile Include="Models\DragModels\CopyPasteModel.cs" />
     <Compile Include="Converters\DocsToViewModelsConverter.cs" />
     <Compile Include="Models\DragModels\JoinDragModel.cs" />
@@ -278,6 +283,9 @@
     </Compile>
     <Compile Include="Popups\TemplatePopups\BiographyPopup.xaml.cs">
       <DependentUpon>BiographyPopup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Popups\TemplatePopups\CaptionedImage.xaml.cs">
+      <DependentUpon>CaptionedImage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Popups\TemplatePopups\CardPopup.xaml.cs">
       <DependentUpon>CardPopup.xaml</DependentUpon>
@@ -372,7 +380,6 @@
     <Compile Include="Views\Annotations\PdfAnnotationView.xaml.cs">
       <DependentUpon>PdfAnnotationView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Collection\CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\ColorController.cs" />
@@ -852,6 +859,9 @@
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MapView.xaml.cs">
+      <DependentUpon>MapView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
       <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
     </Compile>
@@ -1226,6 +1236,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Popups\TemplatePopups\CaptionedImage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Popups\TemplatePopups\CardPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1235,6 +1249,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\TemplatePopups\FlashcardPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MapView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Templates\CaptionedImageTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\ContentTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1291,8 +1317,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\DashRadialMenu\RadialMenuControl\UserControl\RadialMenu.xaml">
-        <SubType>Designer</SubType>
-        <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Popups\TraveloguePopup.xaml">
       <SubType>Designer</SubType>
@@ -1743,6 +1769,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Templates\CitationTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Templates\ImageTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

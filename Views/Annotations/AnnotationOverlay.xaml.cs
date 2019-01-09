@@ -1,9 +1,9 @@
 ﻿using Dash.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -19,9 +19,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using NewControls.Geometry;
 using static Dash.DataTransferTypeInfo;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Input;
+using Selection = Dash.AnchorableAnnotation.Selection;
 
 namespace Dash
 {
@@ -29,21 +29,21 @@ namespace Dash
     {
         private InkController _inkController;
         private AnnotationType _currAnnotationType = AnnotationType.None;
-        private bool _maskInkUpdates = false;
-        [CanBeNull] private AnchorableAnnotation _currentAnnotation;
+        private bool           _maskInkUpdates = false;
+        private bool           _regionsInitialized =false;
+        [CanBeNull] private AnchorableAnnotation    _currentAnnotation;
+        private readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
 
-
+        public event PropertyChangedEventHandler  PropertyChanged;
         public delegate DocumentController RegionGetter(AnnotationType type);
-        public readonly DocumentController MainDocument;
-        public readonly RegionGetter GetRegion;
-        public readonly AnnotationManager AnnotationManager;
-        public AnchorableAnnotation.Selection SelectedRegion;
-        public List<SelectableElement> TextSelectableElements;
-        public List<AnchorableAnnotation> CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
+        public readonly DocumentController        MainDocument;
+        public Selection                          SelectedRegion;
+        public List<SelectableElement>            TextSelectableElements;
+        public List<AnchorableAnnotation>         CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
         public ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
         public ListController<DocumentController> EmbeddedDocsList => AnnotationOverlayEmbeddings.EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
-        public IEnumerable<AnchorableAnnotation.Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
-        public AnnotationType CurrentAnnotationType
+        public IEnumerable<Selection>             SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
+        public AnnotationType                     CurrentAnnotationType 
         {
             get => _currAnnotationType;
             set
@@ -58,21 +58,16 @@ namespace Dash
                 }
             }
         }
+        public List<int>                          PageEndIndices       { get; set; }
+        private InkCanvas                         XInkCanvas           { get; }
+        public AnnotationOverlayEmbeddings        AnnotationOverlayEmbeddings { get; set; }
 
-        public List<int> PageEndIndices { get; set; }
-
-
-        //private InkCanvas this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas { get; }
-
-        public AnnotationOverlayEmbeddings AnnotationOverlayEmbeddings { get; set; }
-        public AnnotationOverlay([NotNull] DocumentController viewDocument, [NotNull] RegionGetter getRegion)
+        public AnnotationOverlay([NotNull] DocumentController viewDocument, bool delayLoadingRegions=false)
         {
             InitializeComponent();
 
             MainDocument = viewDocument;
-            GetRegion = getRegion;
-
-            AnnotationManager = new AnnotationManager(this);
+            
             AnnotationOverlayEmbeddings = new AnnotationOverlayEmbeddings(this);
 
            
@@ -94,70 +89,71 @@ namespace Dash
             _inkController = MainDocument.GetDataDocument().GetFieldOrCreateDefault<InkController>(KeyStore.InkDataKey);
             MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.InkDataKey, (view, controller, arge) => view.inkController_FieldModelUpdated(controller, arge));
             MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.RegionsKey, (view, controller, arge) => view.regionDocsListOnFieldModelUpdated(controller, arge));
-            regionDocsListOnFieldModelUpdated(null,
-                new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Update, null,
-              new ListController<DocumentController>.ListFieldUpdatedEventArgs(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add, RegionDocsList.ToList(), new List<DocumentController>(), 0), false));
 
             Loaded += onLoaded;
-        }
-
-        public class CursorConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, string language)
+            if (!delayLoadingRegions)
             {
-                switch ((AnnotationType)value)
-                {
-                case AnnotationType.Selection: return CoreCursorType.IBeam;
-                case AnnotationType.Region: return CoreCursorType.Cross;
-                }
-                return CoreCursorType.Arrow;
+                InitializeRegions();
             }
-
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
+        }
+        public void InitializeRegions()
+        {
+            _regionsInitialized = true;
+            AddRegions(RegionDocsList, false);
+        }
+        public void RemoveRegions(IEnumerable<DocumentController> oldItems)
+        {
+            XAnnotationCanvas.Children.OfType<RegionAnnotation>().Where((reg) => oldItems.Contains(reg.RegionDocumentController)).
+                ToList().ForEach((reg) => XAnnotationCanvas.Children.Remove(reg));
+        }
+        public void AddRegions(IEnumerable<DocumentController> newItems, bool updateDocument=true)
+        {
+            if (_regionsInitialized)
             {
-                throw new NotImplementedException();
+                foreach (var anno in newItems)
+                {
+                    if (updateDocument)
+                    {
+                        var listField = anno.GetDataDocument().GetDereferencedField<ListController<RectController>>(KeyStore.SelectionBoundsKey, null)?.ToList() ?? new List<RectController>();
+                        if (!listField.Any())
+                        {
+                            var range = anno.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey)?.FirstOrDefault()?.Data ?? new Point(0, -1);
+                            for (var i = range.X; i <= range.Y; i++)
+                            {
+                                listField.Add(new RectController(TextSelectableElements[(int)i].Bounds));
+                            }
+                            anno.GetDataDocument().SetField<ListController<RectController>>(KeyStore.SelectionBoundsKey, listField, true);
+                        }
+                    }
+                    XAnnotationCanvas.Children.Add(anno.CreateAnnotationAnchor(this));
+                }
             }
         }
 
         public void SelectRegion(DocumentController region)
         {
-            var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (documentView == null)
-                return;
-            documentView.Visibility = Visibility.Visible;
-
-            var deselect = SelectedRegion?.IsSelected == true;
-            var selectable = SelectableRegions.FirstOrDefault(sel => sel.RegionDocument.Equals(region));
-            foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
-                foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable?.RegionDocument)))
+            DeselectRegions();
+            if (this.GetDocumentView() is DocumentView docView)
+            {
+                docView.Visibility = Visibility.Visible;
+                foreach (var nvo in docView.GetDescendantsOfType<AnnotationOverlay>())
                 {
-                    if (nvo.SelectedRegion != null)
-                        nvo.SelectedRegion.IsSelected = false;
-                    nvo.SelectedRegion = deselect ? null : r;
-                    if (!deselect)
+                    foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(region)))
                     {
+                        nvo.SelectedRegion = r;
                         r.IsSelected = true;
                     }
-
-                    documentView.ViewModel?.SetHighlight(!deselect);
                 }
+            }
         }
-        public void DeselectRegion()
+        public void DeselectRegions()
         {
-            var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            var selectedRegion = SelectedRegion;
-            if (selectedRegion != null)
+            if (this.GetDocumentView() is DocumentView docView)
             {
-                foreach (var nvo in documentView.GetDescendantsOfType<AnnotationOverlay>())
+                foreach (var nvo in docView.GetDescendantsOfType<AnnotationOverlay>().Where((a) => a.SelectedRegion != null))
                 {
-                    foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectedRegion.RegionDocument)))
-                    {
-                        if (nvo.SelectedRegion != null)
-                        {
-                            nvo.SelectedRegion.IsSelected = false;
-                            nvo.SelectedRegion = null;
-                        }
-                    }
+                    nvo.SelectedRegion.IsSelected = false;
+                    nvo.SelectedRegion = null;
                 }
             }
         }
@@ -175,18 +171,14 @@ namespace Dash
                     !CurrentAnchorableAnnotations.OfType<RegionAnnotation>().Any(i => i?.Width < 10 && i?.Height < 10))
                 {
                     var rtb = new RenderTargetBitmap();
-                    var containingDocumentView = this.GetFirstAncestorOfType<DocumentView>();
+                    var containingDocumentView = this.GetDocumentView();
                     await rtb.RenderAsync(containingDocumentView, (int)containingDocumentView.ActualWidth, (int)containingDocumentView.ActualHeight);
 
                     var buf = (await rtb.GetPixelsAsync()).ToArray();
                     var bitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                     bitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
-
-                    var util = new ImageToDashUtil();
-                    var imgnote = await util.ParseBitmapAsync(bitmap);
-
-                    annotation = imgnote;
-                    //annotation = GetRegion(CurrentAnnotationType);
+                    
+                    annotation = await new ImageToDashUtil().ParseBitmapAsync(bitmap);
 
                     var subRegionsOffsets = CurrentAnchorableAnnotations.Select((item) => item.AddToRegion(annotation)).ToList();
                     subRegionsOffsets.Sort((y1, y2) => Math.Sign(y1 - y2));
@@ -240,26 +232,18 @@ namespace Dash
 
         public DocumentController CreatePinRegion(Point point, DocumentController linkedDoc = null)
         {
-            var annotation = GetRegion(AnnotationType.Pin);
+            var annotation = new RichTextNote().Document;
             annotation.SetPosition(point);
-            annotation.SetWidth(10);
-            annotation.SetHeight(10);
+            annotation.SetWidth(90);
+            annotation.SetHeight(90);
             annotation.GetDataDocument().SetAnnotationType(AnnotationType.Pin);
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
             annotation.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(point.X, point.Y));
-            annotation.AddToListField(KeyStore.SelectionRegionSizeKey, new PointController(1, 1));
+            annotation.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(1, 1));
             if (linkedDoc != null)
             {
                 annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
             }
-
-            //var pdfview = this.GetFirstAncestorOfType<PdfView>().GetFirstAncestorOfType<DocumentView>();
-            //var text = "Created a pin annotation using pdf: " + pdfview.ViewModel.DocumentController.Title;
-
-            //if (linkedDoc != null)
-            //{
-            //    text += "\n " + linkedDoc.GetField<TextController>(KeyStore.DataKey)?.Data;
-            //}
 
             //var eventdoc = new RichTextNote(text).Document;
             //var tags = "pdf, annotation, pin, " + pdfview.ViewModel.DocumentController.Title;
@@ -308,16 +292,8 @@ namespace Dash
             {
                 switch (listArgs.ListAction)
                 {
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    listArgs.NewItems.ForEach((reg) => XAnnotationCanvas.Children.Add(reg.CreateAnnotationAnchor(this)));
-                    break;
-                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    XAnnotationCanvas.Children.OfType<RegionAnnotation>().ToList().ForEach((reg) =>
-                    {
-                        if (listArgs.OldItems.Contains(reg.RegionDocumentController))
-                            XAnnotationCanvas.Children.Remove(reg);
-                    });
-                    break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:    AddRegions(listArgs.NewItems);    break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove: RemoveRegions(listArgs.OldItems); break;
                 }
             }
         }
@@ -330,8 +306,6 @@ namespace Dash
                 this.GetFirstAncestorOfType<PdfAnnotationView>()?.XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkController.GetStrokes().Select(s => s.Clone()));
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -339,7 +313,7 @@ namespace Dash
 
         public static void LinkRegion(DocumentController sourceDoc, DocumentController targetDoc,
             double? sStartIndex = null, double? sEndIndex = null, double? tStartIndex = null, double? tEndIndex = null,
-            string linkTag = null)
+            string linkTag = null, string behavior = null)
         {
             Debug.Assert(sourceDoc.GetRegionDefinition() == null);
             var linkSource = sStartIndex is double sStart && sEndIndex is double sEnd
@@ -349,7 +323,7 @@ namespace Dash
                 ? createRegionDoc(targetDoc, tStart, tEnd)
                 : targetDoc;
 
-            linkSource.Link(linkTarget, LinkBehavior.Follow, linkTag);
+            linkSource.Link(linkTarget, Enum.TryParse(behavior, out LinkBehavior behaviorEnum) ? behaviorEnum : LinkBehavior.Annotate, linkTag);
 
             DocumentController createRegionDoc(DocumentController regionContainerDocument, double start, double end)
             {
@@ -357,12 +331,12 @@ namespace Dash
                 if (region == null)
                 {
                     region = new RichTextNote().Document;
-                    region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey)
-                        .Add(new PointController(start, end));
+                    region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionIndicesListKey).Add(new PointController(start, end));
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey);
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
                     region.SetAnnotationType(AnnotationType.Selection);
                     region.SetRegionDefinition(regionContainerDocument);
+                    region.SetTitle(regionContainerDocument.Title+" region");
 
                     regionContainerDocument.GetDataDocument()
                         .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(region);
@@ -376,7 +350,7 @@ namespace Dash
                 return doc.GetDataDocument().GetRegions().FirstOrDefault(reg =>
                 {
                     var selInds = reg.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey);
-                    return (selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
+                    return (selInds != null && selInds.Count == 1 && ((int)startIndex == (int)selInds[0].Data.X &&
                                                    (int)endIndex == (int)selInds[0].Data.Y));
                 });
             }
@@ -391,27 +365,28 @@ namespace Dash
         /// <param name="point"></param>
         public async void EmbedDocumentWithPin(Point point, DocumentController embeddedDocument = null)
         {
-            if (XPreviewRect.GetBoundingRect(this).Contains(point))
+            if (XPreviewRect.GetBoundingRect(this).Contains(point)) // create annotation for preview region containing 'point'
             {
-                embeddedDocument = embeddedDocument ?? await createEmbeddedTextNote(this, point);
+                embeddedDocument = embeddedDocument ?? createEmbeddedTextNote(this, point);
                 EmbeddedDocsList.Add(embeddedDocument);
-                StartAnnotation(AnnotationType.Region, point, new AnchorableAnnotation.Selection(await CreateRegionFromPreviewOrSelection(embeddedDocument)));
-                return;
+                StartAnnotation(AnnotationType.Region, point, new Selection(await CreateRegionFromPreviewOrSelection(embeddedDocument)));
             }
-            _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) =>
+            else
             {
-                var rect = pin.GetBoundingRect(this);
-                rect.X -= pin.ActualWidth;
-                rect.Y -= pin.ActualHeight;
-                rect.Width = pin.ActualWidth * 2;
-                rect.Height = pin.ActualHeight * 2;
-                return rect.Contains(point);
-            }).FirstOrDefault();
-            if (_currentAnnotation == null)
-            {
-                embeddedDocument = embeddedDocument ?? await createEmbeddedTextNote(this, point);
-                EmbeddedDocsList.Add(embeddedDocument);
-                StartAnnotation(AnnotationType.Pin, point, new AnchorableAnnotation.Selection(CreatePinRegion(point, embeddedDocument)));
+                _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => {
+                        var rect = pin.GetBoundingRect(this);
+                        rect.X     -= pin.ActualWidth;
+                        rect.Y     -= pin.ActualHeight;
+                        rect.Width  = pin.ActualWidth * 2;
+                        rect.Height = pin.ActualHeight * 2;
+                        return rect.Contains(point);
+                    }).FirstOrDefault();
+                if (_currentAnnotation == null)  // if no other pin exists with 4x4 of 'point', then create a pushin
+                {
+                    embeddedDocument = embeddedDocument ?? createEmbeddedTextNote(this, point);
+                    EmbeddedDocsList.Add(embeddedDocument);
+                    StartAnnotation(AnnotationType.Pin, point, new Selection(CreatePinRegion(point, embeddedDocument)));
+                }
             }
         }
 
@@ -420,9 +395,9 @@ namespace Dash
             XPreviewRect.Visibility = Visibility.Collapsed;
             switch (type)
             {
-            case AnnotationType.Pin: _currentAnnotation = new PinAnnotation(this, svm); break;
-            case AnnotationType.Region: _currentAnnotation = new RegionAnnotation(this, svm); break;
-            case AnnotationType.Selection: _currentAnnotation = new TextAnnotation(this, svm); break;
+                case AnnotationType.Pin:       _currentAnnotation = new PinAnnotation(this, svm); break;
+                case AnnotationType.Region:    _currentAnnotation = new RegionAnnotation(this, svm); break;
+                case AnnotationType.Selection: _currentAnnotation = new TextAnnotation(this, svm); break;
             }
             if (!this.IsCtrlPressed() && CurrentAnchorableAnnotations.Any())
             {
@@ -435,44 +410,22 @@ namespace Dash
         {
             _currentAnnotation?.UpdateAnnotation(p);
         }
-
+         
         public void EndAnnotation(Point p)
         {
             if (_currentAnnotation != null)
             {
                 _currentAnnotation.EndAnnotation(p);
                 _currentAnnotation = null;
-                DeselectRegion();
+                DeselectRegions();
             }
         }
-
-        /// <summary>
-        /// Creates a target annotation for a pushpin.  If Ctrl is pressed, then the user can choose the type of annotation, 
-        /// otherwise the default is text.
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="point"></param>
-        /// <returns></returns>
-        static async Task<DocumentController> createEmbeddedTextNote(AnnotationOverlay parent, Point where)
+        
+        private static DocumentController createEmbeddedTextNote(AnnotationOverlay parent, Point where)
         {
-            DocumentController target = null;
-            // the user can gain more control over what kind of pushpin annotation they want to make by holding control, which triggers a popup
-            switch (parent.IsCtrlPressed() ? await MainPage.Instance.GetPushpinType() : PushpinType.Text)
-            {
-                case PushpinType.Text:
-                    {
-                        var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10));
-                        richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
-                        return richText.Document;
-                    }
-                case PushpinType.Video: target = await MainPage.Instance.GetVideoFile(); break;
-                case PushpinType.Image: target = await MainPage.Instance.GetImageFile(); break;
-            }
-
-            target?.SetWidth(250);
-            target?.SetHeight(200);
-            target?.SetPosition(new Point(where.X + 10, where.Y + 10));
-            return target;
+            var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10));
+            richText.Document.SetField(KeyStore.BackgroundColorKey, new TextController(Colors.White.ToString()), true);
+            return richText.Document;
         }
         #endregion
 
@@ -502,11 +455,10 @@ namespace Dash
 
         #region Selection Annotation
 
-        private readonly Dictionary<int, Rectangle> _selectedRectangles = new Dictionary<int, Rectangle>();
-
         public void ClearSelection(bool hardReset = false)
         {
             CurrentAnchorableAnnotations.Clear();
+            _currRect = null;
             _selectedRectangles.Clear();
             XSelectionCanvas.Children.Clear();
             XPreviewRect.Width = XPreviewRect.Height = 0;
@@ -608,8 +560,9 @@ namespace Dash
 
         private Rectangle _currRect;
 
-        public void SelectIndex(int index, Rect? clipRect = null)
+        public void SelectIndex(int index, Rect? clipRect = null, Brush highlightBrush = null)
         {
+            highlightBrush = highlightBrush ?? new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
             var ele = TextSelectableElements[index];
             var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
             var clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
@@ -628,7 +581,7 @@ namespace Dash
                 {
                     Width = ele.Bounds.Width,
                     Height = ele.Bounds.Height,
-                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                    Fill = highlightBrush
                 };
                 Canvas.SetLeft(_currRect, ele.Bounds.Left);
                 Canvas.SetTop(_currRect, ele.Bounds.Top);
@@ -673,7 +626,7 @@ namespace Dash
                 {
                     Width = ele.Bounds.Width,
                     Height = ele.Bounds.Height,
-                    Fill = new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB))
+                    Fill = highlightBrush
                 };
                 Canvas.SetLeft(_currRect, ele.Bounds.Left);
                 Canvas.SetTop(_currRect, ele.Bounds.Top);
@@ -921,73 +874,59 @@ namespace Dash
         public async void OnDrop(object sender, DragEventArgs e)
         {
             var where = e.GetPosition(XAnnotationCanvas);
-            if (e.DataView.HasDataOfType(Internal) && !this.IsAltPressed())
+            if (e.DataView.HasDataOfType(Internal) && !this.IsAltPressed() && !this.IsCtrlPressed())
             {
+                e.Handled = true;
                 var dm = e.DataView.GetDragModel() as DragDocumentModel;
                 if (!this.IsShiftPressed() && dm?.DraggingLinkButton == false)
                 {
-                    if (dm == null)
-                        return;
                     // if docs are being moved within the overlay, then they will be placed appropriately and returned from this call.
                     // if docs are being dragged onto this overlay, we disallow that and no droppedDocs are returned from this call.
                     var droppedDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
-                    e.AcceptedOperation = droppedDocs.Count > 0 ? DataPackageOperation.Move : DataPackageOperation.None;
-                    e.Handled = true;
-                    if (e.AcceptedOperation == DataPackageOperation.Move && !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed())
+                    if (droppedDocs.Count > 0)
                     {
                         for (var i = 0; i < dm.DraggedDocCollectionViews?.Count; i++)
                         {
-                            if (!AnnotationOverlayEmbeddings.GetDescendants().Contains(dm.DraggedDocumentViews[i]))
-                            {
-                                EmbeddedDocsList.Add(droppedDocs.FirstOrDefault());
-                            }
                             if (dm.DraggedDocumentViews != null)
                             {
-                                MainPage.Instance.ClearFloaty(dm.DraggedDocumentViews[i]);
-                            }
-
-                            if (dm.DraggedDocCollectionViews[i] == null)
-                            {
+                                if (!AnnotationOverlayEmbeddings.GetDescendants().Contains(dm.DraggedDocumentViews[i]))
+                                {
+                                    EmbeddedDocsList.Add(droppedDocs[i]);
+                                }
                                 var overlayEmbeddings = dm.DraggedDocumentViews[i]?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>();
                                 if (AnnotationOverlayEmbeddings != overlayEmbeddings)
                                 {
                                     overlayEmbeddings?.EmbeddedDocsList.Remove(dm.DraggedDocuments[i]);
                                 }
+                                MainPage.Instance.ClearFloatingDoc(dm.DraggedDocumentViews[i]);
                             }
-                            else
-                            {
-                                dm.DraggedDocCollectionViews[i].RemoveDocument(dm.DraggedDocuments[i]);
-                            }
+                            
+                            dm.DraggedDocCollectionViews[i]?.RemoveDocument(dm.DraggedDocuments[i]);
                         }
+                        e.AcceptedOperation =  DataPackageOperation.Move;
+                    }
+                    else
+                    {
+                        e.AcceptedOperation = DataPackageOperation.None;
                     }
                 }
                 else if (dm?.DraggingLinkButton == true && !this.IsShiftPressed())
                 {
-                    //var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where, true);
-                    //StartAnnotation(AnnotationType.Pin, where, new AnchorableAnnotation.Selection(CreatePinRegion(where, targets.FirstOrDefault())));
-                    //e.Handled = true;
+                    var docView = this.GetDocumentView();
+                    docView.MakeDocumentLink(e.GetPosition(docView), dm);
                 }
                 else
                 {
-                    var targets = await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where);
-
-                    foreach (var doc in targets)
+                    foreach (var doc in await e.DataView.GetDroppableDocumentsForDataOfType(Internal, sender as FrameworkElement, where))
                     {
-                        if (!doc.DocumentType.Equals(RichTextBox.DocumentType) &&
-                            !doc.DocumentType.Equals(TextingBox.DocumentType))
+                        if (doc.GetActualSize().X > 200 &&
+                            !doc.DocumentType.Equals(RichTextBox.DocumentType) && !doc.DocumentType.Equals(TextingBox.DocumentType))
                         {
-                            if (doc.GetActualSize()?.X > 200)
-                            {
-                                double ratio = doc.GetHeight() / doc.GetWidth();
-                                doc.SetWidth(200);
-                                doc.SetHeight(200 * ratio);
-                            }
+                            doc.SetWidth(200);
                         }
 
                         EmbedDocumentWithPin(where, doc);
                     }
-
-                    e.Handled = true;
                 }
             }
             // if we drag from the file system
@@ -996,13 +935,13 @@ namespace Dash
                 e.Handled = true;
                 try
                 {
-                    var target = await FileDropHelper.HandleDrop(e.DataView, where);
-                    if (target != null)
-                        EmbedDocumentWithPin(where, target);
-                    if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
+                    if ((await FileDropHelper.HandleDrop(e.DataView, where)) is DocumentController target)
                     {
-                        var ratio = target.GetHeight() / target.GetWidth();
-                        target.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+                        EmbedDocumentWithPin(where, target);
+                        if (!target.DocumentType.Equals(RichTextBox.DocumentType) && !target.DocumentType.Equals(TextingBox.DocumentType))
+                        {
+                            target.SetWidth(200);
+                        }
                     }
                 }
                 catch (Exception exception)
@@ -1011,6 +950,24 @@ namespace Dash
                 }
             }
         }
+
+        private void XPreviewRect_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true; // prevents a new annotation from being started -- allows double clicking to create an annotation
+        }
+
+        private CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
+        private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
+        private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() && this.GetDocumentView().ViewModel.IsSelected)
+            {
+                Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
+
+                e.Handled = true;
+            }
+        }
+
         public void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (XPreviewRect.IsInVisualTree() && XPreviewRect.GetBoundingRect(this).Contains(e.GetCurrentPoint(this).Position))
@@ -1019,17 +976,16 @@ namespace Dash
             }
         }
 
-        private CoreCursor IBeam = new CoreCursor(CoreCursorType.IBeam, 1);
-        private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
-        public void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
+        public void AnnotationOverlayDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
+            if (this.GetDocumentView().ViewModel.IsSelected && CurrentAnnotationType == AnnotationType.Region)
             {
-                Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
-
+                using (UndoManager.GetBatchHandle())
+                {
+                    EmbedDocumentWithPin(e.GetPosition(this));
+                }
                 e.Handled = true;
             }
         }
-
     }
 }

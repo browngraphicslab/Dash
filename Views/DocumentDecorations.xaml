@@ -10,10 +10,8 @@
     xmlns:uiControls="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     mc:Ignorable="d"
     AllowDrop="True"
-    DragOver="UserControl_DragOver"
-    Drop="UserControl_Drop"
-    PointerEntered="DocumentDecorations_OnPointerEntered"
-    PointerExited="DocumentDecorations_OnPointerExited"
+    DragOver="DocumentDecorations_DragOver"
+    Drop="DocumentDecorations_Drop"
     d:DesignHeight="300"
     d:DesignWidth="400">
     
@@ -29,101 +27,108 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <dashViews:QuickEntryPanel Grid.Row="2" ></dashViews:QuickEntryPanel>
-        <StackPanel Background="White" BorderBrush="#55000000" BorderThickness="1"  Visibility="Collapsed" x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
-            <AutoSuggestBox x:Name="xSearchBox" Foreground="White" MinWidth="150" MaxWidth="250" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
+        <Grid x:Name="xPinPanel" Tapped="xPinPanel_Tapped">
+            <SymbolIcon x:Name="xPinSymbol" Symbol="Pin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-35 -30 0 0"></SymbolIcon>
+        </Grid>
+        <Grid x:Name="xPdfControlsPanel"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
+            <StackPanel  Visibility="{x:Bind  ShowPDFControls, Mode=OneWay}"  Background="White" BorderBrush="#55000000" BorderThickness="1"  x:Name="xSearchStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Padding="5">
+                <AutoSuggestBox x:Name="xSearchBox" Foreground="White" MinWidth="150" MaxWidth="250" FontSize="10" PlaceholderText="Search" QueryIcon="Find"
                             QuerySubmitted="AutoSuggestBox_QuerySubmitted"  />
-            <Grid x:Name="xPrevOccur" PointerPressed="XPrevOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72B;" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="5 0 0 0"  Margin="0 0 0 0" Foreground="Black" />
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Previous Occurrence" Placement="Bottom" VerticalOffset="0" />
-                </ToolTipService.ToolTip>
-            </Grid>
-        </StackPanel>
-        <StackPanel x:Name="xScrollNavStack" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
-            <Grid x:Name="xScrollBack" PointerPressed="XScrollBack_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <Ellipse />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="0"  />
-                </ToolTipService.ToolTip>
-            </Grid>
-            <Grid x:Name="xScrollForward" PointerPressed="XScrollForward_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <Ellipse />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="0" />
-                </ToolTipService.ToolTip>
-            </Grid>
-        </StackPanel>
-        <StackPanel x:Name="xPageButtonStack" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Grid x:Name="xNextPageButton" PointerPressed="XNextPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <Ellipse />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="0" />
-                </ToolTipService.ToolTip>
-            </Grid>
-            <Grid x:Name="xPreviousPageButton" PointerPressed="XPreviousPageButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
-                <Ellipse />
-                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
-                <ToolTipService.ToolTip>
-                    <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="0" />
-                </ToolTipService.ToolTip>
-            </Grid>
-        </StackPanel>
+                <Grid x:Name="xPrevOccur" PointerPressed="XPrevOccur_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72B;" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="5 0 0 0"  Margin="0 0 0 0" Foreground="Black" />
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Previous Occurrence" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </StackPanel>
+            <StackPanel x:Name="xScrollNavStack" Visibility="{x:Bind  ShowPDFControls, Mode=OneWay}" Orientation="Horizontal" Width="Auto"  HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                <Grid x:Name="xScrollBack" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE112;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Scroll Backward" Placement="Bottom" VerticalOffset="0"  />
+                    </ToolTipService.ToolTip>
+                </Grid>
+                <Grid x:Name="xScrollForward" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE111;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Scroll Forward" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </StackPanel>
+            <StackPanel  x:Name="xPageButtonStack"  Visibility="{x:Bind  ShowPDFControls, Mode=OneWay}" Orientation="Horizontal" Width="Auto" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Grid x:Name="xNextPageButton" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96E;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 2, 0, 0" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Next Page" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+                <Grid x:Name="xPreviousPageButton" PointerPressed="XPDFButton_OnPointerPressed" PointerEntered="XOnPointerEntered" PointerExited="XOnPointerExited">
+                    <Ellipse />
+                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE96D;" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0, 0, 0, 2" Foreground="White"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Previous Page" Placement="Bottom" VerticalOffset="0" />
+                    </ToolTipService.ToolTip>
+                </Grid>
+            </StackPanel>
+        </Grid>
 
         <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
-                <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
+            <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="10" Margin="0 -10 0 0" 
                                    Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
-                <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="10" Margin="-10 0 0 0" 
+            <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="10" Margin="-10 0 0 0" 
                                    Fill="LightSkyBlue"  uiControls:Mouse.Cursor="SizeWestEast"  ManipulationDelta="ResizeBLunconstrained" ManipulationMode="TranslateX"/>
-                <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="10" Margin="0 0 -10 0" 
+            <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="10" Margin="0 0 -10 0" 
                                    Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeWestEast" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateX" />
-                <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="10" Margin="0 0 0 -10" 
+            <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="10" Margin="0 0 0 -10" 
                                    Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateY"/>
-                <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Top" Width="10" Height="10" Margin="-10 -10 0 0"
+            <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Top" Width="10" Height="10" Margin="-10 -10 0 0"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeTLaspect" ManipulationMode="TranslateY, TranslateX"/>
-                <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="10" Width="10"  Margin="-10 0  0 -10"
+            <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="10" Width="10"  Margin="-10 0  0 -10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeBLaspect" ManipulationMode="TranslateY, TranslateX" />
-                <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10"  Margin="0 -10 -10  0" 
+            <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10"  Margin="0 -10 -10  0"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
-                <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
+            <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0 0 -10 -10" Width="10" Height="10"
                                    Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
-                <Canvas Margin="-20 0 0 -8"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
-                    <TextBlock x:Name="xURISource" FontSize="9"/>
-                </Canvas>
-                <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" >
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                            <ColumnDefinition Width="25"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
-                        <Ellipse CanDrag="True" DragStarting="Ellipse_DragStarting" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
+            <Canvas Margin="-20 0 0 -8"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
+                <TextBlock x:Name="xURISource" Visibility="{x:Bind  ParentIsFreeform, Mode=OneWay}" FontSize="9"/>
+            </Canvas>
+            <Canvas Margin="-10 -36 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{x:Bind  ParentIsFreeform, Mode=OneWay}" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="25"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Background="LightBlue" x:Name="xHeaderText" Style="{ThemeResource  xSearchTextBox}"  KeyUp="xTitle_KeyUp"/>
+                    <Ellipse CanDrag="True" DragStarting="TitleEllipse_StartDragging" Grid.Column="1" Opacity="0.5" HorizontalAlignment="Left" Fill="CadetBlue" Width="20" Margin="-20 0 0 0" Height="20"/>
                 </Grid>
-                </Canvas>
-            </Grid>
-
-            <Border Grid.RowSpan="2"  VerticalAlignment="Stretch" Visibility="{x:Bind VisibilityState, Mode=OneWay}" x:Name="xMultiSelectBorder"
-                HorizontalAlignment="Stretch" BorderBrush="LightCoral" BorderThickness="2" />
+            </Canvas>
+        </Grid>
 
         <Canvas x:Name="xButtonsCanvas"  VerticalAlignment="Top" Grid.Column="1" Width="26" >
-            <Grid x:Name="xAnnotationButtonsStack" Padding="5 0 0 0" VerticalAlignment="Top"  Visibility="{x:Bind VisibilityState, Mode=OneWay}">
+            <Grid x:Name="xAnnotationButtonsStack" Padding="5 0 0 0" VerticalAlignment="Top"  >
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="0"/>
                     <RowDefinition Height="26"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="0" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
-                            PointerPressed="XAnnotateEllipseBorder_OnPointerPressed" PointerReleased="AllEllipses_OnPointerReleased" Tapped="XAnnotateEllipseBorder_OnTapped" 
+                <Grid Margin="4 -40 0 0" Tapped="xDelete_Tapped">
+                    <Ellipse Width="22" Height="22" Fill="#90FF0000"></Ellipse>
+                    <TextBlock Text="&#xE711;" FontSize="10"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="1 8 0 0" />
+                </Grid>
+                <Grid  x:Name="xAnnotateEllipseBorder" Grid.Row="1" Margin="4 -6 0 0" CanDrag="True" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="0 0 0 0" 
+                            Tapped="XAnnotateEllipseBorder_OnTapped" DoubleTapped="xAnnotateEllipseBorder_DoubleTapped"
                             DragStarting="XAnnotateEllipseBorder_OnDragStarting">
                     <Ellipse x:Name="AnnotateEllipseUnhighlight" Width="22" Height="22"/>
                     <Ellipse x:Name="AnnotateEllipseHighlight"   Visibility="Collapsed"/>
-                    <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE167;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="xAnnotateEllipseText" Foreground="White" FontFamily="Segoe MDL2 Assets" Text="&#xE712;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Create A Link" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
+                        <ToolTip Content="More Options" Placement="Right" HorizontalOffset="30" VerticalOffset="0" />
                     </ToolTipService.ToolTip>
                 </Grid>
-                <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="1" Spacing="2"  Margin="4 -6 0 0" CanDrag="True" Visibility="{x:Bind VisibilityState, Mode=OneWay}" />
+                <StackPanel x:Name="xButtonsPanel" VerticalAlignment="Top" Background="Transparent" Grid.Row="2" Spacing="2"  Margin="4 -6 0 0" CanDrag="True"  />
             </Grid>
         </Canvas>
     </Grid>

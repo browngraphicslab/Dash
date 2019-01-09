@@ -16,7 +16,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition MinWidth="10" Width="10"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Grid Tapped="HeaderTapped" DoubleTapped="HeaderDoubleTapped" HorizontalAlignment="Stretch" PointerPressed="Grid_PointerPressed" VerticalAlignment="Stretch" Background="{ThemeResource DocumentBackground}">
+        <Grid Tapped="HeaderTapped" DoubleTapped="HeaderDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{ThemeResource DocumentBackground}">
             <TextBox Padding="3 0 0 0" IsHitTestVisible="False"  FontSize="{StaticResource DefaultFontSize}"  FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
         </Grid>
         <Grid Grid.Column="1" x:Name="ResizeHandle"  ManipulationMode="All" CanDrag="False" Background="{ThemeResource SelectedGrey}"

@@ -24,7 +24,7 @@ namespace Dash
                 return new BoolController(false);
             }
 
-            return new BoolController((left.TypeInfo == right.TypeInfo) && left.GetValue(null).Equals(right.GetValue(null)));
+            return new BoolController((left.TypeInfo == right.TypeInfo) && left.GetValue().Equals(right.GetValue()));
         }
 
         public override FieldControllerBase GetDefaultController() => new EqualityOperatorController();

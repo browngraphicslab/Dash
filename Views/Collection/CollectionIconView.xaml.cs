@@ -34,18 +34,18 @@ namespace Dash.Views.Collection
             using (UndoManager.GetBatchHandle())
             {
                 var doc = ViewModel.ContainerDocument; //.GetViewCopy();
-                if (doc.GetField(KeyStore.LastWorkspaceKey) == null)
-                {
-                    doc.SetField(KeyStore.LastWorkspaceKey, doc.GetViewCopy(),true);
-                }
+                //if (doc.GetField(KeyStore.LastWorkspaceKey) == null)
+                //{
+                //    doc.SetField(KeyStore.LastWorkspaceKey, doc.GetViewCopy(),true);
+                //}
 
-                var openDoc = doc.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                openDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data ?? CollectionViewType.Freeform.ToString(), true);
-                openDoc.SetWidth(double.NaN);
-                openDoc.SetHeight(double.NaN);
-                openDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                openDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
-                SplitFrame.OpenInActiveFrame(openDoc);
+                //var openDoc = doc.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                //openDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, ViewModel.ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data ?? CollectionViewType.Freeform.ToString(), true);
+                //openDoc.SetWidth(double.NaN);
+                //openDoc.SetHeight(double.NaN);
+                //openDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                //openDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
+                SplitFrame.OpenInActiveFrame(doc);
             }
         }
 
@@ -84,11 +84,11 @@ namespace Dash.Views.Collection
                 }
                 if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null) == null)
                 {
-                    containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderPreviewKey)).Document, true);
+                    containerDoc.SetField(KeyStore.FolderPreviewDataBoxKey, new DataBox(containerDoc, KeyStore.FolderPreviewKey, new Point()).Document, true);
                 }
                 if (containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderIconDataBoxKey, null) == null)
                 {
-                    containerDoc.SetField(KeyStore.FolderIconDataBoxKey, new DataBox(new DocumentReferenceController(containerDoc, KeyStore.FolderIconKey)).Document, true);
+                    containerDoc.SetField(KeyStore.FolderIconDataBoxKey, new DataBox(containerDoc, KeyStore.FolderIconKey, new Point()).Document, true);
                 }
                 var db = containerDoc.GetDereferencedField<DocumentController>(KeyStore.FolderPreviewDataBoxKey, null);
                 db.SetAreContentsHitTestVisible(false);

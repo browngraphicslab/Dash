@@ -32,7 +32,7 @@
 
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="Vertical" Background="Gray" Margin="0"/>
+                    <ItemsStackPanel Orientation="Vertical" Background="Gray" Margin="0"/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
 

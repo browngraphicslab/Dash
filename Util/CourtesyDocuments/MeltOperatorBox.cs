@@ -15,9 +15,9 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "MeltOperatorBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
-            return OperatorBox.MakeOperatorView(docController, context, () => new MeltOperatorView());
+            return OperatorBox.MakeOperatorView(docController, () => new MeltOperatorView());
         }
     }
 

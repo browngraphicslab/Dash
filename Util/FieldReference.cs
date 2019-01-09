@@ -58,25 +58,25 @@ namespace Dash
         {
             context = new Context(context);
             var documentController = GetDocumentController(context);
-            if (documentController == null)
+            if (documentController != null)
             {
-                return null;
-            }
-            context.AddDocumentContext(documentController);
-            FieldControllerBase reference = Dereference(context);
-            while (reference is ReferenceController referenceController)
-            {
-                var doc = ((ReferenceController)reference).GetDocumentController(context);
-                if (doc != null)
+                context.AddDocumentContext(documentController);
+                var reference = Dereference(context);
+                while (reference is ReferenceController referenceController)
                 {
-                    context?.AddDocumentContext(doc);
-                    reference = reference.Dereference(context);
+                    var doc = ((ReferenceController)reference).GetDocumentController(context);
+                    if (doc != null)
+                    {
+                        context?.AddDocumentContext(doc);
+                        reference = reference.Dereference(context);
+                    }
+                    else
+                        break;
                 }
-                else
-                    break;
-            }
 
-            return reference;
+                return reference;
+            }
+            return null;
         }
 
         public T DereferenceToRoot<T>(Context context) where T : FieldControllerBase

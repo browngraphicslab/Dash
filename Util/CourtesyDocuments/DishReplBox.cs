@@ -29,14 +29,14 @@ namespace Dash
                     KeyStore.TitleKey), true);
         }
 
-        protected static void SetupBindings(DishReplView element, DocumentController docController, Context context)
+        protected static void SetupBindings(DishReplView element, DocumentController docController)
         {
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
             var tb = new DishReplView(docController);
-            SetupBindings(tb, docController, context);
+            SetupBindings(tb, docController);
 
             return tb;
         }

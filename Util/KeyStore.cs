@@ -12,7 +12,6 @@ namespace Dash
         //NOTE: Underscore prefacing registers the field as invisible
         public static KeyController DocumentContextKey                   = KeyController.Get("DocumentContext");
         public static KeyController AbstractInterfaceKey                 = KeyController.Get("_AbstractInterface");
-        public static KeyController LayoutListKey                        = KeyController.Get("_LayoutList");
         public static KeyController RegionsKey                           = KeyController.Get("Regions");
         public static KeyController RegionDefinitionKey                  = KeyController.Get("RegionDefinition");
         public static KeyController RegionTypeKey                        = KeyController.Get("RegionType");
@@ -44,6 +43,8 @@ namespace Dash
         public static KeyController PositionFieldKey                     = KeyController.Get("Position");
         public static KeyController LinkFromKey                          = KeyController.Get("LinkFrom");
         public static KeyController LinkToKey                            = KeyController.Get("LinkTo");
+        public static KeyController LinkDestinationTitleKey              = KeyController.Get("LinkDestinationTitle"); // bcz: title of link destination used to compute the link document's title
+        public static KeyController LinkSourceTitleKey                   = KeyController.Get("LinkSourceTitle");// bcz: title of link source used to compute the link document's title
         public static KeyController LinkDestinationKey                   = KeyController.Get("LinkDestination");
         public static KeyController LinkSourceKey                        = KeyController.Get("LinkSource");
         public static KeyController LinkBehaviorKey                      = KeyController.Get("LinkBehavior");
@@ -52,7 +53,6 @@ namespace Dash
         public static KeyController ReferencesDictKey                    = KeyController.Get("_PDF Reference Mapping");
         public static KeyController ReferenceNumKey                      = KeyController.Get("Reference #");
         public static KeyController ReferenceDateKey                     = KeyController.Get("Date Published");
-        public static KeyController ScaleAmountFieldKey                  = KeyController.Get("_Scale Amount");
         public static KeyController IconTypeFieldKey                     = KeyController.Get("_IconType");
         public static KeyController SystemUriKey                         = KeyController.Get("File Path");
         public static KeyController ThumbnailFieldKey                    = KeyController.Get("_ThumbnailField");
@@ -157,7 +157,7 @@ namespace Dash
         public static KeyController TitleMatchKey                        = KeyController.Get("Title Match");
         public static KeyController TagsKey                              = KeyController.Get("Tags");
         public static KeyController RecentTagsKey                        = KeyController.Get("Recent Tags");
-        public static KeyController LinkTagKey                           = KeyController.Get("List of tags");
+        public static KeyController LinkTagKey                           = KeyController.Get("List of tags"); // bcz: changed from List of Tags // tfs: changed back from LinkTag
         public static KeyController SelectedSchemaRow                    = KeyController.Get("SelectedElement");
         public static KeyController SchemaDisplayedColumns               = KeyController.Get("_Displayed Columns");
         public static KeyController JoinInfoKey                          = KeyController.Get("Join Information");
@@ -176,6 +176,7 @@ namespace Dash
         public static KeyController EventDisplay1Key                     = KeyController.Get("_EventDisplay1Key");
         public static KeyController EventDisplay2Key                     = KeyController.Get("_EventDisplay2Key");
         public static KeyController ToolbarKey                           = KeyController.Get("Toolbar");
+        public static KeyController ToolbarButtonNameKey                 = KeyController.Get("ToolbarButtonName");
         public static KeyController GlobalDefinitionsKey                 = KeyController.Get("_GlobalDefinitions");
         public static KeyController IsAnnotationKey                      = KeyController.Get("IsAnnotation");
         public static KeyController IsTemplateKey                        = KeyController.Get("IsTemplate");
@@ -185,7 +186,7 @@ namespace Dash
         public static KeyController SearchStringKey                      = KeyController.Get("SearchStringOrigin");
         public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
         public static KeyController SearchIndexKey                       = KeyController.Get("SearchIndex");
-        public static KeyController SearchPreviousIndexKey               = KeyController.Get("SearchPreviousIndex");
+        public static KeyController ScriptSourceKey                      = KeyController.Get("ScriptSource");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {
@@ -193,7 +194,7 @@ namespace Dash
             RegionCreator[type] = makeRegionFunc;
         }
 
-        public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
+        public delegate FrameworkElement MakeViewFunc(DocumentController doc);
         public delegate Task<DocumentController> MakeRegionFunc(DocumentView view, Point? point = null);
         public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();

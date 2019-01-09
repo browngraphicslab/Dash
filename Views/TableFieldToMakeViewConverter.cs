@@ -22,15 +22,13 @@ namespace Dash
 
         private DocumentController _docController = null;
         private KeyController _key = null;
-        private Context _context = null;
         private TypeInfo _lastType = TypeInfo.None;
         private FrameworkElement _lastElement = null;
 
-        public TableFieldToMakeViewConverter(DocumentController docController, KeyController key, Context context)
+        public TableFieldToMakeViewConverter(DocumentController docController, KeyController key)
         {
             _docController = docController;
             _key = key;
-            _context = context;
         }
 
         public override FrameworkElement ConvertDataToXaml(FieldControllerBase data, object parameter = null)
@@ -77,7 +75,7 @@ namespace Dash
             }
             else if (data is AudioController)
             {
-                currView = AudioBox.MakeView(_docController, _key, _context);
+                currView = AudioBox.MakeView(_docController, _key);
             }
             else if (data is BoolController val)
             {
@@ -155,14 +153,14 @@ namespace Dash
             }
             else if (data is RichTextController)
             {
-                currView = RichTextBox.MakeView(_docController, _key, _context);
+                currView = RichTextBox.MakeView(_docController, _key);
                 currView.HorizontalAlignment = HorizontalAlignment.Center;
                 currView.Margin = new Thickness(0, 8, 0, 0);
                 currView.MaxHeight = 72;
             }
             else if (data is TextController || data is NumberController || data is DateTimeController)
             {
-                currView = TextingBox.MakeView(_docController, _key, _context);
+                currView = TextingBox.MakeView(_docController, _key);
                 currView.Margin = new Thickness(0, -4, 0, 0);
                 currView.MaxHeight = 72;
                 currView.Width = double.NaN;

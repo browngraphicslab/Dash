@@ -33,7 +33,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key, Context context)
+        public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key)
         {
             element.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Black);
             element.DataFieldKey = key;
@@ -42,7 +42,6 @@ namespace Dash
                 Document = docController,
                 Key = key,
                 Mode = BindingMode.TwoWay,
-                Context = context,
                 Tag = "Rich Text Box Text Binding",
                 FallbackValue = new RichTextModel.RTD() {RtfFormatString="" }
             };
@@ -69,7 +68,7 @@ namespace Dash
             return Task.FromResult(rtv?.GetRegionDocument());
         }
         
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             RichEditView rtv = null;
             var dataField = docController.GetField(key);
@@ -82,18 +81,13 @@ namespace Dash
             //};
             rtv.ManipulationMode = ManipulationModes.All;
             rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-            rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-            rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
+            rtv.GotFocus       += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+            rtv.LostFocus      += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
             //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
             rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
             rtv.VerticalAlignment = VerticalAlignment.Stretch;
-            SetupBindings(rtv, docController, key, context);
+            SetupBindings(rtv, docController, key);
             return rtv;
-        }
-
-        private static ReferenceController GetTextReference(DocumentController docController)
-        {
-            return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
     }
 

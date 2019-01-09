@@ -25,7 +25,7 @@
             </Grid>
 
             <Grid>
-                <local:RichEditView x:Name="xDescriptionBox" Tag="HACK" BorderThickness="2" BorderBrush="Gray"  Margin="10" FontSize="16"/>
+                <local:RichEditView x:Name="xDescriptionBox" Tag="HACK" BorderThickness="2" BorderBrush="Gray"  Margin="10" FontSize="12"/>
             </Grid>
 
             <!--TAGS-->
@@ -55,7 +55,7 @@
             </Grid>
 
             <Grid Margin="0 0 0 0" x:Name="xRecentTagsGrid">
-                <controls:WrapPanel x:Name="xTagContainer" Width="320"  HorizontalAlignment="Center" Margin="0 15 0 0" Padding="0"></controls:WrapPanel>
+                <controls:WrapPanel x:Name="xTagContainer" Width="360"  HorizontalAlignment="Center" Margin="0 15 0 0" Padding="0"></controls:WrapPanel>
             </Grid>
 
 
@@ -72,8 +72,8 @@
            
 
             <StackPanel x:Name="xLinkTypeBox" Orientation="Horizontal"  HorizontalAlignment="Center" Margin="0, 10, 0, 10">
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeAnnotation">Annotation</RadioButton>
-                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="10 0 5 0"  FontSize="14" x:Name="xTypeFollow">Follow</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeAnnotation">Show</RadioButton>
+                <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="10 0 5 0"  FontSize="14" x:Name="xTypeFollow">Go To</RadioButton>
                 <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 5 0" FontSize="14" x:Name="xTypeDock">Dock</RadioButton>
                 <RadioButton HorizontalAlignment="Center" MinWidth="10" GroupName="LinkBehavior" Checked="xLinkBehavior_OnChecked" Margin="5 0 10 0" FontSize="14" x:Name="xTypeFloat">Float</RadioButton>
             </StackPanel>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,9 +14,10 @@ namespace Dash
     {
         public static async Task<ListController<DocumentController>> ManageBehaviors(DocumentController layoutDoc)
         {
+            var dataDoc = layoutDoc.GetDataDocument();
+            //var behaviors = new ObservableCollection<DocumentController>(dataDoc.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey));
             var manageBehaviors = new ManageBehaviorsPopup { DataContext = new ManageBehaviorsViewModel() };
             var updatedBehaviors = await manageBehaviors.OpenAsync(layoutDoc);
-            var dataDoc = layoutDoc.GetDataDocument();
 
             dataDoc.SetField(KeyStore.DocumentBehaviorsKey, updatedBehaviors, true);
 
@@ -55,15 +57,9 @@ namespace Dash
                         KeyController triggerKey = null;
                         switch (triggerModifierInd)
                         {
-                            case 0:
-                                triggerKey = KeyStore.LeftTappedOpsKey;
-                                break;
-                            case 1:
-                                triggerKey = KeyStore.RightTappedOpsKey;
-                                break;
-                            case 2:
-                                triggerKey = KeyStore.DoubleTappedOpsKey;
-                                break;
+                            case 0: triggerKey = KeyStore.LeftTappedOpsKey; break;
+                            case 1: triggerKey = KeyStore.RightTappedOpsKey; break;
+                            case 2: triggerKey = KeyStore.DoubleTappedOpsKey; break;
                             default:
                                 Debug.Fail($"Trigger modifier combo box index {trigger} not supported!");
                                 break;
@@ -129,12 +125,12 @@ namespace Dash
 
         public static void TogglePresentation()
         {
-            MainPage.Instance.SetPresentationState(MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed);
+            MainPage.Instance.xPresentationView.SetPresentationState(MainPage.Instance.xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Collapsed);
         }
 
         public static void ExportWorkspace()
         {
-            MainPage.Instance.Publish_OnTapped(null, null);
+            MainPage.Instance.Publish();
         }
     }
 }

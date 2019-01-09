@@ -93,31 +93,30 @@ namespace Dash
                 if (rootFrame.Content == null)
                 {
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, (doc, context) => RichTextBox.MakeView(doc, KeyStore.DataKey, context), RichTextBox.MakeRegionDocument);
-                    KeyStore.RegisterDocumentTypeRenderer(DiscussionBox.DocumentType, (doc, context) => DiscussionBox.MakeView(doc, KeyStore.DataKey, context), null);
+                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, (doc) => RichTextBox.MakeView(doc, KeyStore.DataKey), RichTextBox.MakeRegionDocument);
+                    KeyStore.RegisterDocumentTypeRenderer(DiscussionBox.DocumentType, (doc) => DiscussionBox.MakeView(doc, KeyStore.DataKey), null);
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(TableBox.DocumentType, (doc, context) => TableBox.MakeView(doc, KeyStore.DataKey, context), null);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, (doc, context) => ImageBox.MakeView(doc,KeyStore.DataKey, context), ImageBox.MakeRegionDocument);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, (doc) => CollectionBox.MakeView(doc, KeyStore.DataKey), null);
+                    KeyStore.RegisterDocumentTypeRenderer(TableBox.DocumentType, (doc) => TableBox.MakeView(doc, KeyStore.DataKey), null);
+                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, (doc) => ImageBox.MakeView(doc,KeyStore.DataKey), ImageBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, (doc, context) => PdfBox.MakeView(doc, KeyStore.DataKey, context), PdfBox.MakeRegionDocument);
+                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, (doc) => PdfBox.MakeView(doc, KeyStore.DataKey), PdfBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, (doc, context) => TextingBox.MakeView(doc, KeyStore.DataKey, context), null);
+                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, (doc) => TextingBox.MakeView(doc, KeyStore.DataKey), null);
                     KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DishReplBox.DocumentType, DishReplBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DishScriptBox.DocumentType, DishScriptBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
-					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, (doc, context) => VideoBox.MakeView(doc, KeyStore.DataKey, context), null);
-                    KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, (doc, context) => AudioBox.MakeView(doc, KeyStore.DataKey, context), null);
+					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, (doc) => VideoBox.MakeView(doc, KeyStore.DataKey), null);
+                    KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, (doc) => AudioBox.MakeView(doc, KeyStore.DataKey), null);
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
@@ -287,31 +286,31 @@ namespace Dash
             if (rootFrame.Content == null)
             {
                 KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, (doc, context) => RichTextBox.MakeView(doc, KeyStore.DataKey, context), RichTextBox.MakeRegionDocument);
-                KeyStore.RegisterDocumentTypeRenderer(DiscussionBox.DocumentType, (doc, context) => DiscussionBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, (doc) => RichTextBox.MakeView(doc, KeyStore.DataKey), RichTextBox.MakeRegionDocument);
+                KeyStore.RegisterDocumentTypeRenderer(DiscussionBox.DocumentType, (doc) => DiscussionBox.MakeView(doc, KeyStore.DataKey), null);
                 KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(TableBox.DocumentType, (doc, context) => TableBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, doc => CollectionBox.MakeView(doc, KeyStore.DataKey), null);
+                KeyStore.RegisterDocumentTypeRenderer(TableBox.DocumentType, (doc) => TableBox.MakeView(doc, KeyStore.DataKey), null);
                 KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, (doc, context) => ImageBox.MakeView(doc, KeyStore.DataKey, context), ImageBox.MakeRegionDocument);
+                KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, (doc) => ImageBox.MakeView(doc, KeyStore.DataKey), ImageBox.MakeRegionDocument);
                 KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, (doc, context) => PdfBox.MakeView(doc, KeyStore.DataKey, context), PdfBox.MakeRegionDocument);
+                KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, (doc) => PdfBox.MakeView(doc, KeyStore.DataKey), PdfBox.MakeRegionDocument);
                 KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, (doc, context) => TextingBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, (doc) => TextingBox.MakeView(doc, KeyStore.DataKey), null);
                 KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DishReplBox.DocumentType, DishReplBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(DishScriptBox.DocumentType, DishScriptBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
                 KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
-                KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, (doc, context) => VideoBox.MakeView(doc, KeyStore.DataKey, context), null);
-                KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, (doc, context) => AudioBox.MakeView(doc, KeyStore.DataKey, context), null);
+                KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, (doc) => VideoBox.MakeView(doc, KeyStore.DataKey), null);
+                KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, (doc) => AudioBox.MakeView(doc, KeyStore.DataKey), null);
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
@@ -415,6 +414,18 @@ namespace Dash
         private void OnResuming(object sender, object o)
         {
         }
-
+        /*
+        protected override void OnActivated(IActivatedEventArgs args)
+        {
+            if (args.Kind == ActivationKind.Protocol)
+            {
+                var eventArgs = args as ProtocolActivatedEventArgs;
+                var docId = eventArgs.Uri.AbsolutePath;
+                var doc = RESTClient.Instance.Fields.GetController<DocumentController>(docId);
+                var target = doc.GetRegionDefinition() ?? doc;
+                MainPage.ShowTarget(target, null, null);
+            }
+        }
+        */
     }
 }

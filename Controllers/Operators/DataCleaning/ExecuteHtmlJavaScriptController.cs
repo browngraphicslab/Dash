@@ -92,13 +92,13 @@ namespace Dash
             return Task.CompletedTask;
         }
 
-        class execClass
+        private class execClass
         {
-            WebView _web = MainPage.Instance.JavaScriptHack;
-            CollectionNote Cnote;
-            static int id = 10000;
-            static string prefix = "window.external.notify(";
-            int Id = 0;
+            private WebView _web = MainPage.Instance.JavaScriptHack;
+            private CollectionNote Cnote;
+            private static int id = 10000;
+            private static string prefix = "window.external.notify(";
+            private int Id = 0;
             public execClass(string correctedHtml, string script, CollectionNote doc)
             {
                 Cnote = doc;
@@ -125,8 +125,11 @@ namespace Dash
                     var jsonlist = new JsonToDashUtil().ParseJsonString(res, "HtmlExec");
                     var children = Cnote.Document.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
+                    {
                         if (f.Value is ListController<DocumentController>)
+                        {
                             foreach (var d in (f.Value as ListController<DocumentController>))
+                            {
                                 if (!children.Contains(d))
                                 {
                                     foreach (var field in d.EnumDisplayableFields().ToArray())
@@ -142,6 +145,9 @@ namespace Dash
                                     }
                                     children.Add(d);
                                 }
+                            }
+                        }
+                    }
                 }
             }
         };

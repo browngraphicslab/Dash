@@ -65,7 +65,7 @@ namespace Dash
 
                         result = controller is IEnumerable<FieldControllerBase>
                             ? string.Join("      ", (controller as IEnumerable<FieldControllerBase>).Select(i => i?.ToString()))
-                            : controller.GetValue(null)?.ToString();
+                            : controller.GetValue()?.ToString();
                     }
 
                 }

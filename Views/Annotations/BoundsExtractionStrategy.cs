@@ -12,17 +12,32 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using MyToolkit.Utilities;
 using NewControls.Geometry;
 using Point = Windows.Foundation.Point;
+using iText.Kernel.Pdf;
 
 namespace Dash
 {
     public partial class BoundsExtractionStrategy : LocationTextExtractionStrategy
     {
         private Rectangle _pageSize;
-        private double _pageOffset;
-        private int _pageNumber;
-        private double _pageRotation;
+        private double    _pageOffset;
+        private int       _pageNumber;
+        private double    _pageRotation;
         private readonly List<SelectableElement> _elements = new List<SelectableElement>();
-        private readonly List<Rectangle> _pages = new List<Rectangle>();
+        private readonly List<Rectangle>         _pages = new List<Rectangle>();
+
+        public BoundsExtractionStrategy(PdfDocument pdfDocument)
+        {
+            var pdfTotalHeight = 0.0;
+            for (int i = 1; i <= pdfDocument.GetNumberOfPages(); i++)
+            {
+                var page = pdfDocument.GetPage(i);
+                SetPage(i - 1, pdfTotalHeight, page.GetPageSize(), page.GetRotation());
+                new PdfCanvasProcessor(this).ProcessPageContent(page);
+                pdfTotalHeight += page.GetPageSize().GetHeight() + 10;
+            }
+        }
+
+        public List<Rectangle> Pages { get => _pages;  }
 
         public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize, double rotation)
         {
@@ -116,7 +131,7 @@ namespace Dash
         ///     in that range. If the end page is the same as the start page, it will return all of
         ///     the selectable elements in that one page.
         /// </summary>
-        public (List<SelectableElement> elements, List<SelectableElement> authors, string, List<int> pages, List<List<PDFSection>> vagueSectionSuperList) GetSelectableElements(int startPage, int endPage)
+        public (List<SelectableElement> elements, string authors, string, List<int> pages, List<List<PDFSection>> vagueSectionSuperList) GetSelectableElements(int startPage, int endPage)
         {
             // if any of the page requested are invalid, return an empty list
             if (_pages.Count < endPage || endPage < startPage)
@@ -162,7 +177,7 @@ namespace Dash
             var lastIndex = 0;
             // sort and add the elements in each page to a list of elements
             var vagueSectionSuperList = new List<List<PDFSection>>();
-            List<SelectableElement> authors = null;
+            string authors = "";
             foreach (var page in pageElements)
             {
                 var (newElements, authorReturn, vagueSectionList) = GetSortedSelectableElements(page, elements.Count, page == pageElements.First());
@@ -170,7 +185,12 @@ namespace Dash
                     continue;
                 if (authorReturn != null)
                 {
-                    authors = authorReturn;
+                    var authorStr = new StringBuilder();
+                    foreach (var content in authorReturn.Where((item) => item.Contents is string).Select((item) => (string)item.Contents))
+                    {
+                        content.Where((c) => !char.IsNumber(c) || !char.IsNumber(c)).ToList().ForEach((chr) => authorStr.Append(chr));
+                    }
+                    authors = authorStr.ToString(); 
                 }
                 vagueSectionSuperList.AddRange(vagueSectionList);
                 elements.AddRange(newElements);
@@ -181,7 +201,7 @@ namespace Dash
             pages.Add(lastIndex);
 
 
-            StringBuilder sb = new StringBuilder(elements.Count);
+            var sb = new StringBuilder(elements.Count);
             var elemIndex = 0;
             var prevIndex = 0;
             var prevElement = elements.FirstOrDefault();
@@ -199,7 +219,7 @@ namespace Dash
                     var nchar = ((string)element.Contents).First();
                     if (prevIndex > 0 && sb.Length > 0 &&
                         (element.Bounds.Top - prevElement.Bounds.Bottom > element.Bounds.Height * 0.5
-                         || nchar > 128 || (char.IsUpper(nchar) && ".:?!)".Contains(sb[sb.Length - 1])) ||
+                         || nchar > 128 || (char.IsUpper(nchar) && ".:?!)\r\n ".Contains(sb[sb.Length - 1])) ||
                          (!char.IsWhiteSpace(sb[sb.Length - 1]) && !char.IsPunctuation(sb[sb.Length - 1]) &&
                           !char.IsLower(sb[sb.Length - 1]))) &&
                         element.Bounds.Top >
@@ -653,7 +673,7 @@ namespace Dash
             var lines = SortIntoLines(page);
             
             List<SelectableElement> authors = null;
-            if (isFirstPage)
+            if (isFirstPage && lines.Count >= 2)
             {
                 authors = new List<SelectableElement>(lines[1]);
                 authors.Sort((e1, e2) => Math.Sign(e1.Bounds.X - e2.Bounds.X));

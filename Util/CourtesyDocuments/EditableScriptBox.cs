@@ -15,7 +15,7 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "EditableScriptBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context)
+        public static FrameworkElement MakeView(DocumentController documentController)
         {
             var fref = documentController.GetField(KeyStore.DataKey) as DocumentReferenceController;
             var ebox = new EditableScriptView();

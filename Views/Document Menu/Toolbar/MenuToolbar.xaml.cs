@@ -6,15 +6,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Microsoft.Toolkit.Uwp.UI.Animations;
-using Windows.UI.Xaml.Data;
-using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Controllers;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -74,28 +68,10 @@ namespace Dash
         // == STATIC ==
         public static MenuToolbar Instance;
 
-        // specifies default left click / tap behavior
-        public enum MouseMode
-        {
-            TakeNote,
-            PanFast,
-            QuickGroup,
-            Ink
-        };
-
-        public enum State
-        {
-            Expanded,
-            Collapsed
-        }
-
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
         private UIElement baseLevelContentToolbar;
-        private State state;
         private bool containsInternalContent;
-
-        private DocumentType _selectedType = null;
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -114,15 +90,13 @@ namespace Dash
             //xPadding.Width = ToolbarConstants.PaddingLong;
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
-            SelectionManager.SelectionChanged += (sender) => { Update(SelectionManager.GetSelectedDocs()); };
+            SelectionManager.SelectionChanged += (sender) =>  Update(SelectionManager.SelectedDocViews);
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
                 var ele = (FrameworkElement)Window.Current.Content;
-                xFloating.ManipulateControlPosition(ele.ActualWidth - XDocumentView.ActualWidth,
-                    ele.ActualHeight - XDocumentView.ActualHeight,
-                    XDocumentView.ActualHeight, XDocumentView.ActualWidth);
+                xFloating.ManipulateControlPosition(318, 8, XDocumentView.ActualHeight, XDocumentView.ActualWidth);
                 SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
             };
         }
@@ -133,6 +107,7 @@ namespace Dash
             {
                 IsDimensionless = true,
                 ResizersVisible = false,
+                DragAllowed = false
                 //Undecorated = true,
             };
         }
@@ -152,14 +127,12 @@ namespace Dash
         /// <param name="docs"></param>
         private void Update(IEnumerable<DocumentView> docs)
         {
-            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
+            if (subtoolbarElement != null)
+            {
+                subtoolbarElement.Visibility = Visibility.Collapsed;
+            }
 
             subtoolbarElement = null;
-
-            //if (!ToolbarColumn.Width.IsStar)
-            //{
-            //    return;
-            //}
 
             docs = docs.ToList();
 
@@ -169,7 +142,10 @@ namespace Dash
                 DocumentView selection = docs.First();
                 //_selectedType = selection.ViewModel.DocumentController.DocumentType;
 
-                if (selection.ViewModel == null) return;
+                if (selection.ViewModel == null)
+                {
+                    return;
+                }
 
                 //Find the type of the selected node and update the subtoolbar binding appropriately.
 
@@ -213,9 +189,8 @@ namespace Dash
                 // Data box controls
                 if (selection.ViewModel.DocumentController.DocumentType.Equals(DataBox.DocumentType))
                 {
-                    DocumentController documentController = selection.ViewModel.DocumentController;
-                    var context = new Context(documentController);
-                    var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
+                    var documentController = selection.ViewModel.DocumentController;
+                    var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, null);
                     //switch statement for type of data
                     if (data is ImageController)
                     {
@@ -345,7 +320,7 @@ namespace Dash
                 }
 
             }
-            else if (docs.Count<DocumentView>() > 1)
+            else if (docs.Count() > 1)
             {
                 // TODO: multi select
                 subtoolbarElement = null;
@@ -374,9 +349,6 @@ namespace Dash
                 //xFloating.Floating_SizeChanged(null, null);
             }
         }
-
-        // controls which MouseMode is currently activated
-        private AppBarToggleButton _checkedButton;
 
         /// <summary>
         /// When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
@@ -409,8 +381,8 @@ namespace Dash
                     if (docController == null) continue;
 
                     var mainPageCollectionView = SplitFrame.ActiveFrame.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
-                    docController.GetPositionField().Data = @where;
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    docController.SetPosition(where);
                     mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
             }
@@ -456,8 +428,6 @@ namespace Dash
                 XDocumentView.Visibility = Visibility.Visible;
                 XCollapseBox.Text = "\uE73F";
             }
-
-            Update(SelectionManager.GetSelectedDocs());
         }
     }
 }

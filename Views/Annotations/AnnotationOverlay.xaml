@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿ <UserControl
     x:Class="Dash.AnnotationOverlay"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,9 +10,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="LayoutRoot" PointerPressed="OnPointerPressed"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" PointerMoved="LayoutRoot_PointerMoved" Width="Auto">
+    <Grid x:Name="LayoutRoot" PointerPressed="OnPointerPressed"  DragEnter="OnDragEnter" Drop="OnDrop" AllowDrop="True" Background="#01ffffff" DoubleTapped="AnnotationOverlayDoubleTapped"  PointerMoved="LayoutRoot_PointerMoved" Width="Auto">
         <Grid x:Name="XAnnotationCanvas" x:FieldModifier="public" Background="Transparent">
-            <Grid x:Name="XPreviewRect" IsHitTestVisible="False" Visibility="Collapsed"  x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Grid x:Name="XPreviewRect" IsHitTestVisible="False" PointerPressed="XPreviewRect_PointerPressed" Visibility="Collapsed"  x:FieldModifier="public" HorizontalAlignment="Left" VerticalAlignment="Top" />
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />

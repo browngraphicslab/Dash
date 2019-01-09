@@ -58,7 +58,7 @@ namespace Dash
             return new VideoController(new Uri("ms-appx:///Assets/DefaultVideo.mp4"));
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

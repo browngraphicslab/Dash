@@ -40,25 +40,18 @@ namespace Dash
 
     public static class SelectionManager
     {
-
-        private static List<DocumentView> _dragViews;
+        public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
+        public static event SelectionChangedHandler SelectionChanged;
         public static event EventHandler DragManipulationStarted;
         public static event EventHandler DragManipulationCompleted;
 
-        private static List<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
+        private static List<DocumentView> _dragViews;
+        private static List<DocumentView> _selectedDocViews = new List<DocumentView>();
 
-        public static List<DocumentView> GetSelectedDocs()
-        {
-            return new List<DocumentView>(SelectedDocs);
-        }
+        public static IEnumerable<DocumentView>        SelectedDocViews => _selectedDocViews.Where(s => s.IsInVisualTree() && s.ViewModel != null);
+        public static IEnumerable<DocumentViewModel>   SelectedDocViewModels => _selectedDocViews.Select(dv => dv?.ViewModel).Where(dvm => dvm != null);
 
-        public static bool IsSelected(DocumentView doc)
-        {
-            return SelectedDocs.Contains(doc);
-        }
-
-        public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
-        public static event SelectionChangedHandler SelectionChanged;
+        public static bool IsSelected(DocumentViewModel docViewModel) { return SelectedDocViewModels.Contains(docViewModel); }
 
         /// <summary>
         /// Selects the given document
@@ -72,7 +65,7 @@ namespace Dash
             {
                 bool alreadySelected = false;
                 var deselected = new List<DocumentView>();
-                foreach (var documentView in SelectedDocs)
+                foreach (var documentView in _selectedDocViews)
                 {
                     if (documentView == doc)
                     {
@@ -88,7 +81,7 @@ namespace Dash
 
                 var args = new DocumentSelectionChangedEventArgs(deselected, alreadySelected ? new List<DocumentView>() : new List<DocumentView> { doc });
 
-                SelectedDocs = new List<DocumentView> { doc };
+                _selectedDocViews = new List<DocumentView> { doc };
                 if (!alreadySelected)
                 {
                     SelectHelper(doc);
@@ -98,16 +91,16 @@ namespace Dash
             }
             else
             {
-                if (SelectedDocs.Contains(doc))
+                if (_selectedDocViews.Contains(doc))
                 {
                     DeselectHelper(doc);
-                    SelectedDocs.Remove(doc);
+                    _selectedDocViews.Remove(doc);
                     OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
                 }
                 else
                 {
                     SelectHelper(doc);
-                    SelectedDocs.Add(doc);
+                    _selectedDocViews.Add(doc);
                     OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView>(), new List<DocumentView> { doc }));
                 }
             }
@@ -122,46 +115,38 @@ namespace Dash
         /// This will often be roughly equivalent to whether Shift is pressed</param>
         public static void SelectDocuments(IEnumerable<DocumentView> views, bool keepPrevious)
         {
-            var selectedDocs = new List<DocumentView>();
-            var documentViews = views.ToList();
-            foreach (var documentView in documentViews)
+            var documentViews = (views ?? SplitFrame.ActiveFrame.Document.GetImmediateDescendantsOfType<DocumentView>()).ToList();
+            var selectedDocs  = new List<DocumentView>();
+            foreach (var docView in documentViews.Where(dv => !_selectedDocViews.Contains(dv)))
             {
-                if (SelectedDocs.Contains(documentView))
-                {
-                    continue;
-                }
-
-                SelectHelper(documentView);
-                selectedDocs.Add(documentView);
+                SelectHelper(docView);
+                selectedDocs.Add(docView);
                 if (keepPrevious)
                 {
-                    SelectedDocs.Add(documentView);
+                    _selectedDocViews.Add(docView);
                 }
             }
 
             var deselectedDocs = new List<DocumentView>();
             if (!keepPrevious)
             {
-                foreach (var documentView in SelectedDocs)
+                foreach (var docView in _selectedDocViews.Where(dv => !documentViews.Contains(dv)))
                 {
-                    if (!documentViews.Contains(documentView))
-                    {
-                        DeselectHelper(documentView);
-                        deselectedDocs.Add(documentView);
-                    }
+                    DeselectHelper(docView);
+                    deselectedDocs.Add(docView);
                 }
-
-                SelectedDocs = documentViews;
+                _selectedDocViews = documentViews;
             }
+            MainPage.Instance.SinkFocus();
 
             OnSelectionChanged(new DocumentSelectionChangedEventArgs(deselectedDocs, selectedDocs));
         }
 
         public static void Deselect(DocumentView view)
         {
-            if (SelectedDocs.Contains(view))
+            if (_selectedDocViews.Contains(view))
             {
-                SelectedDocs.Remove(view);
+                _selectedDocViews.Remove(view);
                 DeselectHelper(view);
                 OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { view }, new List<DocumentView>()));
             }
@@ -169,28 +154,46 @@ namespace Dash
 
         public static void DeselectAll()
         {
-            foreach (var documentView in SelectedDocs)
+            foreach (var documentView in _selectedDocViews)
             {
                 DeselectHelper(documentView);
             }
-            var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(SelectedDocs), new List<DocumentView>());
-            SelectedDocs.Clear();
+            var args = new DocumentSelectionChangedEventArgs(new List<DocumentView>(_selectedDocViews), new List<DocumentView>());
+            _selectedDocViews.Clear();
             OnSelectionChanged(args);
+        }
+
+        public static void DeleteSelected()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                _selectedDocViews.ToList().ForEach(dv => dv.DeleteDocument());
+            }
         }
 
         private static void SelectHelper(DocumentView view)
         {
-            view.OnSelected();
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            {
+                rv.IsEnabled = true;
+                rv.Focus(FocusState.Programmatic);
+            });
+            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            {
+                rv.TransportControls.Visibility = Visibility.Visible;
+                rv.Focus(FocusState.Programmatic);
+            });
         }
 
         private static void DeselectHelper(DocumentView view)
         {
-            view.OnDeselected();
+            view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv => 
+                rv.TransportControls.Visibility = Visibility.Collapsed);
         }
 
-        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
+        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformView collection)
         {
-            return SelectedDocs.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
+            return _selectedDocViews.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
         }
 
         /*
@@ -198,7 +201,7 @@ namespace Dash
          */
         public static List<DocumentView> GetSelectedSiblings(DocumentView view)
         {
-            if (view.ParentCollection != null && view.ParentCollection.CurrentView is CollectionFreeformBase cfb)
+            if (view.ParentCollection != null && view.ParentCollection.CurrentView is CollectionFreeformView cfb)
             {
                 var marqueeDocs = GetSelectedDocumentsInCollection(cfb).ToList();
                 if (marqueeDocs.Contains(view))
@@ -207,107 +210,77 @@ namespace Dash
             return new List<DocumentView>(new[] { view });
         }
 
-        static void OnSelectionChanged(DocumentSelectionChangedEventArgs args)
+        private static void OnSelectionChanged(DocumentSelectionChangedEventArgs args)
         {
             if (args.DeselectedViews.Count != 0 || args.SelectedViews.Count != 0)
                 SelectionChanged?.Invoke(args);
         }
 
         #region Drag Manipulation Methods
-
-        public static bool TryInitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe, ManipulationStartedRoutedEventArgs e)
+        public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
-            var parents = draggedView.GetAncestorsOfType<DocumentView>().ToList();
-            if (parents.Count < 2 || SelectionManager.GetSelectedDocs().Contains(draggedView) ||
-                SelectionManager.GetSelectedDocs().Contains(draggedView.GetFirstAncestorOfType<DocumentView>()))
+            var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
+            foreach (var parent in parents)
             {
-                SelectionManager.InitiateDragDrop(draggedView, pe?.GetCurrentPoint(draggedView), e);
-                return true;
-            }
-            else
-            {
-                var prevParent = parents.FirstOrDefault();
-                foreach (var parent in parents)// bcz: Ugh.. this is ugly.
+                ////TODO: make this better
+                //bool isPDF = draggedView.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
+                //if ((TouchInteractions.NumFingers != 1 && e != null && e.PointerDeviceType == PointerDeviceType.Touch && !isPDF))
+                //{
+                //    ///might have to change this
+                //    e.Handled = true;
+
+                //} else { 
+                 var parentIsFreeformCollection = parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
+                     parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView;
+                var parentIsAnnotationLayer = parent.GetFirstDescendantOfType<AnnotationOverlayEmbeddings>()
+                                                  ?.EmbeddedDocsList
+                                                  .Contains(draggedView.ViewModel.DocumentController) == true;
+                if ((parentIsFreeformCollection || parentIsAnnotationLayer) &&
+                    (_selectedDocViews.Contains(parent) || parent == parents.Last()))
                 {
-                    if (parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
-                        parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformBase &&
-                        (SelectionManager.GetSelectedDocs().Contains(parent) || parent == parents.Last()))
-                    {
-                        SelectionManager.InitiateDragDrop(prevParent, pe?.GetCurrentPoint(prevParent), e);
-                        return true;
-                    }
-                    prevParent = parent;
+                    break;
                 }
-            }
-            return false;
-        }
-        public static void InitiateDragDrop(DocumentView draggedView, PointerPoint p, ManipulationStartedRoutedEventArgs e)
-        {
-            bool isPDF = draggedView.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
-            if ((TouchInteractions.NumFingers != 1  && e != null && e.PointerDeviceType == PointerDeviceType.Touch))
-            {
-                if (!isPDF)
-                {
-                    e.Handled = true;
-                    return;
-                }
-            }
-            if (e != null)
-            {
-                e.Handled = true;
-                e.Complete();
+
+                draggedView = parent;
             }
 
-            _dragViews = SelectedDocs.Contains(draggedView) ? SelectedDocs.ToArray().ToList() : new List<DocumentView>(new[] { draggedView });
+            _dragViews = _selectedDocViews.Contains(draggedView) ? _selectedDocViews.ToList() : new DocumentView[] { draggedView }.ToList();
 
-            if (draggedView.ViewModel.DocumentController.GetIsAdornment())
+            if (draggedView.ViewModel.DocumentController.GetIsAdornment() && !SelectedDocViewModels.Contains(draggedView.ViewModel)) // if dragging an adornment, drag all siblings that overlap it 
             {
-                var rect = new Rect(draggedView.ViewModel.XPos, draggedView.ViewModel.YPos,
-                    draggedView.ViewModel.ActualSize.X, draggedView.ViewModel.ActualSize.Y);
-                foreach (var cp in draggedView.GetFirstAncestorOfType<Canvas>()?.Children)
-                {
-                    if (cp.GetFirstDescendantOfType<DocumentView>() != null)
-                    {
-                        var dv = cp.GetFirstDescendantOfType<DocumentView>();
-                        var dvmRect = new Rect(dv.ViewModel.XPos, dv.ViewModel.YPos, dv.ViewModel.ActualSize.X,
-                            dv.ViewModel.ActualSize.Y);
-                        if (rect.Intersects(dvmRect))
-                        {
-                            _dragViews.Add(dv);
-                        }
-                    }
-                }
+                var rect         = draggedView.ViewModel.LayoutDocument.GetBounds();
+                var siblingViews = draggedView.GetFirstAncestorOfType<Canvas>()?.Children.Select(c => c.GetFirstDescendantOfType<DocumentView>());
+                _dragViews.AddRange(siblingViews.Where(dv => dv != null && rect.Intersects(dv.ViewModel.LayoutDocument.GetBounds())));
             }
-
-            var point = p ?? MainPage.PointerRoutedArgsHack?.GetCurrentPoint(draggedView);
-            if (point != null)
-            {
-                draggedView.StartDragAsync(point);
-            }
+            draggedView.StartDragAsync(pe?.GetCurrentPoint(draggedView) ?? MainPage.PointerRoutedArgsHack.GetCurrentPoint(draggedView));
         }
 
         public static void DropCompleted(DocumentView docView, UIElement sender, DropCompletedEventArgs args)
         {
+            TouchInteractions.DropCompleted(docView);
             LocalSqliteEndpoint.SuspendTimer = false;
-            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Visible);
-            _dragViews?.ForEach((dv) => dv.IsHitTestVisible = true);
+            _dragViews?.ForEach(dv =>
+            {
+                dv.Visibility = Visibility.Visible;
+                dv.IsHitTestVisible = true;
+            });
             _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
         }
-
-        private static readonly DragEventHandler _collectionDragOverHandler = new DragEventHandler(CollectionDragOver);
-        private static void CollectionDragOver(object sender, DragEventArgs e)
+        
+        private static void       CollectionDragOver(object sender, DragEventArgs e)
         {
             if (e.DragUIOverride != null)
             {
                 e.DragUIOverride.IsContentVisible = true;
             }
-            _dragViews?.ForEach((dv) => dv.Visibility = Visibility.Collapsed);
-            (sender as FrameworkElement).RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
+            _dragViews?.ForEach(dv => dv.Visibility = Visibility.Collapsed);
+            MainPage.Instance.XDocumentDecorations.Visibility = Visibility.Collapsed;
+            (sender as FrameworkElement).DragOver -= CollectionDragOver;
         }
-        public static async void DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
+        public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
-            if (docView.IsTopLevel() && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
+            if (SplitManager.IsRoot(docView.ViewModel) && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
             {
                 args.Cancel = true;
                 return;
@@ -316,33 +289,40 @@ namespace Dash
             LocalSqliteEndpoint.SuspendTimer = true;
 
             // setup the DragModel
-            var dragDocOffset = args.GetPosition(docView);
-            var relDocOffsets = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
-            var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentCollection?.ViewModel : null).ToList();
-            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset));
-            var type = docView.ViewModel.DocumentController.GetDocType();
-            switch (type)
+            var dragDocOffset  = args.GetPosition(docView);
+            var relDocOffsets  = _dragViews.Select(args.GetPosition).Select(ro => new Point(ro.X - dragDocOffset.X, ro.Y - dragDocOffset.Y)).ToList();
+            var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentViewModel : null).ToList();
+            args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset) { DraggedWithLeftButton = docView.IsLeftBtnPressed() });
+
+            if (_dragViews.Count == 1)  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
+                                        //      seems to override our DragUI override and only the dragged image is shown.
             {
-            case "Image Box":
-                var uri = docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data;
-                var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://")) ?
-                    await StorageFile.GetFileFromApplicationUriAsync(uri) :
-                    await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                var sflist = new HashSet<StorageFile>();
-                sflist.Add(sf);
-                args.Data.SetStorageItems(sflist);
-                break;
-            case "Video Box":
-                uri = docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
-                sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://")) ?
-                    await StorageFile.GetFileFromApplicationUriAsync(uri) :
-                    await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-                sflist = new HashSet<StorageFile>();
-                sflist.Add(sf);
-                args.Data.SetStorageItems(sflist);
-                break;
-            default:
-                break;
+                var type = docView.ViewModel.DocumentController.GetDocType();
+                switch (type)
+                {
+                case "Image Box":
+                case "Video Box":
+                    try
+                    {
+                        var uri = type == "Image Box" ? docView.ViewModel.DataDocument.GetField<ImageController>(KeyStore.DataKey).Data :
+                                                            docView.ViewModel.DataDocument.GetField<VideoController>(KeyStore.DataKey).Data;
+                        var sf = (uri.AbsoluteUri.StartsWith("ms-appx://") || uri.AbsoluteUri.StartsWith("ms-appdata://"))
+                                        ? await StorageFile.GetFileFromApplicationUriAsync(uri)
+                                        : await StorageFile.GetFileFromPathAsync(uri.LocalPath);
+                        args.Data.SetStorageItems(new HashSet<StorageFile>(new StorageFile[] { sf }));
+                    }
+                    catch (Exception ex) { }
+
+                    break;
+                case "Rich Text Box":
+                    var richText = docView.ViewModel.DataDocument.GetDereferencedField<RichTextController>(KeyStore.DataKey, null).Data.RtfFormatString;
+                    var text = docView.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+                    args.Data.SetRtf(richText);
+                    args.Data.SetText(text);
+                    break;
+                default:
+                    break;
+                }
             }
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move| DataPackageOperation.Copy;
 
@@ -370,11 +350,9 @@ namespace Dash
                 // To avoid the jarring temporary artifact of the document appearing to be deleted, we 
                 // wait until we start getting DragOver events and then collapse the dragged document.
                 MainPage.Instance.xOuterGrid.AllowDrop = true;
-                MainPage.Instance.xOuterGrid.RemoveHandler(UIElement.DragOverEvent, _collectionDragOverHandler);
-                MainPage.Instance.xOuterGrid.AddHandler(UIElement.DragOverEvent, _collectionDragOverHandler, true); // bcz: true doesn't actually work. we rely on no one Handle'ing DragOver events
+                MainPage.Instance.xOuterGrid.DragOver -= CollectionDragOver;
+                MainPage.Instance.xOuterGrid.DragOver += CollectionDragOver; // bcz: we rely on no one Handle'ing DragOver events
             }
-            if (MainPage.Instance.XDocumentDecorations.touchActivated == false) MainPage.Instance.XDocumentDecorations.VisibilityState = Visibility.Collapsed;
-            if (MainPage.Instance.XDocumentDecorations.touchActivated == false) MainPage.Instance.XDocumentDecorations.ResizerVisibilityState = Visibility.Collapsed;
         }
 
         private static async Task CreateDragDropBitmap(DocumentView docView, FrameworkElement renderTarget, DragStartingEventArgs args, Rect dragBounds)

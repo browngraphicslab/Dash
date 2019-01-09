@@ -43,14 +43,14 @@ namespace Dash
         private static async void TestNumber(string script, double correctValue)
         {
             var number = await Interpret(script);
-            var num = (double)number.GetValue(null);
+            var num = (double)number.GetValue();
             Debug.Assert(num.Equals(correctValue));
         }
 
         private static async void TestString(string script, string correctValue)
         {
             var s = await Interpret(script);
-            Debug.Assert(s.GetValue(null).Equals(correctValue));
+            Debug.Assert(s.GetValue().Equals(correctValue));
         }
 
         /// <summary>
@@ -77,12 +77,12 @@ namespace Dash
         }
 
 
-        public static string GetScriptForOperatorTree(ReferenceController operatorReference, Context context = null)
+        public static string GetScriptForOperatorTree(ReferenceController operatorReference)
         {
-            var doc = operatorReference.GetDocumentController(context);
+            var doc = operatorReference.GetDocumentController(null);
             if (doc == null)
                 return "<nodoc>";  // bcz: make a PageView, set the Script to be:  this.data_doc().Caption, then select the main body of the PageView and drag off the link icon to get a KeyValue pane.  This will fire for the Title field.
-            var op = doc?.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
+            var op = doc?.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, null);
 
             if (op == null)
                 return $"doc(\"{doc?.Id}\").{operatorReference.FieldKey}";
@@ -103,7 +103,7 @@ namespace Dash
                 var field = doc.GetField(inputKey);
                 if (field is ReferenceController refField)
                 {
-                    middle.Add(GetScriptForOperatorTree(refField, context));
+                    middle.Add(GetScriptForOperatorTree(refField));
                 }
                 else
                 {

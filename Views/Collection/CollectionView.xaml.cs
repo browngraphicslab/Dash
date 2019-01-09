@@ -52,8 +52,6 @@ namespace Dash
                     _lastViewModel = ViewModel;
                 }
             };
-
-            xOuterGrid.PointerPressed += OnPointerPressed;
         }
 
         private async void Clipboard_ContentChanged(object sender, object e)
@@ -80,13 +78,16 @@ namespace Dash
             if (!LocalSqliteEndpoint.SuspendTimer &&
                 ViewModel.ContainerDocument.GetFitToParent() && CurrentView is CollectionFreeformView freeform)
             {
-                var parSize = ViewModel.ContainerDocument.GetActualSize() ?? new Point();
-                var ar = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>().Select((cp) => cp.GetFirstDescendantOfType<DocumentView>())
-                    .Aggregate(Rect.Empty, (rect, dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
+                var parSize = ViewModel.ContainerDocument.GetActualSize();
+                var ar = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>().Select(cp => cp.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null).
+                    Aggregate(Rect.Empty, (rect, dv) => { rect.Union(dv.RenderTransform.TransformBounds(new Rect(new Point(), new Point(dv.ActualWidth, dv.ActualHeight)))); return rect; });
 
                 if (ar is Rect r && !r.IsEmpty && r.Width != 0 && r.Height != 0)
                 {
                     var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    var docs = freeform.GetItemsControl().ItemsPanelRoot?.Children.OfType<ContentPresenter>()
+                        .Select(cp => cp.GetFirstDescendantOfType<DocumentView>()).Where(dv => dv != null).ToList();
+                    var pos = docs.Select(dv => dv.ViewModel.LayoutDocument.GetPosition()).ToList();
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
                     var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
                     var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
@@ -104,33 +105,6 @@ namespace Dash
                 InitializeView(Enum.Parse<CollectionViewType>(args.NewValue.ToString()));
             }
         }
-
-        /// <summary>
-        /// Begins panning events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            var docview = this.GetFirstAncestorOfType<DocumentView>();
-            //if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            //{
-            //    if (!SelectionManager.IsSelected(docview))
-            //        SelectionManager.Select(docview, false);
-            //    SelectionManager.TryInitiateDragDrop(docview, args, null);
-            //}
-            if (args.GetCurrentPoint(this).Properties.IsRightButtonPressed ) 
-            {
-                docview.ManipulationMode = ManipulationModes.All;
-                CurrentView.UserControl.ManipulationMode = SelectionManager.IsSelected(docview) ||
-                this.GetFirstAncestorOfType<DocumentView>().IsTopLevel() ?
-                    ManipulationModes.All : ManipulationModes.None;
-                    args.Handled = true;
-            } else
-            {
-                docview.ManipulationMode = ManipulationModes.None;
-            }
-        }
         
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -141,7 +115,7 @@ namespace Dash
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
             //TODO This causes a memory leak currently
-            //var ParentDocumentView = this.GetFirstAncestorOfType<DocumentView>();
+            //var ParentDocumentView = this.GetDocumentView();
             //ParentDocumentView.DocumentSelected   -= ParentDocumentView_DocumentSelected;
             //ParentDocumentView.DocumentSelected   += ParentDocumentView_DocumentSelected;
             //ParentDocumentView.DocumentDeselected -= ParentDocumentView_DocumentDeselected;
@@ -226,7 +200,7 @@ namespace Dash
             });
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += MakeSpeechDoc;
 
-            var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.AreContentsHitTestVisible == true;
+            var unfrozen = ViewModel.DocumentViewModels.FirstOrDefault()?.LayoutDocument.GetAreContentsHitTestVisible() == true;
             contextMenu.Items.Add(new MenuFlyoutItem()
             {
                 Text = unfrozen ? "Freeze Contents" : "Unfreeze Contents",
@@ -361,7 +335,7 @@ namespace Dash
         {
             var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
             var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, topPoint);
             //TODO: offset where by menu height
 
             //get spoken text
@@ -396,7 +370,7 @@ namespace Dash
         {
             var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
             var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, topPoint);
             var note = new DishScriptBox(@where.X, @where.Y).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
@@ -404,7 +378,7 @@ namespace Dash
         {
             var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();
             var topPoint = Util.PointTransformFromVisual(new Point(), menuflyout);
-            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, topPoint);
+            Point where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, topPoint);
             DocumentController note = new DishReplBox(@where.X, @where.Y, 300, 400).Document;
             Actions.DisplayDocument(ViewModel, note, @where);
         }
@@ -428,17 +402,17 @@ namespace Dash
         {
             foreach (var child in ViewModel.DocumentViewModels)
             {
-                child.AreContentsHitTestVisible = unfrozen;
+                child.LayoutDocument.SetAreContentsHitTestVisible(unfrozen);
             }
         }
         private void Buttonize_OnClick()
         {
             var newdoc = new RichTextNote(ViewModel.ContainerDocument.Title,
-                ViewModel.ContainerDocument.GetPosition() ?? new Point()).Document;
+                                          ViewModel.ContainerDocument.GetPosition()).Document;
             newdoc.Link(ViewModel.ContainerDocument, LinkBehavior.Follow, "Button");
             newdoc.SetIsButton(true);
-            var thisView = this.GetFirstAncestorOfType<DocumentView>();
-            thisView.ParentCollection?.ViewModel.AddDocument(newdoc);
+            var thisView = this.GetDocumentView();
+            thisView.ParentViewModel?.AddDocument(newdoc);
             thisView.DeleteDocument();
         }
 

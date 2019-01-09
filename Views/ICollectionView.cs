@@ -7,13 +7,12 @@ namespace Dash
     public enum CollectionViewType { Freeform, Grid, Page, DB, Stacking, Schema, TreeView, Timeline, Graph, Icon };
     public interface ICollectionView
     {
-        CollectionViewModel ViewModel { get; }
-        void SetDropIndicationFill(Brush fill);
-        UserControl  UserControl { get; }
+        CollectionViewModel  ViewModel   { get; }
+        UserControl          UserControl { get; }
+        CollectionViewType   ViewType    { get; }
 
-        CollectionViewType ViewType { get; }
-
-        void OnDocumentSelected(bool selected);
-        void SetupContextMenu(MenuFlyout contextMenu);
+        void                 OnDocumentSelected(bool selected);
+        void                 SetupContextMenu(MenuFlyout contextMenu);
+        void                 SetDropIndicationFill(Brush fill);
     }
 }

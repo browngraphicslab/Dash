@@ -7,94 +7,153 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:dataprimitives="using:Microsoft.Toolkit.Uwp.UI.Controls.Primitives"
+    xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     mc:Ignorable="d"
-    PointerWheelChanged="UserControl_PointerWheelChanged" 
+    PointerWheelChanged="OnPointerWheelChanged" 
     d:DesignHeight="300"
-    Drop="CollectionDBSchemaView_OnDrop"
+    Drop="OnDrop"
     d:DesignWidth="400">
-    <Grid x:Name="xOuterGrid" Background="#CCFFFFFF" ManipulationMode="All" >
-        <Grid.Resources>
-            <Style x:Name="xHeaderStyle" x:FieldModifier="public" TargetType="dataprimitives:DataGridColumnHeader">
-                <Setter Property="ContentTemplate">
-                    <Setter.Value>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding}" FontSize="{Binding CollectionViewModel.CellFontSize}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                                <Border Background="{StaticResource DashDarkBlue}" CornerRadius="500" CanDrag="True" Width="25" Height="25" 
-                                        HorizontalAlignment="Left" Visibility="{Binding IsSelected}" Tapped="Border_Tapped" Margin="-5 0 5 0"
+
+    <Grid x:Name="LayoutRoot" Background="LightGray" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="50" />
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition MinWidth="50" Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid x:Name="xOuterGrid" Background="#CCFFFFFF" ManipulationMode="All" PointerPressed="xOuterGrid_PointerPressed" >
+            <Grid.Resources>
+                <Style x:Name="xHeaderStyle" x:FieldModifier="public" TargetType="dataprimitives:DataGridColumnHeader">
+                    <Setter Property="ContentTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding}" FontSize="{Binding CollectionViewModel.CellFontSize}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                    <Border x:Name="xColumnHeaderBorder" Background="{StaticResource DashDarkBlue}" CornerRadius="500" CanDrag="True" Width="25" Height="25" 
+                                        HorizontalAlignment="Left" Visibility="{Binding IsSelected}" Tapped="xColumnHeaderBorder_Tapped" Margin="-5 0 5 0"
                                         DragStarting="Join_DragStarting">
-                                    <TextBlock FontFamily="{StaticResource FontAwesome}" Text="{StaticResource JoinIcon}" 
+                                        <TextBlock FontFamily="{StaticResource FontAwesome}" Text="{StaticResource JoinIcon}" 
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                FontSize="20" Foreground="White" />
-                                </Border>
-                            </Grid>
-                        </DataTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-        </Grid.Resources>
-        <controls:DataGrid x:Name="xDataGrid" Grid.Row="0" AutoGenerateColumns="False" FontSize="12">
-            <controls:DataGrid.Resources>
-                <Style TargetType="TextBlock">
-                    <Setter Property="RequestedTheme" Value="Light"/>
-                    <Setter Property="Padding" Value="3,2,3,2"/>
-                    <Setter Property="local:BindingHelper.FontSize" Value="CellFontSize"/> <!-- Sigh, can't set a binding directly in a setter Property="FontSize" Value={Binding CellFontSize} -->
-                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
+            </Grid.Resources>
+            <controls:DataGrid x:Name="xDataGrid"  AutoGenerateColumns="False" FontSize="12">
+                <controls:DataGrid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="RequestedTheme" Value="Light"/>
+                        <Setter Property="Padding" Value="3,2,3,2"/>
+                        <Setter Property="local:BindingHelper.FontSize" Value="CellFontSize"/>
+                        <!-- Sigh, can't set a binding directly in a setter Property="FontSize" Value={Binding CellFontSize} -->
+                        <Setter Property="FontFamily" Value="Segoe UI"/>
+                    </Style>
                     <Style TargetType="local:ActionTextBox">
                         <Setter Property="local:BindingHelper.FontSize" Value="CellFontSize"/>
                         <!-- Sigh, can't set a binding directly in a setter Property="FontSize" Value={Binding CellFontSize} -->
-                    <Setter Property="FontFamily" Value="Segoe UI"/>
-                </Style>
-            </controls:DataGrid.Resources>
-        </controls:DataGrid>
+                        <Setter Property="FontFamily" Value="Segoe UI"/>
+                    </Style>
+                </controls:DataGrid.Resources>
+            </controls:DataGrid>
 
 
-        <Button HorizontalAlignment="Left" VerticalAlignment="Bottom" Tapped="AddRow_OnTapped" Padding="4">
-            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;"/>
-        </Button>
-        <!--<Border Background="LightGray"  DragStarting="Join_DragStarting" HorizontalAlignment="Right" VerticalAlignment="Bottom" CanDrag="True" Padding="4">
+            <Button x:Name="xAddRow" HorizontalAlignment="Left" VerticalAlignment="Bottom" Tapped="xAddRow_OnTapped" Padding="4">
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;"/>
+            </Button>
+            <!--<Border Background="LightGray"  DragStarting="Join_DragStarting" HorizontalAlignment="Right" VerticalAlignment="Bottom" CanDrag="True" Padding="4">
             <TextBlock>Join Group</TextBlock>
         </Border>-->
-        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Padding="2">
-            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;" />
-            <Button.Flyout>
-                <Flyout x:Name="xColumnFlyout" Placement="Bottom" Opening="XColumnFlyout_OnOpening">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <ScrollViewer Grid.ColumnSpan="2" Height="200">
-                            <ItemsControl x:Name="xColumnsList">
-                                <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:KeyController">
-                                    <Grid Padding="1">
-                                        <CheckBox Grid.Column="0" Loaded="CheckBox_OnLoaded" Content="{x:Bind Name, Mode=OneWay}"></CheckBox>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        </ScrollViewer>
-                        <local:ActionTextBox x:Name="XNewColumnEntry" Grid.Row="1" Grid.Column="0"></local:ActionTextBox>
-                        <Button x:Name="XNewColumnButton" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Tapped="XNewColumnButton_OnTapped" Padding="4" Margin="5 0 0 0">
-                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE710;"></FontIcon>
-                        </Button>
-                    </Grid>
-                </Flyout>
-            </Button.Flyout>
-        </Button>
+            <Button HorizontalAlignment="Right" VerticalAlignment="Top" Padding="2">
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="12" Glyph="&#xE710;" />
+                <Button.Flyout>
+                    <Flyout x:Name="xColumnFlyout" Placement="Bottom" Opening="xColumnFlyout_OnOpening">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <ScrollViewer Grid.ColumnSpan="2" Height="200">
+                                <ItemsControl x:Name="xColumnsList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="local:KeyController">
+                                            <Grid Padding="1">
+                                                <CheckBox Grid.Column="0" Loaded="xColumnFlyoutCheckBox_OnLoaded" Content="{x:Bind Name, Mode=OneWay}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            <local:ActionTextBox x:Name="xAddColumnEntry" Grid.Row="1" Grid.Column="0" />
+                            <Button x:Name="xAddColumnButton" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Tapped="xAddColumnButton_OnTapped" Padding="4" Margin="5 0 0 0">
+                                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="18" Glyph="&#xE710;"></FontIcon>
+                            </Button>
+                        </Grid>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
 
+        </Grid>
+        <localMicrosoft:GridSplitter x:Name="xGridSplitter" Grid.Column="1" Width="7" VerticalAlignment="Stretch" FontSize="13"
+                                     ResizeBehavior="PreviousAndNext" ResizeDirection="Columns" Background="LightGray" Foreground="{StaticResource DashLightBlueBrush}"  />
+
+        <Grid Grid.Column="2" x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <local:DocumentView x:Name="XDocDisplay" />
+                <Grid x:Name="xPathControls"  Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Click="Back_Click" DoubleTapped="Button_DoubleTapped">
+                        <SymbolIcon Symbol="Back" RenderTransform="0.5 0 0 0.5 5 5"  />
+                    </Button>
+                    <Button Grid.Column="1"  Click="Forward_Click" DoubleTapped="Button_DoubleTapped">
+                        <SymbolIcon Symbol="Forward" RenderTransform="0.5 0 0 0.5 5 5"  />
+                    </Button>
+                    <Button Grid.Column="2" Click="Up_Click" DoubleTapped="Button_DoubleTapped">
+                        <SymbolIcon Symbol="Up" RenderTransform="0.5 0 0 0.5 5 5" />
+                    </Button>
+                    <Button Grid.Column="3"  Click="Down_Click" DoubleTapped="Button_DoubleTapped">
+                        <SymbolIcon Symbol="Download" RenderTransform="0.5 0 0 0.5 5 5" />
+                    </Button>
+                    <Button Grid.Column="4"  Click="Open_Click" DoubleTapped="Button_DoubleTapped">
+                        <SymbolIcon Symbol="OpenFile" RenderTransform="0.5 0 0 0.5 5 5" />
+                    </Button>
+                    <StackPanel x:Name="xDocPath" Grid.Column="5" Height="24" Padding="0">
+                        
+                    </StackPanel>
+                </Grid>
+            </Grid>
+            <local:ActionTextBox x:Name="xTextBox" Grid.Row="1" FontSize="18" HorizontalAlignment="Stretch"
+                                 PlaceholderText="Enter Command" VerticalAlignment="Stretch" Text="=this"
+                                 IsSpellCheckEnabled="False" AcceptsReturn="True" Visibility="Collapsed"
+                                 FontFamily="Consolas" IsColorFontEnabled="True" />
+        </Grid>
     </Grid>
 
 </UserControl>

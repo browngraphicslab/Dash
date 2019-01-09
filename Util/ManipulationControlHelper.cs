@@ -9,7 +9,7 @@ namespace Dash
         public DocumentView _manipulationDocumentTarget = null;
         private int          _numMovements = 0;
 
-        public ManipulationControlHelper(FrameworkElement eventElement, PointerRoutedEventArgs pointer, bool drillDown, bool useCache = false)
+        public ManipulationControlHelper(FrameworkElement eventElement, bool useCache = false)
         {
             _manipulationDocumentTarget = eventElement.GetAncestorsOfType<DocumentView>().FirstOrDefault();
             if (useCache)
@@ -20,8 +20,8 @@ namespace Dash
         {
             if (++_numMovements == 2)
             {
-                if (SelectionManager.TryInitiateDragDrop(_manipulationDocumentTarget, e, null))
-                    e.Handled = true;
+                SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e);
+                e.Handled = true;
             }
         }
     }

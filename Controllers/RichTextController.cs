@@ -43,7 +43,7 @@ namespace Dash
             }
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

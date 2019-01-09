@@ -334,8 +334,13 @@ namespace Dash
         public void SetSelectedDocumentView(DocumentView doc)
         {
             _documentView = doc;
-            xMenuView?.SetRichTextBinding(doc.GetFirstDescendantOfType<RichEditView>()); // bcz: weird ... the selected view is a RichTextView, but it's not always in the visual tree (eg when in it's in CollectionStackingView) so we can't use this seemingly reasonable code: _docs.ViewModel.Content.GetFirstDescendantOfType<RichTextView>() ?? _docs.ViewModel.Content as RichTextView);
-            xBackgroundColorPicker.SelectedColor = _documentView.ViewModel.DocumentController.GetBackgroundColor() ?? Colors.White;
+            var rev = doc.GetFirstDescendantOfType<RichEditView>();
+            if(rev != null)
+            {
+                xMenuView?.SetRichTextBinding(rev); // bcz: weird ... the selected view is a RichTextView, but it's not always in the visual tree (eg when in it's in CollectionStackingView) so we can't use this seemingly reasonable code: _docs.ViewModel.Content.GetFirstDescendantOfType<RichTextView>() ?? _docs.ViewModel.Content as RichTextView);
+            }
+
+            xBackgroundColorPicker.SelectedColor = _documentView.ViewModel.DocumentController.GetBackgroundColor() ?? Colors.Transparent;
         }
 
 

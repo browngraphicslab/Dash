@@ -222,6 +222,138 @@ public sealed class TanOperator : OperatorController
 
 }
 
+[OperatorType(Op.Name.and)]
+public sealed class AndOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController OneKey = KeyController.Get("One");
+    public static readonly KeyController TwoKey = KeyController.Get("Two");
+
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public AndOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public AndOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("AndOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new AndOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(OneKey, new IOInfo(DashShared.TypeInfo.Bool, true)),
+        new KeyValuePair<KeyController, IOInfo>(TwoKey, new IOInfo(DashShared.TypeInfo.Bool, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.Bool,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var one = (BoolController)inputs[OneKey];
+        var two = (BoolController)inputs[TwoKey];
+        var output0 = Dash.MathFunctions.And(one, two);
+        outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.or)]
+public sealed class OrOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController OneKey = KeyController.Get("One");
+    public static readonly KeyController TwoKey = KeyController.Get("Two");
+
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public OrOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public OrOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("OrOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new OrOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(OneKey, new IOInfo(DashShared.TypeInfo.Bool, true)),
+        new KeyValuePair<KeyController, IOInfo>(TwoKey, new IOInfo(DashShared.TypeInfo.Bool, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.Bool,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var one = (BoolController)inputs[OneKey];
+        var two = (BoolController)inputs[TwoKey];
+        var output0 = Dash.MathFunctions.Or(one, two);
+        outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
+[OperatorType(Op.Name.not)]
+public sealed class NotOperator : OperatorController
+{
+    //Input Keys
+    public static readonly KeyController OneKey = KeyController.Get("One");
+
+    //Output Keys
+    public static readonly KeyController Output0Key = KeyController.Get("Output0");
+
+    public NotOperator() : base(new OperatorModel(TypeKey.KeyModel)) { }
+
+    public NotOperator(OperatorModel operatorModel) : base(operatorModel) { }
+
+    public override KeyController OperatorType { get; } = TypeKey;
+    private static readonly KeyController TypeKey = KeyController.Get("NotOperator");
+
+    public override FieldControllerBase GetDefaultController()
+    {
+        return new NotOperator();
+    }
+
+    public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+    {
+        new KeyValuePair<KeyController, IOInfo>(OneKey, new IOInfo(DashShared.TypeInfo.Bool, true)),
+    };
+
+
+    public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, DashShared.TypeInfo>
+    {
+        [Output0Key] = DashShared.TypeInfo.Bool,
+    };
+
+    public override Task Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs,
+                                 DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null) {
+        var one = (BoolController)inputs[OneKey];
+        var output0 = Dash.MathFunctions.Not(one);
+        outputs[Output0Key] = output0;
+        return Task.CompletedTask;
+    }
+
+}
+
 [OperatorType(Op.Name.rand)]
 public sealed class RandOperator : OperatorController
 {

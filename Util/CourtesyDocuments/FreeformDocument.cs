@@ -20,11 +20,11 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "FreeFormDocument Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
 
             var grid = new Grid();
-            LayoutDocuments(docController, context, grid);
+            LayoutDocuments(docController, null, grid);
 
             grid.Clip = new RectangleGeometry();
             grid.SizeChanged += delegate (object sender, SizeChangedEventArgs args)
@@ -32,18 +32,16 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height);
             };
 
-            var c = new Context(context);
-
             void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 var collFieldArgs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
-                    AddDocuments(collFieldArgs.NewItems, c, grid);
+                    AddDocuments(collFieldArgs.NewItems, null, grid);
                 }
                 else
                 {
-                    LayoutDocuments(sender, c, grid);
+                    LayoutDocuments(sender, null, grid);
                 }
             }
 
@@ -70,7 +68,7 @@ namespace Dash
         {
             foreach (var layoutDocument in docs)
             {
-                var layoutView = layoutDocument.MakeViewUI(context);
+                var layoutView = layoutDocument.MakeViewUI();
                 // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
                 // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
                 // TODO it helps the freeformdocument position elements correctly
@@ -83,7 +81,6 @@ namespace Dash
 
         private static ListController<DocumentController> GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
-            context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<ListController<DocumentController>>(context);
         }

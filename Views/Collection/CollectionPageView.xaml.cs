@@ -40,7 +40,7 @@ namespace Dash
                 if (_templateDocument != null)
                 {
                     templateButton.Content = "Remove Template";
-                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { Undecorated = true, IsDimensionless = true };
+                    XDocDisplay.DataContext = new DocumentViewModel(_templateDocument) { InsetDecorations = true, IsDimensionless = true };
                 }
                 if (ViewModel?.DocumentViewModels.Count > 0)
                 {
@@ -65,7 +65,7 @@ namespace Dash
             if(field == null) { return false; }
 
             XDocDisplay.DataContext =
-                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){ Undecorated = true, IsDimensionless = true};
+                new DocumentViewModel(field is DocumentController doc ? doc : new DataBox(field).Document){ InsetDecorations = true, IsDimensionless = true};
             return true;
         }
 
@@ -157,14 +157,10 @@ namespace Dash
         private void XThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             //TODO This is not correct if there are multiple items, as there can only be one drag model
-            foreach (object m in e.Items)
+            foreach (var m in e.Items.OfType<DocumentViewModel>())
             {
-                _dragDoc = (DocumentViewModel) m;
-                var dm = new DragDocumentModel(_dragDoc.DocumentController)
-                {
-                    DraggedDocCollectionViews = new List<CollectionViewModel>(new CollectionViewModel[] {ViewModel})
-                };
-                e.Data.SetDragModel(dm);
+                _dragDoc = m;
+                e.Data.SetDragModel(new DragDocumentModel(m.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
             }
         }
 
@@ -276,13 +272,12 @@ namespace Dash
 
         private void CreateTemplate()
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            var parentCollection = docView.ParentCollection; 
-            if (parentCollection != null)
+            var docView = this.GetDocumentView();
+            if (docView.ParentCollection is CollectionView parentCollection)
             {
-                var viewModel = docView.ViewModel;
-                var where = viewModel.Position.X + viewModel.Width + 70;
-                var point = new Point(where, viewModel.Position.Y);
+                var layoutDoc = docView.ViewModel.LayoutDocument;
+                var where     = layoutDoc.GetPosition().X + layoutDoc.GetWidth() + 70;
+                var point     = new Point(where, layoutDoc.GetPosition().Y);
                 parentCollection.ViewModel.AddDocument(CurrentPage.DocumentController.GetKeyValueAlias(point));
             }
             if (_templateDocument == null)

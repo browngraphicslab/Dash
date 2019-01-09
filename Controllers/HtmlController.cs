@@ -22,7 +22,7 @@ namespace Dash
         /// </summary>
         public HtmlModel HtmlFieldModel => Model as HtmlModel;
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

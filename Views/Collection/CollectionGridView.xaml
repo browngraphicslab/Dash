@@ -16,23 +16,27 @@
                 VirtualizingStackPanel.VirtualizationMode="Standard"
                 ItemsSource="{Binding DocumentViewModels}"
                 CanDragItems="True"
+                DragItemsCompleted="xGridView_DragItemsCompleted"
                 DragItemsStarting="XGridView_OnDragItemsStarting"  
                 ManipulationMode="All"
                 IsHitTestVisible="{Binding IsSelected}"
                 SelectionMode="Single"
+                Padding="7 0 7 0"
                 ShowsScrollingPlaceholders="False" 
                 >
 
 
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <local:DocumentView />
+                    <Grid x:Name="xDocumentWrapper" Tapped="xDocumentWrapper_Tapped" Background="Transparent">
+                        <local:DocumentView IsHitTestVisible="False"/>
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
 
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <controls:WrapPanel Orientation="Horizontal" />
+                    <controls:WrapPanel Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
 

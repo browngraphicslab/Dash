@@ -21,13 +21,13 @@ namespace Dash
             Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
         }
 
-        protected static void SetupBindings(DishReplView element, DocumentController docController, Context context)
+        protected static void SetupBindings(DishReplView element, DocumentController docController)
         {
         }
 
 
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
             return new DishScriptEditView(docController);
         }

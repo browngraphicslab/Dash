@@ -40,9 +40,14 @@
                                           ItemsSource="{x:Bind fields}" SelectedItem="DateCreated"/>
                             </StackPanel>
                         </Grid>
-                        <Button x:Name="xConfirmButton" Margin="0 40 0 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="170" Background="#334f43">
-                            <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
-                        </Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="xConfirmButton" Margin="8 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="140" Background="#334f43">
+                                <TextBlock FontSize="14" Foreground="White" >Confirm</TextBlock>
+                            </Button>
+                            <Button x:Name="xCancelButton" Margin="8 40" HorizontalAlignment="Center" VerticalAlignment="Bottom" Height="40" Width="140" Background="Firebrick">
+                                <TextBlock FontSize="14" Foreground="White">Cancel</TextBlock>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </Popup>

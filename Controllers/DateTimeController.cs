@@ -60,7 +60,7 @@ namespace Dash
         /*
          * Given a context, returns the controller's Data field, of type DateTime
          */
-        public override object GetValue(Context context) => Data;
+        public override object GetValue() => Data;
 
         /*
          * Returns a new instance of DateTimeController initialized with the default constructor

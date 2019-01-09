@@ -343,9 +343,9 @@ namespace Dash
                 allCode += result2 + "\r";
             }
 
-            var pt = _viewDoc.GetPositionField().Data;
-            var width = _viewDoc.GetWidthField().Data;
-            var height = _viewDoc.GetHeightField().Data;
+            var pt     = _viewDoc.GetPosition();
+            var width  = _viewDoc.GetWidth();
+            var height = _viewDoc.GetHeight();
 
             var note = new DishScriptBox(pt.X + width + 15, pt.Y, width, height, allCode);
 
@@ -902,9 +902,10 @@ namespace Dash
 
         private void CloseButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
             using (UndoManager.GetBatchHandle())
-                docView.DeleteDocument();
+            {
+                this.GetDocumentView().DeleteDocument();
+            }
         }
     }
     /*

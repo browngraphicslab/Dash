@@ -69,7 +69,7 @@ namespace Dash
         public static IEnumerable<DependencyObject> GetDescendants(this DependencyObject start)
         {
             var queue = new Queue<DependencyObject>();
-            var count = VisualTreeHelper.GetChildrenCount(start);
+            var count = start != null ? VisualTreeHelper.GetChildrenCount(start) : 0;
 
             for (int i = 0; i < count; i++)
             {
@@ -119,7 +119,7 @@ namespace Dash
 
         public static IEnumerable<DependencyObject> GetAncestors(this DependencyObject start)
         {
-            var parent = VisualTreeHelper.GetParent(start);
+            var parent = start != null ? VisualTreeHelper.GetParent(start) : null;
 
             while (parent != null)
             {
@@ -168,6 +168,11 @@ namespace Dash
             return dob == overlappedViews.FirstOrDefault();
         }
 
+        public static DocumentView GetDocumentView(this UIElement dob)
+        {
+            return dob.GetFirstAncestorOfType<DocumentView>();
+        }
+
         public static Rect GetBoundingRect(this FrameworkElement dob, FrameworkElement relativeTo = null)
         {
             if (relativeTo == null)
@@ -209,9 +214,13 @@ namespace Dash
             return new Rect(pos, pos2);
         }
 
+        public static bool IsLeftPressed(this PointerRoutedEventArgs e)
+        {
+            return e.GetCurrentPoint(null).Properties.PointerUpdateKind == Windows.UI.Input.PointerUpdateKind.LeftButtonPressed;
+        }
         public static bool IsRightPressed(this PointerRoutedEventArgs e)
         {
-            return e.GetCurrentPoint(null).Properties.IsRightButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Touch;
+            return e.GetCurrentPoint(null).Properties.PointerUpdateKind == Windows.UI.Input.PointerUpdateKind.RightButtonPressed;
         }
         public static bool IsCtrlPressed(this FrameworkElement f)
         {

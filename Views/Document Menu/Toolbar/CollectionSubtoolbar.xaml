@@ -13,10 +13,10 @@
     <Grid>
 
         <StackPanel Orientation="Horizontal" x:Name="xCollectionCommandbar" Height="40" Background="{StaticResource DashDarkDarkBlueBrush}">
-            <ComboBox x:Name="xViewModesDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="30" Margin="5 0 0 0"  SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
+            <ComboBox x:Name="xViewModesDropdown" Style="{StaticResource ComboBoxStyler}" SelectedIndex="0" Width="200" Height="28" Margin="5 2 0 0"  SelectionChanged="ViewModesDropdown_OnSelectionChanged" >
                 <ComboBoxItem Content="Freeform"/>
             </ComboBox>
-            <AppBarSeparator Height="40" VerticalAlignment="Center" Foreground="White" Margin="0 -6 0 0" Background="White"></AppBarSeparator>
+            <AppBarSeparator Height="40" VerticalAlignment="Center" Foreground="White" Margin="0 -8 0 0" Background="White"></AppBarSeparator>
 
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBackgroundColor" Label="Background" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
                 <Button.Flyout>
@@ -28,14 +28,14 @@
             </AppBarButton>
 
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xBreakGroup" Click="BreakGroup_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -6, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="xBreakIcon" Text="&#xE8C6;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -8, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
             
             <AppBarButton Style="{StaticResource AppBarButtonStyler}" x:Name="xFitParent" Click="FitParent_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xFitParentIcon" Text="&#xE740;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -6, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="xFitParentIcon" Text="&#xE740;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Margin="3, -8, 0, 0" Foreground="White" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
             <AppBarButton Style="{StaticResource AppBarButtonStyler}"  x:Name="xAreContentsHitTestVisible"  Click="FreezeContents_OnClick" PointerEntered="ShowAppBarToolTip" PointerExited="HideAppBarToolTip">
-                <TextBlock x:Name="xAreContentsHitTestVisibleIcon" Text="&#xE77A;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="3, -6, 0, 0" Padding="0" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="xAreContentsHitTestVisibleIcon" Text="&#xE77A;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="3, -8, 0, 0" Padding="0" HorizontalAlignment="Center"/>
             </AppBarButton>
         </StackPanel>
 <!--

@@ -23,6 +23,7 @@ namespace Dash
             [typeof(AudioController)] = TypeInfo.Audio,
             [typeof(BoolController)] = TypeInfo.Bool,
             [typeof(ColorController)] = TypeInfo.Color,
+            [typeof(RectController)] = TypeInfo.Rectangle,
             [typeof(DateTimeController)] = TypeInfo.DateTime,
             [typeof(DocumentReferenceController)] = TypeInfo.DocumentReference,
 

@@ -64,7 +64,7 @@ namespace Gma.CodeCloud.Controls
             tb.FontFamily          = font.FontFamily;
             tb.FontSize            = font.Size;
             tb.FontStyle           = font.FontStyle;
-            tb.Padding = new Windows.UI.Xaml.Thickness();
+            tb.Padding             = new Windows.UI.Xaml.Thickness();
             tb.Foreground          = new SolidColorBrush(color);
             tb.CanDrag             = true;
             tb.ManipulationMode    = Windows.UI.Xaml.Input.ManipulationModes.All;

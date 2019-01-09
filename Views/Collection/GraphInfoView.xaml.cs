@@ -54,11 +54,11 @@ namespace Dash
             if (nodes.Count != 0)
             {
                 min = nodes.Min(i =>
-                    (i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count ?? 0 +
-                     i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count) ?? 0);
+                     i.DataDocument.GetLinks(KeyStore.LinkToKey).Count +
+                     i.DataDocument.GetLinks(KeyStore.LinkFromKey).Count);
                 max = nodes.Max(i =>
-                    (i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count ?? 0 +
-                     i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count) ?? 0);
+                     i.DataDocument.GetLinks(KeyStore.LinkToKey).Count +
+                     i.DataDocument.GetLinks(KeyStore.LinkFromKey).Count);
             }
 
             // add all of the labels
@@ -98,11 +98,11 @@ namespace Dash
             if (nodes.Count != 0)
             {
                 min = nodes.Min(i =>
-                    (i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count ?? 0 +
-                     i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count) ?? 0);
+                     i.DataDocument.GetLinks(KeyStore.LinkToKey).Count +
+                     i.DataDocument.GetLinks(KeyStore.LinkFromKey).Count);
                 max = nodes.Max(i =>
-                    (i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count ?? 0 +
-                     i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count) ?? 0);
+                     i.DataDocument.GetLinks(KeyStore.LinkToKey).Count +
+                     i.DataDocument.GetLinks(KeyStore.LinkFromKey).Count);
             }
             else
             {

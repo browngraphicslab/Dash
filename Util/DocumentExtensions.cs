@@ -11,56 +11,6 @@ namespace Dash
 {
     public static class DocumentExtensions
     {
-
-        /// <summary>
-        /// Adds a new layout to the layout list, if that layout does not already exist in the layout list. The
-        /// layout list is found in the deepestPrototype for the document
-        /// </summary>
-        public static void AddLayoutToLayoutList(this DocumentController doc, DocumentController newLayoutController)
-        {
-            var layoutList = doc.GetLayoutList(null);
-            // if the layoutlist contains the new layout do nothing
-            if (layoutList.Contains(newLayoutController))
-            {
-                return;
-            }
-            // otherwise add the new layout to the layout list
-            layoutList.Add(newLayoutController);
-        }
-
-
-        /// <summary>
-        /// Gets the layout list which should always be in the deepestPrototype for the document
-        /// </summary>
-        public static ListController<DocumentController> GetLayoutList(this DocumentController doc, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, doc);
-            var layoutList = doc.GetField(KeyStore.LayoutListKey) as ListController<DocumentController>;
-
-            if (layoutList == null)
-            {
-                layoutList = InitializeLayoutList();
-                var deepestPrototype = doc.GetDeepestPrototype(); // layout list has to be treated like a global field for each document hierarchy
-                deepestPrototype.SetField(KeyStore.LayoutListKey, layoutList, false);
-            }
-            return layoutList;
-        }
-
-        private static ListController<DocumentController> InitializeLayoutList()
-        {
-            return new ListController<DocumentController>(new List<DocumentController>());
-        }
-
-        private static DocumentController GetDeepestPrototype(this DocumentController doc)
-        {
-            DocumentController nextPrototype;
-            while ((nextPrototype = doc.GetPrototype()) != null)
-            {
-                doc = nextPrototype;
-            }
-            return doc;
-        }
-
         public static DocumentController CreateSnapshot(this DocumentController collection, bool copyData = false)
         {
             var docs = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
@@ -89,11 +39,11 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController GetCopy(this DocumentController doc, Point? where = null)
         {
-            var copy = doc.MakeCopy(new List<KeyController>(new[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey } ));
-            var positionField = copy.GetPositionField();
-            if (positionField != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
+            var copy = doc.MakeCopy(new List<KeyController>(new[] { KeyStore.DelegatesKey } ));
+            var position = copy.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
+            if (position != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
-                positionField.Data = new Point(where?.X ?? positionField.Data.X + 15, where?.Y ?? positionField.Data.Y + 15);
+                copy.SetPosition(new Point(where?.X ?? position.Value.X + 15, where?.Y ?? position.Value.Y + 15));
             }
             
             return copy;
@@ -107,25 +57,23 @@ namespace Dash
         public static DocumentController GetDataCopy(this DocumentController doc, Point? where = null)
         {
             var activeLayout = doc;
-            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc));
+            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
             DocumentController newDoc = null;
             if ( docContext != null)  // has DocumentContext
             {
-                var copiedData = docContext.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey })); // copy the data and skip any layouts
+                var copiedData = docContext.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.DelegatesKey })); // copy the data and skip any layouts
                 activeLayout = doc.MakeDelegate(); // inherit the layout
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 docContext = copiedData;
                 newDoc = activeLayout;
             }
-            var oldPosition = doc.GetPositionField();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
-                activeLayout.SetPosition(new Point((where == null ? oldPosition.Data.X + 15 : ((Point) where).X), 
-                                                   (where == null ? oldPosition.Data.Y + 15 : ((Point) where).Y)));
+                activeLayout.SetPosition(new Point(where?.X ?? oldPosition.Value.X + 15, where?.Y ?? oldPosition.Value.Y + 15));
             }
             return newDoc;
         }
-
         /// <summary>
         /// Creates an instance of a document and overrides width/height/and position
         /// </summary>
@@ -136,8 +84,8 @@ namespace Dash
         {
             var docDelegate = doc.MakeDelegate();
             docDelegate.SetPosition(where ?? new Point());
-            docDelegate.SetWidth(docDelegate.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data);
-            docDelegate.SetHeight(docDelegate.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data);
+            docDelegate.SetWidth (docDelegate.GetWidth()); // copies the prototypes value to the delegate
+            docDelegate.SetHeight(docDelegate.GetHeight());
             return docDelegate;
         }
         /// <summary>
@@ -161,16 +109,20 @@ namespace Dash
                 newLayout.MapDocuments(mapping);// point the inherited layout at the copied document
                 newDoc = newLayout;
             }
-            var oldPosition = doc.GetPositionField();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
-                newLayout.SetPosition(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15));
+                newLayout.SetPosition(new Point(where?.X ?? oldPosition.Value.X + 15, where?.Y ?? oldPosition.Value.Y + 15));
             }
             // bcz: shouldn't have to explicitly mask the fields like this, but since we don't have copy-on-write, we need to.
             // Note: bindings might need to be changed to create copy-on-write
             foreach (var f in origDocContext.EnumDisplayableFields())
+            {
                 if ((mapping[origDocContext] as DocumentController).GetField(f.Key, true) == null)
+                {
                     (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext, f.Key, true), true);
+                }
+            }
 
             return newDoc;
         }
@@ -187,49 +139,26 @@ namespace Dash
             keyValueLayout.SetHeight(500);
             if (where != null)
             {
-                keyValueLayout.SetPosition((Point)where);
+                keyValueLayout.SetPosition(where.Value);
             }
-            var oldPosition = doc.GetPositionField();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 keyValueLayout.SetPosition(
-                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetActualSize()?.X ?? 0) + 70, 
-                        where?.Y ?? oldPosition.Data.Y));
+                        new Point(where?.X ?? oldPosition.Value.X + doc.GetActualSize().X + 70, 
+                                  where?.Y ?? oldPosition.Value.Y));
             }
 
             return keyValueLayout;
         }
-
-        public static DocumentController GetPreviewDocument(this DocumentController doc, Point? where = null)
-        {
-            var oldPosition = doc.GetPositionField();
-            if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
-            {
-                where = new Point(where?.X ?? oldPosition.Data.X + doc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X + 70,
-                            where?.Y ?? oldPosition.Data.Y);
-            }
-            Debug.Assert(where != null);
-            var previewDoc =
-                new PreviewDocument(
-                    new DocumentReferenceController(doc, KeyStore.SelectedSchemaRow), where.Value);
-            throw new Exception("ActiveLayout code has not been updated");
-            return new DocumentController(new Dictionary<KeyController, FieldControllerBase>
-            {
-                //[KeyStore.ActiveLayoutKey] = previewDoc.Document,
-                [KeyStore.TitleKey] = new TextController("Preview Document")
-            }, new DocumentType());
-        }
-    
-
-
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
             var docContext = doc.GetDataDocument();
             var newDoc = doc;
-            if (docContext != null || doc.GetPosition() != null)  // has DocumentContext
+            if (docContext != null)  // has DocumentContext
             {
-                newDoc = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.PrototypeKey }), // skip layout & delegates
-                                            new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
+                newDoc = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.DelegatesKey, KeyStore.PrototypeKey }), // skip layout & delegates
+                                      new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
             }
             else
             {
@@ -238,17 +167,27 @@ namespace Dash
                 newLayout.SetHeight(200);
                 if (where != null)
                 {
-                    newLayout.SetPosition((Point)where);
+                    newLayout.SetPosition(where.Value);
                 }
                 newDoc = newLayout;
             }
-            var oldPosition = doc.GetPositionField();
+            var oldPosition = doc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
-                newDoc.SetPosition(new Point(@where?.X ?? oldPosition.Data.X + 15, @where?.Y ?? oldPosition.Data.Y + 15));
+                newDoc.SetPosition(new Point(where?.X ?? oldPosition.Value.X + 15, where?.Y ?? oldPosition.Value.Y + 15));
             }
 
             return newDoc;
+        }
+        public static DocumentController GetLinkCollection(this DocumentController doc, Point? where = null)
+        {
+            var links = doc.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+            if (links != null)
+            {
+                var cnote = new CollectionNote(where ?? new Point() , CollectionViewType.Schema, 400, 200, links).Document;
+                return cnote;
+            }
+            return null;
         }
 
         public static void RestoreNeighboringContext(this DocumentController doc)
@@ -262,9 +201,12 @@ namespace Dash
                 var neighboring = neighboringRaw as ListController<TextController>;
                 if (neighboring != null && neighboring.Count > 0)
                 {
-                    var context = doc.GetFirstContext();
-                    MainPage.Instance.WebContext.SetScroll(context.Scroll);
-                    url = context.Url;
+                    var context = doc.GetAllContexts().FirstOrDefault();
+                    if (context != null)
+                    {
+                        MainPage.Instance.WebContext.SetScroll(context.Scroll);
+                        url = context.Url;
+                    }
                 }
             } else if (type == "Text")
             {
@@ -278,7 +220,6 @@ namespace Dash
             }
 
         }
-
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
             if (doc == null)
@@ -314,9 +255,8 @@ namespace Dash
             //    neighboring.Add(new TextController(context.Serialize()));
             //}
         }
-
-
-        public static DocumentContext GetLongestViewedContext(this DocumentController doc)
+    
+        public static DocumentContext       GetLongestViewedContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
@@ -329,8 +269,7 @@ namespace Dash
             }
             return null;
         }
-
-        public static string GetLongestViewedContextUrl(this DocumentController doc)
+        public static string                GetLongestViewedContextUrl(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
@@ -345,29 +284,6 @@ namespace Dash
             }
             return null;
         }
-
-        public static DocumentContext GetLastContext(this DocumentController doc)
-        {
-            var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.Count > 0)
-            {
-                return neighboring.Last().Data.CreateObject<DocumentContext>();
-            }
-            return null;
-        }
-
-        public static DocumentContext GetFirstContext(this DocumentController doc)
-        {
-            var dataDocument = doc.GetDataDocument();
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            if (neighboring != null && neighboring.Count > 0)
-            {
-                return neighboring.First().Data.CreateObject<DocumentContext>();
-            }
-            return null;
-        }
-
         public static List<DocumentContext> GetAllContexts(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
@@ -380,57 +296,117 @@ namespace Dash
         }
 
 
-        // TODO bcz: this feels hacky -- is there a better way to get a reasonable layout for a document?
-        public static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(this DocumentController doc)
+        public static void Resize(this DocumentController doc, Point delta, Point cumulativeDelta, bool isShiftPressed, bool shiftTop, bool shiftLeft, bool maintainAspectRatio)
         {
-            return doc;
+            const double MinWidth = 25;
+            const double MinHeight = 10;
+            var isImage = doc.DocumentType.Equals(ImageBox.DocumentType) ||
+                          (doc.DocumentType.Equals(CollectionBox.DocumentType) && doc.GetFitToParent()) ||
+                          doc.DocumentType.Equals(VideoBox.DocumentType);
+
+            double extraOffsetX = 0;
+            if (!double.IsNaN(doc.GetWidth()))
+            {
+                extraOffsetX = doc.GetActualSize().X - doc.GetWidth();
+            }
+
+
+            double extraOffsetY = 0;
+
+            if (!double.IsNaN(doc.GetHeight()))
+            {
+                extraOffsetY = doc.GetActualSize().Y - doc.GetHeight();
+            }
+
+            var oldSize = new Size(doc.GetActualSize().X - extraOffsetX, doc.GetActualSize().Y - extraOffsetY);
+
+            var oldPos = doc.GetPosition();
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            var cursorXDirection = shiftLeft ? -1 : 1;
+            var cursorYDirection = shiftTop ? -1 : 1;
+            var moveXScale = shiftLeft ? 1 : 0;
+            var moveYScale = shiftTop ? 1 : 0;
+
+            cumulativeDelta.X *= cursorXDirection;
+            cumulativeDelta.Y *= cursorYDirection;
+
+            var w = doc.GetActualSize().X - extraOffsetX;
+            var h = doc.GetActualSize().Y - extraOffsetY;
+
+            double diffX;
+            double diffY;
+
+            var aspect = w / h;
+            var moveAspect = cumulativeDelta.X / cumulativeDelta.Y;
+
+            bool useX = cumulativeDelta.X > 0 && cumulativeDelta.Y <= 0;
+            if (cumulativeDelta.X <= 0 && cumulativeDelta.Y <= 0)
+            {
+
+                useX |= maintainAspectRatio ? moveAspect <= aspect : delta.X != 0;
+            }
+            else if (cumulativeDelta.X > 0 && cumulativeDelta.Y > 0)
+            {
+                useX |= maintainAspectRatio ? moveAspect > aspect : delta.X != 0;
+            }
+
+            var proportional = (!isImage && maintainAspectRatio)
+                ? isShiftPressed : (isShiftPressed ^ maintainAspectRatio);
+            if (useX)
+            {
+                aspect = 1 / aspect;
+                diffX = cursorXDirection * delta.X;
+                diffY = proportional
+                    ? aspect * diffX
+                    : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            }
+            else
+            {
+                diffY = cursorYDirection * delta.Y;
+                diffX = proportional
+                    ? aspect * diffY
+                    : cursorXDirection * delta.X;
+            }
+
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + diffY, MinHeight));
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
+                doc.GetPosition().X - moveXScale * (newSize.Width - oldSize.Width),
+                doc.GetPosition().Y - moveYScale * (newSize.Height - oldSize.Height));
+
+            if (doc.DocumentType.Equals(AudioBox.DocumentType))
+            {
+                newSize.Height = oldSize.Height;
+                newPos.Y = doc.GetPosition().Y;
+            }
+
+            doc.SetPosition(newPos);
+            if (newSize.Width != doc.GetActualSize().X)
+            {
+                doc.SetWidth(newSize.Width);
+            }
+
+            if (delta.Y != 0 || isShiftPressed || isImage)
+            {
+                if (newSize.Height != doc.GetActualSize().Y)
+                {
+                    doc.SetHeight(newSize.Height);
+                }
+            }
         }
-        public static void SetLayoutDimensions(this DocumentController doc, double ? width=null, double ? height=null, Point ? pos = null)
+
+
+        public static void SetLayoutDimensions(this DocumentController doc, double ? width=null, double ? height=null)
         {
             if (width.HasValue)
-                doc.SetWidth((double)width);
+                doc.SetWidth(width.Value);
             else
                 doc.SetHorizontalAlignment( Windows.UI.Xaml.HorizontalAlignment.Stretch);
             if (height.HasValue)
-                doc.SetHeight((double)height);
+                doc.SetHeight(height.Value);
             else
                 doc.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
-            if (pos.HasValue)
-                doc.SetPosition((Point)pos);
-        }
-        public static TextController GetTitleFieldOrSetDefault(this DocumentController doc)
-        {
-            var context = new Context(doc);
-            var titleKey = doc.GetField(KeyStore.TitleKey) as TextController ?? doc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
-            if (titleKey == null)
-            {
-                doc.SetTitle("Title");
-                titleKey = doc.GetField(KeyStore.TitleKey) as TextController;
-            }
-            return titleKey;
-        }
-        
-
-        public static NumberController GetHeightField(this DocumentController doc, Context context = null)
-        {
-            return  doc.GetDereferencedField(KeyStore.HeightFieldKey, null) as NumberController;
-        }
-
-        public static NumberController GetWidthField(this DocumentController doc, Context context = null)
-        {
-            return doc.GetDereferencedField(KeyStore.WidthFieldKey, null) as NumberController;
-        }
-
-        public static PointController GetPositionField(this DocumentController doc, Context context = null)
-        {
-            context = Context.SafeInitAndAddDocument(context, doc);
-            return doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointController;
-        }
-
-        public static PointController GetScaleAmountField(this DocumentController doc, Context context = null)
-        {
-            context = Context.SafeInitAndAddDocument(context, doc);
-            return doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as PointController;
         }
 
         public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys = null, List<KeyController> dontCopyKeys = null)
@@ -453,7 +429,7 @@ namespace Dash
 
         public static Op.Name GetDishName<T>(this T controller) where T : OperatorController => DSL.GetFuncName(controller);
 
-        static DocumentController makeCopy(
+        private static DocumentController makeCopy(
                 this DocumentController doc, 
                 ref List<ReferenceController> refs,
                 ref Dictionary<DocumentController, DocumentController> oldToNewDocMappings, 
@@ -462,7 +438,7 @@ namespace Dash
         {
             if (excludeKeys == null)
             {
-                excludeKeys = new List<KeyController>{KeyStore.LayoutListKey, KeyStore.DelegatesKey};
+                excludeKeys = new List<KeyController>{KeyStore.DelegatesKey};
             }
             if (doc == null)
                 return doc;

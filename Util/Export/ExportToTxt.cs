@@ -189,16 +189,10 @@ namespace Dash
                 //get the y points of each doc
                 //check that doc has PostionFieldKey
                 var pt1 = doc1.GetPosition();
-                if (pt1 != null)
-                {
-                    y1 = pt1.Value.Y;
-                }
+                y1 = pt1.Y;
 
                 var pt2 = doc2.GetPosition();
-                if (pt2 != null)
-                {
-                    y2 = pt2.Value.Y;
-                }
+                y2 = pt2.Y;
 
                 //return 1 if doc1 first and -1 if doc2 first
                 if (y1 >= y2) return 1;
@@ -266,24 +260,21 @@ namespace Dash
             var marginLeft = 0.0;
             var marginTop = 0.0;
             var pt1 = doc.GetPosition();
-            if (pt1 != null)
-            {
-                var minX = minMax[0];
-                var maxX = minMax[1];
+            var minX = minMax[0];
+            var maxX = minMax[1];
 
-                var x =  pt1.Value.X - minX;
+            var x =  pt1.X - minX;
 
-                var DASHWIDTH = Math.Abs(maxX - minX + 50);
-                marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
+            var DASHWIDTH = Math.Abs(maxX - minX + 50);
+            marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
 
-                var minY = minMax[2];
-                var maxY = minMax[3];
+            var minY = minMax[2];
+            var maxY = minMax[3];
 
-                var y = pt1.Value.Y - minY;
+            var y = pt1.Y - minY;
 
-                var DASHHEIGHT = Math.Abs(maxY - minY);
-                marginTop = (y * PAGEHEIGHT) / (DASHHEIGHT);
-            }
+            var DASHHEIGHT = Math.Abs(maxY - minY);
+            marginTop = (y * PAGEHEIGHT) / (DASHHEIGHT);
 
             var margins = new List<double>();
             margins.Add(marginLeft);
@@ -485,7 +476,7 @@ namespace Dash
             var colWidth = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString()), minMax);
 
             // create a collectionview off the screen
-            var collView = col.MakeViewUI(null) as CollectionView;
+            var collView = col.MakeViewUI() as CollectionView;
             Debug.Assert(collView != null);    
             MainPage.Instance.xTabCanvas.Children.Add(collView);
             Canvas.SetLeft(collView, -10000);

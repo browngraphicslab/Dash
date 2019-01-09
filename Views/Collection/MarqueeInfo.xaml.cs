@@ -24,8 +24,7 @@ namespace Dash.Views.Collection
             set => _marquee = value;
         }
 
-
-        public MarqueeInfo(CollectionFreeformBase col)
+        public MarqueeInfo(CollectionFreeformView col)
         {
             this.InitializeComponent();
             _marquee = new Rectangle()
@@ -61,14 +60,14 @@ namespace Dash.Views.Collection
 
         private void Collection_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             collection?.TriggerActionFromSelection(VirtualKey.C, true);
             e.Handled = true;
         }
 
         private async void Group_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             collection?.TriggerActionFromSelection(VirtualKey.G, true);
             e.Handled = true;
         }

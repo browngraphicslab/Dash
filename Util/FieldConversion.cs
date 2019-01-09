@@ -38,12 +38,6 @@ namespace Dash
             }
             return new ObjectToStringConverter(null);
         }
-
-        public static string ConvertFieldToString(FieldControllerBase controller, Context context = null)
-        {
-            return GetFieldtoStringConverter(controller).Convert(controller.GetValue(context), typeof(string), null, "en") as string;
-        }
-
         public static void SetFieldtoString(FieldControllerBase controller, string data, Context context)
         {
 

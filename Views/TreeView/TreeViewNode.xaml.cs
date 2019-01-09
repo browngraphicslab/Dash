@@ -282,6 +282,7 @@ namespace Dash.Views.TreeView
             //if (treeView.UseActiveFrame)
             //{
             SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
+            MainPage.Instance.SetMapTarget(SplitFrame.ActiveFrame.DocumentController);
             //}
 
             treeView.ViewModel.ContainerDocument.SetField(KeyStore.CollectionOutputKey, ViewModel.DocumentController, true);
@@ -342,17 +343,7 @@ namespace Dash.Views.TreeView
 
             XTreeViewList.ViewModel.AddDocument(new CollectionNote(new Point(), CollectionViewType.Grid).Document);
         }
-
-        private void ShowInMapItemOnClick(object sender, RoutedEventArgs routedEventArgs)
-        {
-            if (!IsCollection)
-            {
-                return;
-            }
-
-            MainPage.Instance.SetupMapView(ViewModel.DocumentController);
-        }
-
+        
         private void SnapshotItemOnClick(object sender, RoutedEventArgs routedEventArgs)
         {
             if (!(SplitFrame.ActiveFrame.ViewModel.Content is CollectionView cview)) return;
@@ -420,12 +411,6 @@ namespace Dash.Views.TreeView
             };
             addCollectionItem.Click += AddCollectionItem_OnClick;
 
-            var showInMapItem = new MenuFlyoutItem()
-            {
-                Text = "Show in Mini-map",
-            };
-            showInMapItem.Click += ShowInMapItemOnClick;
-
             var focusItem = new MenuFlyoutItem()
             {
                 Text = "Focus Collection",
@@ -444,7 +429,6 @@ namespace Dash.Views.TreeView
                 addCollectionItem,
                 snapshotItem,
                 focusItem,
-                showInMapItem
             };
         }
 

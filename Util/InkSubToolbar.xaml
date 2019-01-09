@@ -13,6 +13,7 @@
         <InkToolbar x:Name="xInkToolbar"
                     HorizontalAlignment="Center"
                     TargetInkCanvas="{Binding AnnotationOverlay.XInkCanvas}"
+                    Background="{StaticResource DashDarkDarkBlueBrush}"
                     InitialControls="None"
                     InkDrawingAttributesChanged="XInkToolbar_OnInkDrawingAttributesChanged"
                     ActiveToolChanged="InkToolbar_OnActiveToolChanged">

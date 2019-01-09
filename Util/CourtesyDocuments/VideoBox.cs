@@ -8,6 +8,8 @@ using System.Diagnostics;
 using Windows.Devices.Input;
 using Windows.System;
 using Dash.Converters;
+using Windows.UI.Xaml.Input;
+using Windows.Devices.Input;
 
 namespace Dash
 {
@@ -25,48 +27,59 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "VideoBox Prototype Layout", fields);
         }
 
-		/// <summary>
-		///   Creates a MediaPlayerElement that will be binded to video reference.
-		/// </summary>
-		public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
-		{
-			//create the media player element 
-			
-			MediaPlayerElement video = new MediaPlayerElement
-			{
+        /// <summary>
+        ///   Creates a MediaPlayerElement that will be binded to video reference.
+        /// </summary>
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
+        {
+            //create the media player element 
+
+            var video = new MediaPlayerElement
+            {
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
-				AreTransportControlsEnabled = true,
+                AreTransportControlsEnabled = true,
                 MinWidth = 200,
                 MinHeight = 100
-			};
-
-			//enables fullscreen exit with escape shortcut
-			video.KeyDown += (s, e) =>
-			{
-				if (e.Key == VirtualKey.Escape && video.IsFullWindow)
-				{
-					video.IsFullWindow = false;
-				}
-			};
-
-			video.TransportControls.IsCompact = true;
-			video.PointerEntered += (s, e) => video.TransportControls.Show();
-			video.PointerExited += (s, e) => video.TransportControls.Hide();
-            video.Unloaded += (s, e) => video.MediaPlayer.Pause();
-            video.PointerPressed += (s, e) =>
-            {
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch) e.Handled = false;
             };
 
-			// setup bindings on the video
-			SetupVideoBinding(video, docController, key, context);
+            //enables fullscreen exit with escape shortcut
+            video.KeyDown += (s, e) =>
+            {
+                if (e.Key == VirtualKey.Escape && video.IsFullWindow)
+                {
+                    video.IsFullWindow = false;
+                    e.Handled = true;
+                }
+            };
+            
+            video.TransportControls.IsCompact = true;
+            video.TransportControls.Visibility = Visibility.Collapsed;
+            video.Loaded   += (s,e) => video.TransportControls.Visibility = video.GetDocumentView().ViewModel.IsSelected ?  Visibility.Visible : Visibility.Collapsed;
+            video.Unloaded += (s,e) => video.MediaPlayer.Pause();
+            video.PointerEntered += (s, e) =>
+            {
+                video.TransportControls.Show();
+                video.TransportControls.Focus(FocusState.Programmatic);
+            };
+            video.PointerExited  += (s, e) => video.TransportControls.Hide();
+
+            ManipulationControlHelper _manipulator = null;
+            video.Tapped         += (s, e) => video.TransportControls.Show();
+            video.PointerPressed += (s, e) =>
+            {
+                _manipulator = e.IsRightPressed() || !video.GetDocumentView().ViewModel.IsSelected ? new ManipulationControlHelper(video, true) : null;
+                e.Handled = true;
+            };
+            video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
+
+            // setup bindings on the video
+            SetupVideoBinding(video, docController, key);
 			
 			return video;
 		}
 
-		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key, 
-			Context context)
+		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key)
 		{
 			BindVideoSource(video, controller, key);
 		}

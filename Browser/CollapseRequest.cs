@@ -41,7 +41,8 @@ namespace Dash
                         dockedPdfView.SetWidth(double.NaN);
                         dockedPdfView.SetHorizontalAlignment(Windows.UI.Xaml.HorizontalAlignment.Stretch);
                         dockedPdfView.SetVerticalAlignment(Windows.UI.Xaml.VerticalAlignment.Stretch);
-                        SplitFrame.ActiveFrame.OpenDocument(dockedPdfView);
+                        //SplitFrame.ActiveFrame.OpenDocument(dockedPdfView);
+                        SplitFrame.ActiveFrame.Split(SplitDirection.Left, dockedPdfView, true);
                         //if (LastFrame == null || !MainPage.Instance.GetDescendants().Contains(LastFrame))
                         //    SplitFrame.ActiveFrame.Split(SplitDirection.Left, dockedPdfView, true);
                         //else 

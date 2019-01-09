@@ -17,6 +17,7 @@ namespace Dash
         /// </summary>
         public bool DraggingLinkButton = false;
         public string DraggedLinkType = null; // type of link to be created
+        public bool DraggedWithLeftButton = false;
 
         /// <summary>
         /// When DraggingLinkButton is false, this stores the collection views that contained each of the documents
@@ -46,25 +47,25 @@ namespace Dash
         }
         public DragDocumentModel(DocumentView draggedDocumentView)
         {
-            DraggedDocuments = new List<DocumentController> { draggedDocumentView.ViewModel.DocumentController };
+            DraggedDocuments     = new List<DocumentController> { draggedDocumentView.ViewModel.DocumentController };
             DraggedDocumentViews = new List<DocumentView> { draggedDocumentView };
         }
 
-        public DragDocumentModel(List<DocumentView> draggedDocumentViews, List<CollectionViewModel> draggedDocCollectionViews, List<Point> off, Point offset)
+        public DragDocumentModel(IEnumerable<DocumentView> draggedDocumentViews, List<CollectionViewModel> draggedDocCollectionViews, List<Point> off, Point offset)
         {
-            DraggedDocuments = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
-            DraggedDocumentViews = draggedDocumentViews;
+            DraggedDocuments          = draggedDocumentViews.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            DraggedDocumentViews      = draggedDocumentViews.ToList();
             DraggedDocCollectionViews = draggedDocCollectionViews;
             DocOffsets = off;
-            Offset = offset;
-            Debug.Assert(draggedDocCollectionViews.Count == draggedDocumentViews.Count);
+            Offset     = offset;
+            Debug.Assert(DraggedDocCollectionViews.Count == DraggedDocumentViews.Count);
         }
 
         public DragDocumentModel(List<DocumentController> draggedDocuments, CollectionViewType viewType, Action<DocumentController> collectionCreationMethod = null, bool forceCopy = false)
         {
             DraggedDocuments = draggedDocuments;
-            ViewType = viewType;
-            MakeCollection = true;
+            ViewType         = viewType;
+            MakeCollection   = true;
             CollectionCreationMethod = collectionCreationMethod;
             ForceCopy = forceCopy;
         }
@@ -118,10 +119,10 @@ namespace Dash
             }
             else if (target?.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null && DraggingLinkButton) // don't want to create a link when dropping a link button onto an overlay
             {
-                for (int i = 0; i < DraggedDocuments.Count; i++)
-                {
-                    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
-                }
+                //for (int i = 0; i < DraggedDocuments.Count; i++)
+                //{
+                //    docs.Add(DraggedDocuments[i].GetKeyValueAlias(GetPosition(i)));
+                //}
             }
             else
             {
@@ -143,10 +144,7 @@ namespace Dash
             {
                 var collection = new CollectionNote(@where ?? new Point(), ViewType, double.NaN, double.NaN, docs).Document;
                 CollectionCreationMethod?.Invoke(collection);
-                return new List<DocumentController>
-                {
-                    collection
-                };
+                return new List<DocumentController> { collection };
             }
             else
             {
@@ -182,7 +180,7 @@ namespace Dash
                         if (view.ParentCollection != null)
                         {
                             eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                                view.ParentCollection.ViewModel.ContainerDocument, true);
+                                view.ParentViewModel?.ContainerDocument, true);
                         }
                         eventDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                         eventDoc.SetVerticalAlignment(VerticalAlignment.Stretch);

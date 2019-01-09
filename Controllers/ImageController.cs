@@ -77,7 +77,7 @@ namespace Dash
             return new ImageController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

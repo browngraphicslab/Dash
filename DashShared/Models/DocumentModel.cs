@@ -21,9 +21,7 @@ namespace DashShared
         /// </summary>
         public DocumentType DocumentType;
 
-        public DocumentModel() : base(null)
-        {
-        }
+        public DocumentModel() : base(null) { }
 
         /// <summary>
         /// Initializes a document with given data and type.

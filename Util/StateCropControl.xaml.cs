@@ -38,8 +38,6 @@ namespace Dash
 
         private EditableImage _imageBase;
 
-        private DocumentView _docView;
-
         public Brush Fill { get; } = new SolidColorBrush(Color.FromArgb(55, 255, 255, 255));
 
         public EditableImage ImageBase
@@ -86,7 +84,6 @@ namespace Dash
             Canvas.SetTop(xBottom, ImageMaxY);
 
             UpdateRect();
-            _docView = ImageBase.GetFirstAncestorOfType<DocumentView>();
         }
 
         // updates the cropping boundaries 

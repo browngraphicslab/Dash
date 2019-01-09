@@ -228,19 +228,17 @@ namespace Dash
             recognizedDocuments.AddRange(selectedDocuments.Select(view => (view.DataContext as DocumentViewModel).DocumentController));
             foreach (var doc in recognizedDocuments)
             {
-                var ogPos = doc.GetPositionField().Data;
+                var ogPos  = doc.GetPosition();
                 var newPos = Util.PointTransformFromVisual(ogPos,
                     FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
-                var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
-                doc.GetPositionField().Data = relativePos;
+                doc.SetPosition(new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y));
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             //Construct the new collection
             var cnote  = new CollectionNote(position, CollectionViewType.Freeform);
             cnote.SetDocuments(recognizedDocuments);
             var documentController = cnote.Document;
-            documentController.SetLayoutDimensions(region.BoundingRect.Width,
-                region.BoundingRect.Height);
+            documentController.SetLayoutDimensions(region.BoundingRect.Width, region.BoundingRect.Height);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
@@ -306,11 +304,11 @@ namespace Dash
                 }
             }
             foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
-            if (list != null)
-            {
-                doc.SetField(KeyStore.ParsedFieldsKey, list, true);
-            }
-            var layout = new FreeFormDocument(layoutDocs, position, size).Document;
+            //if (list != null)
+            //{
+            //    doc.SetField(KeyStore.ParsedFieldsKey, list, true);
+            //}
+            //var layout = new FreeFormDocument(layoutDocs, position, size).Document;
 
             throw new Exception("ActiveLayout code has not been updated yet");
             // doc.SetActiveLayout(layout, true, true);
@@ -454,14 +452,14 @@ namespace Dash
             foreach (var param in parameters)
             {
                 var doc = param.DocumentController;
-                var position = doc.GetPositionField().Data;
-                var width = doc.GetWidthField().Data;
-                var height = doc.GetHeightField().Data;
+                var position = doc.GetPosition();
+                var width    = doc.GetWidth();
+                var height   = doc.GetHeight();
                 var rect = new Rect
                 {
                     X = position.X,
                     Y = position.Y,
-                    Width = width,
+                    Width  = width,
                     Height = height
                 };
                 if (FreeformInkControl.FreeformView.GetItemsControl().ItemContainerGenerator != null && FreeformInkControl

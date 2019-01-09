@@ -19,7 +19,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController() => new BoolController(false);
 
-        public override object GetValue(Context context) => Data;
+        public override object GetValue() => Data;
 
         public override bool TrySetValue(object value)
         {

@@ -118,14 +118,14 @@ namespace Dash
             }
 
             //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ?? (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();
-            var binding = new FieldBinding<FieldControllerBase, TextController>
+           var binding = new FieldBinding<FieldControllerBase, RichTextController>
             {
                 Document = LinkDoc.DataDocument,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay
             };
             xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
-            String text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey).Data;
+            var text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
 
             foreach (var tag in xTagContainer.Children)
             {
@@ -141,8 +141,7 @@ namespace Dash
             }
             switch (text)
             {
-            default:
-                break;
+            
             case "Follow":
                 xTypeFollow.IsChecked = true;
                 break;
@@ -154,6 +153,8 @@ namespace Dash
                 break;
             case "Float":
                 xTypeFloat.IsChecked = true;
+                break;
+            default:
                 break;
             }
         }
@@ -240,7 +241,7 @@ namespace Dash
                 if (string.IsNullOrEmpty(entry)) return;
 
                 var newtag = AddTagIfUnique(entry);
-                //newtag.Select();
+                newtag.Select();
 
                 box.Text = "";
             }

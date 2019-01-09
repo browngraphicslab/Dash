@@ -25,7 +25,7 @@ namespace Dash
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
 
         // The CollectionFreeformView to which items from tab menu will be added 
-        private static CollectionFreeformBase _addsToThisCollection;
+        private static CollectionFreeformView _addsToThisCollection;
         // The position relative to the collectionfreeformview in which items from tab menu will be added 
         private static Point _whereToAdd;
         #endregion
@@ -57,7 +57,7 @@ namespace Dash
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
-        public static void ConfigureAndShow(CollectionFreeformBase col, Point p, Panel canvas, bool isTouch = false)
+        public static void ConfigureAndShow(CollectionFreeformView col, Point p, Panel canvas, bool isTouch = false)
         {
             _addsToThisCollection = col;
             _whereToAdd = p;

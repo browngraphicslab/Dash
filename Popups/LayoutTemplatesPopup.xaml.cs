@@ -33,6 +33,7 @@ namespace Dash.Popups
         {
             _tcs = new TaskCompletionSource<TemplateList.TemplateType>();
             xLayoutPopup.IsOpen = true;
+            xCaptionedImage.Tapped += XCaptionedimage_OnClick;
             xCitation.Tapped += XCitation_OnClick;
             xNote.Tapped += XNote_OnClick;
             xCard.Tapped += XCard_OnClick;
@@ -78,6 +79,12 @@ namespace Dash.Popups
             _tcs.SetResult(TemplateList.TemplateType.Citation);
             xLayoutPopup.IsOpen = false;
             xCitation.Tapped -= XCitation_OnClick;
+        }
+        void XCaptionedimage_OnClick(object sender, RoutedEventArgs e)
+        {
+            _tcs.SetResult(TemplateList.TemplateType.CaptionedImage);
+            xLayoutPopup.IsOpen = false;
+            xCaptionedImage.Tapped -= XCaptionedimage_OnClick;
         }
         void XNote_OnClick(object sender, RoutedEventArgs e)
         {

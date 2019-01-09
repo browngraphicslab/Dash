@@ -39,8 +39,6 @@ namespace Dash
         {
             Debug.WriteLine("Finalizing DataVirtualizationSource");
         }
-        
-        public double ScrollViewerContentWidth = 1;
 
         /// <summary>
         /// Given a vertical offset, return the corresponding 0-index page

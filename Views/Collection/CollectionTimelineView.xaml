@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="700"
     Tapped="OnTapped"
-    SizeChanged="CollectionTimelineView_OnSizeChanged" d:DataContext="{d:DesignInstance local:BaseCollectionViewModel}">
+    SizeChanged="CollectionTimelineView_OnSizeChanged" >
 
     <Grid>
         <Grid.Resources>

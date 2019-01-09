@@ -52,13 +52,13 @@ namespace Dash
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
             var fieldValue = inputs[FieldValueKey];
 
-            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.Name, fieldValue.GetValue(null).ToString()));
+            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.Name, fieldValue.GetValue().ToString()));
 
             var success = inputDoc.SetField(KeyController.Get(keyName), fieldValue, true);
 
             var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
 
-            outputs[ResultDocKey] = new TextController(feedback + (fieldValue?.GetValue(null) ?? "null"));
+            outputs[ResultDocKey] = new TextController(feedback + (fieldValue?.GetValue() ?? "null"));
 
             return Task.CompletedTask;
         }

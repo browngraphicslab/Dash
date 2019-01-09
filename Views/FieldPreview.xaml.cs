@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
@@ -49,7 +49,7 @@ namespace Dash
             {
                 return;
             }
-            PreviewContent = value.GetValue(null);
+            PreviewContent = value.GetValue();
         }
     }
 }

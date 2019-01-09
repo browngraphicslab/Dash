@@ -463,13 +463,20 @@
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
                     <ColumnDefinition Width="*" x:Name="ToolbarColumn"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="XCollapseButton" Grid.Column="0" Tapped="XCollapseButton_OnTapped" Background="Gray">
-                    <TextBlock FontSize="32" x:Name="XCollapseBox" Text="&#xE73F;" FontFamily="Segoe MDL2 Assets" Foreground="White" TextAlignment="Center"/>
+                <Button x:Name="XCollapseButton" Grid.Column="0" Tapped="XCollapseButton_OnTapped" Background="{StaticResource DashDarkBlueBrush}">
+                    <TextBlock 
+                        FontSize="45" 
+                        x:Name="XCollapseBox" 
+                        Text="&#xE73F;" 
+                        FontFamily="Segoe MDL2 Assets" 
+                        Foreground="White" 
+                        TextAlignment="Center" 
+                        VerticalAlignment="Center"/>
                 </Button>
-                <dash:DocumentView x:Name="XDocumentView" Grid.Column="1" MinHeight="60"/>
+                <dash:DocumentView x:Name="XDocumentView" Grid.Column="1" MinHeight="60" Margin="7 0 0 0"/>
             </Grid>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
-            <StackPanel x:Name="xSubtoolbarStackPanel" x:FieldModifier="public">
+            <StackPanel x:Name="xSubtoolbarStackPanel" x:FieldModifier="public" HorizontalAlignment="Center" Margin="0 0 0 0">
                 <dash:RichTextSubtoolbar x:Name="xRichTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:PlainTextSubtoolbar x:Name="xPlainTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />

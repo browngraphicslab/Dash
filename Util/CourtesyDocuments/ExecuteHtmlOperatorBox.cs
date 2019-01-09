@@ -15,7 +15,7 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "ExecuteHtmlOperatorBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceController);

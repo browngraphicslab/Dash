@@ -31,14 +31,9 @@ namespace Dash
 
         public object Tag = null;
 
-        protected FieldControllerBase(FieldModel model) : base(model)
-        {
-        }
+        protected FieldControllerBase(FieldModel model) : base(model) { }
 
-        public virtual Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
+        public virtual Task InitializeAsync() { return Task.CompletedTask; }
 
         /// <summary>
         /// Wrapper for the event called when a field model's data is updated
@@ -50,15 +45,8 @@ namespace Dash
             FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update), context);
         }
 
-        public virtual FieldControllerBase Dereference(Context context)
-        {
-            return this;
-        }
-
-        public virtual FieldControllerBase DereferenceToRoot(Context context)
-        {
-            return this;
-        }
+        public virtual FieldControllerBase Dereference(Context context) { return this; }
+        public virtual FieldControllerBase DereferenceToRoot(Context context)  { return this; }
 
         public virtual T DereferenceToRoot<T>(Context context) where T : FieldControllerBase
         {
@@ -74,13 +62,10 @@ namespace Dash
         /// <summary>
         /// Gets the value from the field as an object. 
         /// </summary>
-        public abstract object GetValue(Context context);
+        public abstract object GetValue();
 
 
-        public virtual bool CheckType(FieldControllerBase fmc)
-        {
-            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
-        }
+        public virtual bool CheckType(FieldControllerBase fmc) { return (fmc.TypeInfo & TypeInfo) != TypeInfo.None; }
 
         public virtual bool CheckTypeEquality(FieldControllerBase fmc) => fmc.TypeInfo == TypeInfo;
 
@@ -94,20 +79,6 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public abstract FieldControllerBase GetDefaultController();
-
-        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, DocumentController doc)
-        {
-            var hstack = new StackPanel { Orientation = Orientation.Horizontal };
-            var label = new TextBlock { Text = kc.Name + ": " };
-            var refField = new DocumentReferenceController(doc, kc);
-            var dBox = this is ImageController
-                ? new ImageBox(refField).Document
-                : new TextingBox(refField).Document;
-            hstack.Children.Add(label);
-            var ele = dBox.MakeViewUI(context);
-            hstack.Children.Add(ele);
-            sp.Children.Add(hstack);
-        }
 
         /// <summary>
         /// search method which should return whether this field contains the string being searched for.
@@ -126,16 +97,9 @@ namespace Dash
 
         private bool _fromServer;
 
-        public void MarkFromServer()
-        {
-            _fromServer = true;
-        }
+        public void MarkFromServer() { _fromServer = true; }
 
-        protected sealed override void SaveOnServer()
-        {
-            base.SaveOnServer();
-        }
-
+        protected sealed override void SaveOnServer() { base.SaveOnServer(); }
         protected sealed override void UpdateOnServer(UndoCommand command)
         {
             if (IsReferenced)
@@ -144,10 +108,7 @@ namespace Dash
             }
         }
 
-        protected sealed override void DeleteOnServer()
-        {
-            base.DeleteOnServer();
-        }
+        protected sealed override void DeleteOnServer() { base.DeleteOnServer(); }
 
         #region Reference Counting
 

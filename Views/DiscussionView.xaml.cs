@@ -24,8 +24,7 @@ namespace Dash.Views
         public KeyController DataFieldKey { get; set; }
         public DocumentController DataDocument => ViewModel?.DataDocument;
         public DocumentController LayoutDocument => ViewModel?.LayoutDocument;
-        public DocumentViewModel ViewModel => getDocView()?.ViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
-        private DocumentView getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
+        public DocumentViewModel ViewModel => this.GetDocumentView()?.ViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
         
         public DiscussionView()
         {

@@ -5,10 +5,8 @@ using Dash.FontIcons;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using static Dash.CollectionView;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,7 +26,6 @@ namespace Dash
 
             Loaded += CollectionGridView_Loaded;
         }
-
 
         public void SetupContextMenu(MenuFlyout contextMenu)
         {
@@ -52,7 +49,7 @@ namespace Dash
         private void CollectionGridView_Loaded(object sender, RoutedEventArgs e)
         {
             var selectedDocControllers =
-                SelectionManager.GetSelectedDocs().Select(dv => dv.ViewModel?.DocumentController).ToList();
+                SelectionManager.SelectedDocViewModels.Select(dv => dv?.DocumentController).ToList();
             foreach (var i in xGridView.Items.OfType<DocumentViewModel>())
             {
                 var d = i.DocumentController;
@@ -98,21 +95,43 @@ namespace Dash
         {
             XDropIndicationRectangle.Fill = fill;
         }
-        
 
+        private DocumentViewModel _dragDoc;
         private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
-            if (dvm != null)
+            foreach (var m in e.Items.OfType<DocumentViewModel>())
             {
-                e.Data.SetDragModel(new DragDocumentModel(dvm.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
+                _dragDoc = m;
+                e.Data.SetDragModel(new DragDocumentModel(m.DocumentController) { DraggedDocCollectionViews = new List<CollectionViewModel> { ViewModel } });
             }
         }
-
-        private void Viewbox_Tapped(object sender, TappedRoutedEventArgs e)
+        private void xGridView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
-            SplitFrame.TryNavigateToDocument(dv.ViewModel.DocumentController, true);
+            if (this.IsPointerOver()) //  && args.DropResult == DataPackageOperation.Move)
+            {
+                DocumentView found = null;
+                foreach (var doc in xGridView.ItemsPanelRoot.Children.Select((gvi)=> gvi.GetFirstDescendantOfType<DocumentView>()))
+                {
+                    if (doc.GetBoundingRect(doc).Contains(doc.PointerPos()))
+                    {
+                        found = doc;
+                    }
+                }
+                if (found != null)
+                {
+                    var ind = ViewModel.DocumentViewModels.IndexOf(found.ViewModel);
+                    ViewModel.RemoveDocument(_dragDoc.DocumentController);
+                    ViewModel.InsertDocument(_dragDoc.DocumentController, ind);
+                }
+            }
+
+        }
+
+        private void xDocumentWrapper_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var dv = (sender as Grid).Children.FirstOrDefault() as DocumentView;
+            dv.TappedHandler(false);
+            e.Handled = true;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Dash
         /// <summary>
         ///   Creates a MediaPlayerElement that will be binded to audio reference.
         /// </summary>
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             //create the media player element 
             MediaPlayerElement audio = new MediaPlayerElement
@@ -49,7 +49,7 @@ namespace Dash
 			
 
 			// setup bindings on the audio
-            BindAudioSource(audio, docController, key, context);
+            BindAudioSource(audio, docController, key);
             audio.TransportControls.IsFullWindowEnabled = false;
             audio.TransportControls.IsFullWindowButtonVisible = false;
 
@@ -63,14 +63,13 @@ namespace Dash
         /// <summary>
         ///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the audio.
         /// </summary>
-        protected static void BindAudioSource(MediaPlayerElement audio, DocumentController docController, KeyController key, Context context)
+        protected static void BindAudioSource(MediaPlayerElement audio, DocumentController docController, KeyController key)
         {
             var binding = new FieldBinding<AudioController>
             {
                 Document = docController,
                 Key = key,
                 Mode = BindingMode.OneWay,
-                Context = context,
                 //converts uri to source data of the MediaPlayerElement
                 Converter = UriToIMediaPlayBackSourceConverter.Instance
             };

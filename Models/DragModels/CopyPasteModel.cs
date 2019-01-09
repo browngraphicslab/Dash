@@ -28,7 +28,7 @@ namespace Dash
                 foreach (var documentController in _documents)
                 {
                     results.Add(fullCopy ? documentController.GetCopy(realPos) : documentController.GetViewCopy(realPos));
-                    realPos.X += documentController.GetActualSize()?.X ?? 50 + 10;
+                    realPos.X += documentController.GetActualSize().X;
                 }
             }
             else

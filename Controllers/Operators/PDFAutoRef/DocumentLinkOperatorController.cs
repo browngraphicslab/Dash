@@ -20,6 +20,7 @@ namespace Dash
         public static readonly KeyController TargetEndIndKey = KeyController.Get("Target End Index");
 
         public static readonly KeyController LinkTypeKey = KeyController.Get("Link Type");
+        public static readonly KeyController LinkBehaviorKey = KeyController.Get("Link Behavior");
 
         //Output keys
         public static readonly KeyController SuccessKey = KeyController.Get("Success");
@@ -35,13 +36,14 @@ namespace Dash
             new KeyValuePair<KeyController, IOInfo>(SourceDocKey, new IOInfo(TypeInfo.Document, true)),
             new KeyValuePair<KeyController, IOInfo>(TargetDocKey, new IOInfo(TypeInfo.Document, true)),
 
+            new KeyValuePair<KeyController, IOInfo>(LinkTypeKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(LinkBehaviorKey, new IOInfo(TypeInfo.Text, true)),
+
             new KeyValuePair<KeyController, IOInfo>(SourceStartIndKey, new IOInfo(TypeInfo.Number, false)),
             new KeyValuePair<KeyController, IOInfo>(SourceEndIndKey, new IOInfo(TypeInfo.Number, false)),
 
             new KeyValuePair<KeyController, IOInfo>(TargetStartIndKey, new IOInfo(TypeInfo.Number, false)),
-            new KeyValuePair<KeyController, IOInfo>(TargetEndIndKey, new IOInfo(TypeInfo.Number, false)),
-
-            new KeyValuePair<KeyController, IOInfo>(LinkTypeKey, new IOInfo(TypeInfo.Text, false))
+            new KeyValuePair<KeyController, IOInfo>(TargetEndIndKey, new IOInfo(TypeInfo.Number, false))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
@@ -66,8 +68,9 @@ namespace Dash
             var tEnd = (int?)(inputs[TargetEndIndKey] as NumberController)?.Data;
 
             var linkType = (TextController) inputs[LinkTypeKey];
+            var linkBehavior = (TextController)inputs[LinkBehaviorKey];
 
-            AnnotationOverlay.LinkRegion(sourceDoc, targetDoc, sStart, sEnd, tStart, tEnd, linkType.Data);
+            AnnotationOverlay.LinkRegion(sourceDoc, targetDoc, sStart, sEnd, tStart, tEnd, linkType.Data, linkBehavior.Data);
             return Task.CompletedTask;
         }
     }

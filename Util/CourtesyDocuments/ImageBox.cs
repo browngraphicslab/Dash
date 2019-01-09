@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Dash.Converters;
 
@@ -27,53 +28,47 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "ImageBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, KeyController key, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
             // create the image
             var editableImage = new EditableImage();
             // setup bindings on the image
-            SetupBinding(editableImage, docController, key, context);
+            SetupBinding(editableImage, docController, key);
 
             return editableImage;
         }
 
-	    public static void SetupBinding(EditableImage editableImage, DocumentController controller, KeyController key, Context context)
+	    public static void SetupBinding(EditableImage editableImage, DocumentController controller, KeyController key)
         {
             editableImage.DataFieldKey = key;
-            BindImageSource(editableImage, controller, key, context);
+            BindImageSource(editableImage, controller, key);
         }
 
-        protected static void BindImageSource(EditableImage editableImage, DocumentController docController, KeyController key, Context context)
+        protected static void BindImageSource(EditableImage editableImage, DocumentController docController, KeyController key)
         {
-            var image = editableImage.Image;
-            editableImage.HorizontalAlignment = HorizontalAlignment.Left;
-            editableImage.VerticalAlignment = VerticalAlignment.Top;
             var binding = new FieldBinding<ImageController>
             {
                 Document = docController,
                 Key = key,
                 Mode = BindingMode.OneWay,
-                Context = context,
                 Converter = UriToBitmapImageConverter.Instance
             };
-            image.AddFieldBinding(Image.SourceProperty, binding);
+            editableImage.Image.AddFieldBinding(Image.SourceProperty, binding);
+            //editableImage.Image.Source = new BitmapImage(ImageBox.DefaultImageUri);
             var binding2 = new FieldBinding<TextController>
             {
                 Document = docController,
                 Key = KeyStore.ImageStretchKey,
                 Mode = BindingMode.OneWay,
-                Context = context,
                 Converter = new StringToEnumConverter<Stretch>(),
                 FallbackValue = Stretch.Uniform
             };
-            image.AddFieldBinding(Image.StretchProperty, binding2);
+            editableImage.Viewbox.AddFieldBinding(Viewbox.StretchProperty, binding2);
         }
 
 	    public static Task<DocumentController> MakeRegionDocument(DocumentView image, Point? point)
 	    {
 		    return image.GetFirstDescendantOfType<EditableImage>().GetRegionDocument(point);
 	    }
-
-		
 	}
 }

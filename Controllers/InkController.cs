@@ -40,7 +40,7 @@ namespace Dash
 
         public string InkData => InkFieldModel.Data;
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return InkData;
         }

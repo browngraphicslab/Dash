@@ -15,9 +15,9 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "ExtractSentencesOperatorBox Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context)
+        public static FrameworkElement MakeView(DocumentController documentController)
         {
-            return OperatorBox.MakeOperatorView(documentController, context, () => new ExtractSentencesOperatorView());
+            return OperatorBox.MakeOperatorView(documentController, () => new ExtractSentencesOperatorView());
         }
     }
 }

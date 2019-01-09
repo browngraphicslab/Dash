@@ -49,7 +49,7 @@ namespace Dash
             xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
             InitializeFilters();
 
-            _searchTimer.Interval = TimeSpan.FromMilliseconds(300);
+            _searchTimer.Interval = TimeSpan.FromMilliseconds(3000);
             _searchTimer.Tick += SearchTimerOnTick;
         }
 
@@ -161,7 +161,10 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                _searchTimer.Start();
+                // _searchTimer.Start();
+
+                var itemsSource = (ObservableCollection<SearchResultViewModel>)xAutoSuggestBox.ItemsSource;
+                itemsSource?.Clear();
 
             }
         }
@@ -178,7 +181,12 @@ namespace Dash
 
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (!(args.ChosenSuggestion is SearchResultViewModel resultVm)) return;
+            if (!(args.ChosenSuggestion is SearchResultViewModel resultVm))
+            {
+                ExecuteDishSearch(xAutoSuggestBox);
+                _searchTimer.Stop();
+                return;
+            }
 
             SplitFrame.HighlightDoc(resultVm.ViewDocument, SplitFrame.HighlightMode.Highlight, false);
 
@@ -203,7 +211,7 @@ namespace Dash
             _selectedIndex = -1;
             if (!_arrowBlock)
             {
-                MainPage.Instance.CollapseSearch();
+                MainPage.Instance.SetSearchVisibility(Visibility.Collapsed);
                 _arrowBlock = false;
             }
         }
@@ -231,19 +239,25 @@ namespace Dash
 
         #region Other Events
 
-        private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Grid_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
-            DocumentController docTapped = viewModel?.ViewDocument;
-
-            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Highlight);
+            if (!(sender is Grid outerGrid && outerGrid.DataContext is SearchResultViewModel srvm)) return;
+            var tip = new ToolTip()
+            {
+                Content = srvm.Path,
+                Placement = PlacementMode.Left,
+                VerticalOffset = 400
+            };
+            ToolTipService.SetToolTip(outerGrid, tip);
+            tip.IsOpen = true;
+            SplitFrame.HighlightDoc(srvm.ViewDocument, SplitFrame.HighlightMode.Highlight);
         }
 
-        private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Grid_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            var viewModel = (sender as Grid)?.DataContext as SearchResultViewModel;
-            DocumentController docTapped = viewModel?.ViewDocument;
-            SplitFrame.HighlightDoc(docTapped, SplitFrame.HighlightMode.Unhighlight);
+            if (!(sender is Grid outerGrid && outerGrid.DataContext is SearchResultViewModel srvm)) return;
+            if (ToolTipService.GetToolTip(outerGrid) is ToolTip tip) tip.IsOpen = false;
+            SplitFrame.HighlightDoc(srvm.ViewDocument, SplitFrame.HighlightMode.Unhighlight);
         }
 
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
@@ -269,10 +283,10 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).ToList();
+            var docs = Search.Parse(xAutoSuggestBox.Text).Where(sr => !sr.Node.Parent?.ViewDocument.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == true).Select(sr => sr.ViewDocument).DistinctBy(dn => dn.GetDataDocument()).ToList();
 
             var searchString = xAutoSuggestBox.Text;
-            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Page, collection =>
+            args.Data.SetDragModel(new DragDocumentModel(docs, CollectionViewType.Schema, collection =>
             {
                 collection.GetDataDocument().SetField<TextController>(KeyStore.SearchStringKey, searchString, true);
                 var fields = collection.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
@@ -530,7 +544,7 @@ namespace Dash
                     }
                 }
 
-                SearchResultViewModel newVm = DocumentSearchResultToViewModel(res);
+                var newVm = DocumentSearchResultToViewModel(res);
 
                 // removing copies 
 
@@ -599,7 +613,7 @@ namespace Dash
             string suffix = len < docTitle.Length - 1 ? "..." : "";
             docTitle = docTitle.Substring(1, len) + suffix;
             var titles = result.FormattedKeyRef.Select(key => "Title:" + docTitle + ", Key:" + key).ToList();
-            var svm = new SearchResultViewModel(titles, result.RelevantText, result.ViewDocument, result.Node.Parent?.ViewDocument, true);
+            var svm = new SearchResultViewModel(result.Path, titles, result.RelevantText, result.ViewDocument, result.Node.Parent?.ViewDocument, true);
             return svm;
         }
 
@@ -669,6 +683,9 @@ namespace Dash
                     SplitFrame.HighlightDoc(docTappedUp, SplitFrame.HighlightMode.Highlight);
                 }
 
+                break;
+            case VirtualKey.Escape:
+                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
                 break;
             }
         }

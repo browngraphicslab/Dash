@@ -30,7 +30,6 @@ namespace Dash
         /// </summary>
         private Dictionary<int, Color>    _originalCharFormat = new Dictionary<int, Color>();
         private ManipulationControlHelper _manipulator;
-        private AnnotationManager         _annotationManager;
         private string                    _lastXamlRTFText = "";
         private Size                      _lastDesiredSize = new Size();
         private string                    _lastSizeRTFText = "";
@@ -43,7 +42,7 @@ namespace Dash
                 return base.MeasureOverride(availableSize);
             if (_hackToIgnoreMeasuringWhenProcessingMarkdown)
                 return _lastDesiredSize;
-            if (!double.IsNaN(ViewModel.Width) && DesiredSize.Width >= ViewModel.Width)
+            if (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) && DesiredSize.Width >= ViewModel.LayoutDocument.GetWidth())
             {
                  GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = double.NaN; });
                 return base.MeasureOverride(availableSize);
@@ -83,33 +82,26 @@ namespace Dash
             IsTextPredictionEnabled = true;
             Background = new SolidColorBrush(Colors.Transparent);
             Loaded += OnLoaded;
-            Unloaded += UnLoaded;
             MinWidth = 1;
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((s, e) =>
             {
-                var docView = this.GetFirstAncestorOfType<DocumentView>();
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && docView != null)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && this.GetDocumentView() is DocumentView docView)
                 {
-                    if (!SelectionManager.IsSelected(docView))
+                    if (!SelectionManager.IsSelected(docView.ViewModel))
                     {
                         SelectionManager.Select(docView, false);
-                        var selection = Document.Selection;
-                        string boxText;
-                        Document.GetText(TextGetOptions.None, out boxText);
-                        var lenght = boxText.Length - 1;
-                        selection.StartPosition = lenght;
-                        selection.EndPosition = lenght;
+                        Document.GetText(TextGetOptions.None, out string boxText);
+                        Document.Selection.StartPosition = Document.Selection.EndPosition = boxText.Length - 1;
                         Focus(FocusState.Keyboard);
                     }
 
                     TouchInteractions.NumFingers++;
                     if (TouchInteractions.HeldDocument == null)
                         TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
-                    SelectionManager.TryInitiateDragDrop(docView, e, null);
+                    SelectionManager.InitiateDragDrop(docView, e);
                 }
-                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, e, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0, true);
-                DocumentView.FocusedDocument = docView;
+                _manipulator = !e.IsRightPressed() ? null: new ManipulationControlHelper(this, true);
                 e.Handled = true;
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(this_Tapped), true);
@@ -134,16 +126,7 @@ _manipulator = null;
 
             PointerWheelChanged += (s, e) => e.Handled = true;
 
-            GotFocus += (s, e) =>
-            {
-                var docView = getDocView();
-                if (docView != null)
-                {
-                    docView.CacheMode = null;
-                    
-                    Clipboard.ContentChanged += Clipboard_ContentChanged;
-                }
-            };
+            GotFocus += (s, e) => Clipboard.ContentChanged += Clipboard_ContentChanged;
 
             TextChanged += (s, e) =>
             {
@@ -157,20 +140,19 @@ _manipulator = null;
 
             LostFocus += (s, e) =>
             {
-                if (getDocView() != null)
+                if (ViewModel?.IsSelected != true)
                 {
-                    getDocView().CacheMode = new BitmapCache();
+                    IsEnabled = false;
                 }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
-                if (string.IsNullOrEmpty(getReadableText()) &&  DataFieldKey.Equals(KeyStore.DataKey))
+                if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey?.Equals(KeyStore.DataKey) == true)
                 {
-                    var docView = getDocView();
-                    if (docView != null && !SelectionManager.IsSelected(docView))
+                    if (!SelectionManager.IsSelected(ViewModel))
                     {
                         using (UndoManager.GetBatchHandle())
                         {
-                            docView?.DeleteDocument();
+                            ViewModel.RequestDelete();
                         }
                     }
                 }
@@ -183,16 +165,6 @@ _manipulator = null;
             ContextMenuOpening += (s, e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
 
             SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
-
-            //var sizeBinding = new Binding
-            //{
-            //    Source = SettingsView.Instance,
-            //    Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
-            //    Mode = BindingMode.OneWay
-            //};
-            //SetBinding(FontSizeProperty, sizeBinding);
-
-            _annotationManager = new AnnotationManager(this);
 
             SizeChanged += (sender, e) =>
             {
@@ -209,23 +181,11 @@ _manipulator = null;
             };
 
         }
-
-        private void SelectionManager_SelectionChanged(DocumentSelectionChangedEventArgs args)
-        {
-            if (DataFieldKey.Equals(KeyStore.DataKey) && string.IsNullOrEmpty(getReadableText()) && FocusManager.GetFocusedElement() != this)
-            {
-                var docView = getDocView();
-                if (args.DeselectedViews.Contains(docView))
-                {
-                    docView.DeleteDocument();
-                }
-            }
-        }
         public KeyController         DataFieldKey { get; set; }
         public DocumentController    DataDocument => ViewModel?.DataDocument;
         public DocumentController    LayoutDocument => ViewModel?.LayoutDocument;
         public DocumentViewModel     ViewModel => getDocView()?.ViewModel ?? DataContext as DocumentViewModel;  // DataContext as DocumentViewModel;  would prefer to use DataContext, but it can be null when getDocView() is not
-        private DocumentView         getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
+        private DocumentView         getDocView() { return this.GetDocumentView(); }
         private IList<TextController> getSelected()
         {
             return DataDocument?.GetDereferencedField<ListController<TextController>>(CollectionDBView.SelectedKey, null)
@@ -279,26 +239,6 @@ _manipulator = null;
                 rtv.Document.SetText(TextSetOptions.FormatRtf, ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
                 rtv._lastXamlRTFText = rtv.getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
             }
-            var documentView = rtv.GetFirstAncestorOfType<DocumentView>();
-            if (documentView != null)
-            {
-                if (rtv.Document.Selection.FindText(HyperlinkText, rtv.getRtfText().Length, FindOptions.Case) != 0)
-                {
-                    var url = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
-                    var title = rtv.DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
-
-                    //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
-
-                    rtv.Document.Selection.CharacterFormat.Size = 9;
-                    rtv.Document.Selection.FindText(HyperlinkMarker, rtv.getRtfText().Length, FindOptions.Case);
-                    rtv.Document.Selection.CharacterFormat.Size = 8;
-                    rtv.Document.Selection.Text = link;
-                    rtv.Document.Selection.Link = "\"" + url + "\"";
-                    rtv.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
-                    rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
-                }
-            }
             if (double.IsNaN(rtv.Width))
             {
                 rtv.InvalidateMeasure();
@@ -306,26 +246,28 @@ _manipulator = null;
         }
 
         // determines the document controller of the region and calls on annotationManager to handle the linking procedure
-        public async void RegionSelected(Point pointPressed)
+        public async Task<bool> RegionSelected(Point pointPressed)
         {
             var target = getHyperlinkTargetForSelection();
             if (target != null)
             {
-                var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target);
-                if (theDoc != null)
+                if (target.Scheme == "dash")
                 {
+                    var theDoc = RESTClient.Instance.Fields.GetController<DocumentController>(target.AbsolutePath);
                     if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.Contains(theDoc) == true)
                     {
                         // get region doc
                         var region = theDoc.GetDataDocument().GetRegionDefinition();
-                        _annotationManager.FollowRegion(getDocView(), theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
+                        AnnotationManager.FollowRegion(this, theDoc, this.GetAncestorsOfType<ILinkHandler>(), pointPressed);
                     }
                 }
-                else if (target.StartsWith("http"))
+                else if (target.Scheme == "http")
                 {
-                    await Launcher.LaunchUriAsync(new Uri(target));
+                    await Launcher.LaunchUriAsync(target);
                 }
+                return true;
             }
+            return false;
         }
 
         private DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
@@ -354,10 +296,9 @@ _manipulator = null;
             return nearest;
         }
 
-        private void this_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void this_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = false;
-            RegionSelected(e.GetPosition(MainPage.Instance));
+            e.Handled = await RegionSelected(e.GetPosition(MainPage.Instance));
         }
 
         private void CursorToEnd()
@@ -416,7 +357,29 @@ _manipulator = null;
             menu.AddAction("BASIC",      new ActionViewModel("Google",     "Google Clip",          GoogleClip,       source));
             menu.AddAction("BASIC",      new ActionViewModel("Bio",        "Google Bio",           GoogleBio,        source));
             menu.AddAction("TRAVELOGUE", new ActionViewModel("Travelogue", "Create Travelogue",    CreateTravelogue, source));
+            menu.AddAction("LIBRARY",    new ActionViewModel("Library - L", "Dock Library on left", LibraryLeft, source));
+            menu.AddAction("LIBRARY",    new ActionViewModel("Library - R", "Dock Library on right", LibraryRight, source));
             MainPage.Instance.xCanvas.Children.Add(menu);
+        }
+
+        private Task<bool> LibraryLeft(ActionFuncParams actionFuncParams)
+        {
+            return Library(actionFuncParams, SplitDirection.Left);
+        }
+
+        private Task<bool> LibraryRight(ActionFuncParams actionFuncParams)
+        {
+            return Library(actionFuncParams, SplitDirection.Right);
+        }
+
+        private Task<bool> Library(ActionFuncParams afp, SplitDirection dir)
+        {
+            var docs = SearchFunctions.Library();
+            docs.Remove(LayoutDocument);
+            var col = new CollectionBox(docs, viewType: CollectionViewType.Schema).Document;
+            col.SetField<TextController>(KeyStore.ScriptSourceKey, "library()", true);
+            this.GetFirstAncestorOfTypeFast<SplitFrame>()?.Split(dir, col, true, false);
+            return Task.FromResult(true);
         }
 
         private async Task<bool> CreateTravelogue(ActionFuncParams actionParams)
@@ -447,8 +410,7 @@ _manipulator = null;
             }
 
             // create collection
-            var collection = new CollectionNote(this.ViewModel.Position, CollectionViewType.Stacking, 500, 500,
-                eventDocs);
+            var collection = new CollectionNote(ViewModel.LayoutDocument.GetPosition(), CollectionViewType.Stacking, 500, 500,  eventDocs);
             collection.Document.SetTitle("Travelogue Created " + DateTime.Now.ToLocalTime().ToString("f"));
 
             var cfv = this.GetFirstAncestorOfType<CollectionFreeformView>();
@@ -508,7 +470,7 @@ _manipulator = null;
             stackData.SetField<TextController>(wkey, wikipedia, true);
             var html = new HtmlNote(wikipedia,size:new Size(double.NaN, 700)).Document;
             html.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-            var dbox = new DataBox(new DocumentReferenceController(stackData, bkey)).Document;
+            var dbox = new DataBox(stackData, bkey, new Point()).Document;
             dbox.SetField<NumberController>(KeyStore.FontSizeKey, 36, true);
             stackData.SetField(KeyStore.DataKey,
                 new ListController<DocumentController>(
@@ -521,7 +483,7 @@ _manipulator = null;
         {
             if (removeTextBox)
             {
-                this.GetFirstAncestorOfType<DocumentView>()?.DeleteDocument();
+                this.GetDocumentView()?.DeleteDocument();
             }
         }
         private void XRichEditBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -602,11 +564,11 @@ _manipulator = null;
                     DataDocument.SetField<NumberController>(KeyController.Get("DiscussionDepth"), Math.Max(0, dep - 1), true);
                     DataDocument.SetField<TextController>(KeyStore.TitleKey, Math.Max(0, dep - 1).ToString(), true);
                     e.Handled = true;
-                    getDocView().GetFirstAncestorOfType<DocumentView>().UpdateLayout();
+                    getDocView().GetDocumentView().UpdateLayout();
                     return;
                 }
-                var precontainer = getDocView().GetFirstAncestorOfType<DocumentView>();
-                var preprecontainer = precontainer?.GetFirstAncestorOfType<DocumentView>();
+                var precontainer = getDocView().GetDocumentView();
+                var preprecontainer = precontainer?.GetDocumentView();
                 var prereplies = precontainer?.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
                 var preprereplies = preprecontainer?.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("Replies"), null);
                 if (preprereplies != null && prereplies != null)
@@ -627,7 +589,7 @@ _manipulator = null;
                     DataDocument.SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep + 1, true);
                     DataDocument.SetField<TextController>(KeyStore.TitleKey, (dep + 1).ToString(), true);
                     e.Handled = true;
-                    getDocView().GetFirstAncestorOfType<DocumentView>().UpdateLayout();
+                    getDocView().GetDocumentView().UpdateLayout();
                     return;
                 }
             }
@@ -638,9 +600,9 @@ _manipulator = null;
                 if (depth is double dep)
                 {
                     var rt = new RichTextNote("").Document;
-                    MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10)));
+                    CollectionFreeformView.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(10, ActualHeight + 10)));
                     rt.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), dep, true);
-                    var parent = getDocView().GetFirstAncestorOfType<DocumentView>();
+                    var parent = getDocView().GetDocumentView();
                     var items = parent.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyController.Get("DiscussionItems"), null);
                     items.Insert(items.IndexOf(LayoutDocument) + 1, rt);
                     e.Handled = true;
@@ -656,18 +618,18 @@ _manipulator = null;
                                 </Grid>";
                 Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 Document.Selection.Delete(TextRangeUnit.Character, 1);
-                MainPage.Instance.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5)));
+                CollectionFreeformView.SetForceFocusPoint(null, TransformToVisual(MainPage.Instance).TransformPoint(new Point(15, ActualHeight + 5)));
                 var replies = DataDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyController.Get("Replies"));
                 var rtn = new RichTextNote("").Document;
-                var xaml = LayoutDocument.GetDereferencedField<TextController>(KeyStore.XamlKey,null)?.Data;
+                var xaml = LayoutDocument.GetXaml();
                 if (xaml == null)
                 {
                     xaml = xamlReplies;
-                    LayoutDocument.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                    LayoutDocument.SetXaml(xaml);
                 }
-                rtn.SetField<TextController>(KeyStore.XamlKey, xaml, true);
+                rtn.SetXaml(xaml);
                 replies.Add(rtn);
-                var found = VisualTreeHelper.FindElementsInHostCoordinates((Point)MainPage.Instance.ForceFocusPoint, this).ToList().OfType<RichEditBox>();
+                var found = VisualTreeHelper.FindElementsInHostCoordinates((Point)CollectionFreeformView.ForceFocusPoint, this).ToList().OfType<RichEditBox>();
                 e.Handled = true;
             }
             if (this.IsAltPressed() && !e.Key.Equals(VirtualKey.Menu) && e.Key.Equals(VirtualKey.Right))
@@ -831,7 +793,7 @@ _manipulator = null;
                 Document.Selection.SetRange(Document.Selection.StartPosition,
                                                          Document.Selection.StartPosition + hashcount + extracount);
                 if (Document.Selection.StartPosition == 0)
-                    CollectionFreeformBase.PreviewFormatString = Document.Selection.Text;
+                    CollectionFreeformView.PreviewFormatString = Document.Selection.Text;
                 Document.Selection.Text = "";
                 Document.Selection.SetRange(Document.Selection.StartPosition, s2);
                 Document.Selection.CharacterFormat.Bold = hashcount > 0 ? FormatEffect.On : origFormat.Bold;
@@ -843,8 +805,7 @@ _manipulator = null;
                 var eventDoc = new RichTextNote(text).Document;
                 var tags = "rich text, note, " + Document.Selection.Text.Substring(0, Document.Selection.Text.Length - 2);
                 eventDoc.GetDataDocument().SetField<TextController>(KeyStore.EventTagsKey, tags, true);
-                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey,
-                    this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.ContainerDocument, true);
+                eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey, this.GetDocumentView().ParentViewModel?.ContainerDocument, true);
                 eventDoc.SetField(KeyStore.EventDisplay1Key, ViewModel.DocumentController, true);
                 var displayXaml =
                     @"<Grid
@@ -882,10 +843,19 @@ _manipulator = null;
             if (clipboardContent.Properties[nameof(DocumentController)]?.Equals(LayoutDocument) != true)
             {
                 var dataPackage = new DataPackage();
-                dataPackage.SetText(await clipboardContent.GetTextAsync());
-                //set RichEditView property to this view
-                dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
-                Clipboard.SetContent(dataPackage);
+                if (clipboardContent.AvailableFormats.Contains(StandardDataFormats.Text))
+                {
+                    dataPackage.SetText(await clipboardContent.GetTextAsync());
+                    //set RichEditView property to this view
+                    dataPackage.Properties[nameof(DocumentController)] = LayoutDocument;
+                    try
+                    {
+                        Clipboard.SetContent(dataPackage);
+                    } catch (Exception ex)
+                    {
+                        Debug.WriteLine("Exception in clipboard: " + ex.Message);
+                    }
+                }
             }
             Clipboard.ContentChanged += Clipboard_ContentChanged;
         }
@@ -895,65 +865,43 @@ _manipulator = null;
 
         #region load/unload
 
-        private void UnLoaded(object s, RoutedEventArgs e)
-        {
-            SelectionManager.SelectionChanged -= SelectionManager_SelectionChanged;
-        }
-
-        public const string HyperlinkMarker = "<hyperlink marker>";
-        public const string HyperlinkText = "\\par}\\pard{ Text from: " + HyperlinkMarker + "\\par}";
-
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        { 
-            if (GetValue(TextProperty) is RichTextModel.RTD xamlText)
+        {
+            // need to do this because RichEditViews handle all events. If Enabled=False, they don't handle events but they also are hit test visible so 
+            // documentView won't get any events on them.  This hack should be replaced with another mechanism whereby the RichEditVIew doesn't become
+            // totally hittest invisible but als doesn't consume events.
+            if (this.GetDocumentView()?.GetFirstDescendantOfType<Grid>() is Grid grid)
             {
-                Document.SetText(TextSetOptions.FormatRtf, xamlText.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+                grid.Background = new SolidColorBrush(Colors.Transparent);
             }
+
+
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
-            //DataDocument.AddWeakFieldUpdatedListener(this, CollectionDBView.SelectedKey, (view, controller, arg3) => view.selectedFieldUpdatedHdlr(controller, arg3));
-            if (MainPage.Instance.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)MainPage.Instance.ForceFocusPoint))
+            if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
             {
-                MainPage.Instance.ClearForceFocus();
+                CollectionFreeformView.ClearForceFocus();
                 GotFocus += RichTextView_GotFocus;
-                SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
                 Focus(FocusState.Programmatic);
+            }
+            else
+            {
+                IsEnabled = (Tag?.Equals("HACK") == true);
             }
             if (DataDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data == "/" && this == FocusManager.GetFocusedElement())
             {
                 CreateActionMenu(this);
             }
-            var documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (documentView != null)
-            {
-                Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
-                if (Document.Selection.StartPosition != Document.Selection.EndPosition)
-                {
-                    var url = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceUriKey, null)?.Data;
-                    var title = DataDocument.GetDereferencedField<TextController>(KeyStore.SourceTitleKey, null)?.Data;
-
-                    //this does better formatting/ parsing than the regex stuff can
-                    var link = title ?? HtmlToDashUtil.GetTitlesUrl(url);
-
-                    Document.Selection.CharacterFormat.Size = 9;
-                    Document.Selection.FindText(HyperlinkMarker, getRtfText().Length, FindOptions.Case);
-                    Document.Selection.CharacterFormat.Size = 8;
-                    Document.Selection.Text = link;
-                    Document.Selection.Link = "\"" + url + "\"";
-                    Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
-                    Document.Selection.EndPosition = Document.Selection.StartPosition;
-                }
-            }
         }
         private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
         {
             GotFocus -= RichTextView_GotFocus;
-            var text = MainPage.Instance.TextPreviewer?.Visibility == Visibility.Visible ? MainPage.Instance.TextPreviewer.PreviewTextBuffer : "";
+            var text = CollectionFreeformView.TextPreviewer?.Visibility == Visibility.Visible ? CollectionFreeformView.TextPreviewer.PreviewTextBuffer : "";
             Document.Selection.SetRange(0, 0);
             Document.SetText(TextSetOptions.None, text);
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
-            SelectionManager.Select(getDocView(), false);
+            //SelectionManager.Select(getDocView(), false);
         }
 
         #endregion
@@ -977,7 +925,7 @@ _manipulator = null;
             return LayoutDocument;
         }
 
-        private string getHyperlinkTargetForSelection()
+        private Uri getHyperlinkTargetForSelection()
         {
             var s1 = Document.Selection.StartPosition;
             var s2 = Document.Selection.EndPosition;
@@ -986,7 +934,7 @@ _manipulator = null;
                 Document.Selection.SetRange(s1, s2 + 1);
             }
 
-            string target = Document.Selection.Link.Length > 1 ? Document.Selection.Link.Split('\"')[1] : null;
+            var target = !string.IsNullOrEmpty(Document.Selection.Link) ? new Uri(Document.Selection.Link.Split("\"")[1]) : null;
 
             if (Document.Selection.EndPosition != s2)
                 Document.Selection.SetRange(s1, s2);
@@ -1000,9 +948,9 @@ _manipulator = null;
 
             using (UndoManager.GetBatchHandle())
             {
-                if (string.IsNullOrEmpty(getSelected()?.First()?.Data))
+                if (string.IsNullOrEmpty(getSelected()?.First()?.Data) && theDoc != null && s1 == s2)
                 {
-                    if (theDoc != null && s1 == s2) Document.Selection.Text = theDoc.Title;
+                    Document.Selection.Text = theDoc.Title;
                 }
 
 
@@ -1020,7 +968,7 @@ _manipulator = null;
             var selectedText = Document.Selection.Text;
             var start = Document.Selection.StartPosition;
             var length = Document.Selection.EndPosition - start;
-            string link = null;
+            Uri link = null;
             DocumentController targetRegionDocument = null;
 
             var origStart = start;
@@ -1031,7 +979,7 @@ _manipulator = null;
                 for (int i = 0; i <= length; i++)
                 {
                     Document.Selection.SetRange(start + i, start + i + 1);
-                    if (Document.Selection.Link != "")
+                    if (Document.Selection.Link != null)
                     {
                         if (Document.Selection.Link.StartsWith("\"http"))
                         {
@@ -1076,7 +1024,7 @@ _manipulator = null;
                         link = getTargetLink(selectedText, out targetRegionDocument);
                     }
                     var cursize = Document.Selection.EndPosition - Document.Selection.StartPosition;
-                    Document.Selection.Link = link;
+                    Document.Selection.Link = link.AbsoluteUri;
                     var newsize = Document.Selection.EndPosition - Document.Selection.StartPosition;
                     newstart += (newsize - cursize);
                     Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
@@ -1102,7 +1050,7 @@ _manipulator = null;
                 }
                 Document.Selection.SetRange(start, start + length);
                 // set the hyperlink for the matched text
-                Document.Selection.Link = link;
+                Document.Selection.Link = "\"" + link.AbsoluteUri +"\"";
                 endpos = Document.Selection.EndPosition;
                 Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
             }
@@ -1110,41 +1058,16 @@ _manipulator = null;
             return targetRegionDocument;
         }
 
-        private string getTargetLink(string selectedText, out DocumentController theDoc)
+        private Uri getTargetLink(string selectedText, out DocumentController theDoc)
         {
             theDoc = new RichTextNote(selectedText).Document;
             theDoc.SetRegionDefinition(LayoutDocument);
-            var link = "\"" + theDoc.Id + "\"";
+            var link = new Uri("dash:"+theDoc.Id);
             if (theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.HtmlDocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
-                link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
+                link = new Uri("http:" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data);
             }
             return link;
-        }
-
-        private string getHyperlinkText(int atPos, int s2)
-        {
-            Document.Selection.SetRange(atPos + 1, s2 - 1);
-            string refText;
-            Document.Selection.GetText(TextGetOptions.None, out refText);
-
-            return refText;
-        }
-
-        private int findPreviousHyperlinkStartMarker(string allText, int s1)
-        {
-            Document.Selection.SetRange(0, allText.Length);
-            var atPos = -1;
-            while (Document.Selection.FindText("@", 0, FindOptions.None) > 0)
-            {
-                if (Document.Selection.StartPosition < s1)
-                {
-                    atPos = Document.Selection.StartPosition;
-                    Document.Selection.SetRange(atPos + 1, allText.Length);
-                }
-                else break;
-            }
-            return atPos;
         }
 
         #endregion

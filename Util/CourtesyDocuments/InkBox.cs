@@ -19,9 +19,9 @@ namespace Dash
             //SetLayoutForDocument(Document, Document, true, true);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController)
         {
-            var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
+            var fmController = docController.GetDereferencedField(KeyStore.DataKey, null) as InkController;
             return fmController != null ? (FrameworkElement)new InkCanvasControl(fmController) : new Grid();
         }
 

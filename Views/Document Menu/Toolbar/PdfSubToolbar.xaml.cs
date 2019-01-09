@@ -25,15 +25,13 @@ namespace Dash
 
         private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
-            // xPdfCommandbar.IsOpen = true;
-            _currentPdfView?.ShowRegions();
+            _currentPdfView?.SetRegionVisibility(Visibility.Visible);
             xToggleAnnotations.Label = "Visible";
 	    }
 
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
-            // xPdfCommandbar.IsOpen = true;
-            _currentPdfView?.HideRegions();
+            _currentPdfView?.SetRegionVisibility(Visibility.Collapsed);
             xToggleAnnotations.Label = "Hidden";
 	    }
 
@@ -48,7 +46,7 @@ namespace Dash
 
             if (_currentPdfView == null)
                 return;
-            xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible();
+            xToggleAnnotations.IsChecked = _currentPdfView.AreAnnotationsVisible;
 
             //update selected annotation type according to this newly selected PDF
             switch (_currentPdfView.CurrentAnnotationType)
@@ -219,14 +217,6 @@ namespace Dash
             };
             ToolTipService.SetToolTip(xToggleAnnotations, _toggle);
 
-	        _scrollVis = new ToolTip()
-	        {
-		        Content = "Hide Annotations on Scroll",
-		        Placement = placementMode,
-		        VerticalOffset = offset
-	        };
-	        ToolTipService.SetToolTip(xAnnotationsVisibleOnScroll, _scrollVis);
-
 			_ink = new ToolTip()
             {
                 Content = "Ink Annotation",
@@ -265,29 +255,9 @@ namespace Dash
             else if (sender is AppBarToggleButton toggleButton && ToolTipService.GetToolTip(toggleButton) is ToolTip toggleTip) toggleTip.IsOpen = false;
         }
 
-	    private void XAnnotationsVisibleOnScroll_OnChecked(object sender, RoutedEventArgs e)
-	    {
-            if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
-            {
-                tip.Content = "Show All Annotations";
-            }
-
-            _currentPdfView?.SetAnnotationsVisibleOnScroll(false);
-	    }
-
-	    private void XAnnotationsVisibleOnScroll_OnUnchecked(object sender, RoutedEventArgs e)
-	    {
-	        if (sender is AppBarToggleButton b && ToolTipService.GetToolTip(b) is ToolTip tip)
-            {
-                tip.Content = "Hide Annotations on Scroll";
-            }
-
-            _currentPdfView?.SetAnnotationsVisibleOnScroll(true);
-	    }
-
         private void xToPageBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            xToPageBox.Text = _currentPdfView.PageNum().ToString();
+            xToPageBox.Text = _currentPdfView.PageNum.ToString();
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -147,7 +148,7 @@ namespace Dash
             PresentationView presView = MainPage.Instance.xPresentationView;
             presView.xHelpPrompt.Visibility = Visibility.Visible;
 
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return;
+            if (MainPage.Instance.xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Collapsed) return;
 
             presView.xHelpIn.Begin();
         }
@@ -173,7 +174,7 @@ namespace Dash
             PresentationView presView = MainPage.Instance.xPresentationView;
             presView.xHelpPrompt.Visibility = Visibility.Visible;
 
-            if (MainPage.Instance.CurrPresViewState == MainPage.PresentationViewState.Collapsed) return removed;
+            if (MainPage.Instance.xPresentationView.CurrPresViewState == PresentationView.PresentationViewState.Collapsed) return removed;
 
             presView.xHelpIn.Begin();
 
@@ -217,6 +218,16 @@ namespace Dash
         public void RenamePres(DocumentController pres, string newName)
         {
             pres.SetTitle(newName);
+        }
+
+        public void UpdateList()
+        {
+            //TODO This is pretty inefficient. It's probably ok for now because presentations should be short, 
+            // but it is not elegant
+            var docs = PinnedNodes.Select(pivm => pivm.Document);
+            var presList = CurrPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey);
+            presList.Clear();
+            presList.AddRange(docs);
         }
     }
 }

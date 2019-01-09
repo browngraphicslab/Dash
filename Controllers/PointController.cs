@@ -36,7 +36,7 @@ namespace Dash
             return new PointController(0, 0);
         }
 
-        public override object GetValue(Context context)
+        public override object GetValue()
         {
             return Data;
         }

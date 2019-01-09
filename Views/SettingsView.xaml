@@ -92,7 +92,7 @@
                 </StackPanel>
                 <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Markdown text mode</TextBlock>
                 <ToggleSwitch x:Name="xTextModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
-                
+
             </StackPanel>
 
             <!--Backup-->

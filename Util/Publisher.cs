@@ -551,47 +551,57 @@ namespace Dash
 
 		private string RenderAudioToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
-			var audioTitle = "aud_" + _fileNames[dc.GetDataDocument()] + ".mp3";
-			var path = "Media\\" + audioTitle;
-			return "<audio controls><source src=\"" + path + "\"> Your browser doesn't support the audio tag :( </audio>";
+		    if (_fileNames.ContainsKey(dc.GetDataDocument()))
+		    {
+		        var audioTitle = "aud_" + _fileNames[dc.GetDataDocument()] + ".mp3";
+		        var path = "Media\\" + audioTitle;
+		        return "<audio controls><source src=\"" + path + "\"> Your browser doesn't support the audio tag :( </audio>";
+            }
+
+		    return "";
 		}
 
 		private string RenderImageToHtml(DocumentController dc, List<DocumentController> regionsToRender = null)
 		{
 			var regions = regionsToRender ?? dc.GetDataDocument().GetRegions()?.ToList();
-			var imgTitle = "img_" + _fileNames[dc.GetDataDocument()] + ".jpg";
-			var path = "Media\\" + imgTitle;
-			var html = "<div class=\"imgNote\"><img src=\"" + path + "\">";
+		    var dataDoc = dc.GetDataDocument();
+		    var html = "";
+		    if (_fileNames.ContainsKey(dataDoc))
+		    {
+		        var imgTitle = "img_" + _fileNames[dc.GetDataDocument()] + ".jpg";
+		        var path = "Media\\" + imgTitle;
+		        html = "<div class=\"imgNote\"><img src=\"" + path + "\">";
 
-			if (regions != null)
-			{
-				foreach (var region in regions)
-				{
-					switch (region.GetAnnotationType())
-					{
-						case AnnotationType.Region:
-							// currently the only supported one for images?
-							var oneTarget = GetOppositeLinkTarget(region);
-							var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null).First().Data;
-							var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null).First().Data;
-							var imgSize = region.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null)
-								.GetDereferencedField<PointController>(KeyStore.InitialSizeKey, null).Data;
-							if (oneTarget != null)
-							{
-								var rect = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\"><svg class=\"pdfOverlay\" height=\"" +
-								           size.Y / imgSize.Y * 100 + "%\" width=\"" + size.X / imgSize.X * 100 +
-								           "%\" style=\"position:absolute; top:" +
-								           point.Y / imgSize.Y * 100 + "%; left:" + point.X / imgSize.X * 100 + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget.GetDataDocument()] + "\"></rect></svg></a>";
-								html += rect;
-							}
-							break;
-						default:
-							break;
-					}
-				}
-			}
+		        if (regions != null)
+		        {
+		            foreach (var region in regions)
+		            {
+		                switch (region.GetAnnotationType())
+		                {
+		                case AnnotationType.Region:
+		                    // currently the only supported one for images?
+		                    var oneTarget = GetOppositeLinkTarget(region);
+		                    var point = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionTopLeftKey, null)?.First()?.Data;
+		                    var size = region.GetDereferencedField<ListController<PointController>>(KeyStore.SelectionRegionSizeKey, null)?.First()?.Data;
+		                    var imgSize = region.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null)?
+		                        .GetDereferencedField<PointController>(KeyStore.InitialSizeKey, null)?.Data;
+		                    if (oneTarget != null && point is Point pt && size is Point sz && imgSize is Point imgSz)
+		                    {
+		                        var rect = "<a href=\"" + _fileNames[oneTarget.GetDataDocument()] + ".html\"><svg class=\"pdfOverlay\" height=\"" +
+		                                   sz.Y / imgSz.Y * 100 + "%\" width=\"" + sz.X / imgSz.X * 100 +
+		                                   "%\" style=\"position:absolute; top:" +
+		                                   pt.Y / imgSz.Y * 100 + "%; left:" + pt.X / imgSz.X * 100 + "%\"><rect height=\"100%\" width=\"100%\" style=\"fill:" + _colorPairs[oneTarget.GetDataDocument()] + "\"></rect></svg></a>";
+		                        html += rect;
+		                    }
+		                    break;
+		                default:
+		                    break;
+		                }
+		            }
+		        }
 
-			html += "</div>";
+		        html += "</div>";
+            }
 			return html;
 		}
 
@@ -604,10 +614,16 @@ namespace Dash
 				return "<iframe src=\"" + url + "\"></iframe></div>";
 			}
 
-			// if not a YouTube video, the it's on here
-			var vidTitle = "vid_" + _fileNames[dc.GetDataDocument()] + ".mp4";
-			var path = "Media\\" + vidTitle;
-			return "<video controls><source src=\"" + path + "\" > Your browser doesn't support the video tag :( </video>";
+            // if not a YouTube video, then it's on here
+		    if (_fileNames.ContainsKey(dc.GetDataDocument()))
+		    {
+		        var vidTitle = "vid_" + _fileNames[dc.GetDataDocument()] + ".mp4";
+		        var path = "Media\\" + vidTitle;
+		        return "<video controls><source src=\"" + path +
+		               "\" > Your browser doesn't support the video tag :( </video>";
+		    }
+
+		    return "";
 		}
 
 		#endregion
@@ -984,21 +1000,8 @@ namespace Dash
 			var file = await StorageFile.GetFileFromPathAsync(pdfUri.LocalPath);
             var reader = new PdfReader(await file.OpenStreamForReadAsync());
 			var pdfDocument = new PdfDocument(reader);
-			var strategy = new BoundsExtractionStrategy();
+			var strategy = new BoundsExtractionStrategy(pdfDocument);
 			var processor = new PdfCanvasProcessor(strategy);
-			double offset = 0;
-
-			await Task.Run(() =>
-			{
-				for (var i = 1; i <= pdfDocument.GetNumberOfPages(); ++i)
-				{
-					var page = pdfDocument.GetPage(i);
-					var size = page.GetPageSize();
-					strategy.SetPage(i - 1, offset, size, page.GetRotation());
-					offset += page.GetPageSize().GetHeight() + 10;
-					processor.ProcessPageContent(page);
-				}
-			});
 
 			var selectableElements = strategy.GetSelectableElements(0, pdfDocument.GetNumberOfPages());
 			_pdfSelectableElements[dc] = selectableElements.elements;

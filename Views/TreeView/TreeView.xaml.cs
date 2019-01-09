@@ -62,5 +62,10 @@ namespace Dash.Views.TreeView
 
             args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(ViewModel.ContainerDocument, KeyStore.CollectionOutputKey)));
         }
+
+        private void XMapActiveSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.SetMapVisibility(XMapActiveSwitch.IsOn ? Visibility.Visible : Visibility.Collapsed);
+        }
     }
 }

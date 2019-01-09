@@ -24,18 +24,17 @@ namespace Dash.Views
     public sealed partial class QuickEntryPanel : UserControl
     {
         private string _lastValueInput;
-        private bool _articialChange;
-        private bool _clearByClose;
+        private bool   _articialChange;
+        private bool   _clearByClose;
         private string _mostRecentPrefix;
-        private bool _isQuickEntryOpen;
-        private bool _animationBusy;
-        private List<DocumentView> _selectedDocs => MainPage.Instance.XDocumentDecorations.SelectedDocs;
+        private bool   _isQuickEntryOpen;
+        private bool   _animationBusy;
         public QuickEntryPanel()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             Window.Current.CoreWindow.KeyDown += (sender, args) =>
             {
-                if (_selectedDocs.Any())
+                if (SelectionManager.SelectedDocViewModels.Any())
                 {
                     if (MainPage.Instance.IsShiftPressed() && args.VirtualKey == VirtualKey.PageDown && !_isQuickEntryOpen || args.VirtualKey == VirtualKey.PageUp && _isQuickEntryOpen)
                     {
@@ -112,9 +111,9 @@ namespace Dash.Views
 
             if (!(docSpec.Equals("d") || docSpec.Equals("v"))) return;
 
-            foreach (var doc in _selectedDocs)
+            foreach (var doc in SelectionManager.SelectedDocViewModels)
             {
-                DocumentController target = docSpec.Equals("d") ? doc.ViewModel.DataDocument : doc.ViewModel.LayoutDocument;
+                DocumentController target = docSpec.Equals("d") ? doc.DataDocument : doc.LayoutDocument;
                 string keyInput = split[1].Replace("_", " ");
 
                 var val = target.GetDereferencedField(KeyController.Get(keyInput), null);
@@ -126,7 +125,7 @@ namespace Dash.Views
                 }
 
                 _articialChange = true;
-                xValueBox.Text = val.GetValue(null).ToString();
+                xValueBox.Text = val.GetValue().ToString();
 
                 if (double.TryParse(xValueBox.Text.Trim(), out double res))
                 {
@@ -185,9 +184,9 @@ namespace Dash.Views
             }
 
             FieldControllerBase computedValue = await DSL.InterpretUserInput(rawValueText, true);
-            foreach (var d in _selectedDocs)
+            foreach (var d in SelectionManager.SelectedDocViewModels)
             {
-                DocumentController target = docSpec.Equals("d") ? d.ViewModel.DataDocument : d.ViewModel.LayoutDocument;
+                DocumentController target = docSpec.Equals("d") ? d.DataDocument : d.LayoutDocument;
                 if (computedValue is DocumentController doc && doc.DocumentType.Equals(DashConstants.TypeStore.ErrorType))
                 {
                     computedValue = new TextController(xValueBox.Text.Trim());
@@ -264,19 +263,23 @@ namespace Dash.Views
         private void ToggleQuickEntry()
         {
             var allTopLevel = true;
-            foreach (var doc in _selectedDocs)
+            foreach (var doc in SelectionManager.SelectedDocViewModels)
             {
-                if (!doc.IsTopLevel())
+                if (!SplitManager.IsRoot(doc))
                 {
                     allTopLevel = false;
                 }
             }
-            if (_animationBusy || allTopLevel || Equals(MainPage.Instance.xMapDocumentView)) return;
+            if (_animationBusy || allTopLevel /*|| Equals(MainPage.Instance.xMapDocumentView)*/) return;
 
             _isQuickEntryOpen = !_isQuickEntryOpen;
             Storyboard animation = _isQuickEntryOpen ? xQuickEntryIn : xQuickEntryOut;
 
-            if (animation == xQuickEntryIn) xKeyValueBorder.Width = double.NaN;
+            if (animation == xQuickEntryIn)
+            {
+                xKeyValueBorder.Visibility = Visibility.Visible;
+                xKeyValueBorder.Width = double.NaN;
+            }
 
             _animationBusy = true;
             //_selectedDocs.ForEach(d =>
@@ -300,8 +303,8 @@ namespace Dash.Views
                 animation.Completed -= AnimationCompleted;
                 if (animation == xQuickEntryOut)
                 {
-                    xKeyValueBorder.Width = 0;
-                    Focus(FocusState.Programmatic);
+                    xKeyValueBorder.Visibility = Visibility.Collapsed;
+                    // Focus(FocusState.Programmatic);
                 }
                 else
                 {
