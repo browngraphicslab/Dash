@@ -76,13 +76,13 @@ namespace Dash
 
         public static bool HoldingPDF()
         {
-            return HeldDocument == null ? false :
+            return HeldDocument?.ViewModel == null ? false :
                 HeldDocument.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
         }
 
         public static bool HoldingRichEdit()
         {
-            return HeldDocument == null ? false :
+            return HeldDocument?.ViewModel == null ? false :
                 HeldDocument.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType);
         }
 
