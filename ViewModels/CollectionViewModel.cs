@@ -690,6 +690,8 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            List<DocumentController> docs = (e.DataView.GetDragModel() as DragDocumentModel)?.DraggedDocuments;
+            docs?.ForEach(doc => doc.SetHidden(false));
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;
@@ -734,7 +736,7 @@ namespace Dash
                         var newDoc = joinDragModel.CollectionDocument.GetViewCopy(where);
                         newDoc.SetField(KeyController.Get("DBChartField"), joinDragModel.DraggedKey, true);
                         newDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, CollectionViewType.DB.ToString(), true);
-                        AddDocuments(await AddDroppedDocuments(new DocumentController[] { newDoc }.ToList(), null, false, this, where));
+                        AddDocuments(await AddDroppedDocuments(new[] { newDoc }.ToList(), null, false, this, where));
                     }
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     if (docsToAdd.Count == 0 && !DocumentViewModels.Any((dvm) => dragDocModel.DraggedDocuments.Contains(dvm.DocumentController)))
