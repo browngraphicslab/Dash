@@ -311,7 +311,7 @@ namespace Dash
 
             XMainSplitter.SetContent(lastWorkspace);
 
-            var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
+            var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
             //xMainTreeView.ToggleDarkMode(true);
