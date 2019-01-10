@@ -894,7 +894,7 @@ namespace Dash
             Document.SetText(TextSetOptions.None, text);
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
-            //SelectionManager.Select(getDocView(), false);
+            SelectionManager.Select(getDocView(), false);
         }
 
         #endregion

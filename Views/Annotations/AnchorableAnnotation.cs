@@ -55,6 +55,8 @@ namespace Dash
             // context menu that toggles whether annotations should be show/ hidden on scroll
 
             var flyout = new MenuFlyout();
+            var deleteBtn = new MenuFlyoutItem();
+            deleteBtn.Text = "Delete";
             var visOnScrollON = new MenuFlyoutItem();
             var visOnScrollOFF = new MenuFlyoutItem();
             visOnScrollON.Text = "Unpin Annotation";
@@ -70,6 +72,10 @@ namespace Dash
                     link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
                 }
             }
+            deleteBtn.Click += (s,e) =>
+            {
+                ParentOverlay.RegionDocsList.Remove(region);
+            };
             visOnScrollON.Click += VisOnScrollOnOnClick;
             visOnScrollOFF.Click += VisOnScrollOnOnClick;
             regionGraphic.ContextFlyout = flyout;
@@ -80,7 +86,8 @@ namespace Dash
 
                 var item = allVisible ? visOnScrollON : visOnScrollOFF;
                 flyout.Items?.Clear();
-                flyout.Items?.Add(item);
+                flyout.Items?.Add(deleteBtn);
+                //flyout.Items?.Add(item);
                 flyout.ShowAt(regionGraphic as FrameworkElement);
             };
         }

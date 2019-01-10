@@ -137,13 +137,9 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument()
         {
-            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() != null)
+            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() is AnnotationOverlayEmbeddings embedding)
             {
-                // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
-                //      but it would still be in the list of pinned annotations.  That means the document would reappear
-                //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
-                //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
-                ViewModel.DocumentController.SetHidden(true);
+                embedding.EmbeddedDocsList.Remove(ViewModel.DocumentController);
             }
             else if (ParentCollection != null)
             {
@@ -417,11 +413,11 @@ namespace Dash
             {
                 e.Handled = true;
 
-                if (MainPage.Instance.IsAltPressed())
-                {
-                    ApplyPseudoTemplate(dm);
-                }
-                else
+                //if (MainPage.Instance.IsAltPressed())
+                //{
+                //    ApplyPseudoTemplate(dm);
+                //}
+                //else
                 {
                     MakeDocumentLink(e.GetPosition(this), dm);
                     e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;

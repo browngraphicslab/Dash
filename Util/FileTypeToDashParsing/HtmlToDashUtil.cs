@@ -27,7 +27,7 @@ namespace Dash
             {
                 introParts = beforeHtml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
             }
-            var uri = packageView.AvailableFormats.Contains("UniformResourceLocator") ? (await packageView.GetWebLinkAsync())?.AbsoluteUri : null;
+            var uri = packageView.Contains(StandardDataFormats.WebLink) ? (await packageView.GetWebLinkAsync())?.AbsoluteUri : null;
             uri = uri ?? introParts.LastOrDefault()?.Substring(10);
             
             if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last

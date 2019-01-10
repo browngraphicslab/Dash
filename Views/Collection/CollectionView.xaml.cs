@@ -50,10 +50,10 @@ namespace Dash
         {
             if (ViewModel.ContainerDocument.Title.Contains("clipboard"))
             {
-                var cpb = Clipboard.GetContent();
-                Clipboard.ContentChanged -= Clipboard_ContentChanged;
-                await ViewModel.Paste(cpb, new Point());
-                Clipboard.ContentChanged += Clipboard_ContentChanged;
+                //var cpb = Clipboard.GetContent();
+                //Clipboard.ContentChanged -= Clipboard_ContentChanged;
+                //await ViewModel.Paste(cpb, new Point());
+                //Clipboard.ContentChanged += Clipboard_ContentChanged;
             }
         }
 
