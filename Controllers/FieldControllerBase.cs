@@ -120,9 +120,9 @@ namespace Dash
 
         private void AddReference()
         {
-            ++_refCount;
-            if (_refCount == 1)
+            if (_refCount++ == 0)
             {
+                _isReferenced = true;
                 RefInit();
                 if (!_fromServer)
                 {
@@ -139,13 +139,13 @@ namespace Dash
 
         private void ReleaseReference()
         {
-            if (_refCount == 1)
+            if (--_refCount == 0)
             {
                 DeleteOnServer();
                 RefDestroy();
+                _isReferenced = false;
             }
 
-            --_refCount;
             Debug.Assert(_refCount >= 0);
         }
 
@@ -174,7 +174,8 @@ namespace Dash
             yield break;
         }
 
-        protected bool IsReferenced => _refCount > 0;
+        private bool _isReferenced = false;
+        protected bool IsReferenced => _isReferenced;
 
         protected virtual void RefInit()
         {

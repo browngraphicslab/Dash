@@ -39,7 +39,7 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController GetCopy(this DocumentController doc, Point? where = null)
         {
-            var copy = doc.MakeCopy(new List<KeyController>(new[] { KeyStore.DelegatesKey } ));
+            var copy = doc.MakeCopy(new List<KeyController>());
             var position = copy.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
             if (position != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
@@ -61,7 +61,7 @@ namespace Dash
             DocumentController newDoc = null;
             if ( docContext != null)  // has DocumentContext
             {
-                var copiedData = docContext.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.DelegatesKey })); // copy the data and skip any layouts
+                var copiedData = docContext.MakeCopy(new List<KeyController>()); // copy the data and skip any layouts
                 activeLayout = doc.MakeDelegate(); // inherit the layout
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 docContext = copiedData;
@@ -157,8 +157,8 @@ namespace Dash
             var newDoc = doc;
             if (docContext != null)  // has DocumentContext
             {
-                newDoc = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.DelegatesKey, KeyStore.PrototypeKey }), // skip layout & delegates
-                                      new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
+                newDoc = doc.MakeCopy(new List<KeyController>{ KeyStore.PrototypeKey }, // skip layout & delegates
+                                      new List<KeyController>{ KeyStore.DocumentContextKey }); // don't copy the document context
             }
             else
             {
@@ -438,7 +438,7 @@ namespace Dash
         {
             if (excludeKeys == null)
             {
-                excludeKeys = new List<KeyController>{KeyStore.DelegatesKey};
+                excludeKeys = new List<KeyController>();
             }
             if (doc == null)
                 return doc;

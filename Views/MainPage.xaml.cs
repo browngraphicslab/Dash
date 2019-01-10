@@ -288,7 +288,7 @@ namespace Dash
 
             if (RESTClient.Instance.Fields is CachedEndpoint ce)
             {
-                //await ce.Cleanup();
+                await ce.Cleanup();
             }
             xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
 
