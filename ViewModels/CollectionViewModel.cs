@@ -690,8 +690,6 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            List<DocumentController> docs = (e.DataView.GetDragModel() as DragDocumentModel)?.DraggedDocuments;
-            docs?.ForEach(doc => doc.SetHidden(false));
             using (UndoManager.GetBatchHandle())
             {
                 e.Handled = true;

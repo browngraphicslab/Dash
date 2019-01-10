@@ -965,6 +965,10 @@ namespace Dash
         }
         private void OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.KeyStatus.RepeatCount > 1)
+            {
+                return;
+            }
             var MarqueeKeys = new List<VirtualKey>
             {
                 VirtualKey.A,
@@ -1135,7 +1139,7 @@ namespace Dash
                     }
                 }
 
-                ResetMarquee(false);
+                ResetMarquee(true);
             }
 
             var type = CollectionViewType.Freeform;

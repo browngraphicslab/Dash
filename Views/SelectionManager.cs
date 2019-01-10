@@ -219,6 +219,7 @@ namespace Dash
         #region Drag Manipulation Methods
         public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
+            UndoManager.StartBatch();
             var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
@@ -254,6 +255,7 @@ namespace Dash
             });
             _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
+            UndoManager.EndBatch();
         }
         
         private static void       CollectionDragOver(object sender, DragEventArgs e)
