@@ -54,7 +54,7 @@ namespace Dash
 
             void ContainerHandler(object sender, RoutedEventArgs args)
             {
-                var containerDoc = this.GetDocumentView().ParentViewModel.ContainerDocument;
+                var containerDoc = this.GetDocumentView()?.ParentViewModel?.ContainerDocument;
                 if (containerDoc != null) {
                     eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey, containerDoc, true);
                 }
