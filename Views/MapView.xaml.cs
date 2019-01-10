@@ -111,6 +111,7 @@ namespace Dash
         private DocumentView createMap()
         {
             var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
+            FieldControllerBase.MakeRoot(xMap);
             xMap.SetFitToParent(true);
             xMap.SetWidth(double.NaN);
             xMap.SetHeight(double.NaN);
