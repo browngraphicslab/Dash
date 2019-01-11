@@ -222,16 +222,9 @@ namespace Dash
             var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
-                ////TODO: make this better
-                //bool isPDF = draggedView.ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType);
-                //if ((TouchInteractions.NumFingers != 1 && e != null && e.PointerDeviceType == PointerDeviceType.Touch && !isPDF))
-                //{
-                //    ///might have to change this
-                //    e.Handled = true;
-
-                //} else { 
-                 var parentIsFreeformCollection = parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
-                     parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView;
+                var parentIsFreeformCollection =
+                    parent.ViewModel.DataDocument.DocumentType.Equals(CollectionNote.CollectionNoteDocumentType) &&
+                    parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView;
                 var parentIsAnnotationLayer = parent.GetFirstDescendantOfType<AnnotationOverlayEmbeddings>()
                                                   ?.EmbeddedDocsList
                                                   .Contains(draggedView.ViewModel.DocumentController) == true;
@@ -242,7 +235,8 @@ namespace Dash
                 }
 
                 draggedView = parent;
-            }
+          //  }
+        }
 
             _dragViews = _selectedDocViews.Contains(draggedView) ? _selectedDocViews.ToList() : new DocumentView[] { draggedView }.ToList();
 
@@ -280,7 +274,7 @@ namespace Dash
         }
         public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
         {
-            if (SplitManager.IsRoot(docView.ViewModel) && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed())
+            if ((SplitManager.IsRoot(docView.ViewModel) && !docView.IsShiftPressed() && !docView.IsCtrlPressed() && !docView.IsAltPressed()))
             {
                 args.Cancel = true;
                 return;

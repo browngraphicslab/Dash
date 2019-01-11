@@ -334,14 +334,15 @@ namespace Dash
             {
                 e.Handled = true;
             }
-            else if (!IsCropping && this.GetDocumentView().AreContentsActive && e.IsLeftPressed() && _annotationOverlay != null)
+            else if (!IsCropping && this.GetDocumentView().AreContentsActive && e.IsLeftPressed() && _annotationOverlay != null &&
+                     e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
             {
                 var point = e.GetCurrentPoint(_annotationOverlay);
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
-                e.Handled = true;
+              e.Handled = true;
             }
            // _downPt = e.GetCurrentPoint(this).Position;
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse) e.Handled = true;
+           // if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse && e.GetCurrentPoint(_annotationOverlay).Properties.IsLeftButtonPressed) e.Handled = true;
         }
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {

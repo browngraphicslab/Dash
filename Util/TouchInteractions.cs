@@ -95,5 +95,10 @@ namespace Dash
             if (HeldDocument == droppedDoc) HeldDocument = null;
             CurrInteraction = TouchInteraction.None;
         }
+
+        internal static bool CanMarquee()
+        {
+            return CurrInteraction != TouchInteraction.DocumentManipulation && CurrInteraction != TouchInteraction.Pan;
+        }
     }
 }

@@ -35,7 +35,9 @@ namespace Dash
         private bool              _doubleTapped = false;
         private Point             _down         = new Point();
         private Point             _pointerPoint = new Point(0, 0);
+        private int               _numFingers = 0;
 
+        public int                 NumFingersUsed = 0;
         public CollectionView      ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public CollectionViewModel ParentViewModel => ParentCollection?.ViewModel;
         public DocumentViewModel   ViewModel 
@@ -91,7 +93,14 @@ namespace Dash
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
-            
+            PointerCaptureLost += (s, e) =>
+            {
+                _numFingers--;
+                if (_numFingers == 0)
+                {
+                    NumFingersUsed = 0;
+                }
+            };
             DragStarting  += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped   += (s, e) => { e.Handled = true; TappedHandler(true); };
@@ -107,9 +116,6 @@ namespace Dash
                     TouchInteractions.NumFingers--;
                     if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 }
-            };
-            ManipulationStarted += (s, e) => { 
-                //test
             };
 
             ToFront();
@@ -399,7 +405,10 @@ namespace Dash
             CapturePointer(e.Pointer);
             PointerMoved    += this_PointerMoved;
             PointerReleased += this_PointerReleased;
+            _numFingers++;
+            NumFingersUsed++;
         }
+
         private void this_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = true;
@@ -414,12 +423,20 @@ namespace Dash
                 e.Handled = true;
                 var cur   = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
                 var delta = new Point(cur.X - _down.X, cur.Y - _down.Y);
-                if (ViewModel.LayoutDocument.GetAreContentsHitTestVisible() && Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 10)
+                if (ViewModel.LayoutDocument.GetAreContentsHitTestVisible() &&
+                    Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y) > 50 && NumFingersUsed < 2)
                 {
                     ReleasePointerCapture(e.Pointer);
-                    PointerMoved    -= this_PointerMoved;
+                    PointerMoved -= this_PointerMoved;
                     PointerReleased -= this_PointerReleased;
-                    SelectionManager.InitiateDragDrop(this, e);
+                   // if (TouchInteractions.HoldingPDF())
+                   // {
+                       // this.GetFirstDescendantOfType<PdfAnnotationView>()?.TryPDFDrag(e);
+                 //   }
+                    //else
+                   // {
+                        SelectionManager.InitiateDragDrop(this, e);
+                   // }
                 }
             }
         }

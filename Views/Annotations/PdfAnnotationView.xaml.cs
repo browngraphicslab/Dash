@@ -53,7 +53,6 @@ namespace Dash
         private double _leftMargin, _rightMargin;
         private double viewboxScaling => (ActualWidth - RightMargin - LeftMargin) / PdfMaxWidth;
         public AnnotationOverlay                  AnnotationOverlay => _annotationOverlay;
-        private int _localFingers = 0;
         public DocumentViewModel                  ViewModel => DataContext as DocumentViewModel;
         public DocumentController                 DataDocument => ViewModel?.DataDocument;
         public DocumentController                 LayoutDocument => ViewModel?.LayoutDocument;
@@ -65,6 +64,12 @@ namespace Dash
         public bool                               ActiveView { get; set; }
         public double                             RightMargin { get => _rightMargin; set { _rightMargin = value; UpdateMargins(); } }
         public double                             LeftMargin { get => _leftMargin; set { _leftMargin = value; UpdateMargins(); } }
+
+        public bool                               CanScrollPDF
+        {
+            get => ScrollViewer.VerticalScrollMode == ScrollMode.Enabled;
+            set => ScrollViewer.VerticalScrollMode = value ? ScrollMode.Enabled : ScrollMode.Disabled;
+        }
 
         public PdfAnnotationView()
         {
@@ -382,6 +387,7 @@ namespace Dash
         {
             KeyDown -= PdfAnnotationView_KeyDown;
             KeyDown += PdfAnnotationView_KeyDown;
+
             if (AnnotationOverlay == null)
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, true);
@@ -412,15 +418,14 @@ namespace Dash
         }
         private void XPdfGrid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            //TouchInteractions.NumFingers--;
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
-                _localFingers = 0;
+                CanScrollPDF = true;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
                     TouchInteractions.HeldDocument = null;
             }
-            xPdfGrid.ReleasePointerCapture(e.Pointer);
+            //xPdfGrid.ReleasePointerCapture(e.Pointer);
             xPdfGrid.PointerMoved -= XPdfGrid_PointerMoved;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
             if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
@@ -431,7 +436,6 @@ namespace Dash
                 Focus(FocusState.Pointer);
             }
 
-            Debug.Write("local after pointer released: " + _localFingers);
         }
         private void XPdfGrid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
@@ -439,13 +443,11 @@ namespace Dash
         }
         private void XPdfGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch || e.Pointer.PointerDeviceType == PointerDeviceType.Pen)
-            {
-                (sender as FrameworkElement).CapturePointer(e.Pointer);
-            }
+            CanScrollPDF = this.GetDocumentView().NumFingersUsed > 0;
             _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (this.GetDocumentView().AreContentsActive && e.GetCurrentPoint(null).Properties.IsLeftButtonPressed &&  e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
+            if (this.GetDocumentView().AreContentsActive && e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && 
+                e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
             {
                 var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
                 _annotationOverlay.StartAnnotation(AnnotationOverlay.CurrentAnnotationType, annotationOverlayPt);
@@ -454,16 +456,14 @@ namespace Dash
                 xPdfGrid.CapturePointer(e.Pointer);
                 e.Handled = true;
             }
-            e.Handled = true;
 
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
-            {
-                e.Handled = false;
+            //if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            //{
+            //    e.Handled = false;
 
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
-                if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
-            }
-            Debug.WriteLine("local after Pdf pointer pressed: " + _localFingers);
+            //    TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.DocumentManipulation;
+            //    if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
+            //}
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -503,7 +503,7 @@ namespace Dash
         {
             AnnotationOverlay.OnDrop(sender, e);
         }
-
+        
 
         /// <summary>
         /// Enable scrolling only when 2 fingers are on the pdf
@@ -513,21 +513,10 @@ namespace Dash
 
         private void ScrollViewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch || e.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
                 if (TouchInteractions.HeldDocument == null)
                     TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
-                if (_localFingers < 2) _localFingers++;
-                // Debug.WriteLine("POINTER CAPTURED: " + TouchInteractions.NumFingers);
-                if (_localFingers >= 2)
-                {
-                    ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
-                }
-                else 
-                {
-                    ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-                }
-                Debug.WriteLine("local after PointerEntered: " + _localFingers);
 
                 e.Handled = false;
             }
@@ -535,25 +524,17 @@ namespace Dash
 
         public void PdfOnDrop()
         {
-            if (_localFingers > 0) _localFingers--;
-           if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>() && _localFingers == 0)
+           if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
                TouchInteractions.HeldDocument = null;
-
-           // if (_localFingers >= 2)
-          //  {
-          //      ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;;
-          //  }
-          //  else if (_localFingers)
-           // {
-           ///     ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-           // }
-
-            Debug.WriteLine("local after PdfOnDrop: " + _localFingers);
         }
 
         private void ScrollViewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            _localFingers = 0;
+        }
+
+        private void PdfAnnotationView_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+
         }
     }
 }

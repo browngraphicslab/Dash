@@ -999,8 +999,13 @@ namespace Dash
 
         public bool  StartMarquee(Point pos)
         {
-            if (_isMarqueeActive)
+            if (_isMarqueeActive && TouchInteractions.CurrInteraction != TouchInteractions.TouchInteraction.DocumentManipulation)
             {
+                if (TouchInteractions.NumFingers > 1)
+                {
+                    ResetMarquee(true);
+                    return false;
+                }
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 
@@ -1028,8 +1033,8 @@ namespace Dash
                     _marquee?.AdjustMarquee(newWidth, newHeight);
                     Canvas.SetLeft(_marquee, newAnchor.X);
                     Canvas.SetTop(_marquee, newAnchor.Y);
-                    _marquee.Width = newWidth;
-                    _marquee.Height = newHeight;
+                    //_marquee.Width = newWidth;
+                   // _marquee.Height = newHeight;
 
                     Canvas.SetLeft(_marquee, newAnchor.X);
                     Canvas.SetTop(_marquee, newAnchor.Y - 32);
@@ -1109,11 +1114,12 @@ namespace Dash
         {
             void DoAction(Action<IEnumerable<DocumentViewModel>, Point, Size> action)
             {
+
                 if (fromMarquee)
                 {
                     var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                                                           SelectionCanvas, GetItemsControl().ItemsPanelRoot);
-                    var size = new Size(_marquee.Width, _marquee.Height);
+                    var size = new Size(_marquee.Marquee.Width, _marquee.Marquee.Height);
                     using (UndoManager.GetBatchHandle())
                     {
                         action(DocsInMarquee(new Rect(where, size)).Select(dv => dv.ViewModel), where, size);
@@ -1291,7 +1297,7 @@ namespace Dash
         private void       showPreviewTextbox(Point where)
         {
             PreviewTextBuffer = PreviewFormatString;
-            if (_previewTextbox != null)
+            if (_previewTextbox != null && TouchInteractions.HeldDocument == null)
             {
                 CollectionFreeformView.ClearForceFocus();
                 Canvas.SetLeft(_previewTextbox, where.X);

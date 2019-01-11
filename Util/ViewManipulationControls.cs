@@ -139,11 +139,11 @@ namespace Dash
         {
             //if (!_freeformView.GetDocumentView().ViewModel.DragAllowed/) // only try to manipulate doc contents if it can't be dragged
             //{
-                if (_freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() ||
-                    (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2 &&
-                     TouchInteractions.CurrInteraction != TouchInteractions.TouchInteraction.DocumentManipulation) ||
-                    (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 1 &&
-                     TouchInteractions.isPanning))
+            if (_freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed() ||
+                (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 2 &&
+                 TouchInteractions.CurrInteraction != TouchInteractions.TouchInteraction.DocumentManipulation) ||
+                (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 1 &&
+                 TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.Pan))
 
                 {
                     var pointerPosition = MainPage.Instance

@@ -987,5 +987,10 @@ namespace Dash
                 e.Handled = true;
             }
         }
+
+        private void LayoutRoot_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            
+        }
     }
 }

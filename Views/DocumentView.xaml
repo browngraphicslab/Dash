@@ -20,7 +20,7 @@
     PointerPressed="LayoutRootHideTooltip"
     ManipulationMode="None"
     UseLayoutRounding="False">
-    <Grid x:Name="LayoutRoot" BorderThickness="0">
+    <Grid x:Name="LayoutRoot" BorderThickness="0" RightTapped="XMasterStack_OnRightTapped">
         <Grid.Resources>
             <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
                 <FadeOutThemeAnimation TargetName="LayoutRoot"/>
@@ -28,9 +28,9 @@
             <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
         </Grid.Resources>
-        <Grid.ContextFlyout>
+        <FlyoutBase.AttachedFlyout>
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
-        </Grid.ContextFlyout>
+        </FlyoutBase.AttachedFlyout>
         <Rectangle   x:Name="xDocumentBackground"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False"/>
         <ContentPresenter Content="{Binding Content}" >
             <ContentPresenter.Clip>
