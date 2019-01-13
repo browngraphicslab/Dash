@@ -356,6 +356,7 @@ namespace Dash
                 embeddedDocument = embeddedDocument ?? createEmbeddedTextNote(this, point);
                 EmbeddedDocsList.Add(embeddedDocument);
                 StartAnnotation(AnnotationType.Region, point, new Selection(await CreateRegionFromPreviewOrSelection(embeddedDocument)));
+                EndAnnotation(point);
             }
             else
             {
@@ -372,6 +373,7 @@ namespace Dash
                     embeddedDocument = embeddedDocument ?? createEmbeddedTextNote(this, point);
                     EmbeddedDocsList.Add(embeddedDocument);
                     StartAnnotation(AnnotationType.Pin, point, new Selection(CreatePinRegion(point, embeddedDocument)));
+                    EndAnnotation(point);
                 }
             }
         }
@@ -962,6 +964,8 @@ namespace Dash
                 {
                     EmbedDocumentWithPin(e.GetPosition(this));
                 }
+                DeselectRegions();
+                _currentAnnotation = null;
                 e.Handled = true;
             }
         }

@@ -261,7 +261,7 @@ namespace Dash.Views.TreeView
             else
             {
                 _tapped = true;
-                await Task.Delay(200);//Delay to allow for double tapped
+                await Task.Delay(400);//Delay to allow for double tapped
                 if (_tapped)
                 {
                     IsEditing = true;
@@ -282,7 +282,6 @@ namespace Dash.Views.TreeView
             //if (treeView.UseActiveFrame)
             //{
             SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
-            MainPage.Instance.SetMapTarget(SplitFrame.ActiveFrame.DocumentController);
             //}
 
             treeView.ViewModel.ContainerDocument.SetField(KeyStore.CollectionOutputKey, ViewModel.DocumentController, true);

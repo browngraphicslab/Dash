@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using MyToolkit.Multimedia;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
-using MyToolkit.Multimedia;
 
 namespace Dash
 {
@@ -22,7 +22,7 @@ namespace Dash
         Ppt,
         Web,
         Image,
-		Video,
+        Video,
         Json,
         Csv,
         Pdf,
@@ -89,7 +89,7 @@ namespace Dash
                 {
                     documentController.GetDataDocument().SetTitle(files[0].Name);
                     documentController.SetPosition(where);
-                    var uri = fileType.FileUri?.AbsoluteUri ?? (dataView.AvailableFormats.Contains("UniformResourceLocator") ? (await dataView.GetWebLinkAsync())?.AbsoluteUri : null);
+                    string uri = fileType.FileUri?.AbsoluteUri ?? (dataView.AvailableFormats.Contains("UniformResourceLocator") ? (await dataView.GetWebLinkAsync())?.AbsoluteUri : null);
                     documentController.GetDataDocument()?
                         .SetField<TextController>(KeyStore.SourceUriKey, uri, true);
                     documentController.GetDataDocument()?
@@ -101,11 +101,11 @@ namespace Dash
             // if there is more than one file then we add it to the collection as a collection of documents
             else if (files.Any())
             {
-                var CollectionNoteOffset = 260;
+                int CollectionNoteOffset = 260;
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
-                double xPos = 0, yPos = 0, count = 0;  
+                double xPos = 0, yPos = 0, count = 0;
                 // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
@@ -123,7 +123,7 @@ namespace Dash
                                 xPos = 0;
                             }
                             documentController.SetPosition(new Point(xPos, yPos));
-                            var docWidth = double.IsNaN(documentController.GetWidth()) ? CollectionNoteOffset : documentController.GetWidth() + 10;
+                            double docWidth = double.IsNaN(documentController.GetWidth()) ? CollectionNoteOffset : documentController.GetWidth() + 10;
                             xPos += double.IsNaN(docWidth) ? CollectionNoteOffset : docWidth;
                             count++;
                         }
@@ -149,57 +149,59 @@ namespace Dash
         {
             switch (fileData.Filetype)
             {
-                case FileType.None:
-                    return null;
-                case FileType.Ppt:
-                    return await new PptToDashUtil().ParseFileAsync(fileData, dataView);
-                case FileType.Json:
-                    return await new JsonToDashUtil().ParseFileAsync(fileData, dataView);
-                case FileType.Csv:
-                    return await new CsvToDashUtil().ParseFileAsync(fileData, dataView);
-                case FileType.Image:
-                    return await new ImageToDashUtil().ParseFileAsync(fileData, dataView);
-				case FileType.Video:
-					return await new VideoToDashUtil().ParseFileAsync(fileData, dataView);
-                case FileType.Audio:
-                    return await new AudioToDashUtil().ParseFileAsync(fileData, dataView);
-                case FileType.Web:
-                    var link = await dataView.GetWebLinkAsync();
+            case FileType.None:
+                return null;
+            case FileType.Ppt:
+                return await new PptToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Json:
+                return await new JsonToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Csv:
+                return await new CsvToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Image:
+                return await new ImageToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Video:
+                return await new VideoToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Audio:
+                return await new AudioToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Web:
+                var link = await dataView.GetWebLinkAsync();
 
-					// if this is a YouTube link, drop the video instead
-	                if (link.Host == "www.youtube.com")
-	                {
-		                var query = HttpUtility.ParseQueryString(link.Query);
-		                var videoId = string.Empty;
-						// the video ID depends on if it's youtube or youtu.be
-		                videoId = query.AllKeys.Contains("v") ? query["v"] : link.Segments.Last();
+                // if this is a YouTube link, drop the video instead
+                if (link.Host == "www.youtube.com")
+                {
+                    var query = HttpUtility.ParseQueryString(link.Query);
+                    string videoId = string.Empty;
+                    // the video ID depends on if it's youtube or youtu.be
+                    videoId = query.AllKeys.Contains("v") ? query["v"] : link.Segments.Last();
 
-		                try
-		                {
-							// make the video box with the Uri set as the video's, and return it
-			                var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
-			                var uri = url.Uri;
-							var video = VideoToDashUtil.CreateVideoBoxFromUri(uri);
-			                video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
-			                return video;
-		                }
-		                // if that returns an error somehow, just return the page instead
-		                catch (Exception)
-		                {
-			                return new HtmlNote(link.AbsoluteUri, where: where).Document;
-						}
-	                }
-	                else
-					{
-						return new HtmlNote(link.AbsoluteUri, where: where, size: new Size(double.NaN, double.NaN)).Document;
-					}
+                    try
+                    {
+                        // make the video box with the Uri set as the video's, and return it
+                        var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
+                        var uri = url.Uri;
+                        var video = VideoToDashUtil.CreateVideoBoxFromUri(uri);
+                        video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
+                        return video;
+                    }
+                    // if that returns an error somehow, just return the page instead
+                    catch (Exception e)
+                    {
+                        var documentController = new HtmlNote(link.AbsoluteUri, where: where).Document;
+                        documentController.SetField<TextController>(KeyController.Get("Error"), e.Message, true);
+                        return documentController;
+                    }
+                }
+                else
+                {
+                    return new HtmlNote(link.AbsoluteUri, where: where, size: new Size(double.NaN, double.NaN)).Document;
+                }
 
-				case FileType.Pdf:
-                    return await new PdfToDashUtil().ParseFileAsync(fileData, dataView);
-                case FileType.Text:
-                    return await new TextToDashUtil().ParseFileAsync(fileData, dataView);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(fileData.Filetype), fileData.Filetype, null);
+            case FileType.Pdf:
+                return await new PdfToDashUtil().ParseFileAsync(fileData, dataView);
+            case FileType.Text:
+                return await new TextToDashUtil().ParseFileAsync(fileData, dataView);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(fileData.Filetype), fileData.Filetype, null);
             }
         }
 
@@ -247,7 +249,7 @@ namespace Dash
         }
 
 
-        public static FileType  GetFileType(string filepath)
+        public static FileType GetFileType(string filepath)
         {
             filepath = filepath.ToLower();
             if (filepath.EndsWith(".pdf"))
@@ -266,10 +268,10 @@ namespace Dash
                 filepath.EndsWith(".bmp") ||
                 filepath.EndsWith(".gif")) // PRODUCTION READY! Is this all of them? who knows?
                 return FileType.Image;
-			if (filepath.EndsWith(".mp4") ||
-				filepath.EndsWith(".avi") ||
-				filepath.EndsWith(".mov") ||
-			    filepath.EndsWith(".wmv"))
+            if (filepath.EndsWith(".mp4") ||
+                filepath.EndsWith(".avi") ||
+                filepath.EndsWith(".mov") ||
+                filepath.EndsWith(".wmv"))
                 return FileType.Video;
             if (filepath.EndsWith(".mp3") ||
                 filepath.EndsWith(".wav") ||

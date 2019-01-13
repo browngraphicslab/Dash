@@ -154,7 +154,7 @@ namespace Dash
                     { // 20 = 2 * resizeFrame border width
                         botRight = new Point(MainPage.Instance.ActualWidth - 20 - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
                     }
-                    else botRight = new Point(botRight.X - 10 , botRight.Y);
+                    else botRight = new Point(botRight.X, botRight.Y);
 
                     RenderTransform     = new TranslateTransform { X = topLeft.X, Y = topLeft.Y };
                     ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));

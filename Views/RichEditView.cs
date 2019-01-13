@@ -59,7 +59,7 @@ namespace Dash
                 rtb.Document.SetText(TextSetOptions.FormatRtf, text);
                 rtb.Measure(availableSize);
                 _lastSizeRTFText = text;
-                _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
+                _lastDesiredSize = new Size(rtb.DesiredSize.Width, rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; });
             } 

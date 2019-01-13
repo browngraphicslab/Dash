@@ -78,6 +78,10 @@ namespace Dash
         private void initializeMap(DocumentController mainDocumentCollection)
         {
             var xMapDocumentView = mapView ?? createMap();
+            if (mainDocumentCollection.GetDataDocument() == xMapDocumentView.ViewModel.DataDocument)
+            {
+                return;
+            }
 
             var panPosRef        = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanPositionKey);
             var panZoomRef       = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanZoomKey);
@@ -156,6 +160,7 @@ namespace Dash
             LayoutRoot.Children.Add(xMapDocumentView);
             LayoutRoot.Children.Add(overlay);
             LayoutRoot.Children.Add(rect);
+
             return xMapDocumentView;
         }
 

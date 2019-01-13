@@ -11,7 +11,7 @@
     d:DesignWidth="400"
     DataContextChanged="SplitFrame_OnDataContextChanged">
 
-    <Grid x:Name="Grid">
+    <Grid x:Name="Grid" Background="Transparent">
         <local:DocumentView x:Name="XDocView" />
         <!--<Polygon x:Name="XTopRightResizer" Fill="Black" Points="0,0,25,25,25,0" HorizontalAlignment="Right" VerticalAlignment="Top"
                  Canvas.ZIndex="2"

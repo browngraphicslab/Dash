@@ -185,9 +185,10 @@ namespace Dash
         {
         }
 
-        public static void MakeRoot(FieldControllerBase field)
+        public static void MakeRoot(FieldControllerBase field, bool onlyIfNotReferenced=false)
         {
-            field.AddReference();
+            if (!field.IsReferenced || !onlyIfNotReferenced)
+                field.AddReference();
         }
 
         #endregion
