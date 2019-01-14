@@ -226,9 +226,14 @@ namespace Dash
                 {
                     if (RESTClient.Instance.Fields.GetController<DocumentController>(uri.AbsolutePath) is DocumentController doc)
                     {
-                        hyperlink.Click += (s, e) => Launcher.LaunchUriAsync(uri, new LauncherOptions() { LimitPickerToCurrentAppAndAppUriHandlers = false });
+                        hyperlink.Click += async (s, e) => await Launcher.LaunchUriAsync(uri, new LauncherOptions() { LimitPickerToCurrentAppAndAppUriHandlers = false });
                         hyperlink.Inlines.Add(new Run() { Text = (doc.GetDataDocument().GetRegionDefinition() ?? doc).Title });
                     }
+                }
+                else if (uri.Scheme == "file")
+                {
+                    hyperlink.Click += async (s, e) => await DotNetRPC.OpenUri(uri);
+                    hyperlink.Inlines.Add(new Run { Text = " " + HtmlToDashUtil.GetTitlesUrl(uriString) });
                 }
                 else
                 {

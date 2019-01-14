@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using MyToolkit.Multimedia;
@@ -180,8 +181,21 @@ namespace Dash
                         var url = await YouTube.GetVideoUriAsync(videoId, YouTubeQuality.Quality1080P);
                         var uri = url.Uri;
                         var video = VideoToDashUtil.CreateVideoBoxFromUri(uri);
-                        video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey, "https://www.youtube.com/embed/" + videoId, true);
+                        video.GetDataDocument().SetField<TextController>(KeyStore.YouTubeUrlKey,
+                            "https://www.youtube.com/embed/" + videoId, true);
                         return video;
+                    }
+                    catch (HttpRequestException e)
+                    {
+                        var documentController = new HtmlNote(link.AbsoluteUri, where: where).Document;
+                        documentController.SetField<TextController>(KeyController.Get("Error"), e.Message, true);
+                        if (e.InnerException != null)
+                        {
+                            documentController.SetField<TextController>(KeyController.Get("Inner Error"),
+                                e.InnerException.Message, true);
+                        }
+
+                        return documentController;
                     }
                     // if that returns an error somehow, just return the page instead
                     catch (Exception e)

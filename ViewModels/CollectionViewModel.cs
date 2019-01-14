@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -573,22 +574,25 @@ namespace Dash
                 }
                 else if (dvp.Contains(StandardDataFormats.Html))
                 {
-                    var text = await dvp.GetHtmlFormatAsync();
-                    var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.PromptLayoutType() : SettingsView.Instance.WebpageLayout;
+                    var htmlNote = await HtmlToDashUtil.ConvertHtmlData(dvp, where);
+                    Actions.DisplayDocument(this, htmlNote, where);
+                    return htmlNote;
+                    //var text = await dvp.GetHtmlFormatAsync();
+                    //var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.PromptLayoutType() : SettingsView.Instance.WebpageLayout;
 
-                    if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
-                        (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
-                    {
-                        var htmlNote = new HtmlNote(text, "<unknown html>", where).Document;
-                        Actions.DisplayDocument(this, htmlNote, where);
-                        return htmlNote;
-                    }
-                    else
-                    {
-                        var htmlNote = await HtmlToDashUtil.CreateRtfNote(where, "<unknown html>", text);
-                        Actions.DisplayDocument(this, htmlNote, where);
-                        return htmlNote;
-                    }
+                    //if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
+                    //    (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
+                    //{
+                    //    var htmlNote = new HtmlNote(text, "<unknown html>", where).Document;
+                    //    Actions.DisplayDocument(this, htmlNote, where);
+                    //    return htmlNote;
+                    //}
+                    //else
+                    //{
+                    //    var htmlNote = await HtmlToDashUtil.CreateRtfNote(where, "<unknown html>", text);
+                    //    Actions.DisplayDocument(this, htmlNote, where);
+                    //    return htmlNote;
+                    //}
                 }
                 else if (dvp.Contains(StandardDataFormats.Text))
                 {

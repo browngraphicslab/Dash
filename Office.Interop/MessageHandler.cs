@@ -151,7 +151,10 @@ namespace OfficeInterop
                 }
                 break;
             case "Chrome":
-                _chrome.Send(Encoding.UTF8.GetBytes(request["DATA"] as string));
+                _chrome.Send(Encoding.UTF8.GetBytes((string) request["DATA"]));
+                break;
+            case "OpenUri":
+                System.Diagnostics.Process.Start((string) request["DATA"]);
                 break;
             default:
                 result = "unknown request";
