@@ -284,7 +284,7 @@ namespace Dash
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset) { DraggedWithLeftButton = docView.IsLeftBtnPressed() });
 
-            if (_dragViews.Count == 1)  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
+            if (_dragViews.Count == 1 && docView.IsShiftPressed())  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
                                         //      seems to override our DragUI override and only the dragged image is shown.
             {
                 var type = docView.ViewModel.DocumentController.GetDocType();
