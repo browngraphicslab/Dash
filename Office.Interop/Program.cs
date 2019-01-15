@@ -10,8 +10,12 @@
 //*********************************************************  
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
 
@@ -57,8 +61,45 @@ namespace OfficeInterop
             }
         }
 
+
+        private static string extractClipboardSource()
+        {
+
+            try
+            {
+                var sb   = new StringBuilder();
+                var data = Clipboard.GetDataObject();
+                var d    = data.GetData("OwnerLink", true);
+                if (d != null)
+                {
+                    switch (d.GetType().ToString())
+                    {
+                    case "System.IO.MemoryStream":
+                        var ms = (MemoryStream)data.GetData("OwnerLink", true);
+                        var output = ms.ToArray().Select(a => (char)a);
+                        return "-->" + new string(output.ToArray());
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return null;
+        }
+        public class Form1 : Form 
+        {
+            public Form1()
+            {
+            }
+        }
+
+        public static Form1 F;
+
+        [STAThread]
         public static void Main(string[] args)
         {
+            var s = extractClipboardSource();
             // connect to app service and wait until the connection gets closed
             _appServiceExit = new AutoResetEvent(false);
             InitializeAppServiceConnection();
@@ -80,7 +121,11 @@ namespace OfficeInterop
             //    //pin window to top
             //    SetWindowPos(handle, new IntPtr(-1), 0, 0, 0, 0, TOPMOST_FLAGS);
             //}
-
+            F         = new Form1();
+            F.ShowInTaskbar = false;
+            F.Opacity = 0;
+            F.Width = F.Height = 1;
+            Application.Run(F);
             _appServiceExit.WaitOne();
             Handler.Close();
         }
@@ -106,7 +151,9 @@ namespace OfficeInterop
         private static void Connection_ServiceClosed(AppServiceConnection sender, AppServiceClosedEventArgs args)
         {
             // signal the event so the process can shut down
+            Handler.Close();
             _appServiceExit.Set();
+            Application.Exit();
         }
 
         private static async void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)

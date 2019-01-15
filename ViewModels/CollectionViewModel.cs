@@ -517,6 +517,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
+            
                 if (dvp.Contains(StandardDataFormats.StorageItems))
                 {
                     var droppedDoc = await FileDropHelper.HandleDrop(dvp, where);
@@ -663,7 +664,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 var streamRef = await dvp.GetBitmapAsync();
-                WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
+                var writeableBitmap = new WriteableBitmap(400, 400);
                 await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
 
                 var storageFolder = ApplicationData.Current.LocalFolder;
@@ -682,6 +683,16 @@ namespace Dash
                 var dp = new DataPackage();
                 dp.SetStorageItems(new IStorageItem[] { savefile });
                 var droppedDoc = await FileDropHelper.HandleDrop(dp.GetView(), where);
+
+                var rpcRequest = new Windows.Foundation.Collections.ValueSet { { "REQUEST", "Get OwnerLink" } };
+                var resp = await DotNetRPC.CallRPCAsync(rpcRequest);
+
+                if (resp?.ContainsKey("OwnerLink") == true)
+                {
+                    var path = (resp["OwnerLink"] as string).Split("\0")[1];
+                    droppedDoc.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, "file:" + path, true);
+                }
+
                 AddDocument(droppedDoc);
                 return droppedDoc;
             }

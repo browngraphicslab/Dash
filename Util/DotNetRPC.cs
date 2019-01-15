@@ -82,7 +82,7 @@ namespace Dash
                 Debug.WriteLine("Error: Can't send RPC before app is connected to the interop");
                 return null;
             }
-            AppServiceResponse response = await App.Connection.SendMessageAsync(data);
+            var response = await App.Connection.SendMessageAsync(data);
 
             // check the result
             object result = "";
