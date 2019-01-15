@@ -907,6 +907,7 @@ namespace Dash
             {
                 TouchInteractions.handledTouch.Add(args);
                 TouchInteractions.NumFingers++;
+                Debug.WriteLine("NUMFINGERS ON PRESSED: " + TouchInteractions.NumFingers);
                 TouchInteractions.isPanning = false;
                 args.Handled = true;
                 //CASE WHERE DOC IS HELD & background is tapped -> launch radial menu

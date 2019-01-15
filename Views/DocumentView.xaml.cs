@@ -37,7 +37,8 @@ namespace Dash
         private Point             _pointerPoint = new Point(0, 0);
         private int               _numFingers = 0;
 
-        public int                 NumFingersUsed = 0;
+        public int NumFingersUsed;
+   
         public CollectionView      ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public CollectionViewModel ParentViewModel => ParentCollection?.ViewModel;
         public DocumentViewModel   ViewModel 
@@ -95,10 +96,16 @@ namespace Dash
             };
             PointerCaptureLost += (s, e) =>
             {
-                _numFingers--;
-                if (_numFingers == 0)
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
-                    NumFingersUsed = 0;
+                    _numFingers--;
+                    Debug.WriteLine("DECREASING, NUMFINGERS: " + _numFingers);
+                    if (_numFingers == 0)
+                    {
+                        NumFingersUsed = 0;
+                        TouchInteractions.NumFingers--;
+                        // if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
+                    }
                 }
             };
             DragStarting  += (s, e) => SelectionManager.DragStarting(this, s, e);
@@ -113,7 +120,7 @@ namespace Dash
                     !TouchInteractions.handledTouch.Contains(e))
                 {
                     TouchInteractions.handledTouch.Add(e);
-                    TouchInteractions.NumFingers--;
+                    //TouchInteractions.NumFingers--;
                     if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                 }
             };
@@ -405,8 +412,14 @@ namespace Dash
             CapturePointer(e.Pointer);
             PointerMoved    += this_PointerMoved;
             PointerReleased += this_PointerReleased;
-            _numFingers++;
-            NumFingersUsed++;
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                _numFingers++;
+                NumFingersUsed++;
+                TouchInteractions.NumFingers++;
+                //if not already holding something, hold this doc!
+                if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this;
+            }
         }
 
         private void this_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -415,6 +428,12 @@ namespace Dash
             ReleasePointerCapture(e.Pointer);
             PointerMoved    -= this_PointerMoved;
             PointerReleased -= this_PointerReleased;
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                TouchInteractions.NumFingers--;
+                //release held doc
+                if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
+            }
         }
         private void this_PointerMoved(object sender, PointerRoutedEventArgs e)
         {

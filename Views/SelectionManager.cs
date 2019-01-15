@@ -219,6 +219,13 @@ namespace Dash
         #region Drag Manipulation Methods
         public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
+            if (pe.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+            {
+                pe.Handled = false;
+                return;
+            }
+
+            //if (pe.Pointer.PointerDeviceType == PointerDeviceType.Touch) TouchInteractions.NumFingers++;
             var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
@@ -279,6 +286,10 @@ namespace Dash
                 args.Cancel = true;
                 return;
             }
+
+            TouchInteractions.NumFingers++;
+            if (TouchInteractions.NumFingers >= 1) TouchInteractions.HeldDocument = docView;
+            Debug.WriteLine("NUMFINGERS ON DRAG: " + TouchInteractions.NumFingers + " DOCVIEW ON DRAG: " + docView.NumFingersUsed);
             DragManipulationStarted?.Invoke(sender, null);
             LocalSqliteEndpoint.SuspendTimer = true;
 

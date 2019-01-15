@@ -422,13 +422,13 @@ namespace Dash
             {
                 CanScrollPDF = true;
                 TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
-                if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
-                    TouchInteractions.HeldDocument = null;
+              //  if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
+              //      TouchInteractions.HeldDocument = null;
             }
             //xPdfGrid.ReleasePointerCapture(e.Pointer);
             xPdfGrid.PointerMoved -= XPdfGrid_PointerMoved;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
+            if (currentPoint.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased || e.Pointer.PointerDeviceType == PointerDeviceType.Pen)
             {
                 _annotationOverlay.EndAnnotation(e.GetCurrentPoint(_annotationOverlay).Position);
                 e.Handled = true;
@@ -446,7 +446,7 @@ namespace Dash
             CanScrollPDF = this.GetDocumentView().NumFingersUsed > 0;
             _downPt = e.GetCurrentPoint(this).Position;
             var currentPoint = e.GetCurrentPoint(PageItemsControl);
-            if (this.GetDocumentView().AreContentsActive && e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && 
+            if (this.GetDocumentView().AreContentsActive && (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed  || e.Pointer.PointerDeviceType == PointerDeviceType.Pen) && 
                 e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
             {
                 var annotationOverlayPt = e.GetCurrentPoint(_annotationOverlay).Position;
@@ -515,8 +515,8 @@ namespace Dash
         {
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
-                if (TouchInteractions.HeldDocument == null)
-                    TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
+              //  if (TouchInteractions.HeldDocument == null)
+                //    TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
 
                 e.Handled = false;
             }
@@ -524,8 +524,8 @@ namespace Dash
 
         public void PdfOnDrop()
         {
-           if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
-               TouchInteractions.HeldDocument = null;
+           //if (TouchInteractions.HeldDocument == this.GetFirstAncestorOfType<DocumentView>())
+            //   TouchInteractions.HeldDocument = null;
         }
 
         private void ScrollViewer_OnPointerExited(object sender, PointerRoutedEventArgs e)

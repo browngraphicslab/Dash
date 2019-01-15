@@ -334,15 +334,13 @@ namespace Dash
             {
                 e.Handled = true;
             }
-            else if (!IsCropping && this.GetDocumentView().AreContentsActive && e.IsLeftPressed() && _annotationOverlay != null &&
+            else if (!IsCropping && this.GetDocumentView().AreContentsActive && (e.IsLeftPressed() || e.Pointer.PointerDeviceType == PointerDeviceType.Pen) && _annotationOverlay != null &&
                      e.Pointer.PointerDeviceType != PointerDeviceType.Touch)
             {
                 var point = e.GetCurrentPoint(_annotationOverlay);
                 _annotationOverlay.StartAnnotation(_annotationOverlay.CurrentAnnotationType, point.Position);
               e.Handled = true;
             }
-           // _downPt = e.GetCurrentPoint(this).Position;
-           // if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse && e.GetCurrentPoint(_annotationOverlay).Properties.IsLeftButtonPressed) e.Handled = true;
         }
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
@@ -352,7 +350,7 @@ namespace Dash
                 return;
             }
             var point = e.GetCurrentPoint(_annotationOverlay);
-            if (point.Properties.IsLeftButtonPressed && !_annotationOverlay.IsCtrlPressed())
+            if (point.Properties.IsLeftButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Pen && !_annotationOverlay.IsCtrlPressed())
             {
                 _annotationOverlay.UpdateAnnotation(point.Position);
                 e.Handled = true;

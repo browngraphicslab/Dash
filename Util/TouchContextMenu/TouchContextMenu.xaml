@@ -8,7 +8,8 @@
     xmlns:components="using:RadialMenuControl.Components"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    PointerPressed="TouchContextMenu_OnPointerPressed">
 
     <Grid>
         <userControl:RadialMenu x:Name="xRadialMenu" IsHitTestVisible="True" IsEnabled="True" Diameter="250" StartAngle="-22.5" Background="{StaticResource DashDarkBlue}" BorderBrush="{StaticResource DashDarkBlue}" BackgroundEllipseFill="{StaticResource DashDarkBlueColor}" CenterButtonBackgroundFill="{StaticResource DashLightBlue}" 

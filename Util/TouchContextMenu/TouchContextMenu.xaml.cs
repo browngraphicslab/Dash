@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -20,8 +21,7 @@ namespace Dash
 {
     public sealed partial class TouchContextMenu : UserControl
     {
-        //this can be replaced with TouchInteractions.HeldDocument
-        private DocumentView _doc;
+
         private bool _first = false;
         public TouchContextMenu()
         {
@@ -31,9 +31,8 @@ namespace Dash
             xRadialMenu.CenterButtonFontSize = 25;
         }
 
-        public void ShowMenu(Point location, DocumentView docView)
+        public void ShowMenu(Point location)
         {
-            _doc = docView;
             xRadialMenu.CenterButtonLeft = 0;
             Canvas.SetLeft(xRadialMenu.Pie, 0);
             Canvas.SetTop(xRadialMenu.Pie, 0);
@@ -53,50 +52,36 @@ namespace Dash
 
         public async void HideMenuAsync()
         {
-            
-            _doc = null;
-            
             if (xRadialMenu.Pie.Visibility == Visibility.Visible)
             {
                 xRadialMenu.TogglePie();
                 await Task.Delay(175);
             }
             Visibility = Visibility.Collapsed;
-            
         }
         public void HideMenuNoAsync()
         {
-            _doc = null;
             if (xRadialMenu.Pie.Visibility == Visibility.Visible) xRadialMenu.TogglePie();
             Visibility = Visibility.Collapsed;
         }
 
-        public async System.Threading.Tasks.Task CloseMenuAsync()
-        {
-            if (xRadialMenu.Pie.Visibility == Visibility.Visible)
-            {
-                xRadialMenu.TogglePie();
-                await Task.Delay(175);
-            }
-        }
-
         private void XDelete_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            //stop drag?
-            _doc?.DeleteDocument();
+            //TODO:stop drag?
+            TouchInteractions.HeldDocument?.DeleteDocument();
         }
 
         private void XCopy_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
+            //TODO: MIGHT HAVE TO STOP DRAG!
             Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, 0));
-            _doc?.CopyDocument(pos);
-            //HideMenuAsync();
+            TouchInteractions.HeldDocument?.CopyDocument(pos);
         }
 
         private void XKVP_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
             Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, 0));
-           _doc?.ParentCollection?.ViewModel.AddDocument(TouchInteractions.HeldDocument.ViewModel.DocumentController.GetKeyValueAlias(pos));
+           TouchInteractions.HeldDocument?.ParentCollection?.ViewModel.AddDocument(TouchInteractions.HeldDocument.ViewModel.DocumentController.GetKeyValueAlias(pos));
         }
 
         //TODO: MAKE THESE INTO SUBMENU 
@@ -104,14 +89,14 @@ namespace Dash
         private void XInstance_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
             Point pos = TransformToVisual(TouchInteractions.HeldDocument.GetFirstAncestorOfType<Canvas>()).TransformPoint(new Point(0, 0));
-            _doc?.MakeInstance(pos);
+            TouchInteractions.HeldDocument?.MakeInstance(pos);
         }
 
         private void XPin_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
             using (UndoManager.GetBatchHandle())
             {
-                if (_doc != null) MainPage.Instance.xPresentationView.PinToPresentation(_doc.ViewModel.DocumentController);
+                if (TouchInteractions.HeldDocument != null) MainPage.Instance.xPresentationView.PinToPresentation(TouchInteractions.HeldDocument.ViewModel.DocumentController);
             }
         }
 
@@ -154,10 +139,9 @@ namespace Dash
 
     */
 
-        //if we want a size gauge
-        private void XSize_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
+        private void TouchContextMenu_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            
+            HideMenuAsync();
         }
     }
 }

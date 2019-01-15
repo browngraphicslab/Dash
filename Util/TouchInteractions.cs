@@ -56,9 +56,9 @@ namespace Dash
             }
         }
 
-        public static void ShowMenu(Point point, DocumentView view)
+        public static void ShowMenu(Point point, DocumentView view = null)
         {
-            MainPage.Instance.xTouchMenu.ShowMenu(point, view);
+            MainPage.Instance.xTouchMenu.ShowMenu(point);
         }
 
         public static void HideMenu()
@@ -68,7 +68,7 @@ namespace Dash
 
         public static void TryShowMenu(Point position)
         {
-            if ((NumFingers == 2 && HeldDocument != null) || HoldingPDF())
+            if ((NumFingers == 2 && HeldDocument != null))
             {
                 ShowMenu(position, HeldDocument);
             }
@@ -90,7 +90,7 @@ namespace Dash
         {
             NumFingers = 0;
             //inform pdf of drop (if holding pdf
-            if (HoldingPDF()) droppedDoc.GetFirstDescendantOfType<PdfAnnotationView>()?.PdfOnDrop();
+            //if (HoldingPDF()) droppedDoc.GetFirstDescendantOfType<PdfAnnotationView>()?.PdfOnDrop();
             if (HoldingRichEdit()) NumFingers--;
             if (HeldDocument == droppedDoc) HeldDocument = null;
             CurrInteraction = TouchInteraction.None;

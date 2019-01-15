@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Windows.Devices.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 
@@ -20,7 +21,7 @@ namespace Dash
         {
             if (++_numMovements == 2)
             {
-                SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e);
+                if(e.Pointer.PointerDeviceType != PointerDeviceType.Pen) SelectionManager.InitiateDragDrop(_manipulationDocumentTarget, e);
                 e.Handled = true;
             }
         }

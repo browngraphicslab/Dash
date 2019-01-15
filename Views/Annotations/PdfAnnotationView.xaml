@@ -30,7 +30,7 @@
 
         <Grid x:Name="xPdfContainer" MinWidth="50" Background="white" VerticalAlignment="Top" Grid.Row="1">
 
-            <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging"  IsScrollInertiaEnabled="False"  PointerEntered="ScrollViewer_OnPointerEntered" PointerExited="ScrollViewer_OnPointerExited" >
+            <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging"  IsScrollInertiaEnabled="True"  PointerEntered="ScrollViewer_OnPointerEntered" PointerExited="ScrollViewer_OnPointerExited" >
                 <Viewbox Stretch="UniformToFill"  >
                     <Grid x:Name="XParentPdfGrid" AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
                         <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" >
