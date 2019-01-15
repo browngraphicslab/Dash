@@ -350,7 +350,7 @@ namespace Dash
                 return;
             }
             var point = e.GetCurrentPoint(_annotationOverlay);
-            if (point.Properties.IsLeftButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Pen && !_annotationOverlay.IsCtrlPressed())
+            if ((point.Properties.IsLeftButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Pen) && !_annotationOverlay.IsCtrlPressed())
             {
                 _annotationOverlay.UpdateAnnotation(point.Position);
                 e.Handled = true;

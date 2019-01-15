@@ -99,12 +99,10 @@ namespace Dash
                 if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                 {
                     _numFingers--;
-                    Debug.WriteLine("DECREASING, NUMFINGERS: " + _numFingers);
                     if (_numFingers == 0)
                     {
                         NumFingersUsed = 0;
                         TouchInteractions.NumFingers--;
-                        // if (TouchInteractions.HeldDocument == this) TouchInteractions.HeldDocument = null;
                     }
                 }
             };

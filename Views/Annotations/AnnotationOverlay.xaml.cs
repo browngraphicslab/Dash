@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
@@ -960,7 +961,7 @@ namespace Dash
         private CoreCursor Cross = new CoreCursor(CoreCursorType.Cross, 1);
         private void LayoutRoot_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsLeftBtnPressed() && !this.IsRightBtnPressed() && this.GetDocumentView().ViewModel.IsSelected)
+            if (!this.IsCtrlPressed() && !(this.IsLeftBtnPressed() || e.Pointer.PointerDeviceType == PointerDeviceType.Pen) && !this.IsRightBtnPressed() && this.GetDocumentView().ViewModel.IsSelected)
             {
                 Window.Current.CoreWindow.PointerCursor = CurrentAnnotationType == AnnotationType.Region ? Cross : IBeam;
 
