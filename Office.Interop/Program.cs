@@ -61,32 +61,7 @@ namespace OfficeInterop
             }
         }
 
-
-        private static string extractClipboardSource()
-        {
-
-            try
-            {
-                var sb   = new StringBuilder();
-                var data = Clipboard.GetDataObject();
-                var d    = data.GetData("OwnerLink", true);
-                if (d != null)
-                {
-                    switch (d.GetType().ToString())
-                    {
-                    case "System.IO.MemoryStream":
-                        var ms = (MemoryStream)data.GetData("OwnerLink", true);
-                        var output = ms.ToArray().Select(a => (char)a);
-                        return "-->" + new string(output.ToArray());
-                    }
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-            return null;
-        }
+        
         public class Form1 : Form 
         {
             public Form1()
@@ -99,7 +74,6 @@ namespace OfficeInterop
         [STAThread]
         public static void Main(string[] args)
         {
-            var s = extractClipboardSource();
             // connect to app service and wait until the connection gets closed
             _appServiceExit = new AutoResetEvent(false);
             InitializeAppServiceConnection();
