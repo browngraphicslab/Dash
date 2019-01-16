@@ -93,6 +93,12 @@ namespace Dash
                     }
                     _hovered = new WeakReference<DocumentView>(over);
                 }
+                else if (over != null)
+                {
+                    var scrPos = over.GetBoundingRect(xOuterGrid);
+                    XDocumentHover.Width = scrPos.Width;
+                    XDocumentHover.Height = scrPos.Height;
+                }
             }), true);
 
             ToolTipService.SetToolTip(xSearchButton, new ToolTip() { Content = "Search workspace", Placement = PlacementMode.Bottom, VerticalOffset = 5 });
