@@ -46,7 +46,6 @@ namespace Dash
         private Timer _lowPriorityTimer      = new Timer(3600000);  // every hour
         private Timer _moderatePriorityTimer = new Timer(900000);   // every 15 minutes
         private Timer _highPriorityTimer     = new Timer(5000);     // every 15 seconds
-        private WeakReference<DocumentView> _hovered = null;
 
         public static MainPage               Instance { get; private set; }
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
@@ -80,24 +79,16 @@ namespace Dash
             {
                 PointerRoutedArgsHack = e;
                 var over = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid).ToList().OfType<DocumentView>().FirstOrDefault();
-                DocumentView hovered = null;
-                _hovered?.TryGetTarget(out hovered);
-                if (over != hovered)
-                {
-                    if (over != null) {
-                        var scrPos = over.GetBoundingRect(xOuterGrid);
-                        XDocumentHover.Width = scrPos.Width;
-                        XDocumentHover.Height = scrPos.Height;
-                        XDocumentHover.RenderTransform = new TranslateTransform() { X = scrPos.X, Y = scrPos.Y };
-                        XDocumentHover.BorderThickness = new Thickness(1);
-                    }
-                    _hovered = new WeakReference<DocumentView>(over);
-                }
-                else if (over != null)
+                if (over != null)
                 {
                     var scrPos = over.GetBoundingRect(xOuterGrid);
                     XDocumentHover.Width = scrPos.Width;
                     XDocumentHover.Height = scrPos.Height;
+                    XDocumentHover.RenderTransform = new TranslateTransform() { X = scrPos.X, Y = scrPos.Y };
+                    XDocumentHover.BorderThickness = new Thickness(1);
+                } else
+                {
+                    XDocumentHover.BorderThickness = new Thickness(0);
                 }
             }), true);
 
