@@ -85,10 +85,10 @@ namespace Dash
                     XDocumentHover.Width = scrPos.Width;
                     XDocumentHover.Height = scrPos.Height;
                     XDocumentHover.RenderTransform = new TranslateTransform() { X = scrPos.X, Y = scrPos.Y };
-                    XDocumentHover.BorderThickness = new Thickness(1);
+                    XHoverOutline.StrokeThickness = 1;
                 } else
                 {
-                    XDocumentHover.BorderThickness = new Thickness(0);
+                    XHoverOutline.StrokeThickness = 0;
                 }
             }), true);
 
