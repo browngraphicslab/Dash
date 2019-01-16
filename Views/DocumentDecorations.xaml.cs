@@ -26,6 +26,8 @@ namespace Dash
         private bool                           _parentIsFreeform = false;
         private bool                           _showPDFcontrols = false;
         private bool                           _doubleTapped = false;
+        private double                         _resizeFrameWidth = 10;
+        private double                         _resizeFrameWidthMargin = -10;
         private Visibility                     _resizerVisibilityState = Visibility.Collapsed;
         private ToolTip                        _titleTip = new ToolTip { Placement = PlacementMode.Top };
         private IEnumerable<DocumentViewModel> _selectedDocViewModels => SelectionManager.SelectedDocViewModels;
@@ -44,6 +46,16 @@ namespace Dash
         {
             get => _resizerVisibilityState;
             set => SetProperty(ref _resizerVisibilityState, value);
+        }
+        public double                            ResizerFrameWidth
+        {
+            get => _resizeFrameWidth;
+            set { SetProperty(ref _resizeFrameWidth, value); ResizerFrameWidthMargin = -value; }
+        }
+        public double                            ResizerFrameWidthMargin
+        {
+            get => _resizeFrameWidthMargin;
+            set { SetProperty(ref _resizeFrameWidthMargin, value); }
         }
         public List<LinkButton>                  LinkButtons    = new List<LinkButton>();
         public static KeyController              HeaderFieldKey = KeyStore.TitleKey;
@@ -150,15 +162,22 @@ namespace Dash
                 }
                 if (SelectionManager.SelectedDocViews.Any())
                 {
+                    var defaultWidth = 10;
                     if (botRight.X > MainPage.Instance.ActualWidth - xAnnotationButtonsStack.ActualWidth - MainPage.Instance.xLeftGrid.ActualWidth)
-                    { // 20 = 2 * resizeFrame border width
-                        botRight = new Point(MainPage.Instance.ActualWidth - 20 - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
+                    {
+                        botRight = new Point(MainPage.Instance.ActualWidth - 2 * defaultWidth - MainPage.Instance.xLeftGrid.ActualWidth, botRight.Y);
                     }
-                    else botRight = new Point(botRight.X, botRight.Y);
-
-                    RenderTransform     = new TranslateTransform { X = topLeft.X, Y = topLeft.Y };
-                    ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X));
-                    ContentRow.Height   = new GridLength(botRight.Y - topLeft.Y);
+                    else
+                    {
+                        botRight = new Point(botRight.X, botRight.Y);
+                    }
+                    var shiftHeight = Math.Min(defaultWidth,Math.Max(0, (botRight.Y - topLeft.Y)-3*defaultWidth));
+                    var shiftWidth  = Math.Min(defaultWidth,Math.Max(0, (botRight.X - topLeft.X)-3*defaultWidth));
+                    var shiftAmt    = Math.Min(shiftHeight, shiftWidth);
+                    ResizerFrameWidth = Math.Max(5, shiftAmt);
+                    RenderTransform     = new TranslateTransform { X = topLeft.X+ shiftAmt, Y = topLeft.Y+ shiftAmt };
+                    ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X-2* shiftAmt));
+                    ContentRow.Height   = new GridLength(Math.Max(0, botRight.Y - topLeft.Y-2* shiftAmt));
                 }
             }
             catch (Exception e) { Debug.WriteLine("Got Exception:" + e); }
@@ -632,6 +651,68 @@ namespace Dash
             storage = value;
             OnPropertyChanged(propertyName);
             return true;
+        }
+    }
+
+    public class Margins
+    {
+        public static readonly DependencyProperty mRightProperty = DependencyProperty.RegisterAttached(
+            "mRight", typeof(string),  typeof(Margins),
+            new PropertyMetadata(0.0, new PropertyChangedCallback(OnmRightPropertyChanged)));
+        public static readonly DependencyProperty mLeftProperty = DependencyProperty.RegisterAttached(
+            "mLeft",  typeof(string), typeof(Margins),
+            new PropertyMetadata(0.0, new PropertyChangedCallback(OnmLeftPropertyChanged)));
+        public static readonly DependencyProperty mTopProperty = DependencyProperty.RegisterAttached(
+            "mTop", typeof(string), typeof(Margins),
+            new PropertyMetadata(0.0, new PropertyChangedCallback(OnmTopPropertyChanged)));
+        public static readonly DependencyProperty mBottomProperty = DependencyProperty.RegisterAttached(
+            "mBottom", typeof(string), typeof(Margins),
+            new PropertyMetadata(0.0, new PropertyChangedCallback(OnmBottomPropertyChanged)));
+
+        public static string GetmLeft(FrameworkElement element) { return (string)element.GetValue(mLeftProperty); }
+        public static void SetmLeft(FrameworkElement element, string value) { element.SetValue(mLeftProperty, value); }
+        private static void OnmLeftPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        {
+            if (obj is FrameworkElement element && double.TryParse((string)args.NewValue, out double value))
+            {
+                var margin = element.Margin;
+                margin.Left = value;
+                element.Margin = margin;
+            }
+        }
+        public static string GetmTop(FrameworkElement element) { return (string)element.GetValue(mTopProperty); }
+        public static void SetmTop(FrameworkElement element, string value) { element.SetValue(mTopProperty, value); }
+        private static void OnmTopPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        {
+            if (obj is FrameworkElement element && double.TryParse((string)args.NewValue, out double value))
+            {
+                var margin = element.Margin;
+                margin.Top = value;
+                element.Margin = margin;
+            }
+        }
+        public static string GetmBottom(FrameworkElement element) { return (string)element.GetValue(mBottomProperty); }
+        public static void SetmBottom(FrameworkElement element, string value) { element.SetValue(mBottomProperty, value); }
+        private static void OnmBottomPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        {
+            if (obj is FrameworkElement element && double.TryParse((string)args.NewValue, out double value))
+            {
+                var margin = element.Margin;
+                margin.Bottom = value;
+                element.Margin = margin;
+            }
+        }
+
+        public static string GetmRight(FrameworkElement element) { return (string)element.GetValue(mRightProperty); }
+        public static void SetmRight(FrameworkElement element, string value) { element.SetValue(mRightProperty, value); }
+        private static void OnmRightPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        {
+            if (obj is FrameworkElement element && double.TryParse((string)args.NewValue, out double value))
+            {
+                var margin = element.Margin;
+                margin.Right = value;
+                element.Margin = margin;
+            }
         }
     }
 }

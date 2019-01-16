@@ -78,6 +78,7 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler(HoverHighlight), true);
             AddHandler(PointerMovedEvent,   new PointerEventHandler(HoverHighlight), true);
+            AddHandler(KeyUpEvent,          new KeyEventHandler(HoverHighlightKey), true);
 
             ToolTipService.SetToolTip(xSearchButton, new ToolTip() { Content = "Search workspace", Placement = PlacementMode.Bottom, VerticalOffset = 5 });
 
@@ -633,7 +634,23 @@ function (d) {
             }
             //if (xTabCanvas.Children.Contains(TabMenu.Instance)) { TabMenu.Instance.HandleKeyDown(sender, e); }
         }
-
+        
+        private void HoverHighlightKey(object sender, KeyRoutedEventArgs e)       
+        {
+            var over = SelectionManager.SelectedDocViews.FirstOrDefault();
+            if (over != null)
+            {
+                var scrPos = over.GetBoundingRect(xOuterGrid);
+                XDocumentHover.Width = scrPos.Width;
+                XDocumentHover.Height = scrPos.Height;
+                XDocumentHover.RenderTransform = new TranslateTransform() { X = scrPos.X, Y = scrPos.Y };
+                XHoverOutline.StrokeThickness = 1;
+            }
+            else
+            {
+                XHoverOutline.StrokeThickness = 0;
+            }
+        }
         private void HoverHighlight(object sender, PointerRoutedEventArgs e)       
         {
             PointerRoutedArgsHack = e;
