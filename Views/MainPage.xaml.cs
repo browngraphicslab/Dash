@@ -46,6 +46,7 @@ namespace Dash
         private Timer _lowPriorityTimer      = new Timer(3600000);  // every hour
         private Timer _moderatePriorityTimer = new Timer(900000);   // every 15 minutes
         private Timer _highPriorityTimer     = new Timer(5000);     // every 15 seconds
+        private DocumentView _hovered = null;
 
         public static MainPage               Instance { get; private set; }
         public static PointerRoutedEventArgs PointerRoutedArgsHack = null;
@@ -75,7 +76,17 @@ namespace Dash
             formattableTitleBar.ButtonForegroundColor = Colors.White;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
-            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
+            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) =>
+            {
+                PointerRoutedArgsHack = e;
+                var over = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid).ToList().OfType<DocumentView>().FirstOrDefault();
+                if (over != _hovered)
+                {
+                    _hovered?.HoverHighlight(false);
+                    over?.HoverHighlight(true);
+                    _hovered = over;
+                }
+            }), true);
 
             ToolTipService.SetToolTip(xSearchButton, new ToolTip() { Content = "Search workspace", Placement = PlacementMode.Bottom, VerticalOffset = 5 });
 

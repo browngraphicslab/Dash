@@ -30,11 +30,11 @@ namespace Dash
         private static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindRenderTransformChanged));
         private bool              _anyBehaviors => ViewModel.LayoutDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
-        private readonly Flyout   _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private bool              _doubleTapped = false;
         private Point             _down         = new Point();
         private Point             _pointerPoint = new Point(0, 0);
+        private bool              _xMenuOpen    = false;
 
         public CollectionView      ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public CollectionViewModel ParentViewModel => ParentCollection?.ViewModel;
@@ -88,10 +88,17 @@ namespace Dash
 
             xMenuFlyout.Opened += (s, e) =>
             {
+                _xMenuOpen = true;
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
-            
+            xMenuFlyout.Closed += (s, e) =>
+            {
+                _xMenuOpen = false;
+                if (this.IsShiftPressed())
+                    xMenuFlyout.Hide();
+            };
+
             DragStarting  += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped   += (s, e) => { e.Handled = true; TappedHandler(true); };
@@ -106,7 +113,11 @@ namespace Dash
         {
             //Debug.Write("dispose DocumentView");
         }
-        
+
+        public void HoverHighlight(bool on)
+        {
+            LayoutRoot.BorderThickness = new Thickness(on ? 0.5 : 0);
+        }
         public bool BindRenderTransform
         {
             get => (bool)GetValue(BindRenderTransformProperty);
@@ -714,7 +725,6 @@ namespace Dash
             ellipse.Width = length;
             ellipse.Height = length;
         }
-
         private async void xMenuFlyout_Opening(object sender, object e)
         {
             xMenuFlyout.Items.Clear();
@@ -1077,7 +1087,6 @@ namespace Dash
         {
             if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = true;
         }
-
         private void LayoutRootHideTooltip(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip && tip.IsOpen)
