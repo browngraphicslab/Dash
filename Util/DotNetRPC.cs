@@ -110,7 +110,7 @@ namespace Dash
             return CallRPCAsync(new ValueSet
             {
                 ["REQUEST"] = "OpenUri",
-                ["DATA"] = target.OriginalString
+                ["DATA"] = target.OriginalString.Replace("file:","")
             });
         }
     }

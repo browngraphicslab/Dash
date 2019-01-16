@@ -200,13 +200,30 @@ namespace OfficeInterop
                 break;
             case "OpenUri":
                 var strs = ((string) request["DATA"]).Split('!');
-                if (strs.Count() == 2)
+                if (strs.Count() == 2 && (strs[0].EndsWith(".pptx") || strs[0].EndsWith(".ppt")))
                 {
-                    Process.Start(strs[0]);
-                    System.Threading.Thread.Sleep(1000);
+                    var pptApp = new Microsoft.Office.Interop.PowerPoint.Application();
+                    var found = false;
+                    foreach (Microsoft.Office.Interop.PowerPoint.Presentation p in pptApp.Presentations)
+                    {
+                        try
+                        {
+                            if (p != null && p.FullName.Equals(strs[0]))
+                            {
+                                found = true;
+                            }
+                        } catch (Exception)
+                        {
+
+                        }
+                    }
+                    if (!found)
+                    {
+                        pptApp.Presentations.Open(strs[0]);
+                    }
                     if (int.TryParse(strs[1], out int page))
                     {
-                        new Microsoft.Office.Interop.PowerPoint.Application().ActiveWindow.View.GotoSlide(page);
+                        pptApp.ActiveWindow.View.GotoSlide(page);
                     }
                 }
                 else System.Diagnostics.Process.Start((string)request["DATA"]);
