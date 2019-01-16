@@ -497,6 +497,10 @@ namespace Dash
                         }
                     }
                 }
+                else if (!SelectionManager.SelectedDocViews.Contains(this) || this.IsShiftPressed())
+                {
+                    SelectionManager.Select(this, this.IsShiftPressed());
+                }
 
                 if (SelectionManager.SelectedDocViewModels.Count() > 1)
                 {
@@ -723,6 +727,10 @@ namespace Dash
         }
         private async void xMenuFlyout_Opening(object sender, object e)
         {
+            if (!ViewModel.IsSelected)
+            {
+                SelectionManager.Select(this, this.IsShiftPressed());
+            }
             xMenuFlyout.Items.Clear();
 
             xMenuFlyout.Items.Add(new MenuFlyoutItem()

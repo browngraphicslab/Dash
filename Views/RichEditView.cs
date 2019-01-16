@@ -134,10 +134,6 @@ namespace Dash
 
             LostFocus += (s, e) =>
             {
-                if (ViewModel?.IsSelected != true)
-                {
-                    IsEnabled = false;
-                }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
                 if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey?.Equals(KeyStore.DataKey) == true)

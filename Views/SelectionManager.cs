@@ -65,7 +65,9 @@ namespace Dash
             {
                 bool alreadySelected = false;
                 var deselected = new List<DocumentView>();
-                foreach (var documentView in _selectedDocViews)
+                var prevSelected = _selectedDocViews.ToList();
+                _selectedDocViews = new List<DocumentView> { doc };
+                foreach (var documentView in prevSelected)
                 {
                     if (documentView == doc)
                     {
@@ -81,7 +83,6 @@ namespace Dash
 
                 var args = new DocumentSelectionChangedEventArgs(deselected, alreadySelected ? new List<DocumentView>() : new List<DocumentView> { doc });
 
-                _selectedDocViews = new List<DocumentView> { doc };
                 if (!alreadySelected)
                 {
                     SelectHelper(doc);
@@ -93,8 +94,8 @@ namespace Dash
             {
                 if (_selectedDocViews.Contains(doc))
                 {
-                    DeselectHelper(doc);
                     _selectedDocViews.Remove(doc);
+                    DeselectHelper(doc);
                     OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
                 }
                 else
@@ -173,12 +174,12 @@ namespace Dash
 
         private static void SelectHelper(DocumentView view)
         {
-            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<RichEditView>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.IsEnabled = true;
                 rv.Focus(FocusState.Programmatic);
             });
-            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.TransportControls.Visibility = Visibility.Visible;
                 rv.Focus(FocusState.Programmatic);
@@ -189,6 +190,9 @@ namespace Dash
         {
             view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv => 
                 rv.TransportControls.Visibility = Visibility.Collapsed);
+            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+                rv.IsEnabled = false
+            );
         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformView collection)
