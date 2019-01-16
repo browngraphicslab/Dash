@@ -113,11 +113,7 @@ namespace Dash
         {
             //Debug.Write("dispose DocumentView");
         }
-
-        public void HoverHighlight(bool on)
-        {
-            LayoutRoot.BorderThickness = new Thickness(on ? 0.5 : 0);
-        }
+        
         public bool BindRenderTransform
         {
             get => (bool)GetValue(BindRenderTransformProperty);

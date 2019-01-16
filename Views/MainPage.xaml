@@ -113,6 +113,7 @@
 
             </StackPanel>
 
+            <Border x:Name="XDocumentHover" Opacity="0.4" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False" BorderBrush="Red" BorderThickness="1" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"></Border>
             <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
             <localMicrosoft:GridSplitter x:Name="xSplitter"  Grid.Column="1" Width="15"/>

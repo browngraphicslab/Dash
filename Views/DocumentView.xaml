@@ -20,7 +20,7 @@
     PointerPressed="LayoutRootHideTooltip"
     ManipulationMode="None"
     UseLayoutRounding="False">
-    <Grid x:Name="LayoutRoot" BorderThickness="0" BorderBrush="Red">
+    <Grid x:Name="LayoutRoot">
         <Grid.Resources>
             <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
                 <FadeOutThemeAnimation TargetName="LayoutRoot"/>
