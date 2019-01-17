@@ -34,7 +34,6 @@ namespace Dash
         private bool              _doubleTapped = false;
         private Point             _down         = new Point();
         private Point             _pointerPoint = new Point(0, 0);
-        private bool              _xMenuOpen    = false;
 
         public CollectionView      ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public CollectionViewModel ParentViewModel => ParentCollection?.ViewModel;
@@ -88,13 +87,11 @@ namespace Dash
 
             xMenuFlyout.Opened += (s, e) =>
             {
-                _xMenuOpen = true;
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
             xMenuFlyout.Closed += (s, e) =>
             {
-                _xMenuOpen = false;
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
@@ -107,7 +104,7 @@ namespace Dash
             PointerPressed += (s, e) => this_PointerPressed(s, e);
 
             ToFront();
-            xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
+            xContentClip.Rect = new Rect(0, 0, Width, Height);
         }
         ~DocumentView()
         {
@@ -249,7 +246,7 @@ namespace Dash
                 Mode      = BindingMode.TwoWay,
                 FallbackValue = new SolidColorBrush(Colors.Transparent)
             };
-            xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
+            xDocumentBackground.AddFieldBinding(ContentPresenter.BackgroundProperty, backgroundBinding);
         }
         private void UpdateRenderTransformBinding()
         {
@@ -334,7 +331,7 @@ namespace Dash
                 Placement = PlacementMode.Bottom,
                 VerticalOffset = 10
             };
-            ToolTipService.SetToolTip(LayoutRoot, label);
+            ToolTipService.SetToolTip(this, label);
         }
         /// <summary>
         /// Brings the element to the front of its containing parent canvas.
@@ -430,24 +427,6 @@ namespace Dash
                     e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
                 }
             }
-        }
-
-        private void ApplyPseudoTemplate(DragDocumentModel dm)
-        {
-            var curLayout     = ViewModel.LayoutDocument;
-            var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.LayoutDocument.GetPosition());
-            draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-            if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
-            {
-                curLayout.SetWidth (dm.DraggedDocuments.First().GetActualSize().X);
-                curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Y);
-            }
-            curLayout.SetField(KeyStore.DataKey,                  draggedLayout.GetField(KeyStore.DataKey), true);
-            curLayout.SetField(KeyStore.PrototypeKey,             draggedLayout.GetField(KeyStore.PrototypeKey), true);
-            curLayout.SetField(KeyStore.LayoutPrototypeKey,       draggedLayout, true);
-            curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
-            curLayout.DocumentType = draggedLayout.DocumentType;
-            UpdateBindings();
         }
 
         private void FadeOut_Completed(object sender, object e)
@@ -665,7 +644,7 @@ namespace Dash
 
         private async void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
-            await Util.ExportAsImage(LayoutRoot);
+            await Util.ExportAsImage(this);
         }
 
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
@@ -725,7 +704,7 @@ namespace Dash
             ellipse.Width = length;
             ellipse.Height = length;
         }
-        private async void xMenuFlyout_Opening(object sender, object e)
+        private void xMenuFlyout_Opening(object sender, object e)
         {
             if (!ViewModel.IsSelected)
             {
@@ -1022,20 +1001,20 @@ namespace Dash
         }
 
         //checks if we should be panning content
-        private void LayoutRoot_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             //if ctrl is pressed and either or both of left/right btns, we should pan content
             if (this.IsCtrlPressed() && this.IsLeftBtnPressed())
             {
-                var curPt = e.GetCurrentPoint(LayoutRoot).Position;
+                var curPt = e.GetCurrentPoint(this).Position;
                 PanContent(-_pointerPoint.X + curPt.X, -_pointerPoint.Y + curPt.Y);
                 e.Handled = true;
             }
 
-            _pointerPoint = e.GetCurrentPoint(LayoutRoot).Position;
+            _pointerPoint = e.GetCurrentPoint(this).Position;
         }
 
-        private void LayoutRoot_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xContentClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
         }
@@ -1062,8 +1041,8 @@ namespace Dash
                 scale.ScaleY = deltaScale;
 
                 //set center X to mouse position
-                scale.CenterX = e.GetCurrentPoint(LayoutRoot).Position.X;
-                scale.CenterY = e.GetCurrentPoint(LayoutRoot).Position.Y;
+                scale.CenterX = e.GetCurrentPoint(this).Position.X;
+                scale.CenterY = e.GetCurrentPoint(this).Position.Y;
 
                 var tgroup = new TransformGroup();
                 tgroup.Children.Add(xContentTransform);
@@ -1087,14 +1066,19 @@ namespace Dash
             xMenuFlyout_Opening(sender, e);
         }
 
-        private void LayoutRootShowTooltip(object sender, PointerRoutedEventArgs e)
+        private void ShowTooltip(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = true;
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
         }
-        private void LayoutRootHideTooltip(object sender, PointerRoutedEventArgs e)
+        private void HideTooltip(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip && tip.IsOpen)
+            {
                 tip.IsOpen = false;
+            }
         }
     }
 }

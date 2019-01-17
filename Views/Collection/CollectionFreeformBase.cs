@@ -1123,7 +1123,7 @@ namespace Dash
                     var pt = e.GetPosition(xTransformedCanvas);
                     ShowPreviewTextbox(pt);
                 }
-                foreach (var rtv in Content.GetDescendantsOfType<RichEditView>())
+                foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
                 {
                     rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
                 }

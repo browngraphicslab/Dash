@@ -1294,7 +1294,7 @@ namespace Dash
                 {
                     showPreviewTextbox(e.GetPosition(xTransformedCanvas));
                 }
-                Content.GetDescendantsOfType<RichEditView>().ToList().ForEach(r => r.Document.Selection.Collapse(false));
+                Content.GetDescendantsOfType<RichTextView>().ToList().ForEach(r => r.Document.Selection.Collapse(false));
             }
         }
         private void       showPreviewTextbox(Point where)

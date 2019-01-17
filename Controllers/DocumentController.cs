@@ -950,7 +950,7 @@ namespace Dash
                 var (fieldDoc, fieldKey) = parseField(fieldName);
                 TextingBox.SetupBindings(fieldReplacement, fieldDoc, fieldKey);
             }
-            var richTextFields = descendants.OfType<RichEditView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            var richTextFields = descendants.OfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");

@@ -174,7 +174,7 @@ namespace Dash
 
         private static void SelectHelper(DocumentView view)
         {
-            view.GetDescendantsOfType<RichEditView>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<RichTextView>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.IsEnabled = true;
                 rv.Focus(FocusState.Programmatic);
@@ -190,7 +190,7 @@ namespace Dash
         {
             view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv => 
                 rv.TransportControls.Visibility = Visibility.Collapsed);
-            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<RichTextView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
                 rv.IsEnabled = false
             );
         }

@@ -11,35 +11,32 @@
     d:DesignHeight="400"
     AllowDrop="True"
     Drop="This_Drop"
-    SizeChanged="LayoutRoot_OnSizeChanged" 
+    SizeChanged="OnSizeChanged" 
     Holding="XContent_OnHolding" 
     IsHoldingEnabled="True" 
-    PointerMoved="LayoutRoot_OnPointerMoved"  
-    PointerEntered="LayoutRootShowTooltip" 
-    PointerExited="LayoutRootHideTooltip" 
-    PointerPressed="LayoutRootHideTooltip"
+    PointerMoved="OnPointerMoved"  
+    PointerEntered="ShowTooltip" 
+    PointerExited="HideTooltip" 
+    PointerPressed="HideTooltip"
     ManipulationMode="None"
     UseLayoutRounding="False">
-    <Grid x:Name="LayoutRoot">
-        <Grid.Resources>
+    <UserControl.Clip>
+        <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"/>
+    </UserControl.Clip>
+
+    <ContentPresenter x:Name="xDocumentBackground" Content="{Binding Content}" Background="Transparent" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}">
+        <ContentPresenter.Resources>
             <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
                 <FadeOutThemeAnimation TargetName="LayoutRoot"/>
             </Storyboard>
             <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
             <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
-        </Grid.Resources>
-        <Grid.ContextFlyout>
+        </ContentPresenter.Resources>
+        <ContentPresenter.ContextFlyout>
             <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening"/>
-        </Grid.ContextFlyout>
-        <Rectangle   x:Name="xDocumentBackground"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Fill="Transparent"  IsHitTestVisible="False"/>
-        <ContentPresenter Content="{Binding Content}" >
-            <ContentPresenter.Clip>
-                <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"/>
-            </ContentPresenter.Clip>
-            <ContentPresenter.RenderTransform>
-                <MatrixTransform x:Name="xContentTransform"/>
-            </ContentPresenter.RenderTransform>
-        </ContentPresenter>
-        <Border x:Name="xDocHighlight" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" />
-    </Grid>
+        </ContentPresenter.ContextFlyout>
+        <ContentPresenter.RenderTransform>
+            <MatrixTransform x:Name="xContentTransform"/>
+        </ContentPresenter.RenderTransform>
+    </ContentPresenter>
 </UserControl>

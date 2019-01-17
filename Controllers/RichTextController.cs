@@ -90,20 +90,7 @@ namespace Dash
             }
             return StringSearchModel.False;
         }
-
-        // bcz: just want the basic behavior of converting the field into a string.. no need to override.
-        //public override FrameworkElement GetTableCellView(Context context)
-        //{
-        //    var richTextView = new RichTextView()
-        //    {
-        //        HorizontalAlignment = HorizontalAlignment.Stretch,
-        //        VerticalAlignment = VerticalAlignment.Stretch,
-        //        TargetRTFController = this
-        //    };
-
-        //    return richTextView;
-        //}
-
+        
         public override FieldControllerBase GetDefaultController()
         {
             return new RichTextController(new RichTextModel.RTD("Default Value"));

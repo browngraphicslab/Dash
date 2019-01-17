@@ -26,10 +26,12 @@ namespace Dash
         private bool                           _parentIsFreeform = false;
         private bool                           _showPDFcontrols = false;
         private bool                           _doubleTapped = false;
+        private bool                           _insetResizerFrame = false;
         private double                         _resizeFrameWidth = 10;
         private double                         _resizeFrameWidthMargin = -10;
         private Visibility                     _resizerVisibilityState = Visibility.Collapsed;
         private ToolTip                        _titleTip = new ToolTip { Placement = PlacementMode.Top };
+        private KeyController                  _headerFieldKey = KeyStore.TitleKey;
         private IEnumerable<DocumentViewModel> _selectedDocViewModels => SelectionManager.SelectedDocViewModels;
 
         public bool                              ShowPDFControls
@@ -58,7 +60,6 @@ namespace Dash
             set { SetProperty(ref _resizeFrameWidthMargin, value); }
         }
         public List<LinkButton>                  LinkButtons    = new List<LinkButton>();
-        public static KeyController              HeaderFieldKey = KeyStore.TitleKey;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public DocumentDecorations()
@@ -75,7 +76,7 @@ namespace Dash
             MainPage.Instance.xOuterGrid.AddHandler(KeyDownEvent,             new KeyEventHandler(keyHdlr), true);
             MainPage.Instance.xOuterGrid.AddHandler(KeyUpEvent,               new KeyEventHandler(keyHdlr), true);
             InitializeComponent();
-            _titleTip.Content = HeaderFieldKey.Name;
+            _titleTip.Content = _headerFieldKey.Name;
             ToolTipService.SetToolTip(xHeaderText, _titleTip);
             xHeaderText.PointerEntered += (s,e) => _titleTip.IsOpen = true;
             xHeaderText.PointerExited  += (s,e) => _titleTip.IsOpen = false;
@@ -173,11 +174,12 @@ namespace Dash
                     }
                     var shiftHeight = Math.Min(defaultWidth,Math.Max(0, (botRight.Y - topLeft.Y)-3*defaultWidth));
                     var shiftWidth  = Math.Min(defaultWidth,Math.Max(0, (botRight.X - topLeft.X)-3*defaultWidth));
-                    var shiftAmt    = Math.Min(shiftHeight, shiftWidth);
-                    ResizerFrameWidth = Math.Max(5, shiftAmt);
-                    RenderTransform     = new TranslateTransform { X = topLeft.X+ shiftAmt, Y = topLeft.Y+ shiftAmt };
-                    ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X-2* shiftAmt));
-                    ContentRow.Height   = new GridLength(Math.Max(0, botRight.Y - topLeft.Y-2* shiftAmt));
+                    var insetFrame  = Math.Min(shiftHeight, shiftWidth);
+                    ResizerFrameWidth   = Math.Max(5, insetFrame);
+                    insetFrame = _insetResizerFrame ? insetFrame : 0;
+                    RenderTransform     = new TranslateTransform { X = topLeft.X + insetFrame, Y = topLeft.Y + insetFrame };
+                    ContentColumn.Width = new GridLength(Math.Max(0, botRight.X - topLeft.X - 2 * insetFrame));
+                    ContentRow.Height   = new GridLength(Math.Max(0, botRight.Y - topLeft.Y - 2 * insetFrame));
                 }
             }
             catch (Exception e) { Debug.WriteLine("Got Exception:" + e); }
@@ -282,8 +284,9 @@ namespace Dash
 
             xButtonsCanvas.Margin = new Thickness(_selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ? -32 : 0, 
                                                   _selectedDocViewModels.Any(dv => dv.InsetDecorations == true) ?  6 : 0, 0, 0);
-            ParentIsFreeform = true;
-            ShowPDFControls  = false;
+            _insetResizerFrame = SelectionManager.SelectedDocViewModels.Count() != 1 || !SelectionManager.SelectedDocViewModels.First().LayoutDocument.DocumentType.Equals(RichTextBox.DocumentType);
+            ParentIsFreeform   = true;
+            ShowPDFControls    = false;
             try
             {
                 foreach (var docView in SelectionManager.SelectedDocViews)
@@ -305,6 +308,7 @@ namespace Dash
                 xSearchBox.Text = _selectedDocViewModels.First().DocumentController.GetField<TextController>(KeyStore.SearchStringKey)?.Data ?? "";
             }
             Visibility = _selectedDocViewModels.Any() ? Visibility.Visible : Visibility.Collapsed;
+            SetPositionAndSize();
         }
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) { 
             SelectionManager.SelectedDocViews.ToList().ForEach((dv) => MainPage.Instance.ClearFloatingDoc(dv));
@@ -432,7 +436,7 @@ namespace Dash
             }
             keys = keys.ToHashSet().ToList();
             keys.Sort((dv1, dv2) => string.Compare(dv1.Name, dv2.Name));
-            var ind = keys.IndexOf(HeaderFieldKey);
+            var ind = keys.IndexOf(_headerFieldKey);
             do
             {
                 ind = prev ? (ind > 0 ? ind - 1 : keys.Count - 1) : (ind < keys.Count - 1 ? ind + 1 : 0);
@@ -443,9 +447,9 @@ namespace Dash
         {
             foreach (var doc in _selectedDocViewModels.Select(sd => sd.DocumentController))
             {
-                var targetDoc = doc.GetField<TextController>(HeaderFieldKey)?.Data != null ? doc : doc.GetDataDocument();
+                var targetDoc = doc.GetField<TextController>(_headerFieldKey)?.Data != null ? doc : doc.GetDataDocument();
 
-                targetDoc.SetField<TextController>(HeaderFieldKey, xHeaderText.Text, true);
+                targetDoc.SetField<TextController>(_headerFieldKey, xHeaderText.Text, true);
             }
             xHeaderText.Background = new SolidColorBrush(Colors.LightBlue);
             ResetHeader();
@@ -456,15 +460,15 @@ namespace Dash
             {
                 if (newkey != null)
                 {
-                    HeaderFieldKey = KeyController.Get(newkey);
+                    _headerFieldKey = KeyController.Get(newkey);
                 }
-                var layoutHeader = _selectedDocViewModels.FirstOrDefault()?.DocumentController.GetField<TextController>(HeaderFieldKey)?.Data;
-                xHeaderText.Text = layoutHeader ?? _selectedDocViewModels.FirstOrDefault()?.DataDocument.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                var layoutHeader = _selectedDocViewModels.FirstOrDefault()?.DocumentController.GetField<TextController>(_headerFieldKey)?.Data;
+                xHeaderText.Text = layoutHeader ?? _selectedDocViewModels.FirstOrDefault()?.DataDocument.GetDereferencedField<TextController>(_headerFieldKey, null)?.Data ?? "<empty>";
                 if (_selectedDocViewModels.Count() > 1)
                 {
                     foreach (var d in _selectedDocViewModels.Select(sd => sd.DataDocument))
                     {
-                        var dvalue = d?.GetDereferencedField<TextController>(HeaderFieldKey, null)?.Data ?? "<empty>";
+                        var dvalue = d?.GetDereferencedField<TextController>(_headerFieldKey, null)?.Data ?? "<empty>";
                         if (dvalue != xHeaderText.Text)
                         {
                             xHeaderText.Text = "...";
@@ -473,7 +477,7 @@ namespace Dash
                     }
                 }
                 xHeaderText.Foreground = new SolidColorBrush(Colors.Black);
-                _titleTip.Content = HeaderFieldKey.Name;
+                _titleTip.Content = _headerFieldKey.Name;
                 xHeaderText.Background = new SolidColorBrush(xHeaderText.Text == "<empty>" ? Colors.Pink : Colors.LightBlue);
             }
         }
@@ -481,7 +485,7 @@ namespace Dash
         private void TitleEllipse_StartDragging(UIElement sender, DragStartingEventArgs args)
         {
             var activeDoc = _selectedDocViewModels.FirstOrDefault()?.DocumentController;
-            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeDoc.GetDataDocument(), HeaderFieldKey)));
+            args.Data.SetDragModel(new DragFieldModel(new DocumentFieldReference(activeDoc.GetDataDocument(), _headerFieldKey)));
             // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }

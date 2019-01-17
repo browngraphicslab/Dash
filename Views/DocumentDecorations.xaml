@@ -75,23 +75,23 @@
             </StackPanel>
         </Grid>
 
-        <Grid x:Name="xResizeFrame" Grid.RowSpan="2"  Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
+        <Grid x:Name="xResizeFrame" Grid.RowSpan="2" Visibility="{x:Bind ResizerVisibilityState, Mode=OneWay}" >
             <Rectangle x:Name="xTopResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="{Binding ResizerFrameWidth}"  l:Margins.mTop="{Binding ResizerFrameWidthMargin}" 
-                                   Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
+                         Opacity="0.3"  Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth"   ManipulationDelta="ResizeRTunconstrained" ManipulationMode="TranslateY"/>
             <Rectangle x:Name="xLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="{Binding ResizerFrameWidth}" l:Margins.mLeft="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightSkyBlue"  uiControls:Mouse.Cursor="SizeWestEast"  ManipulationDelta="ResizeBLunconstrained" ManipulationMode="TranslateX"/>
+                         Opacity="0.3"  Fill="LightSkyBlue"  uiControls:Mouse.Cursor="SizeWestEast"  ManipulationDelta="ResizeBLunconstrained" ManipulationMode="TranslateX"/>
             <Rectangle x:Name="xRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="{Binding ResizerFrameWidth}" l:Margins.mRight="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeWestEast" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateX" />
+                         Opacity="0.3"  Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeWestEast" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateX" />
             <Rectangle x:Name="xBottomResizeControl" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="{Binding ResizerFrameWidth}" l:Margins.mBottom="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateY"/>
+                         Opacity="0.3"  Fill="LightSkyBlue" uiControls:Mouse.Cursor="SizeNorthSouth" ManipulationDelta="ResizeBRunconstrained" ManipulationMode="TranslateY"/>
             <Rectangle x:Name="xTopLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Top" Width="{Binding ResizerFrameWidth}" Height="{Binding ResizerFrameWidth}" l:Margins.mTop="{Binding ResizerFrameWidthMargin}"  l:Margins.mLeft="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeTLaspect" ManipulationMode="TranslateY, TranslateX"/>
+                         Opacity="0.3"  Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeTLaspect" ManipulationMode="TranslateY, TranslateX"/>
             <Rectangle x:Name="xBottomLeftResizeControl" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="{Binding ResizerFrameWidth}" Width="{Binding ResizerFrameWidth}"  l:Margins.mLeft="{Binding ResizerFrameWidthMargin}" l:Margins.mBottom="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeBLaspect" ManipulationMode="TranslateY, TranslateX" />
+                         Opacity="0.3"  Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeBLaspect" ManipulationMode="TranslateY, TranslateX" />
             <Rectangle x:Name="xTopRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Top" Width="{Binding ResizerFrameWidth}" Height="{Binding ResizerFrameWidth}"  l:Margins.mTop="{Binding ResizerFrameWidthMargin}" l:Margins.mRight="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
+                         Opacity="0.3"  Fill="LightBlue" uiControls:Mouse.Cursor="SizeNortheastSouthwest" ManipulationDelta="ResizeRTaspect"  ManipulationMode="TranslateY, TranslateX" />
             <Rectangle x:Name="xBottomRightResizeControl" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Width="{Binding ResizerFrameWidth}" Height="{Binding ResizerFrameWidth}" l:Margins.mRight="{Binding ResizerFrameWidthMargin}" l:Margins.mBottom="{Binding ResizerFrameWidthMargin}"
-                                   Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
+                         Opacity="0.3"  Fill="LightBlue" uiControls:Mouse.Cursor="SizeNorthwestSoutheast" ManipulationDelta="ResizeBRaspect" ManipulationMode="TranslateY, TranslateX" />
             <Canvas l:Margins.mLeft="{Binding ResizerFrameWidthMargin}" l:Margins.mBottom="{Binding ResizerFrameWidthMargin}"  VerticalAlignment="Bottom" HorizontalAlignment="Left" >
                 <TextBlock x:Name="xURISource" Visibility="{x:Bind  ParentIsFreeform, Mode=OneWay}" FontSize="9"/>
             </Canvas>

@@ -2005,7 +2005,7 @@
 
             <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="White"/>
 
-            <Style TargetType="local:RichEditView">
+            <Style TargetType="local:RichTextView">
                 <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
                 <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
                 <Setter Property="Foreground" Value="{StaticResource MainText}" />

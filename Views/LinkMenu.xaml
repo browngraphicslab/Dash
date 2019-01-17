@@ -25,7 +25,7 @@
             </Grid>
 
             <Grid>
-                <local:RichEditView x:Name="xDescriptionBox" Tag="HACK" BorderThickness="2" BorderBrush="Gray"  Margin="10" FontSize="12"/>
+                <local:RichTextView x:Name="xDescriptionBox" Tag="HACK" BorderThickness="2" BorderBrush="Gray"  Margin="10" FontSize="12"/>
             </Grid>
 
             <!--TAGS-->

@@ -128,40 +128,6 @@ namespace Dash
                 _currentPdfView.SetAnnotationType(AnnotationType.None);
             }
         }
-
-        //private void XFontSizeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
-        //{
-        //    
-        //        var selectedFontSize = xFontSizeTextBox.Text;
-
-        //        if (!double.TryParse(selectedFontSize, out double fontSize))
-        //        {
-        //            return;
-        //        }
-        //        if (fontSize > 1600)
-        //        {
-        //            return;
-        //        }
-        //        using (UndoManager.GetBatchHandle())
-        //        {
-        //            if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition ==
-        //                xRichEditBox.Document.Selection.EndPosition)
-        //            {
-        //                xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out var text);
-        //                var end = text.Length;
-        //                xRichEditBox.Document.Selection.SetRange(0, end);
-        //                xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
-        //                xRichEditBox.Document.Selection.SetRange(end, end);
-        //            }
-        //            else
-        //            {
-        //                xRichEditBox.Document.Selection.CharacterFormat.Size = (float)fontSize;
-        //            }
-
-        //            richTextView.UpdateDocumentFromXaml();
-        //        }
-        //    
-        //}
       
 
         private void XToPageBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
