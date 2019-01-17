@@ -23,18 +23,16 @@
     <UserControl.Clip>
         <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"/>
     </UserControl.Clip>
+    <UserControl.Resources>
+        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
+            <FadeOutThemeAnimation TargetName="xDocContentPresenter"/>
+        </Storyboard>
+    </UserControl.Resources>
+    <UserControl.ContextFlyout>
+        <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening"/>
+    </UserControl.ContextFlyout>
 
-    <ContentPresenter x:Name="xDocumentBackground" Content="{Binding Content}" Background="Transparent" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}">
-        <ContentPresenter.Resources>
-            <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
-                <FadeOutThemeAnimation TargetName="LayoutRoot"/>
-            </Storyboard>
-            <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
-            <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
-        </ContentPresenter.Resources>
-        <ContentPresenter.ContextFlyout>
-            <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening"/>
-        </ContentPresenter.ContextFlyout>
+    <ContentPresenter x:Name="xDocContentPresenter" Content="{Binding Content}" Background="Transparent" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}">
         <ContentPresenter.RenderTransform>
             <MatrixTransform x:Name="xContentTransform"/>
         </ContentPresenter.RenderTransform>

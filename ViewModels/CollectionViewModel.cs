@@ -691,6 +691,9 @@ namespace Dash
                 {
                     var path = (resp["OwnerLink"] as string).Split("\0")[1];
                     droppedDoc.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, "file:" + path, true);
+                    var paths = path.Split('\\');
+                    var parts = paths.Last().Split('!');
+                    droppedDoc.GetDataDocument().SetTitle(parts.First() + (parts.Count() > 1 ? ": Slide#" + parts.Last() : ""));
                 }
 
                 AddDocument(droppedDoc);

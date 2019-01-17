@@ -246,7 +246,7 @@ namespace Dash
                 Mode      = BindingMode.TwoWay,
                 FallbackValue = new SolidColorBrush(Colors.Transparent)
             };
-            xDocumentBackground.AddFieldBinding(ContentPresenter.BackgroundProperty, backgroundBinding);
+            xDocContentPresenter.AddFieldBinding(ContentPresenter.BackgroundProperty, backgroundBinding);
         }
         private void UpdateRenderTransformBinding()
         {

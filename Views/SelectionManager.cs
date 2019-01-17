@@ -223,7 +223,7 @@ namespace Dash
         #region Drag Manipulation Methods
         public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
-            if (!draggedView.ViewModel.IsSelected)
+            if (!draggedView.ViewModel.IsSelected && !draggedView.IsLeftBtnPressed())
             {
                 SelectionManager.Select(draggedView, false);
             }
@@ -235,7 +235,7 @@ namespace Dash
                     parent.GetFirstDescendantOfType<CollectionView>().CurrentView is CollectionFreeformView;
                 var parentIsAnnotationLayer = parent.GetFirstDescendantOfType<AnnotationOverlayEmbeddings>()?.EmbeddedDocsList.Contains(draggedView.ViewModel.DocumentController) == true;
                 if ((parentIsFreeformCollection || parentIsAnnotationLayer) &&
-                    (_selectedDocViews.Contains(parent) || parent == parents.Last()))
+                    (parent == parents.Last() || parent.AreContentsActive))
                 {
                     break;
                 }
@@ -273,7 +273,10 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
             _dragViews?.ForEach(dv => dv.Visibility = Visibility.Collapsed);
-            MainPage.Instance.XDocumentDecorations.Visibility = Visibility.Collapsed;
+            if (!MainPage.Instance.IsLeftBtnPressed() && e.Modifiers != Windows.ApplicationModel.DataTransfer.DragDrop.DragDropModifiers.LeftButton)
+            {
+                MainPage.Instance.XDocumentDecorations.Visibility = Visibility.Collapsed;
+            }
             (sender as FrameworkElement).DragOver -= CollectionDragOver;
         }
         public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)

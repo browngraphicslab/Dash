@@ -202,8 +202,9 @@ namespace Dash
 
             pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
             if (pageTitle.Length > 40)
+            {
                 pageTitle = pageTitle.Substring(1, 39) + "...";
-            pageTitle = char.ToUpper(pageTitle[0]) + pageTitle;
+            }
 
             return $"{webName} ({pageTitle})";
         }
