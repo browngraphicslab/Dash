@@ -82,7 +82,7 @@ namespace Dash
                 Debug.WriteLine("Error: Can't send RPC before app is connected to the interop");
                 return null;
             }
-            AppServiceResponse response = await App.Connection.SendMessageAsync(data);
+            var response = await App.Connection.SendMessageAsync(data);
 
             // check the result
             object result = "";
@@ -96,12 +96,21 @@ namespace Dash
 
         }
 
-        public static async Task ChromeRequest(string data)
+        public static Task ChromeRequest(string data)
         {
-            await CallRPCAsync(new ValueSet
+            return CallRPCAsync(new ValueSet
             {
                 ["REQUEST"] = "Chrome",
                 ["DATA"] = data
+            });
+        }
+
+        public static Task OpenUri(Uri target)
+        {
+            return CallRPCAsync(new ValueSet
+            {
+                ["REQUEST"] = "OpenUri",
+                ["DATA"] = target.OriginalString.Replace("file:","")
             });
         }
     }

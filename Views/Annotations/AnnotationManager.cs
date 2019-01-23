@@ -13,12 +13,15 @@ namespace Dash
         {
             var linkContext = link.GetDataDocument().GetDereferencedField<BoolController>(KeyStore.LinkContextKey, null)?.Data ?? true;
             var document    = link.GetLinkedDocument(direction);
+            var target = document.GetRegionDefinition() ?? document;
+            if (target != document)
+            {
+                target.GotoRegion(document);
+            }
 
             switch (overrideBehavior ?? link.GetDataDocument().GetLinkBehavior())
             {
             case LinkBehavior.Dock:   
-                    var region = link.GetDataDocument().GetLinkedDocument(direction);
-                    var target = region.GetRegionDefinition() ?? region;
                     if (MainPage.Instance.MainSplitter.GetFrameWithDoc(target, true) is SplitFrame frame)
                     {
                         frame.Delete();
@@ -29,16 +32,16 @@ namespace Dash
                     }
 
                 break;
-            case LinkBehavior.Float:    MainPage.Instance.ToggleFloatingDoc(document); break;
+            case LinkBehavior.Float:    MainPage.Instance.ToggleFloatingDoc(target); break;
             case LinkBehavior.Overlay:  //default behavior of highlighting and toggling link visibility and docking when off screen
             case LinkBehavior.Annotate: linkHandlers.TakeWhile(hdlr => hdlr.HandleLink(link, direction) != LinkHandledResult.HandledClose).ToList(); break;
             case LinkBehavior.Follow:   //navigate to link
-                if (!linkContext || !SplitFrame.TryNavigateToDocument(document))
+                if (!linkContext || !SplitFrame.TryNavigateToDocument(target))
                 {
-                    var docNode = DocumentTree.MainPageTree.FirstOrDefault(dn => dn.ViewDocument.Equals(document));
+                    var docNode = DocumentTree.MainPageTree.FirstOrDefault(dn => dn.ViewDocument.Equals(target));
                     if (!linkContext || docNode == null)
                     {
-                        SplitFrame.OpenInActiveFrame(document);
+                        SplitFrame.OpenInActiveFrame(target);
                     }
                     else
                     {

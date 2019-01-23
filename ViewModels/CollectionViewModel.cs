@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -516,6 +517,7 @@ namespace Dash
         {
             using (UndoManager.GetBatchHandle())
             {
+            
                 if (dvp.Contains(StandardDataFormats.StorageItems))
                 {
                     var droppedDoc = await FileDropHelper.HandleDrop(dvp, where);
@@ -573,22 +575,25 @@ namespace Dash
                 }
                 else if (dvp.Contains(StandardDataFormats.Html))
                 {
-                    var text = await dvp.GetHtmlFormatAsync();
-                    var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.PromptLayoutType() : SettingsView.Instance.WebpageLayout;
+                    var htmlNote = await HtmlToDashUtil.ConvertHtmlData(dvp, where);
+                    Actions.DisplayDocument(this, htmlNote, where);
+                    return htmlNote;
+                    //var text = await dvp.GetHtmlFormatAsync();
+                    //var layoutMode = SettingsView.Instance.WebpageLayout == SettingsView.WebpageLayoutMode.Default ? await MainPage.Instance.PromptLayoutType() : SettingsView.Instance.WebpageLayout;
 
-                    if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
-                        (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
-                    {
-                        var htmlNote = new HtmlNote(text, "<unknown html>", where).Document;
-                        Actions.DisplayDocument(this, htmlNote, where);
-                        return htmlNote;
-                    }
-                    else
-                    {
-                        var htmlNote = await HtmlToDashUtil.CreateRtfNote(where, "<unknown html>", text);
-                        Actions.DisplayDocument(this, htmlNote, where);
-                        return htmlNote;
-                    }
+                    //if ((layoutMode == SettingsView.WebpageLayoutMode.HTML && !MainPage.Instance.IsCtrlPressed()) ||
+                    //    (layoutMode == SettingsView.WebpageLayoutMode.RTF && MainPage.Instance.IsCtrlPressed()))
+                    //{
+                    //    var htmlNote = new HtmlNote(text, "<unknown html>", where).Document;
+                    //    Actions.DisplayDocument(this, htmlNote, where);
+                    //    return htmlNote;
+                    //}
+                    //else
+                    //{
+                    //    var htmlNote = await HtmlToDashUtil.CreateRtfNote(where, "<unknown html>", text);
+                    //    Actions.DisplayDocument(this, htmlNote, where);
+                    //    return htmlNote;
+                    //}
                 }
                 else if (dvp.Contains(StandardDataFormats.Text))
                 {
@@ -659,7 +664,7 @@ namespace Dash
             using (UndoManager.GetBatchHandle())
             {
                 var streamRef = await dvp.GetBitmapAsync();
-                WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
+                var writeableBitmap = new WriteableBitmap(400, 400);
                 await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
 
                 var storageFolder = ApplicationData.Current.LocalFolder;
@@ -678,6 +683,19 @@ namespace Dash
                 var dp = new DataPackage();
                 dp.SetStorageItems(new IStorageItem[] { savefile });
                 var droppedDoc = await FileDropHelper.HandleDrop(dp.GetView(), where);
+
+                var rpcRequest = new Windows.Foundation.Collections.ValueSet { { "REQUEST", "Get OwnerLink" } };
+                var resp = await DotNetRPC.CallRPCAsync(rpcRequest);
+
+                if (resp?.ContainsKey("OwnerLink") == true)
+                {
+                    var path = (resp["OwnerLink"] as string).Split("\0")[1];
+                    droppedDoc.GetDataDocument().SetField<TextController>(KeyStore.SourceUriKey, "file:" + path, true);
+                    var paths = path.Split('\\');
+                    var parts = paths.Last().Split('!');
+                    droppedDoc.GetDataDocument().SetTitle(parts.First() + (parts.Count() > 1 ? ": Slide#" + parts.Last() : ""));
+                }
+
                 AddDocument(droppedDoc);
                 return droppedDoc;
             }
@@ -734,7 +752,7 @@ namespace Dash
                         var newDoc = joinDragModel.CollectionDocument.GetViewCopy(where);
                         newDoc.SetField(KeyController.Get("DBChartField"), joinDragModel.DraggedKey, true);
                         newDoc.SetField<TextController>(KeyStore.CollectionViewTypeKey, CollectionViewType.DB.ToString(), true);
-                        AddDocuments(await AddDroppedDocuments(new DocumentController[] { newDoc }.ToList(), null, false, this, where));
+                        AddDocuments(await AddDroppedDocuments(new[] { newDoc }.ToList(), null, false, this, where));
                     }
                     var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     if (docsToAdd.Count == 0 && !DocumentViewModels.Any((dvm) => dragDocModel.DraggedDocuments.Contains(dvm.DocumentController)))

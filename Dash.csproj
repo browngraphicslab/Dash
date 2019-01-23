@@ -961,7 +961,7 @@
     <Compile Include="Views\QuickEntryPanel.xaml.cs">
       <DependentUpon>QuickEntryPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\RichEditView.cs" />
+    <Compile Include="Views\RichTextView.cs" />
     <Compile Include="Views\SelectionManager.cs" />
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>

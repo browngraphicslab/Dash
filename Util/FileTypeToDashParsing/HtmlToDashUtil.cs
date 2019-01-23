@@ -27,7 +27,7 @@ namespace Dash
             {
                 introParts = beforeHtml.Split("\n", StringSplitOptions.RemoveEmptyEntries).ToList();
             }
-            var uri = packageView.AvailableFormats.Contains("UniformResourceLocator") ? (await packageView.GetWebLinkAsync())?.AbsoluteUri : null;
+            var uri = packageView.Contains(StandardDataFormats.WebLink) ? (await packageView.GetWebLinkAsync())?.AbsoluteUri : null;
             uri = uri ?? introParts.LastOrDefault()?.Substring(10);
             
             if (uri?.IndexOf("HTML>") != -1)  // if dropped from Edge, uri is 2nd to last
@@ -155,7 +155,14 @@ namespace Dash
             // try to get website title
             var uriParts = uri?.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
 
-            if (uriParts == null || uriParts.Count < 2) return "";
+            if (uriParts == null || uriParts.Count < 2)
+            {
+                uriParts = uri?.Split('\\', StringSplitOptions.RemoveEmptyEntries).ToList();
+                if (uriParts == null || uriParts.Count < 2)
+                {
+                    return uri;
+                }
+            }
 
             var webNameParts = uriParts[1].Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
             string webName = webNameParts.Count > 2 ? webNameParts[webNameParts.Count - 2] : webNameParts[0];
@@ -195,9 +202,9 @@ namespace Dash
 
             pageTitle.Substring(0, pageTitle.Length - lastTitleWord.Length - 1) : pageTitle;
             if (pageTitle.Length > 40)
+            {
                 pageTitle = pageTitle.Substring(1, 39) + "...";
-            else pageTitle = pageTitle.Substring(1);
-            pageTitle = char.ToUpper(pageTitle[0]) + pageTitle;
+            }
 
             return $"{webName} ({pageTitle})";
         }

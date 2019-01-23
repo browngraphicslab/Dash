@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -54,7 +55,7 @@ namespace Dash
 
             void ContainerHandler(object sender, RoutedEventArgs args)
             {
-                var containerDoc = this.GetDocumentView().ParentViewModel.ContainerDocument;
+                var containerDoc = this.GetDocumentView()?.ParentViewModel?.ContainerDocument;
                 if (containerDoc != null) {
                     eventDoc.GetDataDocument().SetField(KeyStore.EventCollectionKey, containerDoc, true);
                 }
@@ -155,6 +156,14 @@ namespace Dash
         private void constructWebBrowserViewer()
         {
             _xWebView = new WebView(WebViewExecutionMode.SeparateThread) {MinWidth = 200};
+            _xWebView.NavigationCompleted += (sender, args) =>
+            {
+                LayoutDocument.SetField<TextController>(KeyController.Get("NavigationCompleted"), "Navigation completed: " + args.IsSuccess + " " + args.WebErrorStatus, true);
+            };
+            _xWebView.NavigationFailed += (sender, args) =>
+            {
+                LayoutDocument.SetField<TextController>(KeyController.Get("NavigationFailed"), "Navigation Failed: " + args.WebErrorStatus, true);
+            };
             _xWebView.Name = "_xWebView";
             var html = LayoutDocument.GetDereferencedField<HtmlController>(KeyStore.DataKey, null)?.Data;
             var htmlAddress = LayoutDocument.GetDataDocument().GetField<TextController>(KeyStore.SourceUriKey)?.Data;
@@ -281,7 +290,7 @@ namespace Dash
             });
             var webBoxView = _WebView.GetFirstAncestorOfType<WebBoxView>();
             var docview = webBoxView?.GetDocumentView();
-            if (!docview.ViewModel.IsSelected || SelectionManager.SelectedDocViewModels.Count() > 1)
+            if (docview != null && (!docview.ViewModel.IsSelected || SelectionManager.SelectedDocViewModels.Count() > 1))
             {
                 webBoxView?.Freeze();
             }

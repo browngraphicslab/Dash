@@ -159,7 +159,7 @@ namespace Dash
             //TODO RefCount
             ReferenceField(field);
             ReferenceField(key);
-            if (key != KeyStore.DelegatesKey && key != KeyStore.PrototypeKey && key != KeyStore.DocumentContextKey)
+            if (key != KeyStore.PrototypeKey && key != KeyStore.DocumentContextKey)
             {
                 if (IsReferenced)
                 {
@@ -174,7 +174,7 @@ namespace Dash
         {
             ReleaseField(key);
             ReleaseField(field);
-            if (key != KeyStore.DelegatesKey && key != KeyStore.PrototypeKey && key != KeyStore.DocumentContextKey)
+            if (key != KeyStore.PrototypeKey && key != KeyStore.DocumentContextKey)
             {
                 if (IsReferenced)
                 {
@@ -271,7 +271,7 @@ namespace Dash
                 }
             }
 
-            var delegates = GetField(KeyStore.DelegatesKey, true) as ListController<DocumentController>;
+            var delegates = GetDelegates();
             if (delegates != null)
             {
                 bool cycle = false;
@@ -352,10 +352,6 @@ namespace Dash
             var prototypeFieldController = this;
             delegateController.SetField(KeyStore.PrototypeKey, prototypeFieldController, true);
 
-            // add the delegate to our delegates field
-            var currentDelegates = GetDelegates();
-            currentDelegates.Add(delegateController);
-
             var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
             mapping.Add(this, delegateController);
             delegateController.MapDocuments(mapping);
@@ -369,7 +365,7 @@ namespace Dash
             // copy all fields containing mapped elements 
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(KeyStore.PrototypeKey) || f.Key.Equals(KeyStore.DelegatesKey))
+                if (f.Key.Equals(KeyStore.PrototypeKey))
                 {
                     continue;
                 }
@@ -407,27 +403,16 @@ namespace Dash
             return proto != null && (proto.Equals(doc) || proto.IsDelegateOf(doc));
         }
 
+        private List<DocumentController> _delegates = new List<DocumentController>();
 
         /// <summary>
         /// Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
         /// and returns it if no delegates field existed
         /// </summary>
         /// <returns></returns>
-        public ListController<DocumentController> GetDelegates()
+        public IReadOnlyCollection<DocumentController> GetDelegates()
         {
-            // see if we have a populated delegates field
-            var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
-                ? _fields[KeyStore.DelegatesKey] as ListController<DocumentController>
-                : null;
-
-            // if not then populate it with a new list of documents
-            if (currentDelegates == null)
-            {
-                currentDelegates =
-                    new ListController<DocumentController>(new List<DocumentController>());
-                SetField(KeyStore.DelegatesKey, currentDelegates, true);
-            }
-            return currentDelegates;
+            return _delegates.AsReadOnly();
         }
         #endregion
 
@@ -475,7 +460,7 @@ namespace Dash
         /// </summary>
         public bool RemoveField(KeyController key, bool force = false)
         {
-            var (removed, doc, args) = RemoveFieldHelper(key, force);
+            var (removed, doc, args) = SetFieldHelper(key, null, force);
 
             if (!removed)
             {
@@ -534,10 +519,6 @@ namespace Dash
         /// <returns></returns>
         private (bool updated, DocumentController, DocumentFieldUpdatedEventArgs args) SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
-            if (field == null)
-            {
-                return RemoveFieldHelper(key, forceMask);
-            }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
             var doc = forceMask ? this : proto;
@@ -557,46 +538,52 @@ namespace Dash
             //    return false;
             //}
 
+            var settingProto = key == KeyStore.PrototypeKey;
+
             // if doc == proto, then we are actually replacing the field,
             // so we need to release it
             if (doc == proto && oldField != null)
             {
                 doc.ReleaseContainedField(key, oldField);
-            }
-            doc.ReferenceContainedField(key, field);
+                if (settingProto)
+                {
+                    Debug.Assert(oldField is DocumentController);
 
-            doc._fields[key] = field;
-            doc.DocumentModel.Fields[key.Id] = field.Id;
+                    var prototype = ((DocumentController)oldField);
+                    var removed = prototype._delegates.Remove(this);
+                    prototype.PrototypeFieldUpdated -= OnPrototypeFieldUpdated;
+                    Debug.Assert(removed);
+                }
+            }
+
+            if (field != null)
+            {
+                doc.ReferenceContainedField(key, field);
+
+                doc._fields[key] = field;
+                doc.DocumentModel.Fields[key.Id] = field.Id;
+
+                if (settingProto)
+                {
+                    Debug.Assert(field is DocumentController);
+                    var prototype = (DocumentController)field;
+                    Debug.Assert(!prototype._delegates.Contains(this));
+                    prototype._delegates.Add(this);
+                    prototype.PrototypeFieldUpdated += OnPrototypeFieldUpdated;
+                }
+            }
+            else
+            {
+                doc._fields.Remove(key);
+                doc.DocumentModel.Fields.Remove(key.Id);
+            }
 
             // fire document field updated if the field has been replaced or if it did not exist before
-            var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            var action     = oldField == null ? FieldUpdatedAction.Add : (field == null ? FieldUpdatedAction.Remove: FieldUpdatedAction.Replace);
             var reference  = new DocumentFieldReference(doc, key);
             var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
 
             return (true, doc, updateArgs);
-        }
-
-        private (bool, DocumentController, DocumentFieldUpdatedEventArgs) RemoveFieldHelper(KeyController key, bool forceMask)
-        {
-            var doc = forceMask ? this : GetPrototypeWithFieldKey(key);
-            if (doc == null)
-            {
-                return (false, null, null);
-            }
-
-            if (!doc._fields.TryGetValue(key, out var oldField))
-            {
-                return (false, null, null);
-            }
-
-            doc.ReleaseContainedField(key, oldField);
-            var removedField = doc._fields.Remove(key);
-            var removedModel = doc.DocumentModel.Fields.Remove(key.Id);
-            Debug.Assert(removedField);
-            Debug.Assert(removedModel);
-
-            return (true, doc, new DocumentFieldUpdatedEventArgs(oldField, null, FieldUpdatedAction.Remove,
-                    new DocumentFieldReference(doc, key), null, false));
         }
 
         public void SendMessage(KeyController key, FieldControllerBase value)
@@ -963,7 +950,7 @@ namespace Dash
                 var (fieldDoc, fieldKey) = parseField(fieldName);
                 TextingBox.SetupBindings(fieldReplacement, fieldDoc, fieldKey);
             }
-            var richTextFields = descendants.OfType<RichEditView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
+            var richTextFields = descendants.OfType<RichTextView>().Where((rtv) => rtv.Name.StartsWith("xRichTextField"));
             foreach (var fieldReplacement in richTextFields)
             {
                 var fieldName = fieldReplacement.Name.Replace("xRichTextField", "");
@@ -1135,16 +1122,15 @@ namespace Dash
                 OnFieldModelUpdated(args);
             }
 
-            // bubbles event down to delegates
-            //if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey)) //TODO TFS Can't we still use this event to let delegates know that our field was updated?
-            //    PrototypeFieldUpdated?.Invoke(sender, args, c);
+            PrototypeFieldUpdated?.Invoke(sender, args);
+        }
 
-            // now propagate this field model change to all delegates that don't override this field
-            foreach (var d in GetDelegates())
-            {
-                if (d.GetField(args.Reference.FieldKey, true) == null)
-                    d.generateDocumentFieldUpdatedEvents(args);
-            }
+        public event DocumentUpdatedHandler PrototypeFieldUpdated;
+
+        public void OnPrototypeFieldUpdated(DocumentController prototype, DocumentFieldUpdatedEventArgs args)
+        {
+            if (GetField(args.Reference.FieldKey, true) == null)
+                generateDocumentFieldUpdatedEvents(args);
         }
 
         /// <summary>

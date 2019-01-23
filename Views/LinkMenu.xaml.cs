@@ -124,7 +124,7 @@ namespace Dash
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay
             };
-            xDescriptionBox.AddFieldBinding(RichEditView.TextProperty, binding);
+            xDescriptionBox.AddFieldBinding(RichTextView.TextProperty, binding);
             var text = LinkDoc.DataDocument.GetField<TextController>(KeyStore.LinkBehaviorKey)?.Data;
 
             foreach (var tag in xTagContainer.Children)

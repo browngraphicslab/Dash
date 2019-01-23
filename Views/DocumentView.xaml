@@ -11,15 +11,16 @@
     d:DesignHeight="400"
     AllowDrop="True"
     Drop="This_Drop"
-    SizeChanged="LayoutRoot_OnSizeChanged" 
+    SizeChanged="OnSizeChanged" 
     Holding="XContent_OnHolding" 
     IsHoldingEnabled="True" 
-    PointerMoved="LayoutRoot_OnPointerMoved"  
-    PointerEntered="LayoutRootShowTooltip" 
-    PointerExited="LayoutRootHideTooltip" 
-    PointerPressed="LayoutRootHideTooltip"
+    PointerMoved="OnPointerMoved"  
+    PointerEntered="ShowTooltip" 
+    PointerExited="HideTooltip" 
+    PointerPressed="HideTooltip"
     ManipulationMode="None"
     UseLayoutRounding="False">
+<!--
     <Grid x:Name="LayoutRoot" BorderThickness="0" RightTapped="XMasterStack_OnRightTapped">
         <Grid.Resources>
             <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
@@ -42,4 +43,22 @@
         </ContentPresenter>
         <Border x:Name="xDocHighlight" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}" />
     </Grid>
+-->
+    <UserControl.Clip>
+        <RectangleGeometry x:Name="xContentClip" Rect="0 0 0 0"/>
+    </UserControl.Clip>
+    <UserControl.Resources>
+        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
+            <FadeOutThemeAnimation TargetName="xDocContentPresenter"/>
+        </Storyboard>
+    </UserControl.Resources>
+    <FlyoutBase.AttachedFlyout>
+        <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening" />
+    </FlyoutBase.AttachedFlyout>
+
+    <ContentPresenter x:Name="xDocContentPresenter" Content="{Binding Content}" Background="Transparent" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}">
+        <ContentPresenter.RenderTransform>
+            <MatrixTransform x:Name="xContentTransform"/>
+        </ContentPresenter.RenderTransform>
+    </ContentPresenter>
 </UserControl>

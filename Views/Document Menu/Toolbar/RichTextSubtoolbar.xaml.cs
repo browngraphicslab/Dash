@@ -334,7 +334,7 @@ namespace Dash
         public void SetSelectedDocumentView(DocumentView doc)
         {
             _documentView = doc;
-            var rev = doc.GetFirstDescendantOfType<RichEditView>();
+            var rev = doc.GetFirstDescendantOfType<RichTextView>();
             if(rev != null)
             {
                 xMenuView?.SetRichTextBinding(rev); // bcz: weird ... the selected view is a RichTextView, but it's not always in the visual tree (eg when in it's in CollectionStackingView) so we can't use this seemingly reasonable code: _docs.ViewModel.Content.GetFirstDescendantOfType<RichTextView>() ?? _docs.ViewModel.Content as RichTextView);
@@ -420,7 +420,7 @@ namespace Dash
                 xMenuView.Visibility = Visibility.Visible;
                 xMoreIcon.Visibility = Visibility.Collapsed;
                 xMoreIconBack.Visibility = Visibility.Visible;
-                xMenuView?.SetRichTextBinding(_documentView.GetFirstDescendantOfType<RichEditView>());
+                xMenuView?.SetRichTextBinding(_documentView.GetFirstDescendantOfType<RichTextView>());
 
                 //_buttons.TryGetValue("Font", out var fontButton);
                 //if (fontButton != null)

@@ -68,7 +68,7 @@ namespace Dash
             //xForegroundColorPicker.ParentFlyout = xForegroundColorFlyout;
         }
 
-        public void SetRichTextBinding(RichEditView view)
+        public void SetRichTextBinding(RichTextView view)
         {
             xRichEditBox = view;
             UpdateFontFamilyDisplay();

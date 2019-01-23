@@ -30,7 +30,6 @@ namespace Dash
         private static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool), BindRenderTransformChanged));
         private bool              _anyBehaviors => ViewModel.LayoutDocument.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DocumentBehaviorsKey)?.Any() ?? false;
-        private readonly Flyout   _flyout       = new Flyout { Placement = FlyoutPlacementMode.Right };
         private DocumentViewModel _oldViewModel = null;
         private bool              _doubleTapped = false;
         private Point             _down         = new Point();
@@ -94,6 +93,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
+
             PointerCaptureLost += (s, e) =>
             {
                 if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
@@ -124,7 +124,7 @@ namespace Dash
             };
 
             ToFront();
-            xContentClip.Rect = new Rect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
+            xContentClip.Rect = new Rect(0, 0, Width, Height);
         }
         ~DocumentView()
         {
@@ -161,13 +161,9 @@ namespace Dash
         /// <param name="addTextBox"></param>
         public void DeleteDocument()
         {
-            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() != null)
+            if (this.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() is AnnotationOverlayEmbeddings embedding)
             {
-                // bcz: if the document is on an annotation layer, then deleting it would orphan its annotation pin,
-                //      but it would still be in the list of pinned annotations.  That means the document would reappear
-                //      the next time the container document gets loaded.  We need a cleaner way to handle deleting 
-                //      documents which would allow us to delete this document and any references to it, including possibly removing the pin
-                ViewModel.DocumentController.SetHidden(true);
+                embedding.EmbeddedDocsList.Remove(ViewModel.DocumentController);
             }
             else if (ParentCollection != null)
             {
@@ -270,7 +266,7 @@ namespace Dash
                 Mode      = BindingMode.TwoWay,
                 FallbackValue = new SolidColorBrush(Colors.Transparent)
             };
-            xDocumentBackground.AddFieldBinding(Shape.FillProperty, backgroundBinding);
+            xDocContentPresenter.AddFieldBinding(ContentPresenter.BackgroundProperty, backgroundBinding);
         }
         private void UpdateRenderTransformBinding()
         {
@@ -355,7 +351,7 @@ namespace Dash
                 Placement = PlacementMode.Bottom,
                 VerticalOffset = 10
             };
-            ToolTipService.SetToolTip(LayoutRoot, label);
+            ToolTipService.SetToolTip(this, label);
         }
         /// <summary>
         /// Brings the element to the front of its containing parent canvas.
@@ -464,34 +460,16 @@ namespace Dash
             {
                 e.Handled = true;
 
-                if (MainPage.Instance.IsAltPressed())
-                {
-                    ApplyPseudoTemplate(dm);
-                }
-                else
+                //if (MainPage.Instance.IsAltPressed())
+                //{
+                //    ApplyPseudoTemplate(dm);
+                //}
+                //else
                 {
                     MakeDocumentLink(e.GetPosition(this), dm);
                     e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
                 }
             }
-        }
-
-        private void ApplyPseudoTemplate(DragDocumentModel dm)
-        {
-            var curLayout     = ViewModel.LayoutDocument;
-            var draggedLayout = dm.DraggedDocuments.First().GetDataInstance(ViewModel.LayoutDocument.GetPosition());
-            draggedLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-            if (double.IsNaN(curLayout.GetWidth()) || double.IsNaN(curLayout.GetHeight()))
-            {
-                curLayout.SetWidth (dm.DraggedDocuments.First().GetActualSize().X);
-                curLayout.SetHeight(dm.DraggedDocuments.First().GetActualSize().Y);
-            }
-            curLayout.SetField(KeyStore.DataKey,                  draggedLayout.GetField(KeyStore.DataKey), true);
-            curLayout.SetField(KeyStore.PrototypeKey,             draggedLayout.GetField(KeyStore.PrototypeKey), true);
-            curLayout.SetField(KeyStore.LayoutPrototypeKey,       draggedLayout, true);
-            curLayout.SetField(KeyStore.CollectionFitToParentKey, draggedLayout.GetDereferencedField(KeyStore.CollectionFitToParentKey, null), true);
-            curLayout.DocumentType = draggedLayout.DocumentType;
-            UpdateBindings();
         }
 
         private void FadeOut_Completed(object sender, object e)
@@ -540,6 +518,10 @@ namespace Dash
                             MainPage.Instance.ClearFloatingDoc(null);
                         }
                     }
+                }
+                else if (!SelectionManager.SelectedDocViews.Contains(this) || this.IsShiftPressed())
+                {
+                    SelectionManager.Select(this, this.IsShiftPressed());
                 }
 
                 if (SelectionManager.SelectedDocViewModels.Count() > 1)
@@ -705,7 +687,7 @@ namespace Dash
 
         private async void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
-            await Util.ExportAsImage(LayoutRoot);
+            await Util.ExportAsImage(this);
         }
 
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
@@ -765,13 +747,17 @@ namespace Dash
             ellipse.Width = length;
             ellipse.Height = length;
         }
-
-        private async void xMenuFlyout_Opening(object sender, object e)
+        private void xMenuFlyout_Opening(object sender, object e)
         {
             if (TouchInteractions.HoldingPDF())
             {
                 xMenuFlyout.Hide();
                 return;
+            }
+
+            if (!ViewModel.IsSelected)
+            {
+                SelectionManager.Select(this, this.IsShiftPressed());
             }
             xMenuFlyout.Items.Clear();
 
@@ -1064,20 +1050,20 @@ namespace Dash
         }
 
         //checks if we should be panning content
-        private void LayoutRoot_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             //if ctrl is pressed and either or both of left/right btns, we should pan content
             if (this.IsCtrlPressed() && this.IsLeftBtnPressed())
             {
-                var curPt = e.GetCurrentPoint(LayoutRoot).Position;
+                var curPt = e.GetCurrentPoint(this).Position;
                 PanContent(-_pointerPoint.X + curPt.X, -_pointerPoint.Y + curPt.Y);
                 e.Handled = true;
             }
 
-            _pointerPoint = e.GetCurrentPoint(LayoutRoot).Position;
+            _pointerPoint = e.GetCurrentPoint(this).Position;
         }
 
-        private void LayoutRoot_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xContentClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
         }
@@ -1104,8 +1090,8 @@ namespace Dash
                 scale.ScaleY = deltaScale;
 
                 //set center X to mouse position
-                scale.CenterX = e.GetCurrentPoint(LayoutRoot).Position.X;
-                scale.CenterY = e.GetCurrentPoint(LayoutRoot).Position.Y;
+                scale.CenterX = e.GetCurrentPoint(this).Position.X;
+                scale.CenterY = e.GetCurrentPoint(this).Position.Y;
 
                 var tgroup = new TransformGroup();
                 tgroup.Children.Add(xContentTransform);
@@ -1134,15 +1120,19 @@ namespace Dash
            if (e.PointerDeviceType == PointerDeviceType.Mouse) xMenuFlyout.ShowAt(MainPage.Instance.xCanvas, e.GetPosition(MainPage.Instance.xCanvas));
         }
 
-        private void LayoutRootShowTooltip(object sender, PointerRoutedEventArgs e)
+        private void ShowTooltip(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip) tip.IsOpen = true;
+            if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip)
+            {
+                tip.IsOpen = true;
+            }
         }
-
-        private void LayoutRootHideTooltip(object sender, PointerRoutedEventArgs e)
+        private void HideTooltip(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Grid g && ToolTipService.GetToolTip(g) is ToolTip tip && tip.IsOpen)
+            {
                 tip.IsOpen = false;
+            }
         }
     }
 }

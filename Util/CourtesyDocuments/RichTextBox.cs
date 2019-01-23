@@ -33,7 +33,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public static void SetupBindings(RichEditView element, DocumentController docController, KeyController key)
+        public static void SetupBindings(RichTextView element, DocumentController docController, KeyController key)
         {
             element.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Black);
             element.DataFieldKey = key;
@@ -45,11 +45,11 @@ namespace Dash
                 Tag = "Rich Text Box Text Binding",
                 FallbackValue = new RichTextModel.RTD() {RtfFormatString="" }
             };
-            element.AddFieldBinding(RichEditView.TextProperty, binding);
+            element.AddFieldBinding(RichTextView.TextProperty, binding);
             SetupTextWrapBinding(element, docController);
         }
 
-        public static void SetupTextWrapBinding(RichEditView element, DocumentController docController)
+        public static void SetupTextWrapBinding(RichTextView element, DocumentController docController)
         {
             var twrapBinding = new FieldBinding<NumberController>
             {
@@ -64,16 +64,16 @@ namespace Dash
         }
         public static Task<DocumentController> MakeRegionDocument(DocumentView richTextBox, Point? point = null)
         {
-            var rtv = richTextBox.GetFirstDescendantOfType<RichEditView>();
+            var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
             return Task.FromResult(rtv?.GetRegionDocument());
         }
         
         public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
-            RichEditView rtv = null;
+            RichTextView rtv = null;
             var dataField = docController.GetField(key);
             var refToRichText = dataField as ReferenceController;
-            rtv = new RichEditView() { FontSize = SettingsView.Instance.NoteFontSize };
+            rtv = new RichTextView() { FontSize = SettingsView.Instance.NoteFontSize };
             //{
             //    LayoutDocument = docController,
             //    // bcz: need to work on this ... somehow we want to guarantee that we're getting a DataDocument, but GetDataDocument() isn't recursive in the case that it has a LayoutDocument

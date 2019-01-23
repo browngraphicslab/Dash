@@ -72,8 +72,13 @@ namespace Dash
                 }
             }
 
+            FieldControllerBase.MakeRoot(doc, true);
             DataContext = new DocumentViewModel(doc) { IsDimensionless = true, InsetDecorations = true, ResizersVisible = false };
-            
+
+            if (ActiveFrame == this)//TODO Find a better way to do this
+            {
+                MainPage.Instance.SetMapTarget(doc);
+            }
             return doc;
         }
 

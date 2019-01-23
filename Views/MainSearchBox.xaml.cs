@@ -229,7 +229,12 @@ namespace Dash
         {
             if (e.DataView.TryGetLoneDocument(out DocumentController dragDoc))
             {
-                xAutoSuggestBox.Text = xAutoSuggestBox.Text + dragDoc.Id;
+                var paths = DocumentTree.GetPathsToDocuments(dragDoc);
+                if (paths.Any())
+                {
+                    var path = "/"+string.Join("/", paths.FirstOrDefault().Skip(1).Select(doc => doc.Title));
+                    xAutoSuggestBox.Text = xAutoSuggestBox.Text + $" SearchPath:\"{path}\" ";
+                }
             }
 
             e.Handled = true;

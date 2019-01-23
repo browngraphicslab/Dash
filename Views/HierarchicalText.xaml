@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height= "Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <dash:RichEditView Margin="6 0 0 0" x:Name="xRichTextFieldData" Foreground ="White" HorizontalAlignment ="Left" VerticalAlignment ="Top" />
+        <dash:RichTextView Margin="6 0 0 0" x:Name="xRichTextFieldData" Foreground ="White" HorizontalAlignment ="Left" VerticalAlignment ="Top" />
         <ToggleButton x:Name="cb" Grid.Column="1" Width ="18" Height ="16" IsChecked ="true" HorizontalAlignment="Left" VerticalAlignment="Center" >
             <ToggleButton.Template>
                 <ControlTemplate TargetType="ToggleButton">

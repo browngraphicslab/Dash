@@ -65,7 +65,9 @@ namespace Dash
             {
                 bool alreadySelected = false;
                 var deselected = new List<DocumentView>();
-                foreach (var documentView in _selectedDocViews)
+                var prevSelected = _selectedDocViews.ToList();
+                _selectedDocViews = new List<DocumentView> { doc };
+                foreach (var documentView in prevSelected)
                 {
                     if (documentView == doc)
                     {
@@ -81,7 +83,6 @@ namespace Dash
 
                 var args = new DocumentSelectionChangedEventArgs(deselected, alreadySelected ? new List<DocumentView>() : new List<DocumentView> { doc });
 
-                _selectedDocViews = new List<DocumentView> { doc };
                 if (!alreadySelected)
                 {
                     SelectHelper(doc);
@@ -93,8 +94,8 @@ namespace Dash
             {
                 if (_selectedDocViews.Contains(doc))
                 {
-                    DeselectHelper(doc);
                     _selectedDocViews.Remove(doc);
+                    DeselectHelper(doc);
                     OnSelectionChanged(new DocumentSelectionChangedEventArgs(new List<DocumentView> { doc }, new List<DocumentView>()));
                 }
                 else
@@ -173,12 +174,12 @@ namespace Dash
 
         private static void SelectHelper(DocumentView view)
         {
-            view.GetDescendantsOfType<RichEditView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<RichTextView>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.IsEnabled = true;
                 rv.Focus(FocusState.Programmatic);
             });
-            view.GetDescendantsOfType<MediaPlayerElement>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+            view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.TransportControls.Visibility = Visibility.Visible;
                 rv.Focus(FocusState.Programmatic);
@@ -189,6 +190,9 @@ namespace Dash
         {
             view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv => 
                 rv.TransportControls.Visibility = Visibility.Collapsed);
+            view.GetDescendantsOfType<RichTextView>().Where((rv) => rv.GetDocumentView() == view).ToList().ForEach(rv =>
+                rv.IsEnabled = false
+            );
         }
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformView collection)
@@ -225,7 +229,12 @@ namespace Dash
                 return;
             }
 
-            //if (pe.Pointer.PointerDeviceType == PointerDeviceType.Touch) TouchInteractions.NumFingers++;
+            if (!draggedView.ViewModel.IsSelected && !draggedView.IsLeftBtnPressed())
+            {
+                SelectionManager.Select(draggedView, false);
+            }
+            UndoManager.StartBatch();
+
             var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
@@ -236,7 +245,7 @@ namespace Dash
                                                   ?.EmbeddedDocsList
                                                   .Contains(draggedView.ViewModel.DocumentController) == true;
                 if ((parentIsFreeformCollection || parentIsAnnotationLayer) &&
-                    (_selectedDocViews.Contains(parent) || parent == parents.Last()))
+                    (parent == parents.Last() || parent.AreContentsActive))
                 {
                     break;
                 }
@@ -267,6 +276,7 @@ namespace Dash
             });
             _dragViews = null;
             DragManipulationCompleted?.Invoke(sender, null);
+            UndoManager.EndBatch();
         }
         
         private static void       CollectionDragOver(object sender, DragEventArgs e)
@@ -276,7 +286,10 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
             _dragViews?.ForEach(dv => dv.Visibility = Visibility.Collapsed);
-            MainPage.Instance.XDocumentDecorations.Visibility = Visibility.Collapsed;
+            if (!MainPage.Instance.IsLeftBtnPressed() && e.Modifiers != Windows.ApplicationModel.DataTransfer.DragDrop.DragDropModifiers.LeftButton)
+            {
+                MainPage.Instance.XDocumentDecorations.Visibility = Visibility.Collapsed;
+            }
             (sender as FrameworkElement).DragOver -= CollectionDragOver;
         }
         public static async void  DragStarting(DocumentView docView, UIElement sender, DragStartingEventArgs args)
@@ -299,7 +312,7 @@ namespace Dash
             var parCollections = _dragViews.Select(dv => dv.GetFirstAncestorOfType<AnnotationOverlayEmbeddings>() == null ? dv.ParentViewModel : null).ToList();
             args.Data.SetDragModel(new DragDocumentModel(_dragViews, parCollections, relDocOffsets, dragDocOffset) { DraggedWithLeftButton = docView.IsLeftBtnPressed() });
 
-            if (_dragViews.Count == 1)  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
+            if (_dragViews.Count == 1 && docView.IsShiftPressed())  // bcz: Ugh!  if more than one doc is selected and we're dragging the image, then this
                                         //      seems to override our DragUI override and only the dragged image is shown.
             {
                 var type = docView.ViewModel.DocumentController.GetDocType();

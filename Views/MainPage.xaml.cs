@@ -75,7 +75,10 @@ namespace Dash
             formattableTitleBar.ButtonForegroundColor = Colors.White;
             //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
-            AddHandler(PointerMovedEvent, new PointerEventHandler((s, e) => PointerRoutedArgsHack = e), true);
+
+            AddHandler(PointerPressedEvent, new PointerEventHandler(HoverHighlight), true);
+            AddHandler(PointerMovedEvent,   new PointerEventHandler(HoverHighlight), true);
+            AddHandler(KeyUpEvent,          new KeyEventHandler(HoverHighlightKey), true);
 
             ToolTipService.SetToolTip(xSearchButton, new ToolTip() { Content = "Search workspace", Placement = PlacementMode.Bottom, VerticalOffset = 5 });
 
@@ -97,7 +100,7 @@ namespace Dash
             {
                 if (ActivePopup != null)
                 {
-                    ActivePopup.SetHorizontalOffset((e.Size.Width  / 2) - 200 - (xLeftGrid.ActualWidth / 2));
+                    ActivePopup.SetHorizontalOffset((e.Size.Width / 2) - 200 - (xLeftGrid.ActualWidth / 2));
                     //ActivePopup.SetVerticalOffset((e.Size.Height / 2) - 150);
                     ActivePopup.SetVerticalOffset(200);
                 }
@@ -198,7 +201,7 @@ namespace Dash
 
         public void ClearFloatingDoc(DocumentView dragged)
         {
-            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach((g) =>
+            xCanvas.Children.OfType<Grid>().Where(g => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().ForEach(g =>
                  xCanvas.Children.Remove(g));
         }
         public bool IsFloatingDoc(DocumentView docView)
@@ -207,8 +210,8 @@ namespace Dash
         }
         public void MoveFloatingDoc(DocumentView dragged, Point where)
         {
-            xCanvas.Children.OfType<Grid>().Where((g) => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
-                ForEach((g) => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
+            xCanvas.Children.OfType<Grid>().Where(g => g.Children.FirstOrDefault() is DocumentView dv && (dv == dragged || dragged == null)).ToList().
+                ForEach(g => g.RenderTransform = new TranslateTransform() { X = where.X, Y = where.Y } );
         }
 
 
@@ -288,7 +291,7 @@ namespace Dash
 
             if (RESTClient.Instance.Fields is CachedEndpoint ce)
             {
-                //await ce.Cleanup();
+                await ce.Cleanup();
             }
             xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
 
@@ -311,7 +314,7 @@ namespace Dash
 
             XMainSplitter.SetContent(lastWorkspace);
 
-            var treeContext = new CollectionViewModel(MainDocument.GetViewCopy(), KeyStore.DataKey);
+            var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             xMainTreeView.DataContext = treeContext;
             xMainTreeView.SetUseActiveFrame(true);
             //xMainTreeView.ToggleDarkMode(true);
@@ -663,6 +666,40 @@ function (d) {
                 }
             }
             //if (xTabCanvas.Children.Contains(TabMenu.Instance)) { TabMenu.Instance.HandleKeyDown(sender, e); }
+        }
+        
+        private void HoverHighlightKey(object sender, KeyRoutedEventArgs e)       
+        {
+            var over = SelectionManager.SelectedDocViews.FirstOrDefault();
+            if (over != null)
+            {
+                var scrPos = over.GetBoundingRect(xOuterGrid);
+                XDocumentHover.Width = scrPos.Width;
+                XDocumentHover.Height = scrPos.Height;
+                XDocumentHover.RenderTransform = new TranslateTransform() { X = scrPos.X, Y = scrPos.Y };
+                XHoverOutline.StrokeThickness = 1;
+            }
+            else
+            {
+                XHoverOutline.StrokeThickness = 0;
+            }
+        }
+        private void HoverHighlight(object sender, PointerRoutedEventArgs e)       
+        {
+            PointerRoutedArgsHack = e;
+            var over = VisualTreeHelper.FindElementsInHostCoordinates(e.GetCurrentPoint(null).Position, xOuterGrid).ToList().OfType<DocumentView>().FirstOrDefault();
+            if (over != null)
+            {
+                var scrPos = over.GetBoundingRect(xOuterGrid);
+                XDocumentHover.Width = scrPos.Width;
+                XDocumentHover.Height = scrPos.Height;
+                XDocumentHover.RenderTransform = new TranslateTransform() { X = scrPos.X, Y = scrPos.Y };
+                XHoverOutline.StrokeThickness = 1;
+            }
+            else
+            {
+                XHoverOutline.StrokeThickness = 0;
+            }
         }
 
         private void xSearchButton_Clicked(object sender, RoutedEventArgs tappedRoutedEventArgs)

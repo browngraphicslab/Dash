@@ -87,7 +87,11 @@ namespace Dash
             }
             var split = SplitPane.GetSplitLocation(frame);
             var par = split.Parent;
-            var newFrame = MakeFrame(doc ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document, viewCopy);
+            if (doc == null)            {
+                doc = new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
+                FieldControllerBase.MakeRoot(doc);//TODO This should be temporary
+            }
+            var newFrame = MakeFrame(doc, viewCopy);
             if (par != null && par.Mode == targetMode)
             {
                 var offset = dir == SplitDirection.Up || dir == SplitDirection.Left ? 0 : 1;

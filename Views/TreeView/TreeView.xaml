@@ -20,7 +20,7 @@
         </ScrollViewer>
         <Line Grid.Row="1" HorizontalAlignment="Center" X2="150" StrokeThickness="1" Stroke="White"/>
         <StackPanel Orientation="Horizontal" Grid.Row="2">
-        <ToggleSwitch x:Name="XActiveFrameSwitch" Grid.Row="2" HorizontalAlignment="Left" Foreground="White" OnContent="Attached" OffContent="Detached" >
+        <ToggleSwitch x:Name="XActiveFrameSwitch" Grid.Row="2" Visibility="Collapsed" HorizontalAlignment="Left" Foreground="White" OnContent="Attached" OffContent="Detached" >
             <ToggleSwitch.Header>
                 <TextBlock Text="Active Frame" Foreground="White"/>
             </ToggleSwitch.Header>

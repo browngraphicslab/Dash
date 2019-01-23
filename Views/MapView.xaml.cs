@@ -78,6 +78,10 @@ namespace Dash
         private void initializeMap(DocumentController mainDocumentCollection)
         {
             var xMapDocumentView = mapView ?? createMap();
+            if (mainDocumentCollection.GetDataDocument() == xMapDocumentView.ViewModel.DataDocument)
+            {
+                return;
+            }
 
             var panPosRef        = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanPositionKey);
             var panZoomRef       = new DocumentFieldReference(mainDocumentCollection, KeyStore.PanZoomKey);
@@ -111,6 +115,7 @@ namespace Dash
         private DocumentView createMap()
         {
             var xMap = RESTClient.Instance.Fields.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionViewType.Freeform).Document;
+            FieldControllerBase.MakeRoot(xMap);
             xMap.SetFitToParent(true);
             xMap.SetWidth(double.NaN);
             xMap.SetHeight(double.NaN);
@@ -155,6 +160,7 @@ namespace Dash
             LayoutRoot.Children.Add(xMapDocumentView);
             LayoutRoot.Children.Add(overlay);
             LayoutRoot.Children.Add(rect);
+
             return xMapDocumentView;
         }
 

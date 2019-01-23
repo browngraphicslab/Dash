@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Dash.Annotations;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -8,9 +11,6 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash.Annotations;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Dash
 {
@@ -38,7 +38,7 @@ namespace Dash
         protected double XPos = double.PositiveInfinity;
         protected double YPos = double.PositiveInfinity;
         public Selection ViewModel => DataContext as Selection;
-        
+
         protected AnchorableAnnotation(AnnotationOverlay parentOverlay, DocumentController regionDocumentController)
         {
             ParentOverlay = parentOverlay;
@@ -55,6 +55,14 @@ namespace Dash
             // context menu that toggles whether annotations should be show/ hidden on scroll
 
             var flyout = new MenuFlyout();
+            var selectBtn = new MenuFlyoutItem()
+            {
+                Text = "Select"
+            };
+
+            var deleteBtn = new MenuFlyoutItem();
+            deleteBtn.Text = "Delete";
+
             var visOnScrollON = new MenuFlyoutItem();
             var visOnScrollOFF = new MenuFlyoutItem();
             visOnScrollON.Text = "Unpin Annotation";
@@ -63,13 +71,19 @@ namespace Dash
             void VisOnScrollOnOnClick(object o, RoutedEventArgs routedEventArgs)
             {
                 var allLinks = region.GetDataDocument().GetLinks(null);
-                var allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
+                bool allVisible = allLinks.All(doc => doc.GetDataDocument().GetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey)?.Data ?? false);
 
                 foreach (var link in allLinks)
                 {
                     link.GetDataDocument().SetField<BoolController>(KeyStore.IsAnnotationScrollVisibleKey, !allVisible, true);
                 }
             }
+
+            selectBtn.Click += (s, e) => { ParentOverlay.SelectRegion(RegionDocumentController); };
+            deleteBtn.Click += (s, e) =>
+            {
+                ParentOverlay.RegionDocsList.Remove(region);
+            };
             visOnScrollON.Click += VisOnScrollOnOnClick;
             visOnScrollOFF.Click += VisOnScrollOnOnClick;
             regionGraphic.ContextFlyout = flyout;
@@ -80,7 +94,8 @@ namespace Dash
 
                 var item = allVisible ? visOnScrollON : visOnScrollOFF;
                 flyout.Items?.Clear();
-                flyout.Items?.Add(item);
+                flyout.Items?.Add(deleteBtn);
+                //flyout.Items?.Add(item);
                 flyout.ShowAt(regionGraphic as FrameworkElement);
             };
         }
@@ -99,7 +114,7 @@ namespace Dash
                 foreach (var nvo in ParentOverlay.GetDocumentView().GetDescendantsOfType<AnnotationOverlay>())
                 {
                     foreach (var r in nvo.SelectableRegions.Where(r => r.RegionDocument.Equals(selectable.RegionDocument)))
-                    { 
+                    {
                         if (nvo.SelectedRegion != null)
                         {
                             nvo.SelectedRegion.IsSelected = false;
@@ -172,7 +187,7 @@ namespace Dash
                 FormatRegionOptionsFlyout(RegionDocumentController, this);
             }
         }
-        
+
         public sealed class Selection : INotifyPropertyChanged
         {
             SolidColorBrush _selectedBrush, _unselectedBrush;
@@ -204,12 +219,12 @@ namespace Dash
             }
 
             public Selection(DocumentController region,
-                SolidColorBrush selectedBrush=null,
-                SolidColorBrush unselectedBrush=null)
+                SolidColorBrush selectedBrush = null,
+                SolidColorBrush unselectedBrush = null)
             {
                 RegionDocument = region;
                 _unselectedBrush = unselectedBrush ?? new SolidColorBrush(Colors.Transparent);
-                _selectedBrush   = selectedBrush   ?? new SolidColorBrush(Color.FromArgb(22, 0, 0, 0));
+                _selectedBrush = selectedBrush ?? new SolidColorBrush(Color.FromArgb(22, 0, 0, 0));
             }
 
             public DocumentController RegionDocument { get; }

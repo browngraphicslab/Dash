@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
@@ -246,7 +247,8 @@ namespace Dash.Views.TreeView
         private bool _tapped;
         private async void XTitleBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
+            TouchInteractions.NumFingers = 0;
+            if(e.PointerDeviceType != PointerDeviceType.Touch) e.Handled = true;
             var treeView = TreeView;
             if (treeView == null)
             {
@@ -261,16 +263,20 @@ namespace Dash.Views.TreeView
             else
             {
                 _tapped = true;
-                await Task.Delay(200);//Delay to allow for double tapped
+                await Task.Delay(400);//Delay to allow for double tapped
                 if (_tapped)
                 {
                     IsEditing = true;
                 }
             }
+            Debug.WriteLine("TITLEBLOCK NUM FINGERS: " + TouchInteractions.NumFingers);
+            //TouchInteractions.NumFingers = 0;
+            
         }
 
         private void XTitleBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            TouchInteractions.NumFingers = 0;
             var treeView = TreeView;
             if (treeView == null)
             {
@@ -282,7 +288,6 @@ namespace Dash.Views.TreeView
             //if (treeView.UseActiveFrame)
             //{
             SplitFrame.OpenInActiveFrame(ViewModel.DocumentController);
-            MainPage.Instance.SetMapTarget(SplitFrame.ActiveFrame.DocumentController);
             //}
 
             treeView.ViewModel.ContainerDocument.SetField(KeyStore.CollectionOutputKey, ViewModel.DocumentController, true);

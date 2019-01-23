@@ -21,7 +21,6 @@ namespace Dash
         public static KeyController CollectionItemLayoutPrototypeKey     = KeyController.Get("CollectionItemLayoutPrototype");    // layout prototype shared by each item in a collection -- set using TableExtraction, used in CollectionPageView
         public static KeyController LayoutPrototypeKey                   = KeyController.Get("LayoutPrototype");                  // layout prototype used by a document - set using TableExtraction, used in CollectionDBSchema
         public static KeyController ColumnSortingKey                     = KeyController.Get("ColumnSort");                       // list containing column name and direction to sort a schema table
-        public static KeyController DelegatesKey                         = KeyController.Get("_Delegates");
         public static KeyController UserSetWidthKey                      = KeyController.Get("_userSetWidth");
         public static KeyController WidthFieldKey                        = KeyController.Get("Width");
         public static KeyController HeightFieldKey                       = KeyController.Get("Height");

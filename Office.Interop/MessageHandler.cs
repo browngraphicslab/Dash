@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using Windows.Foundation.Collections;
 using Word = Microsoft.Office.Interop.Word;
 
@@ -99,6 +102,32 @@ namespace OfficeInterop
             _chrome.Start();
         }
 
+        private static string extractClipboardSource()
+        {
+
+            try
+            {
+                var sb   = new StringBuilder();
+                var data = Clipboard.GetDataObject();
+                var d    = data.GetData("OwnerLink", true);
+                if (d != null)
+                {
+                    switch (d.GetType().ToString())
+                    {
+                    case "System.IO.MemoryStream":
+                        var ms = (MemoryStream)data.GetData("OwnerLink", true);
+                        var output = ms.ToArray().Select(a => (char)a);
+                        return new string(output.ToArray());
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return null;
+        }
+
         public void Close()
         {
             _word.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
@@ -126,6 +155,7 @@ namespace OfficeInterop
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [STAThread]
         public ValueSet ProcessMessage(ValueSet request)
         {
             string value = request["REQUEST"] as string;
@@ -134,6 +164,21 @@ namespace OfficeInterop
             string result = "";
             switch (value)
             {
+            case "Get OwnerLink":
+                Program.F.Invoke(new MethodInvoker(() =>
+                {
+                    var csource = extractClipboardSource();
+                    if (!string.IsNullOrEmpty(csource))
+                    {
+                        response.Add("OwnerLink", csource);
+                        result = "SUCCESS";
+                    }
+                    else
+                    {
+                        result = "FAILURE";
+                    }
+                }));
+                break;
             case "HTML to RTF":
                 try
                 {
@@ -151,7 +196,37 @@ namespace OfficeInterop
                 }
                 break;
             case "Chrome":
-                _chrome.Send(Encoding.UTF8.GetBytes(request["DATA"] as string));
+                _chrome.Send(Encoding.UTF8.GetBytes((string) request["DATA"]));
+                break;
+            case "OpenUri":
+                var strs = ((string) request["DATA"]).Split('!');
+                if (strs.Count() == 2 && (strs[0].EndsWith(".pptx") || strs[0].EndsWith(".ppt")))
+                {
+                    var pptApp = new Microsoft.Office.Interop.PowerPoint.Application();
+                    var found = false;
+                    foreach (Microsoft.Office.Interop.PowerPoint.Presentation p in pptApp.Presentations)
+                    {
+                        try
+                        {
+                            if (p != null && p.FullName.Equals(strs[0]))
+                            {
+                                found = true;
+                            }
+                        } catch (Exception)
+                        {
+
+                        }
+                    }
+                    if (!found)
+                    {
+                        pptApp.Presentations.Open(strs[0]);
+                    }
+                    if (int.TryParse(strs[1], out int page))
+                    {
+                        pptApp.ActiveWindow.View.GotoSlide(page);
+                    }
+                }
+                else System.Diagnostics.Process.Start((string)request["DATA"]);
                 break;
             default:
                 result = "unknown request";

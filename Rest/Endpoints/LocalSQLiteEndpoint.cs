@@ -173,22 +173,37 @@ namespace Dash
         public override Task DeleteModels(IEnumerable<FieldModel> documents)
         {
             var fieldModels = documents.ToList();
-            var tempParams = new string[fieldModels.Count];
-
-            for (var i = 0; i < fieldModels.Count; ++i) { tempParams[i] = "@param" + i; }
-
-            _transactionMutex.WaitOne();
-            var deleteDocsCommand = new SqliteCommand
+            var tempParams = new string[500];
+                for (var i = 0; i < 500; ++i)
+                {
+                    tempParams[i] = "@param" + i;
+                }
+            int index = 0;
+            while (index < fieldModels.Count)
             {
-                //i.e. "In "Fields", return the field contents at the specified document ids"
-                CommandText = @"DELETE FROM `Fields` WHERE `id` IN (" + string.Join(", ", tempParams) + ");",
-                Connection = _db,
-                Transaction = _currentTransaction
-            };
+                int limit = Math.Min(fieldModels.Count - index, 500);
+                // 500 because max number of host parameters in sqlite statement is 999
 
-            for (var i = 0; i < fieldModels.Count; ++i) { deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[i].Id); }
+                _transactionMutex.WaitOne();
+                //IN (" + string.Join(',', temp) + "
+                var deleteDocsCommand = new SqliteCommand
+                {
+                    //i.e. "In "Fields", return the field contents at the specified document ids"
+                    CommandText =
+                        @"DELETE from `Fields` WHERE `id` in (" + string.Join(", ", tempParams.Take(limit)) + ");",
+                    Connection = _db,
+                    Transaction = _currentTransaction
+                };
 
-            if (!SafeExecuteMutateQuery(deleteDocsCommand, "DeleteDocument")) return Task.FromException(new InvalidOperationException());
+                for (var i = 0; i < limit; ++i)
+                {
+                    deleteDocsCommand.Parameters.AddWithValue(tempParams[i], fieldModels[index + i].Id);
+                }
+
+                if (!SafeExecuteMutateQuery(deleteDocsCommand, "DeleteDocument")) return Task.FromException(new InvalidOperationException());
+                index += limit;
+            }
+
             return Task.CompletedTask;
         }
 

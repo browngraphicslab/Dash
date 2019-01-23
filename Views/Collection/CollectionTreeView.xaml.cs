@@ -204,6 +204,7 @@ namespace Dash
                 {
                     var docs = SearchFunctions.Library();
                     var col  = new CollectionBox(docs, viewType: CollectionViewType.Schema).Document;
+                    FieldControllerBase.MakeRoot(col);
                     col.SetField<TextController>(KeyStore.ScriptSourceKey, "library()", true);
                     _xLibraryView = new DocumentView() { DataContext = new DocumentViewModel(col) { IsDimensionless = true, ResizersVisible = false } };
                     Grid.SetRow(_xLibraryView, 2);

@@ -1,73 +1,70 @@
-﻿using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Storage.Pickers;
-using Windows.System;
-using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using Windows.ApplicationModel.DataTransfer;
-using System.Linq;
-using Windows.Devices.Input;
-using Windows.UI.Input;
-using Dash.Views.Collection;
-using System.Numerics;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
+using System.Threading;
+using Dash.Views.Collection;
 using Microsoft.Graphics.Canvas;
-using Windows.Storage.Streams;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
-using Windows.UI.Xaml.Media.Animation;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
-using System.Diagnostics;
-using Dash;
-using Windows.UI.Input.Inking;
-using Windows.Storage;
 using NewControls.Geometry;
-
-// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
+using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.System;
+using Windows.UI;
+using Windows.UI.Input;
+using Windows.UI.Input.Inking;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
+using Point = Windows.Foundation.Point;
+using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
+using Task = System.Threading.Tasks.Task;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : ICollectionView
+    public abstract class CollectionFreeformBase : UserControl, ICollectionView
     {
-        private static event SetBackgroundOpacity setBackgroundOpacity;
-        private static event SetBackground        setBackground;
+        public CollectionViewType ViewType => CollectionViewType.Freeform;
 
-        private InkCanvas           _xInkCanvas;
-        private bool                _doubleTapped = false;
-        private TextBox             _previewTextbox = null;
-        private double              _scaleX;
-        private double              _scaleY;
-        private CoreCursor          _arrow = new CoreCursor(CoreCursorType.Arrow, 1);
-        private Mutex               _mutex = new Mutex();
-        private CollectionViewModel _lastViewModel;
-        private CanvasControl       _backgroundCanvas;
-        private MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
-        private List<PointerRoutedEventArgs> _handledTouch = new List<PointerRoutedEventArgs>();
+        private MatrixTransform _transformBeingAnimated;// Transform being updated during animation
 
-        public CollectionViewModel      ViewModel      => DataContext as CollectionViewModel;
-        public CollectionViewType       ViewType       => CollectionViewType.Freeform;
-        public DocumentView             ParentDocument => this.GetDocumentView();
-        public bool                     IsMarqueeActive=> _isMarqueeActive;
-        public double                   Zoom           => ViewManipulationControls.ElementScale;
-        public UserControl              UserControl    => this;
-        public string                   PreviewTextBuffer { get; set; } = "";
-        public ViewManipulationControls ViewManipulationControls { get; set; }
-        public FreeformInkControl       InkControl;
-        public Canvas                   SelectionCanvas;
+        private Panel xTransformedCanvas => GetTransformedCanvas();
 
+        private CollectionViewModel _lastViewModel = null;
+        public UserControl UserControl => this;
+        public abstract DocumentView ParentDocument { get; }
+        //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
+        public abstract ViewManipulationControls ViewManipulationControls { get; set; }
+        public bool TagMode { get; set; }
+        public KeyController TagKey { get; set; }
+        public abstract CollectionViewModel ViewModel { get; }
+        private Mutex _mutex = new Mutex();
+        public void SetupContextMenu(MenuFlyout contextMenu)
+        {
 
+        }
+
+        //SET BACKGROUND IMAGE SOURCE
+        public delegate void SetBackground(object backgroundImagePath);
+        private static event SetBackground setBackground;
 
         //SET BACKGROUND IMAGE OPACITY
+        public delegate void SetBackgroundOpacity(float opacity);
+        private static event SetBackgroundOpacity setBackgroundOpacity;
+
+        public abstract Panel GetTransformedCanvas();
+
+        public abstract ItemsControl GetItemsControl();
 
         // This uses a content presenter mainly because of this http://microsoft.github.io/Win2D/html/RefCycles.htm
         // If that link dies, google win2d canvascontrol refcycle
@@ -78,34 +75,28 @@ namespace Dash
         // being GC-ed, so it is easier to just create and destroy it on load and unload rather than try to manage all of the events and references... 
         // Because we create it in this class, we need a content presenter to put it in, otherwise the subclass can't decide where to put it
         // This ContentPresenter also shouldn't have any events attached to it, as for some reason that also messes with the Garbage Collection
+        public abstract ContentPresenter GetBackgroundContentPresenter();
+        private CanvasControl _backgroundCanvas;
 
-        public delegate void SetBackgroundOpacity(float opacity);
-        public delegate void SetBackground(object backgroundImagePath);
-       // public static   int  NumFingers; //records number of fingers on screen for touch interactions
+        public abstract Grid GetOuterGrid();
 
-        public CollectionFreeformView()
+        public abstract Canvas GetSelectionCanvas();
+
+        public abstract Rectangle GetDropIndicationRectangle();
+
+        public abstract Canvas GetInkHostCanvas();
+
+        //records number of fingers on screen for touch interactions
+        public static int NumFingers;
+        private List<PointerRoutedEventArgs> handledTouch = new List<PointerRoutedEventArgs>();
+
+        protected CollectionFreeformBase()
         {
-            InitializeComponent();
-
-            DataContextChanged += OnDataContextChanged;
-            xOuterGrid.SizeChanged += OnSizeChanged;
-            xOuterGrid.PointerPressed += OnPointerPressed;
-            xOuterGrid.PointerReleased += OnPointerReleased;
-            xOuterGrid.PointerCanceled += OnPointerCancelled;
-            //xOuterGrid.PointerCaptureLost += OnPointerReleased;
-
-            ViewManipulationControls = new ViewManipulationControls(this);
-            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
-
-            _scaleX = 1.01;
-            _scaleY = 1.01;
-
-
             Loaded += OnBaseLoaded;
             Unloaded += OnBaseUnload;
-            KeyDown += OnKeyDown;
+            KeyDown += _marquee_KeyDown;
 
-            _previewTextbox = new TextBox
+            previewTextbox = new TextBox
             {
                 Width = 200,
                 Height = 50,
@@ -113,244 +104,8 @@ namespace Dash
                 Visibility = Visibility.Collapsed,
                 ManipulationMode = ManipulationModes.All
             };
-            _previewTextbox.LostFocus += (s, e) => _previewTextbox.Visibility = Visibility.Collapsed;
-            _previewTextbox.KeyDown += PreviewTextbox_KeyDown;
-        }
-        ~CollectionFreeformView() {  /* Debug.WriteLine("FINALIZING CollectionFreeFormView"); */ }
-        
-        public Panel            GetTransformedCanvas()            { return xTransformedCanvas; }
-        public ItemsControl     GetItemsControl()                 { return xItemsControl; }
-        public ContentPresenter GetBackgroundContentPresenter()   { return xBackgroundContentPresenter;  }
-        public Grid             GetOuterGrid()                    { return xOuterGrid;  }
-        public Canvas           GetSelectionCanvas()              { return SelectionCanvas; }
-        public Rectangle        GetDropIndicationRectangle()      { return XDropIndicationRectangle;  }
-        public Canvas           GetInkHostCanvas()                { return InkHostCanvas; }
-        public void             SetDropIndicationFill(Brush fill) { GetDropIndicationRectangle().Fill = fill; }
-        public void             SetupContextMenu(MenuFlyout contextMenu) { }
-        public void             OnDocumentSelected(bool selected) { }
-
-        public void              AddToMenu(ActionMenu menu) 
-        {
-            ImageSource source = new BitmapImage(new Uri("ms-appx://Dash/Assets/Rightlg.png"));
-            menu.AddAction("BASIC", new ActionViewModel("Text",                "Add a new text box!", AddTextNote, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Captioned Image", "Add an image with a caption below", AddImageWithCaption, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Discussion",      "Add a discussion", AddDiscussion, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Image(s)",        "Add one or more images",  AddMultipleImages, source));
-            menu.AddAction("BASIC", new ActionViewModel("Add Collection",      "Collection",AddCollection,source));
-
-            var templates = MainPage.Instance.MainDocument.GetDataDocument()
-                .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.TemplateListKey);
-            foreach (var template in templates)
-            {
-                var avm = new ActionViewModel(template.Title,
-                    template.GetField<TextController>(KeyStore.CaptionKey).Data, actionParams  =>
-                    {
-                        var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-                        Actions.DisplayDocument(ViewModel, template.GetCopy(), colPoint);
-                        return Task.FromResult(true);
-                    }, source);
-                menu.AddAction("CUSTOM", avm);
-            }
-        }
-        private       Task<bool> AddTextNote        (ActionFuncParams actionParams)
-        {
-            var postitNote = new RichTextNote().Document;
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-            Actions.DisplayDocument(ViewModel, postitNote, colPoint);
-            return Task.FromResult(true);
-        }
-        private       Task<bool> AddCollection      (ActionFuncParams actionParams)
-        {
-            var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-            var cnote = new CollectionNote(new Point(), CollectionViewType.Icon, 200, 75).Document;
-            Actions.DisplayDocument(ViewModel, cnote, colPoint);
-            return Task.FromResult(true);
-        }
-        private async Task<bool> AddMultipleImages  (ActionFuncParams actionParams)
-        {
-            var imagePicker = new FileOpenPicker
-            {
-                ViewMode = PickerViewMode.Thumbnail,
-                SuggestedStartLocation = PickerLocationId.PicturesLibrary
-            };
-            imagePicker.FileTypeFilter.Add(".jpg");
-            imagePicker.FileTypeFilter.Add(".jpeg");
-            imagePicker.FileTypeFilter.Add(".bmp");
-            imagePicker.FileTypeFilter.Add(".png");
-            imagePicker.FileTypeFilter.Add(".svg");
-
-            //adds each image selected to Dash
-            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
-
-            //TODO just add new images to docs list instead of going through mainPageCollectionView
-            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            if (imagesToAdd != null)
-            {
-                double defaultLength = 200;
-
-                var colPoint = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-                var adornFormPoint = colPoint;
-                var adorn = Util.AdornmentWithPosandColor(Colors.White, BackgroundShape.AdornmentShape.RoundedRectangle, adornFormPoint, (defaultLength * imagesToAdd.Count) + 20 + (5 * (imagesToAdd.Count - 1)), defaultLength + 40);
-                ViewModel.AddDocument(adorn);
-
-                int counter = 0;
-                foreach (var thisImage in imagesToAdd)
-                {
-                    var parser = new ImageToDashUtil();
-                    var docController = await parser.ParseFileAsync(thisImage);
-                    if (docController == null) { continue; }
-                    var pos = new Point(10 + colPoint.X + (counter * (defaultLength + 5)), colPoint.Y+10);
-                    docController.SetWidth(defaultLength);
-                    docController.SetHeight(defaultLength);
-                    Actions.DisplayDocument(ViewModel, docController, pos);
-                    counter++;
-                }
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
-        }
-        private async Task<bool> AddDiscussion      (ActionFuncParams actionParams)
-        {
-            var pt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-            var docController = new DiscussionNote("testing...", pt).Document;
-            var note1 = new RichTextNote("Testing...").Document;
-            note1.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), 0, true);
-            docController.GetDataDocument().SetField(KeyController.Get("DiscussionItems"), new ListController<DocumentController>(note1), true);
-            docController.GetDataDocument().SetField<NumberController>(KeyController.Get("DiscussionDepth"), 1, true);
-            docController.SetWidth(double.NaN);
-            docController.SetHeight(double.NaN);
-            docController.SetHorizontalAlignment(HorizontalAlignment.Left);
-            docController.SetVerticalAlignment(VerticalAlignment.Stretch);
-            ViewModel.AddDocument(docController);
-
-            return true;
-        }
-        private async Task<bool> AddImageWithCaption(ActionFuncParams actionParams)
-        {
-            var imagePicker = new FileOpenPicker
-            {
-                ViewMode = PickerViewMode.Thumbnail,
-                SuggestedStartLocation = PickerLocationId.PicturesLibrary
-            };
-            imagePicker.FileTypeFilter.Add(".jpg");
-            imagePicker.FileTypeFilter.Add(".jpeg");
-            imagePicker.FileTypeFilter.Add(".bmp");
-            imagePicker.FileTypeFilter.Add(".png");
-            imagePicker.FileTypeFilter.Add(".svg");
-
-            //adds each image selected to Dash
-            var imageToAdd = await imagePicker.PickSingleFileAsync();
-
-            //TODO just add new images to docs list instead of going through mainPageCollectionView
-            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-            if (imageToAdd != null)
-            {
-                var parser = new ImageToDashUtil();
-                var docController = await parser.ParseFileAsync(imageToAdd);
-                if (docController != null)
-                {
-                    docController.SetXaml(
-                        @"<Grid  xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-                                 xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-                                 xmlns:dash=""using:Dash""
-                                 xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height=""Auto"" ></RowDefinition>
-                                <RowDefinition Height=""*"" ></RowDefinition>
-                            </Grid.RowDefinitions>
-                                <Border Grid.Row=""0"" Background =""CadetBlue"" >
-                                    <dash:EditableImage x:Name=""xImageFieldData"" Foreground =""White"" HorizontalAlignment =""Stretch"" Grid.Row=""1"" VerticalAlignment =""Top"" />
-                                </Border>
-                                <Border Grid.Row=""1"" Background =""CadetBlue"" MinHeight =""30"" >
-                                    <dash:RichEditView x:Name= ""xRichTextFieldCaption"" TextWrapping= ""Wrap"" Foreground= ""White"" HorizontalAlignment= ""Stretch"" Grid.Row= ""1"" VerticalAlignment= ""Top"" />
-                                </Border>
-                        </Grid>");
-                    var imagePt = MainPage.Instance.xCanvas.TransformToVisual(GetTransformedCanvas()).TransformPoint(actionParams.Where);
-                    docController.SetWidth(docController.GetWidth());
-                    docController.SetHeight(double.NaN);
-                    docController.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                    docController.SetVerticalAlignment(VerticalAlignment.Top);
-                    docController.SetPosition(new Point(imagePt.X, imagePt.Y));
-                    ViewModel.AddDocument(docController);
-                }
-            }
-
-            return true;
-        }
-
-        private void xOuterGrid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (!this.IsLeftBtnPressed() && !this.IsRightBtnPressed())
-            {
-                Window.Current.CoreWindow.PointerCursor = _arrow;
-            }
-        }
-        private void XOuterGrid_OnKeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Add && this.IsCtrlPressed())
-            {
-                _scaleX += 0.1;
-                _scaleY += 0.1;
-                var scaleDelta = new ScaleTransform
-                {
-                    CenterX = xOuterGrid.ActualWidth / 2,
-                    CenterY = xOuterGrid.ActualHeight / 2,
-                    ScaleX = _scaleX,
-                    ScaleY = _scaleY
-                };
-
-                var composite = new TransformGroup();
-
-                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
-                composite.Children.Add(scaleDelta); // add the new scaling
-                var matrix = composite.Value;
-                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
-                e.Handled = true;
-            }
-
-            if (e.Key == VirtualKey.Subtract && this.IsCtrlPressed())
-            {
-                _scaleX -= 0.1;
-                _scaleY -= 0.1;
-                var scaleDelta = new ScaleTransform
-                {
-                    CenterX = xOuterGrid.ActualWidth / 2,
-                    CenterY = xOuterGrid.ActualHeight / 2,
-                    ScaleX = _scaleX,
-                    ScaleY = _scaleY
-                };
-
-                var composite = new TransformGroup();
-
-                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
-                composite.Children.Add(scaleDelta); // add the new scaling
-                var matrix = composite.Value;
-                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
-                e.Handled = true;
-            }
-
-            if ((e.Key == VirtualKey.NumberPad0 || e.Key == VirtualKey.Number0) && this.IsCtrlPressed())
-            {
-                var scaleDelta = new ScaleTransform
-                {
-                    CenterX = xOuterGrid.ActualWidth / 2,
-                    CenterY = xOuterGrid.ActualHeight / 2,
-                    ScaleX = 1.0,
-                    ScaleY = 1.0
-                };
-
-                var composite = new TransformGroup();
-
-                composite.Children.Add(xOuterGrid.RenderTransform); // get the current transform            
-                composite.Children.Add(scaleDelta); // add the new scaling
-                var matrix = composite.Value;
-                ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
-                e.Handled = true;
-            }
+            previewTextbox.LostFocus += (s, e) => previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.KeyDown += PreviewTextbox_KeyDown;
         }
 
         private void OnBaseLoaded(object sender, RoutedEventArgs e)
@@ -363,13 +118,13 @@ namespace Dash
                 GetBackgroundContentPresenter().VerticalAlignment = VerticalAlignment.Top;
                 GetBackgroundContentPresenter().Content = _backgroundCanvas;
                 _backgroundCanvas.CreateResources += CanvasControl_OnCreateResources;
-                _backgroundCanvas.LayoutUpdated += backgroundCanvas_LayoutUpdated;
+                _backgroundCanvas.LayoutUpdated += _backgroundCanvas_LayoutUpdated;
             }
             _backgroundCanvas.Draw += CanvasControl_OnDraw;
             _backgroundCanvas.VerticalAlignment = VerticalAlignment.Stretch;
 
             GetInkHostCanvas().Children.Clear();
-            GetInkHostCanvas().Children.Add(_previewTextbox);
+            GetInkHostCanvas().Children.Add(previewTextbox);
 
             //make and add selectioncanvas 
             SelectionCanvas = new Canvas();
@@ -400,40 +155,23 @@ namespace Dash
 
             BackgroundOpacity = settingsView.BackgroundImageOpacity;
         }
-        private void MakeInkCanvas()
-        {
 
-            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+        private void _backgroundCanvas_LayoutUpdated(object sender, object e)
+        {
+            var realParent = _backgroundCanvas.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
+            if (realParent != null)
             {
-                _xInkCanvas = new InkCanvas()
+                var realRect = realParent.TransformToVisual(_backgroundCanvas).TransformBounds(new Rect(new Point(), new Size(realParent.ActualWidth, realParent.ActualHeight)));
+                var mainBounds = _backgroundCanvas.TransformToVisual(MainPage.Instance.xOuterGrid).TransformBounds(realRect);
+                var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
+                                            new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
+                var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
+                var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
+                if (newHeight != _backgroundCanvas.Height)
                 {
-                    Width = 60000,
-                    Height = 60000
-                };
-
-                InkControl = new FreeformInkControl(this, _xInkCanvas, SelectionCanvas);
-                Canvas.SetLeft(_xInkCanvas, -30000);
-                Canvas.SetTop(_xInkCanvas, -30000);
-                GetInkHostCanvas().Children.Add(_xInkCanvas);
+                    _backgroundCanvas.Height = newHeight;
+                }
             }
-        }
-
-        private void backgroundCanvas_LayoutUpdated(object sender, object e)
-        {
-            //var realParent = _backgroundCanvas.GetFirstAncestorOfType<ContentPresenter>()?.Parent as FrameworkElement;
-            //if (realParent != null)
-            //{
-            //    var realRect = realParent.TransformToVisual(_backgroundCanvas).TransformBounds(new Rect(new Point(), new Size(realParent.ActualWidth, realParent.ActualHeight)));
-            //    var mainBounds = _backgroundCanvas.TransformToVisual(MainPage.Instance.xOuterGrid).TransformBounds(realRect);
-            //    var mainClipRect = new Rect(new Point(Math.Max(0, mainBounds.Left), Math.Max(0, mainBounds.Top)),
-            //                                new Point(Math.Min(mainBounds.Right, MainPage.Instance.xOuterGrid.ActualWidth), Math.Min(mainBounds.Bottom, MainPage.Instance.xOuterGrid.ActualHeight)));
-            //    var clipBounds = MainPage.Instance.xOuterGrid.TransformToVisual(_backgroundCanvas).TransformBounds(mainClipRect);
-            //    var newHeight = Math.Min(8000, Math.Max(0, clipBounds.Bottom));
-            //    if (newHeight != _backgroundCanvas.Height)
-            //    {
-            //        _backgroundCanvas.Height = newHeight;
-            //    }
-            //}
         }
 
         private void OnBaseUnload(object sender, RoutedEventArgs e)
@@ -442,7 +180,7 @@ namespace Dash
             {
                 _backgroundCanvas.CreateResources -= CanvasControl_OnCreateResources;
                 _backgroundCanvas.Draw -= CanvasControl_OnDraw;
-                _backgroundCanvas.LayoutUpdated -= backgroundCanvas_LayoutUpdated;
+                _backgroundCanvas.LayoutUpdated -= _backgroundCanvas_LayoutUpdated;
             }
             if (_lastViewModel != null)
             {
@@ -454,12 +192,22 @@ namespace Dash
             setBackgroundOpacity -= ChangeOpacity;
         }
 
-        private void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
+        protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
         {
             _lastViewModel = ViewModel;
         }
 
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            //Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+        }
+
+        protected void OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            //Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        }
+
+        protected void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             var grid = sender as Grid;
             if (grid?.Clip != null)
@@ -467,6 +215,10 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
             }
         }
+        public void OnDocumentSelected(bool selected)
+        {
+        }
+
 
         #region Manipulation
         /// <summary>
@@ -597,21 +349,21 @@ namespace Dash
             _storyboard1.Begin();
         }
 
-        private void Storyboard1OnCompleted(object sender, object e)
+        protected void Storyboard1OnCompleted(object sender, object e)
         {
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             _storyboard1.Completed -= Storyboard1OnCompleted;
             UndoManager.EndBatch();
         }
 
-        private void CompositionTargetOnRendering(object sender, object e)
+        protected void CompositionTargetOnRendering(object sender, object e)
         {
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
             ViewManipulationControls.ElementScale = matrix.M11; // bcz: don't update elementscale to have no zoom bounds on jumping between things (not scroll zooming)
         }
 
-        private DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
+        protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
         {
 
             var toReturn = new DoubleAnimation();
@@ -633,9 +385,8 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
-        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
+        protected virtual void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
-           // Debug.WriteLine("MANIP NUM FINGERS: " + TouchInteractions.NumFingers);
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
@@ -661,27 +412,28 @@ namespace Dash
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
+
         #endregion
 
         #region BackgroundTiling
-        private bool _resourcesLoaded;
-        private CanvasImageBrush _bgBrush;
-        private const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        bool _resourcesLoaded;
+        CanvasImageBrush _bgBrush;
+        const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _bgOpacity = 1.0f;
+
+        /// <summary>
+        /// Collection background tiling image opacity
+        /// </summary>
+        public static float BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
+        private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private static object _backgroundDot = "ms-appx:///Assets/transparent_dot_tilable.png";
+        private CanvasBitmap _bgImage;
+        private CanvasBitmap _bgImageDot;
 
         /// <summary>
         /// Collection background tiling image
         /// </summary>
-        public static object   BackgroundImage { set => setBackground?.Invoke(value); }
-        /// <summary>
-        /// Collection background tiling image opacity
-        /// </summary>
-        public static float    BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
-        private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
-        private static object _backgroundDot = "ms-appx:///Assets/transparent_dot_tilable.png";
-        private CanvasBitmap  _bgImage;
-        private CanvasBitmap  _bgImageDot;
-
+        public static object BackgroundImage { set => setBackground?.Invoke(value); }
 
         /// <summary>
         /// Called when background opacity is set and the background tiling must be redrawn to reflect the change
@@ -698,10 +450,11 @@ namespace Dash
         /// All of the following background image updating logic was sourced from this article --> https://microsoft.github.io/Win2D/html/LoadingResourcesOutsideCreateResources.htm
         /// </summary>
         #region LOADING AND REDRAWING BACKUP ASYNC
+
         private Task _backgroundTask;
 
         // 1
-        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        protected void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
             _bgBrush = new CanvasImageBrush(sender);
 
@@ -713,7 +466,7 @@ namespace Dash
         }
 
         // 2
-        private async Task CreateResourcesAsync(CanvasControl sender)
+        protected async Task CreateResourcesAsync(CanvasControl sender)
         {
             if (_backgroundTask != null)
             {
@@ -728,7 +481,7 @@ namespace Dash
         }
 
         // 3
-        private async void ChangeBackground(object backgroundImagePath)
+        protected async void ChangeBackground(object backgroundImagePath)
         {
             // Null-checking. WARNING - if null, Dash throws an Unhandled Exception
             if (backgroundImagePath == null) return;
@@ -746,7 +499,7 @@ namespace Dash
         }
 
         // 4
-        private async Task LoadBackgroundAsync(CanvasControl canvas)
+        protected async Task LoadBackgroundAsync(CanvasControl canvas)
         {
             // Convert the <IRandomAccessStream> and update the <CanvasBitmap> instance var to be used later by the <CanvasImageBrush> in CanvasControl_OnDraw
             if (_background is string s) // i.e. A rightfully unconverted ms-appx path
@@ -760,7 +513,7 @@ namespace Dash
         }
 
         // 5
-        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        protected void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if (IsLoadInProgress())
             {
@@ -769,20 +522,20 @@ namespace Dash
             }
             else
             {
-                var ff    = this as CollectionFreeformView;
-                var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
-                var scale = mat?.Matrix.M11 ?? 1;
-                // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
-                _bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
-                _bgBrush.Opacity = _bgOpacity;
+                //var ff    = this as CollectionFreeformView;
+                //var mat   = ff?.xTransformedCanvas?.RenderTransform as MatrixTransform;
+                //var scale = mat?.Matrix.M11 ?? 1;
+                //// If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
+                //_bgBrush.Image = scale < 1 ? _bgImageDot : _bgImage;
+                //_bgBrush.Opacity = _bgOpacity;
 
-                // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
-                var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Size.Height));
-                args.DrawingSession.FillRectangle(drawRect, _bgBrush);
+                //// Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
+                //var drawRect = new Rect(new Point(), new Size(sender.Size.Width, sender.Size.Height));
+                //args.DrawingSession.FillRectangle(drawRect, _bgBrush);
             }
         }
 
-        private bool IsLoadInProgress()
+        protected bool IsLoadInProgress()
         {
             // Not gonna happen, see above sequence of events
             if (_backgroundTask == null) return false;
@@ -814,7 +567,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        protected void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (ViewModel == null) return;
 
@@ -874,66 +627,48 @@ namespace Dash
         }
         #endregion
 
+        #region Tagging
+
+        public bool TagNote(string tagValue, DocumentView docView)
+        {
+            return false;
+            if (!TagMode)
+            {
+                return false;
+            }
+            //DocumentController image = null;
+            //foreach (var documentController in group.TypedData)
+            //{
+            //    if (documentController.DocumentType.Equals(ImageBox.DocumentType))
+            //    {
+            //        image = documentController.GetDataDocument(null);
+            //        break;
+            //    }
+            //}
+
+            //if (image != null)
+            //{
+            //    image.SetField(TagKey, new TextController(tagValue), true);
+            //    return true;
+            //}
+            return false;
+        }
+
+        #endregion
+
         #region Marquee Select
-        MarqueeInfo _marquee;
-        public Point _marqueeAnchor;
-        bool _isMarqueeActive;
 
+        private Rectangle   _marquee;
+        private Point       _marqueeAnchor;
+        private bool        _isMarqueeActive;
+        private MarqueeInfo mInfo;
 
-        /// <summary>
-        /// Handles mouse movement.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
+            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                if (StartMarquee(pos))
-                {
-                    args.Handled = true;
-                }
-            }
-
-        }
-        /// <summary>
-        /// Handles mouse movement. Starts drawing Marquee selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !TouchInteractions.handledTouch.Contains(args))
-            {
-                TouchInteractions.handledTouch.Add(args);
-                TouchInteractions.NumFingers++;
-                TouchInteractions.isPanning = false;
-                args.Handled = true;
-                //CASE WHERE DOC IS HELD & background is tapped -> launch radial menu
-                TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
-            }
-
-            if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
-            {
-                GetOuterGrid().CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
-                _isMarqueeActive = true;
-                _previewTextbox.Visibility = Visibility.Collapsed;
-                args.Handled = true;
-                GetOuterGrid().PointerMoved -= OnPointerMoved;
-                GetOuterGrid().PointerMoved += OnPointerMoved;
-            }
-        }
-
-
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !TouchInteractions.handledTouch.Contains(e))
-            {
-                TouchInteractions.handledTouch.Add(e);
-                if (TouchInteractions.NumFingers > 0) TouchInteractions.NumFingers--;
-                e.Handled = true;
+                handledTouch.Add(e);
+                if (NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
             {
@@ -946,21 +681,21 @@ namespace Dash
                     Focus(FocusState.Programmatic);
                 }
                 ResetMarquee(true);
-                TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.None;
                 if (e != null) e.Handled = true;
             }
 
-           // if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
+            if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
 
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             //if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
-        private void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
+
+        protected virtual void OnPointerCancelled(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !TouchInteractions.handledTouch.Contains(e))
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && sender != null && !handledTouch.Contains(e))
             {
-                TouchInteractions.handledTouch.Add(e);
-                if (TouchInteractions.NumFingers > 0) TouchInteractions.NumFingers--;
+                handledTouch.Add(e);
+                if (NumFingers > 0) NumFingers--;
             }
             if (_marquee != null)
             {
@@ -970,49 +705,24 @@ namespace Dash
                 GetSelectionCanvas().Children.Remove(_marquee);
                 _marquee = null;
                 _isMarqueeActive = false;
-                e.Handled = true;
+                if (e != null) e.Handled = true;
             }
-            //if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
-        }
-        private void OnKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.KeyStatus.RepeatCount > 1)
-            {
-                return;
-            }
-            var MarqueeKeys = new List<VirtualKey>
-            {
-                VirtualKey.A,
-                VirtualKey.Back,
-                VirtualKey.C,
-                VirtualKey.Delete,
-                VirtualKey.G,
-                VirtualKey.R,
-                VirtualKey.T,
-                VirtualKey.Left,
-                VirtualKey.Right,
-                VirtualKey.Up,
-                VirtualKey.Down,
-            };
-            if (!(FocusManager.GetFocusedElement() is RichEditBox) && !(FocusManager.GetFocusedElement() is TextBox))
-            {
-                var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
-                TriggerActionFromSelection(e.Key, useMarquee);
-            }
-            PreviewTextBuffer += Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
+            if (NumFingers == 0) ViewManipulationControls.IsPanning = false;
         }
 
-        public bool  StartMarquee(Point pos)
+        public bool StartMarquee(Point pos)
         {
-            if (_isMarqueeActive && TouchInteractions.CurrInteraction != TouchInteractions.TouchInteraction.DocumentManipulation)
+            if (_isMarqueeActive)
             {
-                if (TouchInteractions.NumFingers > 1)
-                {
-                    ResetMarquee(true);
-                    return false;
-                }
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
+
+                //Debug.WriteLine(dX + " and " + dY);
+
+                //if (_marquee == null)
+                //{
+                //    dX = dX + MainPage.Instance.xMainTreeView.ActualWidth;
+                //}
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -1026,31 +736,110 @@ namespace Dash
                 if (newWidth > 5 && newHeight > 5 && _marquee == null)
                 {
                     this.Focus(FocusState.Programmatic);
+                    _marquee = new Rectangle()
+                    {
+                        Stroke = new SolidColorBrush(Color.FromArgb(200, 66, 66, 66)),
+                        StrokeThickness = 1.5 / Zoom,
+                        StrokeDashArray = new DoubleCollection { 4, 1 },
+                        CompositeMode = ElementCompositeMode.SourceOver
+                    };
                     this.IsTabStop = true;
                     this.Focus(FocusState.Pointer);
-
-                    _marquee = new MarqueeInfo(this);
+                    _marquee.AllowFocusOnInteraction = true;
                     SelectionCanvas?.Children.Add(_marquee);
+
+                    mInfo = new MarqueeInfo();
+                    SelectionCanvas?.Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
                 {
-                    _marquee?.AdjustMarquee(newWidth, newHeight);
                     Canvas.SetLeft(_marquee, newAnchor.X);
                     Canvas.SetTop(_marquee, newAnchor.Y);
-                    //_marquee.Width = newWidth;
-                   // _marquee.Height = newHeight;
+                    _marquee.Width = newWidth;
+                    _marquee.Height = newHeight;
 
-                    Canvas.SetLeft(_marquee, newAnchor.X);
-                    Canvas.SetTop(_marquee, newAnchor.Y - 32);
+                    Canvas.SetLeft(mInfo, newAnchor.X);
+                    Canvas.SetTop(mInfo, newAnchor.Y - 32);
 
                     return true;
                 }
             }
             return false;
         }
+
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.GetCurrentPoint(null).Properties.PointerUpdateKind == PointerUpdateKind.Other)
+            {
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                if (StartMarquee(pos))
+                {
+                    args.Handled = true;
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch && !handledTouch.Contains(args))
+            {
+                handledTouch.Add(args);
+                NumFingers++;
+                ViewManipulationControls.IsPanning = false;
+            }
+            if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
+            {
+                GetOuterGrid().CapturePointer(args.Pointer);
+                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                _isMarqueeActive = true;
+                previewTextbox.Visibility = Visibility.Collapsed;
+                args.Handled = true;
+                GetOuterGrid().PointerMoved -= OnPointerMoved;
+                GetOuterGrid().PointerMoved += OnPointerMoved;
+            }
+        }
+
+        private static readonly List<VirtualKey> MarqueeKeys = new List<VirtualKey>
+        {
+            VirtualKey.A,
+            VirtualKey.Back,
+            VirtualKey.C,
+            VirtualKey.Delete,
+            VirtualKey.G,
+            VirtualKey.R,
+            VirtualKey.T,
+            VirtualKey.Left,
+            VirtualKey.Right,
+            VirtualKey.Up,
+            VirtualKey.Down,
+        };
+
+        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (!(FocusManager.GetFocusedElement() is RichEditBox) && !(FocusManager.GetFocusedElement() is TextBox))
+            {
+                var useMarquee = _marquee != null && MarqueeKeys.Contains(e.Key) && _isMarqueeActive;
+                TriggerActionFromSelection(e.Key, useMarquee);
+            }
+            PreviewTextBuffer += Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
+        }
+
+        public bool IsMarqueeActive => _isMarqueeActive;
+
         // called by SelectionManager to reset this collection's internal selection-based logic
-        public void  ResetMarquee(bool hardClear)
+        public void ResetMarquee(bool hardClear)
         {
             if (hardClear)
             {
@@ -1067,22 +856,24 @@ namespace Dash
                 }
             }
         }
+
         public IEnumerable<DocumentView> DocsInMarquee(Rect marquee)
         {
             if (GetItemsControl().ItemsPanelRoot != null)
             {
                 var items = GetItemsControl().ItemsPanelRoot.Children.Select(i => i.GetFirstDescendantOfType<DocumentView>()).
                                 Where(dv => dv != null && marquee.IntersectsWith(dv.ViewModel.LayoutDocument.GetBounds()));
-                var docViewsSelected = items.Where(dv => !dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType) &&
+                var docViewsSelected = items.Where(dv => !dv.ViewModel.LayoutDocument.DocumentType.Equals(BackgroundShape.DocumentType) && 
                                                           dv.ViewModel.LayoutDocument.GetAreContentsHitTestVisible());
 
-                foreach (var dv in docViewsSelected.Any() ? docViewsSelected : items)
+                foreach (var dv in docViewsSelected.Any() ?  docViewsSelected : items)
                 {
                     yield return dv;
                 }
             }
         }
-        public Rect  GetBoundingRectFromSelection()
+
+        public Rect GetBoundingRectFromSelection()
         {
             var topLeftMostPoint = new Point(double.PositiveInfinity, double.PositiveInfinity);
             var bottomRightMostPoint = new Point(double.NegativeInfinity, double.NegativeInfinity);
@@ -1102,10 +893,7 @@ namespace Dash
                     ? d.GetPosition().Y + actualY : bottomRightMostPoint.Y;
             }
 
-            if (isEmpty)
-            {
-                return Rect.Empty;
-            }
+            if (isEmpty) return Rect.Empty;
 
             return new Rect(topLeftMostPoint, bottomRightMostPoint);
         }
@@ -1119,12 +907,11 @@ namespace Dash
         {
             void DoAction(Action<IEnumerable<DocumentViewModel>, Point, Size> action)
             {
-
                 if (fromMarquee)
                 {
                     var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                                                           SelectionCanvas, GetItemsControl().ItemsPanelRoot);
-                    var size = new Size(_marquee.Marquee.Width, _marquee.Marquee.Height);
+                    var size = new Size(_marquee.Width, _marquee.Height);
                     using (UndoManager.GetBatchHandle())
                     {
                         action(DocsInMarquee(new Rect(where, size)).Select(dv => dv.ViewModel), where, size);
@@ -1140,15 +927,14 @@ namespace Dash
                         }
                     }
                 }
-
-                ResetMarquee(true);
+                
+                ResetMarquee(false);
             }
 
             var type = CollectionViewType.Freeform;
 
             var deselect = false;
-            if (!this.IsAltPressed() && (SelectionManager.SelectedDocViewModels.Count() > 1 || fromMarquee || modifier == VirtualKey.Back || modifier == VirtualKey.Delete))
-            {
+            if (!this.IsAltPressed() && (SelectionManager.SelectedDocViewModels.Count() > 1 || fromMarquee|| modifier == VirtualKey.Back || modifier == VirtualKey.Delete)) { 
                 switch (modifier)
                 {
                 case VirtualKey.A:  //create a viewcopy of everything selected
@@ -1164,18 +950,15 @@ namespace Dash
                     goto case VirtualKey.C;
                 case VirtualKey.C:
                     DoAction((viewModels, where, size) =>
-                    {
-                        var documentViewModels = viewModels.ToList();
-                        var docss = documentViewModels.Select(dvm => dvm.DocumentController).ToList();
-                        ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docss).Document);
-
-                        SelectionManager.DeselectAll();
-
-                        foreach (var viewModel in documentViewModels)
                         {
-                            viewModel.RequestDelete();
-                        }
-                    });
+                            var docss = viewModels.Select(dvm => dvm.DocumentController).ToList();
+                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docss).Document);
+
+                            foreach (var viewModel in viewModels.ToArray())
+                            {
+                                viewModel.RequestDelete();
+                            }
+                        });
                     deselect = true;
                     break;
                 case VirtualKey.Down:
@@ -1222,10 +1005,10 @@ namespace Dash
                                 var v2 = sortY ? v2p.Y : v2p.X;
                                 var v1o = sortY ? v1p.X : v1p.Y;
                                 var v2o = sortY ? v2p.X : v2p.Y;
-                                if (v1 < v2) return -1;
-                                else if (v1 > v2) return 1;
+                                if (v1 < v2)        return -1;
+                                else if (v1 > v2)   return  1;
                                 else if (v1o < v2o) return -1;
-                                else if (v1o > v2o) return 1;
+                                else if (v1o > v2o) return  1;
                                 return 0;
                             });
 
@@ -1257,12 +1040,7 @@ namespace Dash
                     break;
                 case VirtualKey.Back:
                 case VirtualKey.Delete:
-                    DoAction((viewModels, where, size) =>
-                    {
-                        var vms = viewModels.ToList();
-                        SelectionManager.DeselectAll();
-                        vms.ForEach(dvm => dvm.RequestDelete());
-                    });
+                    DoAction((viewModels, where, size) => viewModels.ToList().ForEach(dvm => dvm.RequestDelete()));
                     deselect = true;
                     break;
                 case VirtualKey.G:
@@ -1281,11 +1059,59 @@ namespace Dash
                 SelectionManager.DeselectAll();
             }
         }
+
         #endregion
 
+        #region DragAndDrop
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            GetDropIndicationRectangle().Fill = fill;
+        }
+
+        #endregion
+
+        public FreeformInkControl InkControl;
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
+        public bool _doubleTapped = false;
+        public double Zoom => ViewManipulationControls.ElementScale;
+
+        void MakeInkCanvas()
+        {
+
+            if (MainPage.Instance.xSettingsView.UseInkCanvas)
+            {
+                XInkCanvas = new InkCanvas()
+                {
+                    Width = 60000,
+                    Height = 60000
+                };
+
+                //InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+                Canvas.SetLeft(XInkCanvas, -30000);
+                Canvas.SetTop(XInkCanvas, -30000);
+                GetInkHostCanvas().Children.Add(XInkCanvas);
+            }
+        }
+
         #region TextInputBox
-        private void       OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)  { _doubleTapped = true; }
-        private async void OnTapped(object sender, TappedRoutedEventArgs e)
+
+        static public string PreviewFormatString = "#";
+        public string PreviewTextBuffer { get; set; } = "";
+
+        private TextBox previewTextbox  = null;
+        public void ClearPreview()
+        {
+            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Text = string.Empty;
+        }
+
+        protected  void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _doubleTapped = true;
+        }
+        protected async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             _doubleTapped = false;
             await Task.Delay(100);
@@ -1294,55 +1120,56 @@ namespace Dash
                 _isMarqueeActive = false;
                 if (!this.IsShiftPressed())
                 {
-                    showPreviewTextbox(e.GetPosition(xTransformedCanvas));
+                    var pt = e.GetPosition(xTransformedCanvas);
+                    ShowPreviewTextbox(pt);
                 }
-                Content.GetDescendantsOfType<RichTextView>().ToList().ForEach(r => r.Document.Selection.Collapse(false));
+                foreach (var rtv in Content.GetDescendantsOfType<RichTextView>())
+                {
+                    rtv.Document.Selection.EndPosition = rtv.Document.Selection.StartPosition;
+                }
             }
         }
-        private void       showPreviewTextbox(Point where)
+        private void ShowPreviewTextbox(Point where)
         {
             PreviewTextBuffer = PreviewFormatString;
-            if (_previewTextbox != null && TouchInteractions.HeldDocument == null)
+            if (previewTextbox != null)
             {
-                CollectionFreeformView.ClearForceFocus();
-                Canvas.SetLeft(_previewTextbox, where.X);
-                Canvas.SetTop(_previewTextbox, where.Y);
-                _previewTextbox.Visibility = Visibility.Visible;
-                _previewTextbox.Text = PreviewFormatString;
-                _previewTextbox.SelectionStart = PreviewFormatString.Length;
-                _previewTextbox.Focus(FocusState.Pointer);
+                //MainPage.Instance.ClearForceFocus();
+                Canvas.SetLeft(previewTextbox, where.X);
+                Canvas.SetTop(previewTextbox, where.Y);
+                previewTextbox.Visibility = Visibility.Visible;
+                previewTextbox.Text = PreviewFormatString;
+                previewTextbox.SelectionStart = PreviewFormatString.Length;
+                previewTextbox.Focus(FocusState.Pointer);
             }
         }
-        private void       PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+
+        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key.Equals(VirtualKey.Escape))
             {
                 e.Handled = true;
-                _previewTextbox.Visibility = Visibility.Collapsed;
-            }
-            else if (e.Key == VirtualKey.F && this.IsCtrlPressed())
-            {
-                MainPage.Instance.OpenSearchBox();
-                e.Handled = true;
+                previewTextbox.Visibility = Visibility.Collapsed;
             }
             else if (e.Key == VirtualKey.Back)
             {
-                PreviewTextBuffer   = PreviewTextBuffer == PreviewFormatString ? "" : PreviewTextBuffer;
-                _previewTextbox.Text = PreviewTextBuffer;
+                PreviewTextBuffer = PreviewTextBuffer == PreviewFormatString ? "" : PreviewTextBuffer;
+                previewTextbox.Text = PreviewTextBuffer;
             }
             else
             {
                 var text = Util.KeyCodeToUnicode(e.Key, this.IsShiftPressed(), this.IsCapsPressed());
-                if (!string.IsNullOrEmpty(text) && _previewTextbox.Visibility == Visibility.Visible)
+                if (!string.IsNullOrEmpty(text) && previewTextbox.Visibility == Visibility.Visible)
                 {
                     e.Handled = true;
                     convertPreviewToRealText(this.IsCtrlPressed() && e.Key == VirtualKey.V ? null : text);
                 }
             }
         }
-        private void       convertPreviewToRealText(string text)
+
+        private void convertPreviewToRealText(string text)
         {
-            var where = new Point(Canvas.GetLeft(_previewTextbox), Canvas.GetTop(_previewTextbox));
+            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
             using (UndoManager.GetBatchHandle())
             {
                 if (text == null && Clipboard.GetContent()?.HasClipboardData() == true) // clipboard will have data if from outside of Dash, otherwise fall through to paste from within dash
@@ -1355,23 +1182,19 @@ namespace Dash
                 else
                 {
                     PreviewTextBuffer += text;
-                    if (CollectionFreeformView.ForceFocusPoint == null)
-                    {
-                        loadNewActiveTextBox(text, where);
-                    }
+                    //if (MainPage.Instance.ForceFocusPoint == null)
+                    //{
+                    //    LoadNewActiveTextBox(text, where);
+                    //}
                 }
                 if (text == null)
                 {
-                    _previewTextbox.Visibility = Visibility.Collapsed;
+                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
             }
         }
-        private void       clearPreview()
-        {
-            _previewTextbox.Visibility = Visibility.Collapsed;
-            _previewTextbox.Text = string.Empty;
-        }
-        private async void loadNewActiveTextBox(string text, Point where)
+
+        public async void LoadNewActiveTextBox(string text, Point where)
         {
             var postitNote  = text == null ? await ViewModel.Paste(Clipboard.GetContent(), where) : SettingsView.Instance.MarkdownEditOn ? new MarkdownNote(text: text).Document : new RichTextNote(text: text).Document;
             var defaultXaml = ViewModel.ContainerDocument.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DefaultTextboxXamlKey, null)?.Data;
@@ -1381,30 +1204,15 @@ namespace Dash
             }
             if (text != null)
             {
-                SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
+                //MainPage.Instance.SetForceFocusPoint(this, xTransformedCanvas.TransformToVisual(MainPage.Instance).TransformPoint(new Point(where.X + 1, where.Y + 1)));
 
                 Actions.DisplayDocument(ViewModel, postitNote, where);
-            }
-            else
+            } else
             {
-                ClearForceFocus();
+                //MainPage.Instance.ClearForceFocus();
             }
 
             ViewModel.GenerateDocumentAddedEvent(postitNote, Util.PointTransformFromVisual(postitNote.GetPosition(), xTransformedCanvas, MainPage.Instance));
-        }
-        
-        public static CollectionFreeformView TextPreviewer;
-        public static Point?  ForceFocusPoint     { get; private set; }
-        public static string  PreviewFormatString { get; set; } = "#";
-        public static void    SetForceFocusPoint(CollectionFreeformView collection, Point where)
-        {
-            ForceFocusPoint = where;
-            TextPreviewer   = collection;
-        }
-        public static void    ClearForceFocus()
-        {
-            TextPreviewer?.clearPreview();
-            ForceFocusPoint = null;
         }
 
         #endregion

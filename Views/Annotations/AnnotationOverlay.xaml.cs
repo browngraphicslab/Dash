@@ -1,5 +1,4 @@
-﻿using Dash.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,6 +7,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Dash.Annotations;
+using NewControls.Geometry;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.Input;
 using Windows.Foundation;
@@ -16,12 +17,11 @@ using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using NewControls.Geometry;
-using static Dash.DataTransferTypeInfo;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Shapes;
+using static Dash.DataTransferTypeInfo;
 using Selection = Dash.AnchorableAnnotation.Selection;
 
 namespace Dash
@@ -43,8 +43,8 @@ namespace Dash
         public List<AnchorableAnnotation>         CurrentAnchorableAnnotations = new List<AnchorableAnnotation>();
         public ListController<DocumentController> RegionDocsList; // shortcut to the region documents stored in the RegionsKey
         public ListController<DocumentController> EmbeddedDocsList => AnnotationOverlayEmbeddings.EmbeddedDocsList; // shortcut to the embedded documents stored in the EmbeddedDocs Key
-        public IEnumerable<Selection>             SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
-        public AnnotationType                     CurrentAnnotationType 
+        public IEnumerable<Selection> SelectableRegions => XAnnotationCanvas.Children.OfType<AnchorableAnnotation>().Select((a) => a.ViewModel).Where((a) => a != null);
+        public AnnotationType CurrentAnnotationType
         {
             get => _currAnnotationType;
             set
@@ -59,16 +59,16 @@ namespace Dash
                 }
             }
         }
-        public List<int>                          PageEndIndices       { get; set; }
-        private InkCanvas                         XInkCanvas           { get; }
-        public AnnotationOverlayEmbeddings        AnnotationOverlayEmbeddings { get; set; }
+        public List<int> PageEndIndices { get; set; }
+        private InkCanvas XInkCanvas { get; }
+        public AnnotationOverlayEmbeddings AnnotationOverlayEmbeddings { get; set; }
 
-        public AnnotationOverlay([NotNull] DocumentController viewDocument, bool delayLoadingRegions=false)
+        public AnnotationOverlay([NotNull] DocumentController viewDocument, bool delayLoadingRegions = false)
         {
             InitializeComponent();
 
             MainDocument = viewDocument;
-            
+
             AnnotationOverlayEmbeddings = new AnnotationOverlayEmbeddings(this);
 
            
@@ -91,23 +91,39 @@ namespace Dash
             MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.InkDataKey, (view, controller, arge) => view.inkController_FieldModelUpdated(controller, arge));
             MainDocument.GetDataDocument().AddWeakFieldUpdatedListener(this, KeyStore.RegionsKey, (view, controller, arge) => view.regionDocsListOnFieldModelUpdated(controller, arge));
 
+
             Loaded += onLoaded;
+
+            MainDocument.AddWeakFieldUpdatedListener(this, KeyStore.GoToRegionKey, (overlay, controller, arg3) => overlay.GoToUpdatedFieldChanged(controller, arg3));
+
             if (!delayLoadingRegions)
             {
                 InitializeRegions();
+            }
+        }
+        private void GoToUpdatedFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var newValue = args?.NewValue != null ? args.NewValue as DocumentController : sender.GetField<DocumentController>(KeyStore.GoToRegionKey);
+            if (newValue != null && (sender.GetField(KeyStore.GoToRegionKey) != null || sender.GetField(KeyStore.GoToRegionLinkKey) != null))
+            {
+                SelectRegion(newValue);
             }
         }
         public void InitializeRegions()
         {
             _regionsInitialized = true;
             AddRegions(RegionDocsList, false);
+            if (MainDocument.GetField(KeyStore.GoToRegionKey) != null)
+            {
+                GoToUpdatedFieldChanged(MainDocument, null);
+            }
         }
         public void RemoveRegions(IEnumerable<DocumentController> oldItems)
         {
             XAnnotationCanvas.Children.OfType<RegionAnnotation>().Where((reg) => oldItems.Contains(reg.RegionDocumentController)).
                 ToList().ForEach((reg) => XAnnotationCanvas.Children.Remove(reg));
         }
-        public void AddRegions(IEnumerable<DocumentController> newItems, bool updateDocument=true)
+        public void AddRegions(IEnumerable<DocumentController> newItems, bool updateDocument = true)
         {
             if (_regionsInitialized)
             {
@@ -119,7 +135,7 @@ namespace Dash
                         if (!listField.Any())
                         {
                             var range = anno.GetField<ListController<PointController>>(KeyStore.SelectionIndicesListKey)?.FirstOrDefault()?.Data ?? new Point(0, -1);
-                            for (var i = range.X; i <= range.Y; i++)
+                            for (double i = range.X; i <= range.Y; i++)
                             {
                                 listField.Add(new RectController(TextSelectableElements[(int)i].Bounds));
                             }
@@ -175,10 +191,10 @@ namespace Dash
                     var containingDocumentView = this.GetDocumentView();
                     await rtb.RenderAsync(containingDocumentView, (int)containingDocumentView.ActualWidth, (int)containingDocumentView.ActualHeight);
 
-                    var buf = (await rtb.GetPixelsAsync()).ToArray();
+                    byte[] buf = (await rtb.GetPixelsAsync()).ToArray();
                     var bitmap = new WriteableBitmap(rtb.PixelWidth, rtb.PixelHeight);
                     bitmap.PixelBuffer.AsStream().Write(buf, 0, buf.Length);
-                    
+
                     annotation = await new ImageToDashUtil().ParseBitmapAsync(bitmap);
 
                     var subRegionsOffsets = CurrentAnchorableAnnotations.Select((item) => item.AddToRegion(annotation)).ToList();
@@ -240,7 +256,7 @@ namespace Dash
             annotation.GetDataDocument().SetAnnotationType(AnnotationType.Pin);
             annotation.GetDataDocument().SetRegionDefinition(MainDocument);
             annotation.AddToListField(KeyStore.SelectionRegionTopLeftKey, new PointController(point.X, point.Y));
-            annotation.AddToListField(KeyStore.SelectionRegionSizeKey,    new PointController(1, 1));
+            annotation.AddToListField(KeyStore.SelectionRegionSizeKey, new PointController(1, 1));
             if (linkedDoc != null)
             {
                 annotation.Link(linkedDoc, LinkBehavior.Overlay, null);
@@ -293,8 +309,8 @@ namespace Dash
             {
                 switch (listArgs.ListAction)
                 {
-                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:    AddRegions(listArgs.NewItems);    break;
-                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove: RemoveRegions(listArgs.OldItems); break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add: AddRegions(listArgs.NewItems); break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove: RemoveRegions(listArgs.OldItems); break;
                 }
             }
         }
@@ -337,7 +353,7 @@ namespace Dash
                     region.GetFieldOrCreateDefault<ListController<PointController>>(KeyStore.SelectionRegionSizeKey);
                     region.SetAnnotationType(AnnotationType.Selection);
                     region.SetRegionDefinition(regionContainerDocument);
-                    region.SetTitle(regionContainerDocument.Title+" region");
+                    region.SetTitle(regionContainerDocument.Title + " region");
 
                     regionContainerDocument.GetDataDocument()
                         .GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.RegionsKey).Add(region);
@@ -371,22 +387,25 @@ namespace Dash
                 embeddedDocument = embeddedDocument ?? createEmbeddedTextNote(this, point);
                 EmbeddedDocsList.Add(embeddedDocument);
                 StartAnnotation(AnnotationType.Region, point, new Selection(await CreateRegionFromPreviewOrSelection(embeddedDocument)));
+                EndAnnotation(point);
             }
             else
             {
-                _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) => {
-                        var rect = pin.GetBoundingRect(this);
-                        rect.X     -= pin.ActualWidth;
-                        rect.Y     -= pin.ActualHeight;
-                        rect.Width  = pin.ActualWidth * 2;
-                        rect.Height = pin.ActualHeight * 2;
-                        return rect.Contains(point);
-                    }).FirstOrDefault();
+                _currentAnnotation = XAnnotationCanvas.Children.OfType<PinAnnotation>().Where((pin) =>
+                {
+                    var rect = pin.GetBoundingRect(this);
+                    rect.X -= pin.ActualWidth;
+                    rect.Y -= pin.ActualHeight;
+                    rect.Width = pin.ActualWidth * 2;
+                    rect.Height = pin.ActualHeight * 2;
+                    return rect.Contains(point);
+                }).FirstOrDefault();
                 if (_currentAnnotation == null)  // if no other pin exists with 4x4 of 'point', then create a pushin
                 {
                     embeddedDocument = embeddedDocument ?? createEmbeddedTextNote(this, point);
                     EmbeddedDocsList.Add(embeddedDocument);
                     StartAnnotation(AnnotationType.Pin, point, new Selection(CreatePinRegion(point, embeddedDocument)));
+                    EndAnnotation(point);
                 }
             }
         }
@@ -396,9 +415,9 @@ namespace Dash
             XPreviewRect.Visibility = Visibility.Collapsed;
             switch (type)
             {
-                case AnnotationType.Pin:       _currentAnnotation = new PinAnnotation(this, svm); break;
-                case AnnotationType.Region:    _currentAnnotation = new RegionAnnotation(this, svm); break;
-                case AnnotationType.Selection: _currentAnnotation = new TextAnnotation(this, svm); break;
+            case AnnotationType.Pin: _currentAnnotation = new PinAnnotation(this, svm); break;
+            case AnnotationType.Region: _currentAnnotation = new RegionAnnotation(this, svm); break;
+            case AnnotationType.Selection: _currentAnnotation = new TextAnnotation(this, svm); break;
             }
             if (!this.IsCtrlPressed() && CurrentAnchorableAnnotations.Any())
             {
@@ -411,7 +430,7 @@ namespace Dash
         {
             _currentAnnotation?.UpdateAnnotation(p);
         }
-         
+
         public void EndAnnotation(Point p)
         {
             if (_currentAnnotation != null)
@@ -421,7 +440,7 @@ namespace Dash
                 DeselectRegions();
             }
         }
-        
+
         private static DocumentController createEmbeddedTextNote(AnnotationOverlay parent, Point where)
         {
             var richText = new RichTextNote("<annotation>", new Point(where.X + 10, where.Y + 10));
@@ -500,24 +519,24 @@ namespace Dash
                 }
 
                 var ele = TextSelectableElements[index];
-                var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
-                var clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
+                bool clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
+                bool clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
                                                 ele.Bounds.Y + ele.Bounds.Height / 2)) == true;
                 if (clipRectNonexistent || clipRectContainsIndex)
                 {
                     var currRect = _selectedRectangles[index];
-                    var left = Canvas.GetLeft(currRect);
-                    var right = Canvas.GetLeft(currRect) + currRect.Width;
-                    var top = Canvas.GetTop(currRect);
+                    double left = Canvas.GetLeft(currRect);
+                    double right = Canvas.GetLeft(currRect) + currRect.Width;
+                    double top = Canvas.GetTop(currRect);
                     if (endIndex != -1)
                     {
                         // if we're deselecting text backwards
                         if (ele.Bounds.Left - left < ele.Bounds.Width)
                         {
-                            var farEnoughY = Math.Abs(top -
+                            bool farEnoughY = Math.Abs(top -
                                                       TextSelectableElements[index + 1].Bounds.Top) >
                                              TextSelectableElements[index].Bounds.Height / 5;
-                            var farEnoughX = Math.Abs(left - TextSelectableElements[index + 1].Bounds.Left) >
+                            bool farEnoughX = Math.Abs(left - TextSelectableElements[index + 1].Bounds.Left) >
                                              TextSelectableElements[index].Bounds.Width * 4;
                             // if we've reached a different line
                             if (farEnoughY || farEnoughX)
@@ -536,7 +555,7 @@ namespace Dash
                         // if we're deselecting text forwards
                         else if (ele.Bounds.Right - right < ele.Bounds.Width)
                         {
-                            var farEnoughY = Math.Abs(top -
+                            bool farEnoughY = Math.Abs(top -
                                                       TextSelectableElements[index - 1].Bounds.Top) >
                                              TextSelectableElements[index].Bounds.Height / 5;
                             // if we've reached a different line
@@ -565,8 +584,8 @@ namespace Dash
         {
             highlightBrush = highlightBrush ?? new SolidColorBrush(Color.FromArgb(120, 0x94, 0xA5, 0xBB));
             var ele = TextSelectableElements[index];
-            var clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
-            var clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
+            bool clipRectNonexistent = clipRect == null || clipRect == Rect.Empty;
+            bool clipRectContainsIndex = clipRect?.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
                                             ele.Bounds.Y + ele.Bounds.Height / 2)) == true;
             if (clipRectNonexistent || clipRectContainsIndex)
             {
@@ -589,14 +608,14 @@ namespace Dash
                 XSelectionCanvas.Children.Add(_currRect);
             }
 
-            var left = Canvas.GetLeft(_currRect);
-            var right = Canvas.GetLeft(_currRect) + _currRect.Width;
-            var top = Canvas.GetTop(_currRect);
-            var closeEnoughX = Math.Abs(ele.Bounds.Left - right) <
+            double left = Canvas.GetLeft(_currRect);
+            double right = Canvas.GetLeft(_currRect) + _currRect.Width;
+            double top = Canvas.GetTop(_currRect);
+            bool closeEnoughX = Math.Abs(ele.Bounds.Left - right) <
                                ele.Bounds.Width * 4;
-            var closeEnoughY = Math.Abs(ele.Bounds.Top - top) <
+            bool closeEnoughY = Math.Abs(ele.Bounds.Top - top) <
                               ele.Bounds.Height / 5;
-            var similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
+            bool similarSize = ele.Bounds.Height - _currRect.Height < ele.Bounds.Height;
             // if we should just adjust the current rectangle
             if (closeEnoughX && closeEnoughY && similarSize)
             {
@@ -657,8 +676,8 @@ namespace Dash
                     }
                 }
 
-                var currentSelectionStart = textAnnotation.StartIndex;
-                var currentSelectionEnd = textAnnotation.EndIndex;
+                int currentSelectionStart = textAnnotation.StartIndex;
+                int currentSelectionEnd = textAnnotation.EndIndex;
                 var currentClipRect = textAnnotation.ClipRect;
 
                 textAnnotation.ClipRect = this.IsAltPressed() ?
@@ -673,29 +692,29 @@ namespace Dash
                 {
                     if (currentSelectionStart == -1 || currentClipRect != null && currentClipRect != Rect.Empty)
                     {
-                        for (var i = startIndex; i <= endIndex; ++i)
+                        for (int i = startIndex; i <= endIndex; ++i)
                         {
                             SelectIndex(i, currentClipRect);
                         }
                     }
                     else
                     {
-                        for (var i = startIndex; i < currentSelectionStart; ++i)
+                        for (int i = startIndex; i < currentSelectionStart; ++i)
                         {
                             SelectIndex(i);
                         }
 
-                        for (var i = currentSelectionStart; i < startIndex; ++i)
+                        for (int i = currentSelectionStart; i < startIndex; ++i)
                         {
                             DeselectIndex(i, null, startIndex - 1);
                         }
 
-                        for (var i = currentSelectionEnd + 1; i <= endIndex; ++i)
+                        for (int i = currentSelectionEnd + 1; i <= endIndex; ++i)
                         {
                             SelectIndex(i);
                         }
 
-                        for (var i = endIndex + 1; i <= currentSelectionEnd; ++i)
+                        for (int i = endIndex + 1; i <= currentSelectionEnd; ++i)
                         {
                             DeselectIndex(i, null, currentSelectionEnd);
                         }
@@ -715,9 +734,9 @@ namespace Dash
             // for each rectangle, if it's not between the current clip rectangle, we should remove it
             foreach (var rect in _clipRectSelections)
             {
-                var rTop = (rect.RenderTransform as TranslateTransform).Y;
-                var belowTopBound = rTop + rect.Height > currentClipRect.Top;
-                var belowBottomBound = rTop < currentClipRect.Bottom;
+                double rTop = (rect.RenderTransform as TranslateTransform).Y;
+                bool belowTopBound = rTop + rect.Height > currentClipRect.Top;
+                bool belowBottomBound = rTop < currentClipRect.Bottom;
                 if (!(belowTopBound && belowBottomBound))
                 {
                     rectsToRemove.Add(rect);
@@ -732,38 +751,38 @@ namespace Dash
                 XSelectionCanvas.Children.Remove(r);
                 var keys = new List<int>();
                 // remove every key that points to the rectangle
-                foreach (var key in _selectedRectangles.Where(kvp => kvp.Value.Equals(r)).Select(kvp => kvp.Key))
+                foreach (int key in _selectedRectangles.Where(kvp => kvp.Value.Equals(r)).Select(kvp => kvp.Key))
                 {
                     keys.Add(key);
                 }
 
-                foreach (var key in keys)
+                foreach (int key in keys)
                 {
                     _selectedRectangles.Remove(key);
                 }
             });
 
-            var startPage = GetPageOf(currentClipRect.Top);
-            var endPage = GetPageOf(currentClipRect.Bottom);
+            int startPage = GetPageOf(currentClipRect.Top);
+            int endPage = GetPageOf(currentClipRect.Bottom);
             // startIndex is either 0 or the last page's end index + 1
-            var startIndex = startPage > 0 ? PageEndIndices[startPage - 1] + 1 : 0;
-            var endIndex = PageEndIndices[endPage];
+            int startIndex = startPage > 0 ? PageEndIndices[startPage - 1] + 1 : 0;
+            int endIndex = PageEndIndices[endPage];
 
             // loop through the indices between the possible pages
-            for (var index = startIndex; index <= endIndex; index++)
+            for (int index = startIndex; index <= endIndex; index++)
             {
                 var ele = TextSelectableElements[index];
                 if (currentClipRect.Contains(new Point(ele.Bounds.X + ele.Bounds.Width / 2,
                         ele.Bounds.Y + ele.Bounds.Height / 2)))
                 {
-                    var found = false;
+                    bool found = false;
                     foreach (var rect in _clipRectSelections)
                     {
-                        var rLeft = (rect.RenderTransform as TranslateTransform).X;
-                        var rTop = (rect.RenderTransform as TranslateTransform).Y;
-                        var closeEnoughX = Math.Abs(ele.Bounds.Left - rLeft) < ele.Bounds.Width + rect.Width;
-                        var closeEnoughY = Math.Abs(ele.Bounds.Top - rTop) < ele.Bounds.Height / 5;
-                        var similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
+                        double rLeft = (rect.RenderTransform as TranslateTransform).X;
+                        double rTop = (rect.RenderTransform as TranslateTransform).Y;
+                        bool closeEnoughX = Math.Abs(ele.Bounds.Left - rLeft) < ele.Bounds.Width + rect.Width;
+                        bool closeEnoughY = Math.Abs(ele.Bounds.Top - rTop) < ele.Bounds.Height / 5;
+                        bool similarSize = ele.Bounds.Height - rect.Height < ele.Bounds.Height;
 
                         // if the element is close enough to append to the rectangle
                         if (closeEnoughX && closeEnoughY && similarSize)
@@ -838,8 +857,8 @@ namespace Dash
         public int GetPageOf(double yOffset)
         {
             var pages = this.GetFirstAncestorOfType<PdfView>().DefaultView.Pages.PageSizes;
-            var currOffset = 0.0;
-            var i = 0;
+            double currOffset = 0.0;
+            int i = 0;
             do
             {
                 currOffset += pages[i].Height;
@@ -886,7 +905,7 @@ namespace Dash
                     var droppedDocs = await e.DataView.GetDroppableDocumentsForDataOfType(Any, sender as FrameworkElement, where);
                     if (droppedDocs.Count > 0)
                     {
-                        for (var i = 0; i < dm.DraggedDocCollectionViews?.Count; i++)
+                        for (int i = 0; i < dm.DraggedDocCollectionViews?.Count; i++)
                         {
                             if (dm.DraggedDocumentViews != null)
                             {
@@ -901,10 +920,10 @@ namespace Dash
                                 }
                                 MainPage.Instance.ClearFloatingDoc(dm.DraggedDocumentViews[i]);
                             }
-                            
+
                             dm.DraggedDocCollectionViews[i]?.RemoveDocument(dm.DraggedDocuments[i]);
                         }
-                        e.AcceptedOperation =  DataPackageOperation.Move;
+                        e.AcceptedOperation = DataPackageOperation.Move;
                     }
                     else
                     {
@@ -985,6 +1004,8 @@ namespace Dash
                 {
                     EmbedDocumentWithPin(e.GetPosition(this));
                 }
+                DeselectRegions();
+                _currentAnnotation = null;
                 e.Handled = true;
             }
         }

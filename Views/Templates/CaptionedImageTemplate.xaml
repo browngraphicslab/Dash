@@ -10,6 +10,6 @@
         <dash:EditableImage x:Name="xImageField0" Foreground ="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
     </Border>
     <Border Grid.Row="1" Background="CadetBlue" MinHeight="30" >
-        <dash:RichEditView x:Name="xRichTextField1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
+        <dash:RichTextView x:Name="xRichTextField1" TextWrapping="Wrap" Foreground="White" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Top" />
     </Border>
 </Grid>

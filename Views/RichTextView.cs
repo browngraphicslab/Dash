@@ -20,10 +20,10 @@ using System.Diagnostics;
 
 namespace Dash
 {
-    public class RichEditView : RichEditBox
+    public class RichTextView : RichEditBox
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            "Text", typeof(RichTextModel.RTD), typeof(RichEditView), new PropertyMetadata(default(RichTextModel.RTD), xRichEditView_TextChangedCallbackStatic));
+            "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichEditView_TextChangedCallbackStatic));
         
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
@@ -44,33 +44,34 @@ namespace Dash
                 return _lastDesiredSize;
             if (!double.IsNaN(ViewModel.LayoutDocument.GetWidth()) && DesiredSize.Width >= ViewModel.LayoutDocument.GetWidth())
             {
-                 GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = DesiredSize.Width; fe.Height = double.NaN; });
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach(fe => { fe.Width = DesiredSize.Width; fe.Height = double.NaN; });
+                this.GetDescendantsOfType<Grid>().ToList().ForEach(fe => fe.Height = double.NaN);
                 return base.MeasureOverride(availableSize);
             }
 
             var text = getRtfText();
-            var readable = getReadableText();
-            //if (!string.IsNullOrEmpty(readable) && Document.Selection.EndPosition ==readable.Length && readable.Last() == '\r')
-            //    Document.GetText(TextGetOptions.FormatRtf, out text);
             if (text != _lastSizeRTFText || _lastDesiredSize == new Size() || _lastSizeAvailableSize != availableSize)
             {
+                var descs = this.GetDescendantsOfType<Grid>().ToList();
+                descs.ForEach(fe => fe.Height = double.NaN);
                 var rtb = MainPage.Instance.RTBHackBox;
                 rtb.Width = double.IsInfinity(availableSize.Width) ? double.NaN : availableSize.Width;
                 rtb.Document.SetText(TextSetOptions.FormatRtf, text);
                 rtb.Measure(availableSize);
                 _lastSizeRTFText = text;
-                _lastDesiredSize = new Size(rtb.DesiredSize.Width+10, rtb.DesiredSize.Height);
+                _lastDesiredSize = new Size(rtb.DesiredSize.Width, !double.IsInfinity(availableSize.Height) && !double.IsNaN(availableSize.Height) ? Math.Max(availableSize.Height, rtb.DesiredSize.Height) : rtb.DesiredSize.Height);
                 _lastSizeAvailableSize = availableSize;
-                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach((fe) => { fe.Width = rtb.DesiredSize.Width; });
+                GetChildrenInTabFocusOrder().OfType<Grid>().ToList().ForEach(fe => fe.Width = rtb.DesiredSize.Width);
+                descs.ForEach(fe => fe.Height = _lastDesiredSize.Height);
             } 
             return _lastDesiredSize;
         }
 
-         ~RichEditView()
+         ~RichTextView()
         {
             // Debug.WriteLine("Disposing RichEditView");
         }
-        public RichEditView()
+        public RichTextView()
         {
             AllowDrop = true;
             CanDrag = true;
@@ -139,10 +140,6 @@ _manipulator = null;
 
             LostFocus += (s, e) =>
             {
-                if (ViewModel?.IsSelected != true)
-                {
-                    IsEnabled = false;
-                }
                 Clipboard.ContentChanged -= Clipboard_ContentChanged;
                 var readableText = getReadableText();
                 if (string.IsNullOrEmpty(getReadableText()) && DataFieldKey?.Equals(KeyStore.DataKey) == true)
@@ -219,7 +216,7 @@ _manipulator = null;
         /// <param name="dp"></param>
         private static void xRichEditView_TextWrappingChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            var rtv = sender as RichEditView;
+            var rtv = sender as RichTextView;
             rtv.TextWrapping = (TextWrapping) dp.NewValue;
         }
 
@@ -231,7 +228,7 @@ _manipulator = null;
         /// <param name="dp"></param>
         private static void xRichEditView_TextChangedCallbackStatic(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            var rtv = sender as RichEditView;
+            var rtv = sender as RichTextView;
             var newRtFormatString = ((RichTextModel.RTD)dp.NewValue)?.RtfFormatString;
             if (newRtFormatString != null && newRtFormatString != rtv._lastXamlRTFText)
             {
@@ -306,7 +303,7 @@ _manipulator = null;
             Document.Selection.StartPosition = text.Length;
         }
 
-        private async void this_Drop(object sender, DragEventArgs e)
+        private void this_Drop(object sender, DragEventArgs e)
         {
             e.Handled = false;
         }
@@ -880,7 +877,7 @@ _manipulator = null;
             if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
             {
                 CollectionFreeformView.ClearForceFocus();
-                GotFocus += RichTextView_GotFocus;
+                GotFocus += RichEditView_GotFocus;
                 Focus(FocusState.Programmatic);
             }
             else
@@ -892,15 +889,15 @@ _manipulator = null;
                 CreateActionMenu(this);
             }
         }
-        private void RichTextView_GotFocus(object sender, RoutedEventArgs e)
+        private void RichEditView_GotFocus(object sender, RoutedEventArgs e)
         {
-            GotFocus -= RichTextView_GotFocus;
+            GotFocus -= RichEditView_GotFocus;
             var text = CollectionFreeformView.TextPreviewer?.Visibility == Visibility.Visible ? CollectionFreeformView.TextPreviewer.PreviewTextBuffer : "";
             Document.Selection.SetRange(0, 0);
             Document.SetText(TextSetOptions.None, text);
             Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             Document.Selection.SetRange(text.Length, text.Length);
-            //SelectionManager.Select(getDocView(), false);
+            SelectionManager.Select(getDocView(), false);
         }
 
         #endregion
