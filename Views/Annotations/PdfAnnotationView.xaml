@@ -32,7 +32,7 @@
 
             <ScrollViewer x:Name="ScrollViewer" x:FieldModifier="public" ViewChanging="ScrollViewer_OnViewChanging"  IsScrollInertiaEnabled="True"  PointerEntered="ScrollViewer_OnPointerEntered" PointerExited="ScrollViewer_OnPointerExited" >
                 <Viewbox Stretch="UniformToFill"  >
-                    <Grid x:Name="XParentPdfGrid" AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
+                    <Grid x:Name="XParentPdfGrid" AllowDrop="True" Drop="OnDrop" DragEnter="OnDragEnter" PointerWheelChanged="XParentPdfGrid_OnPointerWheelChanged"  CompositeMode="SourceOver" PointerPressed="XPdfGrid_PointerPressed" PointerReleased="XPdfGrid_PointerReleased" DoubleTapped="XPdfGrid_OnDoubleTapped" IsDoubleTapEnabled="True">
                         <Grid x:Name="xPdfGrid" x:FieldModifier="public" Background="Transparent" CompositeMode="MinBlend" >
                             <!-- ItemsControl that stores the page images -->
                             <ItemsControl x:Name="PageItemsControl" x:FieldModifier="public"/>

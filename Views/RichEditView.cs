@@ -96,7 +96,6 @@ namespace Dash
                         Focus(FocusState.Keyboard);
                     }
 
-                    TouchInteractions.NumFingers++;
                     if (TouchInteractions.HeldDocument == null)
                         TouchInteractions.HeldDocument = this.GetFirstAncestorOfType<DocumentView>();
                     SelectionManager.InitiateDragDrop(docView, e);

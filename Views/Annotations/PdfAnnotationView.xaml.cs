@@ -101,7 +101,8 @@ namespace Dash
             PointerEntered += (s, e) => ActiveView = true;
             PointerExited += (s, e) =>
             {
-
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse && this.GetDocumentView().NumFingersUsed < 2)
+                    ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
                 ActiveView = false;
             };
             _scrollTimer.Start();
@@ -534,6 +535,12 @@ namespace Dash
 
         private void PdfAnnotationView_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
+
+        }
+
+        private void XParentPdfGrid_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
 
         }
     }

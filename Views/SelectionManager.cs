@@ -219,7 +219,7 @@ namespace Dash
         #region Drag Manipulation Methods
         public static void InitiateDragDrop(DocumentView draggedView, PointerRoutedEventArgs pe)
         {
-            if (pe.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+            if (pe != null && pe.Pointer.PointerDeviceType == PointerDeviceType.Pen)
             {
                 pe.Handled = false;
                 return;
