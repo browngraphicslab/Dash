@@ -12,7 +12,19 @@
     Background="Beige" IsTabStop="True">
     
     <Grid x:Name="xGrid" PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased" DoubleTapped="OnDoubleTapped">
-        <Viewbox Stretch="Fill" x:Name="xViewbox">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <InkToolbar x:Name="xInkToolbar" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed" x:FieldModifier="public" >
+            <InkToolbarEraserButton/>
+            <InkToolbarBallpointPenButton/>
+            <InkToolbarPencilButton/>
+            <InkToolbarHighlighterButton/>
+        </InkToolbar>
+
+        <Viewbox Stretch="Fill" x:Name="xViewbox" Grid.Row="1">
             <Grid AllowDrop="True">
                 <Grid x:Name="XAnnotationGrid" >
                     <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" />

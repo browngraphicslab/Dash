@@ -81,7 +81,7 @@ namespace Dash
                     XAnnotationGrid.Width = Image.ActualWidth;
                     XAnnotationGrid.Height = Image.ActualHeight;
                 }
-
+                xInkToolbar.TargetInkCanvas = XInkCanvas;
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument);
                 _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
                 XAnnotationGrid.Children.Add(_annotationOverlay);

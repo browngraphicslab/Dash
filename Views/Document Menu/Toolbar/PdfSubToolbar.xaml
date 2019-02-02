@@ -681,17 +681,17 @@
             </AppBarToggleButton>
 
             <!--ink-->
-            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xInkToggle" Checked="XInkToggle_OnChecked" Unchecked="Toggle_OnUnchecked" PointerEntered="ShowAppBarToolTip"
+            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xInkToggle" Checked="XInkToggle_OnChecked" Unchecked="XInkToggle_Unchecked" PointerEntered="ShowAppBarToolTip"
                                 PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xInkToggleIcon" Text="&#xE76D;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0, -5, 0, 0" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
             <!--selection-->
-            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xTextToggle"  Checked="XTextToggle_OnChecked" Unchecked="Toggle_OnUnchecked" PointerEntered="ShowAppBarToolTip"
+            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xTextToggle"  Checked="XTextToggle_OnChecked" Unchecked="XTextToggle_Unchecked" PointerEntered="ShowAppBarToolTip"
                                 PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xTextToggleIcon" Text="&#xE762;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0, -5, 0, 0" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
             <!--region-->
-            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xRegionToggle" Checked="XRegionToggle_OnChecked" Unchecked="Toggle_OnUnchecked" PointerEntered="ShowAppBarToolTip"
+            <AppBarToggleButton Style="{StaticResource AppBarToggleButtonStyler}" x:Name="xRegionToggle" Checked="XRegionToggle_OnChecked" Unchecked="XRegionToggle_Unchecked" PointerEntered="ShowAppBarToolTip"
                                 PointerExited="HideAppBarToolTip">
                 <TextBlock x:Name="xRegionToggleIcon" Text="&#xE70B;" FontSize="16"  FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0, -5, 0, 0" Padding="0" HorizontalAlignment="Center"/>
             </AppBarToggleButton>
