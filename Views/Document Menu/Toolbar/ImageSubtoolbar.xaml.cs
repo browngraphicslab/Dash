@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -182,6 +183,7 @@ namespace Dash
             xToggleAnnotations.Label = "Hidden";
         }
 
+
         private ToolTip _toggle;
         private ToolTip _crop;
         private ToolTip _replace;
@@ -280,6 +282,33 @@ namespace Dash
         {
             var modes = new Stretch[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill };
             _currentDocController?.SetField<TextController>(KeyStore.ImageStretchKey, modes[xScaleOptionsDropdown.SelectedIndex >= 0 ? xScaleOptionsDropdown.SelectedIndex : 0].ToString(), true);
+        }
+
+        private void XRegionToggle_OnChecked(object sender, RoutedEventArgs e)
+        {
+            xInkToggle.IsChecked = false;
+            _currentImage._annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+            xRegionToggleIcon.Foreground = new SolidColorBrush(Colors.Black);
+        }
+
+        private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
+        {
+            xRegionToggle.IsChecked = false;
+            _currentImage._annotationOverlay.CurrentAnnotationType = AnnotationType.Ink;
+            xInkToggleIcon.Foreground = new SolidColorBrush(Colors.Black);
+            _currentImage.xInkToolbar.Visibility = Visibility.Visible;
+        }
+
+        private void XInkToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _currentImage._annotationOverlay.CurrentAnnotationType = AnnotationType.None;
+            xInkToggleIcon.Foreground = new SolidColorBrush(Colors.White);
+            _currentImage.xInkToolbar.Visibility = Visibility.Collapsed;
+        }
+        private void XRegionToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _currentImage._annotationOverlay.CurrentAnnotationType = AnnotationType.None;
+            xRegionToggleIcon.Foreground = new SolidColorBrush(Colors.White);
         }
     }
 }

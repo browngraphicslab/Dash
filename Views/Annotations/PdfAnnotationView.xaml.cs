@@ -393,12 +393,12 @@ namespace Dash
             {
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument, true);
                 xPdfGrid.Children.Add(AnnotationOverlay);
-
+               
                 xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
 
                 XInkCanvas = new InkCanvas();
                 XParentPdfGrid.Children.Add(XInkCanvas);
-
+                _annotationOverlay.BindInkCanvas();
                 //xPdfGridWithEmbeddings.Children.Add(XInkCanvas);
 
 

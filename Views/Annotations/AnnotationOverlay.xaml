@@ -16,6 +16,6 @@
 
         </Grid>
         <Canvas x:Name="XSelectionCanvas" />
-       
+
     </Grid>
 </UserControl>

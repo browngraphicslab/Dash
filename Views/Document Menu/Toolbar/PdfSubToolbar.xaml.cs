@@ -1,9 +1,11 @@
 ﻿using Windows.Foundation;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -93,6 +95,7 @@ namespace Dash
 
             _currentPdfView.SetAnnotationType(AnnotationType.Ink);
             _currentPdfView._botPdf.xInkToolbar.Visibility = Visibility.Visible;
+            xInkToggleIcon.Foreground = new SolidColorBrush(Colors.Black);
         }
 
         private void XTextToggle_OnChecked(object sender, RoutedEventArgs e)
@@ -103,8 +106,9 @@ namespace Dash
             if (_currentPdfView != null)
             {
                 _currentPdfView.SetAnnotationType(AnnotationType.Selection);
-                _currentPdfView._botPdf.xInkToolbar.Visibility = Visibility.Collapsed;
+                //_currentPdfView._botPdf.xInkToolbar.Visibility = Visibility.Collapsed;
             }
+            xTextToggleIcon.Foreground = new SolidColorBrush(Colors.Black);
         }
 
         private void XRegionToggle_OnChecked(object sender, RoutedEventArgs e)
@@ -113,7 +117,7 @@ namespace Dash
             xTextToggle.IsChecked = false;
 
             _currentPdfView.SetAnnotationType(AnnotationType.Region);
-            _currentPdfView._botPdf.xInkToolbar.Visibility = Visibility.Collapsed;
+            xRegionToggleIcon.Foreground = new SolidColorBrush(Colors.Black);
         }
 
         public void CommandBarOpen(bool status)
@@ -126,8 +130,25 @@ namespace Dash
         public void SetComboBoxVisibility(Visibility visibility)
         {
         }
+        private void XInkToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            xInkToggleIcon.Foreground = new SolidColorBrush(Colors.White);
+            _currentPdfView._botPdf.xInkToolbar.Visibility = Visibility.Collapsed;
+            Toggle_OnUnchecked();
+        }
 
-        private void Toggle_OnUnchecked(object sender, RoutedEventArgs e)
+        private void XTextToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            xTextToggleIcon.Foreground = new SolidColorBrush(Colors.White);
+            Toggle_OnUnchecked();
+        }
+
+        private void XRegionToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            xRegionToggleIcon.Foreground = new SolidColorBrush(Colors.White);
+            Toggle_OnUnchecked();
+        }
+        private void Toggle_OnUnchecked()
         {
             if (xInkToggle.IsChecked == false && xTextToggle.IsChecked == false && xRegionToggle.IsChecked == false )
             {
