@@ -109,7 +109,7 @@ namespace Dash
             DragStarting  += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped   += (s, e) => { e.Handled = true; TappedHandler(true); };
-            Tapped        += (s, e) => { e.Handled = true; TappedHandler(false); };
+            Tapped        += (s, e) => { e.Handled = true; TappedHandler(false, e); };
             DoubleTapped  += (s, e) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
             PointerPressed += (s, e) => this_PointerPressed(s, e);
             PointerCanceled += (s, e) =>
@@ -413,7 +413,7 @@ namespace Dash
                 TouchInteractions.NumFingers++;
                 //if not already holding something, hold this doc!
                 if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this;
-            }
+            } 
         }
 
         private void this_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -491,8 +491,9 @@ namespace Dash
         /// this is always false currently so it probably isn't needed</param>
         /// <param name="wasRightTapped"></param>
         /// <returns>Whether the calling tapped event should be handled</returns>
-        public async void TappedHandler(bool rightTapped)
+        public async void TappedHandler(bool rightTapped, TappedRoutedEventArgs e = null)
         {
+            bool _touch = e?.PointerDeviceType == PointerDeviceType.Touch;
             _doubleTapped = false;
             if (!await ExhibitBehaviors(rightTapped ? KeyStore.RightTappedOpsKey : KeyStore.LeftTappedOpsKey))
             {
@@ -511,7 +512,7 @@ namespace Dash
                     {
                         if (!SelectionManager.SelectedDocViews.Contains(this) || this.IsShiftPressed())
                         {
-                            SelectionManager.Select(this, this.IsShiftPressed());
+                            SelectionManager.Select(this, this.IsShiftPressed(), _touch);
                         }
                         else if (!SelectionManager.SelectedDocViews.Any(dv => dv.GetFirstAncestorOfType<SplitFrame>() == null)) // clear the floating documents unless the newly selected document is a floating document
                         {
