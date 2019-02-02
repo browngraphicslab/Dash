@@ -59,7 +59,7 @@ namespace Dash
         /// <param name="doc">The document to select</param>
         /// <param name="toggle">Whether or not to toggle the selection of the given document.
         /// This is roughly equivalent to whether Shift is pressed when selecting.</param>
-        public static void Select(DocumentView doc, bool toggle)
+        public static void Select(DocumentView doc, bool toggle, bool _touch = false)
         {
             if (!toggle)
             {
@@ -85,7 +85,7 @@ namespace Dash
 
                 if (!alreadySelected)
                 {
-                    SelectHelper(doc);
+                     SelectHelper(doc, _touch);
                 }
 
                 OnSelectionChanged(args);
@@ -172,12 +172,16 @@ namespace Dash
             }
         }
 
-        private static void SelectHelper(DocumentView view)
+        private static void SelectHelper(DocumentView view, bool _touch = false)
         {
             view.GetDescendantsOfType<RichTextView>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {
                 rv.IsEnabled = true;
                 rv.Focus(FocusState.Programmatic);
+                if(_touch)
+                {
+                    rv.CursorToEnd();
+                }
             });
             view.GetDescendantsOfType<MediaPlayerElement>().Where(rv => rv.GetDocumentView() == view).ToList().ForEach(rv =>
             {

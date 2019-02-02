@@ -297,7 +297,7 @@ _manipulator = null;
             e.Handled = await RegionSelected(e.GetPosition(MainPage.Instance));
         }
 
-        private void CursorToEnd()
+        public void CursorToEnd()
         {
             Document.GetText(TextGetOptions.None, out string text);
             Document.Selection.StartPosition = text.Length;
