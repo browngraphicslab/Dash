@@ -62,16 +62,19 @@ namespace Dash
                 video.TransportControls.Show();
                 video.TransportControls.Focus(FocusState.Programmatic);
             };
-            video.PointerExited  += (s, e) => video.TransportControls.Hide();
+            video.PointerExited += (s, e) =>
+            {
+                if (e.Pointer.PointerDeviceType != PointerDeviceType.Touch) video.TransportControls.Hide();
+            };
 
             ManipulationControlHelper _manipulator = null;
             video.Tapped         += (s, e) => video.TransportControls.Show();
             video.PointerPressed += (s, e) =>
             {
-                _manipulator = e.IsRightPressed() || !video.GetDocumentView().ViewModel.IsSelected ? new ManipulationControlHelper(video, true) : null;
-                e.Handled = true;
+                //_manipulator = e.IsRightPressed() || !video.GetDocumentView().ViewModel.IsSelected ? new ManipulationControlHelper(video, true) : null;
+                e.Handled = false;
             };
-            video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
+            //video.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((s, e) => _manipulator?.PointerMoved(s, e)), true);
 
             // setup bindings on the video
             SetupVideoBinding(video, docController, key);

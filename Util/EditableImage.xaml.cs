@@ -28,7 +28,7 @@ namespace Dash
     public partial class EditableImage 
     {
         private StateCropControl  _cropControl;
-        private AnnotationOverlay _annotationOverlay;
+        public AnnotationOverlay _annotationOverlay;
         private ImageController   _imgctrl;
 
         public DocumentController DataDocument   => (DataContext as DocumentViewModel).DataDocument;
@@ -85,6 +85,7 @@ namespace Dash
                 _annotationOverlay = new AnnotationOverlay(LayoutDocument);
                 _annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
                 XAnnotationGrid.Children.Add(_annotationOverlay);
+                _annotationOverlay.BindInkCanvas();
                 XAnnotationGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
             };
         }

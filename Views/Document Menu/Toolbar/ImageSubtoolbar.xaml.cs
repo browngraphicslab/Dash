@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -181,6 +182,17 @@ namespace Dash
             _currentImage?.SetRegionVisibility(Visibility.Collapsed);
             xToggleAnnotations.Label = "Hidden";
         }
+        private void XInkToggle_OnChecked(object sender, RoutedEventArgs e)
+        {
+            _currentImage._annotationOverlay.CurrentAnnotationType = AnnotationType.Ink;
+            xInkToggleIcon.Foreground = new SolidColorBrush(Colors.Black);
+        }
+
+        private void XInkToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _currentImage._annotationOverlay.CurrentAnnotationType = AnnotationType.Region;
+            xInkToggleIcon.Foreground = new SolidColorBrush(Colors.White);
+        }
 
         private ToolTip _toggle;
         private ToolTip _crop;
@@ -281,5 +293,6 @@ namespace Dash
             var modes = new Stretch[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill };
             _currentDocController?.SetField<TextController>(KeyStore.ImageStretchKey, modes[xScaleOptionsDropdown.SelectedIndex >= 0 ? xScaleOptionsDropdown.SelectedIndex : 0].ToString(), true);
         }
+
     }
 }
