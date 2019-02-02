@@ -413,6 +413,11 @@ namespace Dash
                 TouchInteractions.NumFingers++;
                 //if not already holding something, hold this doc!
                 if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this;
+                //make a link between held doc and this doc
+                else if (TouchInteractions.NumFingers == 2)
+                {
+                    this.ViewModel.DocumentController.Link(TouchInteractions.HeldDocument.ViewModel.DocumentController, LinkBehavior.Annotate);
+                }
             } 
         }
 
