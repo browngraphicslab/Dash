@@ -399,7 +399,7 @@ namespace Dash
             }
         }
         
-        private void this_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private async void this_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = true;
             _down     = e.GetCurrentPoint(MainPage.Instance.xCanvas).Position;
@@ -416,7 +416,19 @@ namespace Dash
                 //make a link between held doc and this doc 
                 else if (TouchInteractions.NumFingers == 2 && TouchInteractions.HeldDocument != this)
                 {
-                    var lastLinkDoc = this.ViewModel.DocumentController.Link(TouchInteractions.HeldDocument.ViewModel.DocumentController, LinkBehavior.Annotate);
+                    var dragDoc = TouchInteractions.HeldDocument.ViewModel.DocumentController;
+                    if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
+                    {
+                        dragDoc = await creatorFunc(TouchInteractions.HeldDocument);
+                    }
+                    //add link description to doc and if it isn't empty, have flag to show as popup when links followed
+                    var dropDoc = ViewModel.DocumentController;
+                    if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                    {
+                        dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, null);
+                    }
+
+                    var lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate);
                     MainPage.Instance.XDocumentDecorations.RebuildMenu();
                     MainPage.Instance.XDocumentDecorations.SetPositionAndSize();
                     MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(null, lastLinkDoc);
