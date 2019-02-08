@@ -35,6 +35,7 @@ namespace Dash
         private string                    _lastSizeRTFText = "";
         private Size                      _lastSizeAvailableSize = new Size();
         private bool                      _hackToIgnoreMeasuringWhenProcessingMarkdown = false;
+        private bool _doubleTapped = false;
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -291,6 +292,44 @@ _manipulator = null;
             
             return nearest;
         }
+
+        private async Task<bool> ExhibitBehaviors(KeyController behaviorKey)
+        {
+            var scripts = ViewModel?.DocumentController.GetBehaviors(behaviorKey);
+            if (scripts != null && scripts.Any())
+            {
+                using (UndoManager.GetBatchHandle())
+                {
+                    var args = new List<FieldControllerBase> { ViewModel.DocumentController };
+                    var tasks = new List<Task<(FieldControllerBase, ScriptErrorModel)>>(scripts.Count);
+                    foreach (var operatorController in scripts)
+                    {
+                        var task = ExecutionEnvironment.Run(operatorController, args, new DictionaryScope());
+                        if (!task.IsCompleted)
+                        {
+                            tasks.Add(task);
+                        }
+                    }
+
+                    if (tasks.Any())
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                }
+
+                return true;
+            }
+
+            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey) &&
+                !ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                //MenuFlyoutItemOpen_OnClick(null, null);
+                _doubleTapped = true;
+            }
+
+            return false;
+        }
+
 
         private async void this_Tapped(object sender, TappedRoutedEventArgs e)
         {
