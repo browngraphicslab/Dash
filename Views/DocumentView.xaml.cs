@@ -220,7 +220,7 @@ namespace Dash
         public async void MakeDocumentLink(Point where, DragDocumentModel dm)
         {
             DocumentController lastLinkDoc = null;
-            for (var index = 0; index < dm.DraggedDocuments.Count; index++)
+           for (var index = 0; index < dm.DraggedDocuments.Count; index++)
             {
                 var dragDoc = dm.DraggedDocuments[index];
                 if (KeyStore.RegionCreator.TryGetValue(dragDoc.DocumentType, out var creatorFunc) && creatorFunc != null)
@@ -413,6 +413,14 @@ namespace Dash
                 TouchInteractions.NumFingers++;
                 //if not already holding something, hold this doc!
                 if (TouchInteractions.HeldDocument == null) TouchInteractions.HeldDocument = this;
+                //make a link between held doc and this doc
+                else if (TouchInteractions.NumFingers == 2)
+                {
+                    var lastLinkDoc = this.ViewModel.DocumentController.Link(TouchInteractions.HeldDocument.ViewModel.DocumentController, LinkBehavior.Annotate);
+                    MainPage.Instance.XDocumentDecorations.RebuildMenu();
+                    MainPage.Instance.XDocumentDecorations.SetPositionAndSize();
+                    MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(null, lastLinkDoc);
+                }
             } 
         }
 
