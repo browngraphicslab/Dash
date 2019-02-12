@@ -19,8 +19,9 @@
     PointerExited="HideTooltip" 
     PointerPressed="HideTooltip"
     ManipulationMode="None"
-    UseLayoutRounding="False">
-<!--
+    UseLayoutRounding="False"
+    RightTapped="XMasterStack_OnRightTapped">
+    <!--
     <Grid x:Name="LayoutRoot" BorderThickness="0" RightTapped="XMasterStack_OnRightTapped">
         <Grid.Resources>
             <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
