@@ -88,10 +88,10 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0, 15, 15, 0" Spacing="10" Grid.Column="2">
-                <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0">
+                <Grid Name="xSearchBoxGrid" Visibility="Collapsed" Margin="0,0,0,0" x:FieldModifier="public">
                     <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
                 </Grid>
-                <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0"/>
+                <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="White" Padding="0" Margin="8 9 0 0" x:FieldModifier="public"/>
                 <StackPanel.Resources>
                     <Storyboard x:Name="xFadeAnimationIn">
                         <DoubleAnimation

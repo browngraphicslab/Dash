@@ -285,6 +285,7 @@ namespace Dash
             // Create an instance of SpeechRecognizer.
             var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
             await speechRecognizer.CompileConstraintsAsync();
+            //continually read for speech
             while (true)
             {
                 Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeAsync();
@@ -292,37 +293,52 @@ namespace Dash
                 Debug.WriteLine(text);
                 string[] words = text.Split(' ');
 
-                if (words.Length > 2 && words[0] == "hey" && words[1] == "dash")
+                //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
+                //delete selected docs and search
+                if (words.Length > 2 && words[0] == "hey" && 
+                    (words[1] == "dash" || words[1] == "josh" || words[1] == "dadash" || words[1] == "bash" || words[1] == "tash"))
                 {
-                    string command = words[1];
+                    string command = words[2];
                     switch (command)
                     {
+                        case "undo":
+                            UtilFunctions.Undo();
+                            break;
+                        case "redo":
+                        case "review":
+                            UtilFunctions.Redo();
+                            break;
+                        case "presentation":
+                            MainPage.Instance.xPresentationView.SetPresentationState(true);
+                            break;
+                        case "next":
+                            MainPage.Instance.xPresentationView.NextButton_Click(null, null);
+                            break;
+                        case "previous":
+                        case "back":
+                            MainPage.Instance.xPresentationView.BackButton_Click(null, null);
+                            break;
                         case "delete":
-
-                            break;
-                        case "collection":
-                            //TODO: add positions based on selection manager selected docs
-                            //ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
-                              //  where, size.Width, size.Height));
-                            break;
-                        case "group":
-
+                            SelectionManager.DeleteSelected();
                             break;
                         case "search":
-                            string searchTerm = text.Substring("hey dash search ".Length);
+                            string searchTerm = "";
+                            if (words.Length > 3)
+                            {
+                                searchTerm = string.Join(' ', words, 3, words.Length - 3);
+                            }
+
                             MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
-                            MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox.xAutoSuggestBox);
-                           /* if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
+                            MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox
+                                .xAutoSuggestBox);
+                            if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
                             {
                                 MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
                                 MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                                 MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
-                            }*/
-                        //TODO: results don't show up
+                            }
                             MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
-
-                        break;
-
+                            break;
                     }
                 }
 

@@ -239,7 +239,7 @@ namespace Dash
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        public void BackButton_Click(object sender, RoutedEventArgs e)
         {
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
@@ -263,11 +263,12 @@ namespace Dash
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
             if (LastSelectedIndex != -1)
             {
-                NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+                var doc = ((PresentationItemViewModel)xPinnedNodesListView.SelectedItem)?.Document;
+                if(doc != null) NavigateToDocument(doc);
             }
         }
 
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+        public void NextButton_Click(object sender, RoutedEventArgs e)
         {
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
@@ -291,7 +292,8 @@ namespace Dash
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+            var doc = ((PresentationItemViewModel)xPinnedNodesListView.SelectedItem)?.Document;
+            if(doc != null) NavigateToDocument(doc);
         }
 
         // ON TRASH CLICK: remove from viewmodel
