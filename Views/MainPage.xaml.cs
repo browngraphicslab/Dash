@@ -112,6 +112,8 @@ namespace Dash
 
             CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
             Window.Current.SetTitleBar(trickyTitleBar);
+
+            CollectionView.voiceCommands();
         }
 
         public DocumentController MiscellaneousFolder

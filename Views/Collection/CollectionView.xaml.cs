@@ -280,6 +280,42 @@ namespace Dash
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += ScriptEdit_OnClick;
         }
 
+        public static async void voiceCommands()
+        {
+            // Create an instance of SpeechRecognizer.
+            var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
+            await speechRecognizer.CompileConstraintsAsync();
+            while (true)
+            {
+                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeAsync();
+                string text = speechRecognitionResult.Text;
+                Debug.WriteLine(text);
+                string[] words = text.Split(' ');
+
+                if (words.Length > 1 && words[0] == "dash")
+                {
+                    string command = words[1];
+                    switch (command)
+                    {
+                        case "delete":
+
+                            break;
+                        case "collection":
+
+                            break;
+                        case "group":
+
+                            break;
+                        case "search":
+                            
+                            break;
+
+                    }
+                }
+
+            }
+        }
+
         public static async Task<String> getSpokenText()
         {
             try
