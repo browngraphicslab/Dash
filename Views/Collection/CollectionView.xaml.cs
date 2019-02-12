@@ -309,8 +309,19 @@ namespace Dash
 
                             break;
                         case "search":
-                            
-                            break;
+                            string searchTerm = text.Substring("hey dash search ".Length);
+                            MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
+                            MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox.xAutoSuggestBox);
+                           /* if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
+                            {
+                                MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
+                                MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                                MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                            }*/
+                        //TODO: results don't show up
+                            MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+
+                        break;
 
                     }
                 }
