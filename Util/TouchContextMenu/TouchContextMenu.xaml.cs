@@ -180,10 +180,10 @@ namespace Dash
                 //TODO: create collection from _marqueeDocs
                 ArrayList<DocumentController> docs = new ArrayList<DocumentController>();
                 ArrayList<DocumentViewModel> documentViewModels = new ArrayList<DocumentViewModel>();
-                foreach (DocumentView view in _marqueeDocs)
+                foreach (DocumentViewModel view in SelectionManager.SelectedDocViewModels)
                 {
-                    docs.Add(view.ViewModel.DocumentController);
-                    documentViewModels.Add(view.ViewModel);
+                    docs.Add(view.DocumentController);
+                    documentViewModels.Add(view);
                 }
 
                 //create collecion with these docs

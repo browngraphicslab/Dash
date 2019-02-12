@@ -292,7 +292,7 @@ namespace Dash
                 Debug.WriteLine(text);
                 string[] words = text.Split(' ');
 
-                if (words.Length > 1 && words[0] == "dash")
+                if (words.Length > 2 && words[0] == "hey" && words[1] == "dash")
                 {
                     string command = words[1];
                     switch (command)
@@ -301,7 +301,9 @@ namespace Dash
 
                             break;
                         case "collection":
-
+                            //TODO: add positions based on selection manager selected docs
+                            //ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
+                              //  where, size.Width, size.Height));
                             break;
                         case "group":
 
