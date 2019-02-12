@@ -238,7 +238,8 @@ namespace Dash
                 SelectionManager.Select(draggedView, false);
             }
             UndoManager.StartBatch();
-
+            
+        
             var parents = draggedView.ViewModel.IsSelected ? new DocumentView[]{ } : draggedView.GetAncestorsOfType<DocumentView>();
             foreach (var parent in parents)
             {
@@ -260,7 +261,7 @@ namespace Dash
 
             _dragViews = _selectedDocViews.Contains(draggedView) ? _selectedDocViews.ToList() : new DocumentView[] { draggedView }.ToList();
 
-            if (draggedView.ViewModel.DocumentController.GetIsAdornment() && !SelectedDocViewModels.Contains(draggedView.ViewModel)) // if dragging an adornment, drag all siblings that overlap it 
+            if (draggedView.ViewModel.DocumentController.GetIsAdornment() && (!SelectedDocViewModels.Contains(draggedView.ViewModel) || pe.Pointer.PointerDeviceType == PointerDeviceType.Touch)) // if dragging an adornment, drag all siblings that overlap it 
             {
                 var rect         = draggedView.ViewModel.LayoutDocument.GetBounds();
                 var siblingViews = draggedView.GetFirstAncestorOfType<Canvas>()?.Children.Select(c => c.GetFirstDescendantOfType<DocumentView>());

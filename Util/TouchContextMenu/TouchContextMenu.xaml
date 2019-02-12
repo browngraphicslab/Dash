@@ -12,8 +12,8 @@
     PointerPressed="TouchContextMenu_OnPointerPressed">
 
     <Grid>
-        <userControl:RadialMenu x:Name="xRadialMenu" IsHitTestVisible="True" IsEnabled="True" Diameter="250" StartAngle="-22.5" Background="{StaticResource DashDarkBlue}" BorderBrush="{StaticResource DashDarkBlue}" BackgroundEllipseFill="{StaticResource DashDarkBlueColor}" CenterButtonBackgroundFill="{StaticResource DashLightBlue}" 
-                                CenterButtonIcon="&#128736;"  IsCenterButtonNavigationEnabled="False" CenterButtonForeground="White" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" OuterThickness="15" >
+        <userControl:RadialMenu x:Name="xRadialMenu" IsHitTestVisible="True" Visibility="Collapsed" IsEnabled="True" Diameter="250" StartAngle="-22.5" Background="{StaticResource DashDarkBlue}" BorderBrush="{StaticResource DashDarkBlue}" BackgroundEllipseFill="{StaticResource DashDarkBlueColor}" CenterButtonBackgroundFill="{StaticResource DashLightBlue}" 
+                                CenterButtonIcon="&#128736;"  IsCenterButtonNavigationEnabled="False" CenterButtonTapped="OnCenterButtonTapped" CenterButtonForeground="White" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" OuterThickness="15" >
             <userControl:RadialMenu.Buttons>
                 <components:RadialMenuButton x:Name="xCopy" Label="Copy" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE8C8;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XCopy_OnInnerArcPressed"/>
                 <components:RadialMenuButton x:Name="xInstance" Label="Make Instance" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE923;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XInstance_OnInnerArcPressed" />
@@ -22,7 +22,21 @@
                 <!-- <components:RadialMenuButton x:Name="xFitHeight" Label="Fit Height" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE70E;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XFitHeight_OnInnerArcPressed"/>
                 <components:RadialMenuButton x:Name="xFitWidth" Label="Fit Width" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE76B;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XFitWidth_OnInnerArcPressed"/> -->
                 <components:RadialMenuButton x:Name="xPin" Label="Pin to Pres" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE707;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XPin_OnInnerArcPressed" />
-               <!-- <components:RadialMenuButton x:Name="xSize" Label="Size" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE740;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XSize_OnInnerArcPressed" />-->
+
+
+<!-- <components:RadialMenuButton x:Name="xSize" Label="Size" IconFontFamily="Segoe MDL2 Assets" Icon="&#xE740;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XSize_OnInnerArcPressed" />-->
+            </userControl:RadialMenu.Buttons>
+        </userControl:RadialMenu>
+
+        <userControl:RadialMenu x:Name="xMarqueeMenu" Visibility="Collapsed" IsHitTestVisible="True" IsEnabled="True" Diameter="250" StartAngle="-22.5" Background="{StaticResource DashDarkBlue}" BorderBrush="{StaticResource DashDarkBlue}" BackgroundEllipseFill="{StaticResource DashDarkBlueColor}" CenterButtonBackgroundFill="{StaticResource DashLightBlue}" 
+                                CenterButtonIcon="&#128736;"  CenterButtonTapped="OnCenterButtonTapped" IsCenterButtonNavigationEnabled="False" CenterButtonForeground="White" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" OuterThickness="15" >
+            <userControl:RadialMenu.Buttons>
+                <components:RadialMenuButton x:Name="xFreeform" Label="Freeform" Visibility="Visible"  IconFontFamily="Segoe MDL2 Assets" Icon="&#xE923;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XFreeform_OnInnerArcPressed" />
+                <components:RadialMenuButton x:Name="xGrid" Label="Grid" Visibility="Visible"  IconFontFamily="Segoe MDL2 Assets" Icon="&#xF0E2;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XGrid_OnInnerArcPressed" />
+                <components:RadialMenuButton x:Name="xTimeline" Label="Timeline" Visibility="Visible"  IconFontFamily="Segoe MDL2 Assets" Icon="&#xF182;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XTimeline_OnInnerArcPressed" />
+                <components:RadialMenuButton x:Name="xTreeView" Label="TreeView" Visibility="Visible"  IconFontFamily="Segoe MDL2 Assets" Icon="&#xF168;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XTreeView_OnInnerArcPressed" />
+                <components:RadialMenuButton x:Name="xPage" Label="Page" Visibility="Visible"  IconFontFamily="Segoe MDL2 Assets" Icon="&#xF56E;" IconForegroundBrush="{StaticResource DashDarkBlue}" Foreground="{StaticResource DashDarkBlue}" InnerArcPressed="XPage_OnInnerArcPressed" />
+
             </userControl:RadialMenu.Buttons>
         </userControl:RadialMenu>
     </Grid>

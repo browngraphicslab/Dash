@@ -56,9 +56,9 @@ namespace Dash
             }
         }
 
-        public static void ShowMenu(Point point, DocumentView view = null)
+        public static void ShowMenu(Point point, DocumentView view = null, CollectionFreeformView col = null)
         {
-            MainPage.Instance.xTouchMenu.ShowMenu(point);
+            MainPage.Instance.xTouchMenu.ShowMenu(point, col);
         }
 
         public static void HideMenu()
@@ -66,11 +66,15 @@ namespace Dash
             MainPage.Instance.xTouchMenu.HideMenuAsync();
         }
 
-        public static void TryShowMenu(Point position)
+        public static void TryShowMenu(Point position, CollectionFreeformView marqueeCol = null)
         {
-            if ((NumFingers == 2 && HeldDocument != null))
+            if ((NumFingers == 2 && HeldDocument != null) || (marqueeCol?._isMarqueeActive ?? false))
             {
-                ShowMenu(position, HeldDocument);
+                ShowMenu(position, HeldDocument, marqueeCol);
+            }
+            else
+            {
+                //HideMenu();
             }
         }
 

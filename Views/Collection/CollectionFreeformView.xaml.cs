@@ -875,9 +875,9 @@ namespace Dash
         #endregion
 
         #region Marquee Select
-        MarqueeInfo _marquee;
+        public MarqueeInfo _marquee;
         public Point _marqueeAnchor;
-        bool _isMarqueeActive;
+        public bool _isMarqueeActive;
 
 
         /// <summary>
@@ -910,6 +910,21 @@ namespace Dash
                 TouchInteractions.NumFingers++;
                 TouchInteractions.isPanning = false;
                 args.Handled = true;
+                if (_isMarqueeActive && _marquee != null)
+                {
+                    var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                        GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
+                    var marqueeDocs = DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height)));
+
+                    if (marqueeDocs.Any())
+                    {
+                        TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position, this);
+                    }
+                    else
+                    {
+                        TouchInteractions.HideMenu();
+                    }
+                }
                 //CASE WHERE DOC IS HELD & background is tapped -> launch radial menu
                 TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
             }
