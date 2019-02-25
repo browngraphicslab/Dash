@@ -147,6 +147,8 @@ namespace Dash
         public static KeyController GoToRegionLinkKey                    = KeyController.Get("GotoRegionLink");
         public static KeyController PresentationTitleKey                 = KeyController.Get("PresTitle");
         public static KeyController PresentationViewVisibleKey           = KeyController.Get("_Presentation Active");
+        public static KeyController PresentationVisibleKey               = KeyController.Get("_Presentation Item Visible At Start");
+        public static KeyController PresentationFadeKey                  = KeyController.Get("_Presentation Item Fade After Presented");
         public static KeyController PresLinesVisibleKey                  = KeyController.Get("_Presentation Lines Visible");
         public static KeyController PresLoopOnKey                        = KeyController.Get("_Presentation Loop Engaged");
         public static KeyController PresTextRenamedKey                   = KeyController.Get("_Presentation Textbox Renamed");
@@ -186,6 +188,7 @@ namespace Dash
         public static KeyController SearchOriginKey                      = KeyController.Get("SearchOriginDocument");
         public static KeyController SearchIndexKey                       = KeyController.Get("SearchIndex");
         public static KeyController ScriptSourceKey                      = KeyController.Get("ScriptSource");
+        public static KeyController OpacityKey                           = KeyController.Get("Opacity");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {
