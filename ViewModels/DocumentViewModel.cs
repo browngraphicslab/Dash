@@ -35,12 +35,6 @@ namespace Dash
                 LayoutDocument.SetField<NumberController>(KeyStore.IconTypeFieldKey, (int)(IconTypeEnum.Document), true);
             }
         }
-        ~DocumentViewModel()
-        {
-            //System.Diagnostics.Debug.WriteLine("Finalize DocumentViewModel " + DocumentController?.Tag + " " + _lastLayout?.Tag);
-            //System.Diagnostics.Debug.WriteLine(" ");
-            _content = null;
-        }
 
         public DocumentController DocumentController => _documentController;
         public DocumentController DataDocument       => DocumentController.GetDataDocument();
