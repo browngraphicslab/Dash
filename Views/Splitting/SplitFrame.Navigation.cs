@@ -54,6 +54,13 @@ namespace Dash
 
         private void AnimateToDocument(DocumentController document)
         {
+            var parent = document.GetRegionDefinition();
+            if (parent != null)
+            {
+                var region = document;
+                document = parent;
+                document.GotoRegion(region);
+            }
             var position = document.GetPosition();
             var center = position;
             var size   = document.GetActualSize();
@@ -124,6 +131,7 @@ namespace Dash
         public static bool TryNavigateToDocument(DocumentController document, bool useDataDoc = false)
         {
             var workspace = ActiveFrame.ViewModel.DocumentController;
+            var parent = document.GetRegionDefinition() ?? document;
             if (useDataDoc)
             {
                 var dataDoc = document.GetDataDocument();
@@ -137,7 +145,7 @@ namespace Dash
             else
             {
                 if (!(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
-                          ?.Contains(document) ?? false))
+                          ?.Contains(parent) ?? false))
                 {
                     return false;
                 }
