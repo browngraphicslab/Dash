@@ -232,6 +232,13 @@ namespace Dash
                     IsPresentationPlaying = true;
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
                     xPlayStopButton.Label = "Stop";
+
+                    if (xPinnedNodesListView.SelectedIndex + 1 < xPinnedNodesListView.Items.Count &&
+                        (((PresentationItemViewModel)xPinnedNodesListView.Items[xPinnedNodesListView.SelectedIndex + 1])
+                             ?.Document.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false))
+                    {
+                        this.NextButton_Click(null, null);
+                    }
                 }
             }
 
@@ -316,6 +323,12 @@ namespace Dash
                 }
             }
 
+            if (xPinnedNodesListView.SelectedIndex + 1 < xPinnedNodesListView.Items.Count &&
+                (((PresentationItemViewModel)xPinnedNodesListView.Items[xPinnedNodesListView.SelectedIndex + 1])
+                     ?.Document.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false))
+            {
+                this.NextButton_Click(null, null);
+            }
         }
 
 
@@ -1024,6 +1037,18 @@ namespace Dash
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
             itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, false, true);
+        }
+
+        private void GroupUnchecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, false, true);
+        }
+
+        private void GroupChecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, true, true);
         }
     }
 }
