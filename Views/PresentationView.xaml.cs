@@ -200,6 +200,13 @@ namespace Dash
                     //_startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
                     //_startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
                     //SplitFrame.OpenInActiveFrame(_startCollection);
+
+                    foreach (PresentationItemViewModel item in xPinnedNodesListView.Items)
+                    {
+                        item.Document.SetField<BoolController>(KeyStore.HiddenKey, false, true);
+
+                        item.Document.SetField<NumberController>(KeyStore.OpacityKey, 1, true);
+                    }
                 }
                 else
                 {
@@ -207,6 +214,13 @@ namespace Dash
 
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     xPinnedNodesListView.SelectedIndex = 0;
+                    foreach (PresentationItemViewModel item in xPinnedNodesListView.Items)
+                    {
+                        if (item.Document.GetField<BoolController>(KeyStore.PresentationVisibleKey)?.Data ?? false)
+                        {
+                            item.Document.SetField<BoolController>(KeyStore.HiddenKey, true, true);
+                        }
+                    }
 
 
                     _startCollection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
@@ -292,7 +306,18 @@ namespace Dash
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
             NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+
+            for (var i = xPinnedNodesListView.SelectedIndex - 1; i >= 0; i--)
+            {
+                var doc = ((PresentationItemViewModel)xPinnedNodesListView.Items[i]).Document;
+                if (doc.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false)
+                {
+                    doc.SetField<NumberController>(KeyStore.OpacityKey, 0.3, true);
+                }
+            }
+
         }
+
 
         // ON TRASH CLICK: remove from viewmodel
         private void DeletePin(object sender, RoutedEventArgs e)
@@ -347,6 +372,8 @@ namespace Dash
         // helper method for moving the mainpage screen
         private static void NavigateToDocument(DocumentController dc, bool zoom = false)
         {
+            dc.SetField<BoolController>(KeyStore.HiddenKey, false, true);
+
             if (zoom)
             {
                 SplitFrame.OpenInActiveFrame(dc);
@@ -358,8 +385,7 @@ namespace Dash
                 {
                     var tree = DocumentTree.MainPageTree;
                     var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(dc));
-                    if (docNode != null
-                    ) //TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
+                    if (docNode != null) //TODO This doesn't handle documents in collections that aren't in the document "visual tree", so diff workspaces doesn't really work (also change in AnnotationManager)
                     {
                         SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
                     }
@@ -974,6 +1000,30 @@ namespace Dash
         private void XDeletePresentationButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             ViewModel.DeletePresentation(ViewModel.CurrPres);
+        }
+
+        private void ViewChecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationVisibleKey, true, true);
+        }
+
+        private void ViewUnchecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationVisibleKey, false, true);
+        }
+
+        private void FadeChecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, true, true);
+        }
+
+        private void FadeUnchecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, false, true);
         }
     }
 }
