@@ -10,6 +10,7 @@ using Windows.Media.MediaProperties;
 using Windows.Media.SpeechSynthesis;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -296,9 +297,10 @@ namespace Dash
                 //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
                 //delete selected docs and search
                 if (words.Length > 2 && words[0] == "hey" && 
-                    (words[1] == "dash" || words[1] == "josh" || words[1] == "dadash" || words[1] == "bash" || words[1] == "tash"))
+                    (words[1] == "dash" || words[1] == "josh" || words[1] == "dadash" || words[1] == "bash" || words[1] == "tash" || words[1] == "dad"))
                 {
                     string command = words[2];
+                    var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
                     switch (command)
                     {
                         case "undo":
@@ -306,6 +308,7 @@ namespace Dash
                             break;
                         case "redo":
                         case "review":
+                        case "reido":
                             UtilFunctions.Redo();
                             break;
                         case "presentation":
@@ -319,7 +322,10 @@ namespace Dash
                             MainPage.Instance.xPresentationView.BackButton_Click(null, null);
                             break;
                         case "delete":
-                            SelectionManager.DeleteSelected();
+                            if (collection._marquee != null)
+                                collection?.TriggerActionFromSelection(VirtualKey.Delete, true);
+                            else
+                                SelectionManager.DeleteSelected();
                             break;
                         case "search":
                             string searchTerm = "";
@@ -339,6 +345,14 @@ namespace Dash
                             }
                             MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
                             break;
+                        case "collection":
+                            if(collection._marquee != null)
+                                collection?.TriggerActionFromSelection(VirtualKey.C, true);
+                            break;
+                        case "group":
+                           if (collection._marquee != null)
+                                collection?.TriggerActionFromSelection(VirtualKey.G, true);
+                           break;
                     }
                 }
 
