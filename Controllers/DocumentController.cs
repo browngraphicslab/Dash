@@ -565,11 +565,14 @@ namespace Dash
 
                 if (settingProto)
                 {
-                    Debug.Assert(field is DocumentController);
-                    var prototype = (DocumentController)field;
-                    Debug.Assert(!prototype._delegates.Contains(this));
-                    prototype._delegates.Add(this);
-                    prototype.PrototypeFieldUpdated += OnPrototypeFieldUpdated;
+                    if (field is DocumentController)
+                    {
+                        Debug.Assert(field is DocumentController);
+                        var prototype = (DocumentController)field;
+                        Debug.Assert(!prototype._delegates.Contains(this));
+                        prototype._delegates.Add(this);
+                        prototype.PrototypeFieldUpdated += OnPrototypeFieldUpdated;
+                    }
                 }
             }
             else

@@ -63,6 +63,9 @@ namespace Dash
             var deleteBtn = new MenuFlyoutItem();
             deleteBtn.Text = "Delete";
 
+            var pinButton = new MenuFlyoutItem();
+            pinButton.Text = "Pin to Presentation";
+
             var visOnScrollON = new MenuFlyoutItem();
             var visOnScrollOFF = new MenuFlyoutItem();
             visOnScrollON.Text = "Unpin Annotation";
@@ -84,6 +87,10 @@ namespace Dash
             {
                 ParentOverlay.RegionDocsList.Remove(region);
             };
+            pinButton.Click += (s, e) =>
+            {
+                MainPage.Instance.xPresentationView.PinToPresentation(RegionDocumentController);
+            };
             visOnScrollON.Click += VisOnScrollOnOnClick;
             visOnScrollOFF.Click += VisOnScrollOnOnClick;
             regionGraphic.ContextFlyout = flyout;
@@ -95,6 +102,7 @@ namespace Dash
                 var item = allVisible ? visOnScrollON : visOnScrollOFF;
                 flyout.Items?.Clear();
                 flyout.Items?.Add(deleteBtn);
+                flyout.Items?.Add(pinButton);
                 //flyout.Items?.Add(item);
                 flyout.ShowAt(regionGraphic as FrameworkElement);
             };

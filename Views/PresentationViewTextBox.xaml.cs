@@ -14,8 +14,8 @@ namespace Dash
 
         public bool HasBeenCustomRenamed
         {
-            get => ViewModel.Document.GetField<BoolController>(KeyStore.PresTextRenamedKey)?.Data ?? false;
-            set => ViewModel.Document.SetField<BoolController>(KeyStore.PresTextRenamedKey, value, true);
+            get => ViewModel.Parent.GetField<BoolController>(KeyStore.PresTextRenamedKey)?.Data ?? false;
+            set => ViewModel.Parent.SetField<BoolController>(KeyStore.PresTextRenamedKey, value, true);
         }
 
         public PresentationViewTextBox()
@@ -35,7 +35,7 @@ namespace Dash
 
         private void AddPresTitleListener(object sender, RoutedEventArgs e)
         {
-            ViewModel?.Document.AddFieldUpdatedListener(KeyStore.PresentationTitleKey, OnPresTitleKeyUpdated);
+            ViewModel?.Parent.AddFieldUpdatedListener(KeyStore.PresentationTitleKey, OnPresTitleKeyUpdated);
         }
 
         private void OnPresTitleKeyUpdated(DocumentController dc, DocumentController.DocumentFieldUpdatedEventArgs dArgs)
@@ -61,7 +61,7 @@ namespace Dash
             if (!HasBeenCustomRenamed)
             {
                 HasBeenCustomRenamed = true;
-                var dc = ViewModel.Document;
+                var dc = ViewModel.Parent;
                 dc.SetField<TextController>(KeyStore.PresentationTitleKey, Textbox.Text, true);
                 SetCustomTitleBinding(dc);
             }
@@ -80,7 +80,7 @@ namespace Dash
         private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (!(args.NewValue is PresentationItemViewModel vm)) return;
-            var dc = vm.Document;
+            var dc = vm.Parent;
 
             string currentTitle = dc.GetDereferencedField(KeyStore.TitleKey, null)?.GetValue().ToString();
 
@@ -96,7 +96,7 @@ namespace Dash
         public void ResetTitle()
         {
             HasBeenCustomRenamed = false;
-            SetTitleBinding(ViewModel.Document);
+            SetTitleBinding(ViewModel.Parent);
         }
 
         private void SetTitleBinding(DocumentController dc)

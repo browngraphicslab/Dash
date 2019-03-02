@@ -571,18 +571,22 @@ namespace Dash
             var startMatrix = _transformBeingAnimated.Matrix;
 
             var scaleMatrix = scale.GetMatrix();
+            var group = new TransformGroup();
+            group.Children.Add(scale);
+            group.Children.Add(translate);
+            var endMatrix = group.Value;
 
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
             //the higher number, the more it xooms, but doesn't actually change final view 
-            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, scaleMatrix.M11, "MatrixTransform.Matrix.M11", duration);
-            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, scaleMatrix.M22, "MatrixTransform.Matrix.M22", duration);
+            var zoomAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.M11, endMatrix.M11, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.M22, endMatrix.M22, "MatrixTransform.Matrix.M22", duration);
 
             _storyboard1.Children.Add(zoomAnimationX);
             _storyboard1.Children.Add(zoomAnimationY);
 
             // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, translate.X + scaleMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, translate.Y + scaleMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetX, endMatrix.OffsetX, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startMatrix.OffsetY, endMatrix.OffsetY, "MatrixTransform.Matrix.OffsetY", duration);
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);

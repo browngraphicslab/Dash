@@ -112,11 +112,6 @@ namespace Dash
             }
         }
 
-        ~CollectionViewModel()
-        {
-            //Debug.WriteLine("FINALIZING CollectionViewModel");
-        }
-
         /// <summary>
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true

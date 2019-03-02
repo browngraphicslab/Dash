@@ -54,12 +54,27 @@ namespace Dash
 
         private void AnimateToDocument(DocumentController document)
         {
-            var center = document.GetPosition();
+            var parent = document.GetRegionDefinition();
+            if (parent != null)
+            {
+                var region = document;
+                document = parent;
+                document.GotoRegion(region);
+            }
+            var position = document.GetPosition();
+            var center = position;
             var size   = document.GetActualSize();
             center.X += (size.X - ActualWidth) / 2;
             center.Y += (size.Y - ActualHeight) / 2;
-            center.X = -center.X;
-            center.Y = -center.Y;
+            center.X *= -1;
+            center.Y *= -1;
+
+            double widthRatio = ActualWidth / size.X;
+            double heightRatio = ActualHeight / size.Y;
+            widthRatio = Math.Clamp(widthRatio, 0.2, 6);
+            heightRatio = Math.Clamp(heightRatio, 0.2, 6);
+            double scale = Math.Min(widthRatio, heightRatio);
+            scale *= 0.9;
 
             var col = ViewModel.Content as CollectionView;
             var ffv = col?.CurrentView as CollectionFreeformView;
@@ -69,8 +84,10 @@ namespace Dash
                 Y = center.Y
             }, new ScaleTransform
             {
-                ScaleX = 1,
-                ScaleY = 1
+                CenterX = position.X + size.X / 2,
+                CenterY = position.Y + size.Y / 2,
+                ScaleX = scale,
+                ScaleY = scale
             });
         }
 
@@ -114,6 +131,7 @@ namespace Dash
         public static bool TryNavigateToDocument(DocumentController document, bool useDataDoc = false)
         {
             var workspace = ActiveFrame.ViewModel.DocumentController;
+            var parent = document.GetRegionDefinition() ?? document;
             if (useDataDoc)
             {
                 var dataDoc = document.GetDataDocument();
@@ -127,7 +145,7 @@ namespace Dash
             else
             {
                 if (!(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
-                          ?.Contains(document) ?? false))
+                          ?.Contains(parent) ?? false))
                 {
                     return false;
                 }

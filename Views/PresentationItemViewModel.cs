@@ -21,6 +21,7 @@ namespace Dash
         }
 
         public DocumentController Document { get; }
+        public DocumentController Parent => Document.GetRegionDefinition() ?? Document;
 
         private FontWeight _fontWeight;
         public FontWeight FontWeight
