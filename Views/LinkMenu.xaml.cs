@@ -337,7 +337,7 @@ namespace Dash
         }
 
         //private void XInContext_OnToggled(object sender, RoutedEventArgs e)
-        //{
+        //{ 
         //    //var toggled = (sender as ToggleSwitch)?.IsOn;
         //    //var linkDoc = (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkToKey).FirstOrDefault() ??
         //    //              (DataContext as DocumentView).ViewModel.DataDocument.GetLinks(KeyStore.LinkFromKey).FirstOrDefault();

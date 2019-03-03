@@ -30,6 +30,7 @@ namespace Dash
         public UserControl         UserControl => this;
         public CollectionViewModel ViewModel   => DataContext as CollectionViewModel;
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
+        public static string last_spoken;
 
         public CollectionView()
         {
@@ -293,6 +294,7 @@ namespace Dash
                 string text = speechRecognitionResult.Text;
                 Debug.WriteLine(text);
                 string[] words = text.Split(' ');
+                last_spoken = text;
 
                 //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
                 //delete selected docs and search
@@ -303,7 +305,7 @@ namespace Dash
                         command_at = Array.IndexOf(words, "haydash") + 1;
                     if (at == 0)
                         command_at = Array.IndexOf(words, "hiddush") + 1;
-                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn"};
+                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun" };
                     if (at < words.Length && (dashWords.Contains(words[at])|| words.Contains("haydash") || words.Contains("hiddush")))
                     {
                         string command;
@@ -312,6 +314,7 @@ namespace Dash
                         else
                             command = words[command_at];
                         var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
+                        string searchTerm = "";
                         switch (command)
                         {
                             case "undo":
@@ -340,7 +343,6 @@ namespace Dash
                                     SelectionManager.DeleteSelected();
                                 break;
                             case "search":
-                                string searchTerm = "";
                                 if (words.Length > 3)
                                 {
                                     searchTerm = string.Join(' ', words, command_at + 1, words.Length - command_at - 1);
@@ -357,6 +359,19 @@ namespace Dash
                                 }
 
                                 MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                                break;
+                            case "find":
+                                if (words.Length > 3)
+                                {
+                                    searchTerm = string.Join(' ', words, command_at + 1, words.Length - command_at - 1);
+                                }
+
+                                var results = Search.Parse(searchTerm);
+                                if (results.Count != 0)
+                                {
+                                    DocumentController result = results.First().ViewDocument;
+                                    SplitFrame.TryNavigateToDocument(result);
+                                }
                                 break;
                             case "collection":
                                 if (collection._marquee != null)

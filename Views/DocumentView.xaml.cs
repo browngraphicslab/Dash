@@ -443,7 +443,10 @@ namespace Dash
                     var lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate);
                     MainPage.Instance.XDocumentDecorations.RebuildMenu();
                     MainPage.Instance.XDocumentDecorations.SetPositionAndSize();
-                    MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(null, lastLinkDoc);
+                    //TODO: finish and fix this!
+                    string text = CollectionView.last_spoken;
+                    Debug.WriteLine("link = " + text);
+                    MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(text, lastLinkDoc);
                 }
             } 
         }
