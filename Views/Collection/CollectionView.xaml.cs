@@ -296,65 +296,79 @@ namespace Dash
 
                 //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
                 //delete selected docs and search
-                if (words.Length > 2 && words[0] == "hey" && 
-                    (words[1] == "dash" || words[1] == "josh" || words[1] == "dadash" || words[1] == "bash" || words[1] == "tash" || words[1] == "dad"))
-                {
-                    string command = words[2];
-                    var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
-                    switch (command)
+                if (words.Length > 2 && (words.Contains("hey") || words.Contains("haydash") || words.Contains("hiddush"))){ 
+                    int at = Array.IndexOf(words, "hey") + 1;
+                    int command_at = at + 1;
+                    if (at == 0)
+                        command_at = Array.IndexOf(words, "haydash") + 1;
+                    if (at == 0)
+                        command_at = Array.IndexOf(words, "hiddush") + 1;
+                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn"};
+                    if (at < words.Length && (dashWords.Contains(words[at])|| words.Contains("haydash") || words.Contains("hiddush")))
                     {
-                        case "undo":
-                            UtilFunctions.Undo();
-                            break;
-                        case "redo":
-                        case "review":
-                        case "reido":
-                            UtilFunctions.Redo();
-                            break;
-                        case "presentation":
-                            MainPage.Instance.xPresentationView.SetPresentationState(true);
-                            break;
-                        case "next":
-                            MainPage.Instance.xPresentationView.NextButton_Click(null, null);
-                            break;
-                        case "previous":
-                        case "back":
-                            MainPage.Instance.xPresentationView.BackButton_Click(null, null);
-                            break;
-                        case "delete":
-                            if (collection._marquee != null)
-                                collection?.TriggerActionFromSelection(VirtualKey.Delete, true);
-                            else
-                                SelectionManager.DeleteSelected();
-                            break;
-                        case "search":
-                            string searchTerm = "";
-                            if (words.Length > 3)
-                            {
-                                searchTerm = string.Join(' ', words, 3, words.Length - 3);
-                            }
+                        string command;
+                        if (command_at >= words.Length)
+                            command = "";
+                        else
+                            command = words[command_at];
+                        var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
+                        switch (command)
+                        {
+                            case "undo":
+                            case "do":
+                                UtilFunctions.Undo();
+                                break;
+                            case "redo":
+                            case "review":
+                            case "reido":
+                                UtilFunctions.Redo();
+                                break;
+                            case "presentation":
+                                MainPage.Instance.xPresentationView.SetPresentationState(true);
+                                break;
+                            case "next":
+                                MainPage.Instance.xPresentationView.NextButton_Click(null, null);
+                                break;
+                            case "previous":
+                            case "back":
+                                MainPage.Instance.xPresentationView.BackButton_Click(null, null);
+                                break;
+                            case "delete":
+                                if (collection._marquee != null)
+                                    collection?.TriggerActionFromSelection(VirtualKey.Delete, true);
+                                else
+                                    SelectionManager.DeleteSelected();
+                                break;
+                            case "search":
+                                string searchTerm = "";
+                                if (words.Length > 3)
+                                {
+                                    searchTerm = string.Join(' ', words, command_at + 1, words.Length - command_at - 1);
+                                }
 
-                            MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
-                            MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox
-                                .xAutoSuggestBox);
-                            if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
-                            {
-                                MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
-                                MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                                MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
+                                MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox
+                                    .xAutoSuggestBox);
+                                if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
+                                {
+                                    MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
+                                    MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                                    MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                                }
+
                                 MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
-                            }
-                            MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
-                            break;
-                        case "collection":
-                            if(collection._marquee != null)
-                                collection?.TriggerActionFromSelection(VirtualKey.C, true);
-                            break;
-                        case "group":
-                           if (collection._marquee != null)
-                                collection?.TriggerActionFromSelection(VirtualKey.G, true);
-                           break;
-                    }
+                                break;
+                            case "collection":
+                                if (collection._marquee != null)
+                                    collection?.TriggerActionFromSelection(VirtualKey.C, true);
+                                break;
+                            case "group":
+                                if (collection._marquee != null)
+                                    collection?.TriggerActionFromSelection(VirtualKey.G, true);
+                                break;
+                        }
                 }
+            }
 
             }
         }
