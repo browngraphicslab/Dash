@@ -108,7 +108,7 @@ namespace Dash
                 e.Handled = true;
             }
 
-            foreach (var handle in new[] {
+            foreach (var handle in new(FrameworkElement, SplitDirection)[] {
                 (xTopLeftResizeControl, SplitDirection.InPlace), (xTopResizeControl, SplitDirection.Up), (xTopRightResizeControl, SplitDirection.InPlace),
                 (xLeftResizeControl, SplitDirection.Left), (xRightResizeControl, SplitDirection.Right),
                 (xBottomLeftResizeControl, SplitDirection.InPlace), (xBottomRightResizeControl, SplitDirection.InPlace), (xBottomResizeControl, SplitDirection.Down) })

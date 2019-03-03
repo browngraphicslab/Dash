@@ -32,7 +32,8 @@
         <MenuFlyout x:Name="xMenuFlyout" Opening="xMenuFlyout_Opening"/>
     </UserControl.ContextFlyout>
 
-    <ContentPresenter x:Name="xDocContentPresenter" Content="{Binding Content}" Background="Transparent" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}">
+    <ContentPresenter x:Name="xDocContentPresenter" Content="{Binding Content}" Background="Transparent" BorderBrush="{Binding SearchHighlightBrush}" BorderThickness="{Binding SearchHighlightState}"
+                      CornerRadius="5">
         <ContentPresenter.RenderTransform>
             <MatrixTransform x:Name="xContentTransform"/>
         </ContentPresenter.RenderTransform>
