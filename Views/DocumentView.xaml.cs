@@ -439,14 +439,12 @@ namespace Dash
                     {
                         dropDoc = await KeyStore.RegionCreator[dropDoc.DocumentType](this, null);
                     }
-
-                    var lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate);
+                    //link title is the last text spoken
+                    string text = CollectionView.last_spoken;
+                    var lastLinkDoc = dragDoc.Link(dropDoc, LinkBehavior.Annotate, specTitle: text == "" ? null : text);
                     MainPage.Instance.XDocumentDecorations.RebuildMenu();
                     MainPage.Instance.XDocumentDecorations.SetPositionAndSize();
-                    //TODO: finish and fix this!
-                    string text = CollectionView.last_spoken;
-                    Debug.WriteLine("link = " + text);
-                    MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(text, lastLinkDoc);
+                    if(text == "") { MainPage.Instance.XDocumentDecorations.OpenNewLinkMenu(null, lastLinkDoc); }
                 }
             } 
         }

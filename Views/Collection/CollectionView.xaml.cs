@@ -305,7 +305,7 @@ namespace Dash
                         command_at = Array.IndexOf(words, "haydash") + 1;
                     if (at == 0)
                         command_at = Array.IndexOf(words, "hiddush") + 1;
-                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun" };
+                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun" };
                     if (at < words.Length && (dashWords.Contains(words[at])|| words.Contains("haydash") || words.Contains("hiddush")))
                     {
                         string command;
@@ -361,7 +361,12 @@ namespace Dash
                                 MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
                                 break;
                             case "find":
-                                if (words.Length > 3)
+                                var selected = TouchInteractions.HeldDocument?.ViewModel.DocumentController;
+                                if (selected != null)
+                                {
+                                    //find a doc related to selected one
+                                    searchTerm = selected.Title;
+                                } else if (words.Length > 3)
                                 {
                                     searchTerm = string.Join(' ', words, command_at + 1, words.Length - command_at - 1);
                                 }
@@ -369,7 +374,16 @@ namespace Dash
                                 var results = Search.Parse(searchTerm);
                                 if (results.Count != 0)
                                 {
-                                    DocumentController result = results.First().ViewDocument;
+                                    var result = results.First().ViewDocument;
+                                    if (result == selected)
+                                    {
+                                        //found orgin doc - defeats purose 
+                                        result = null;
+                                        if (results.Count > 1)
+                                        {
+                                            result = results[1].ViewDocument;
+                                        } 
+                                    }
                                     SplitFrame.TryNavigateToDocument(result);
                                 }
                                 break;
