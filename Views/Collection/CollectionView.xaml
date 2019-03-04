@@ -13,7 +13,7 @@
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
 
-    <Border BorderBrush="LightGray" BorderThickness="2">
+    <Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="15">
         <ContentControl x:Name="xContentControl" x:FieldModifier="public" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
     </Border>
 </UserControl>
