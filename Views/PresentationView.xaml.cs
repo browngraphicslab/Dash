@@ -1012,7 +1012,9 @@ namespace Dash
 
         private void XDeletePresentationButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            ViewModel.PinnedNodes.CollectionChanged -= PinnedNodes_CollectionChanged;
             ViewModel.DeletePresentation(ViewModel.CurrPres);
+            ViewModel.PinnedNodes.CollectionChanged += PinnedNodes_CollectionChanged;
         }
 
         private void ViewChecked(object sender, RoutedEventArgs e)

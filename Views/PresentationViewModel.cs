@@ -26,9 +26,9 @@ namespace Dash
             get => _currPres;
             set
             {
+                _pinnedNodes.Clear();
                 _currPres = value;
                 //update Pinned nodes
-                _pinnedNodes.Clear();
                 var field = _currPres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 for (var index = 0; index < field.Count; index++)
                 {

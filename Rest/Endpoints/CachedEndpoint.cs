@@ -30,17 +30,22 @@ namespace Dash
             var allFields = await GetDocumentsByQuery(new EverythingQuery<FieldModel>());
             var docs = allFields.Where(fm => !_cache.ContainsKey(fm.Id)).ToList();
             await DeleteModels(docs);
+            Debug.WriteLine($"Deleted {docs.Count} fields");
             var fields = _cache.Values.Where(field => field.GetValue() is Uri)
                 .Select(field => System.IO.Path.GetFileName(((Uri)field.GetValue()).LocalPath)).ToHashSet();
             var folder = ApplicationData.Current.LocalFolder;
             var files = await folder.GetFilesAsync();
+            int i = 0;
             foreach (var storageFile in files)
             {
                 if (!fields.Contains(storageFile.Name) && !storageFile.Name.Contains("dash.db") && !storageFile.Name.Equals("pdf.db"))
                 {
+                    i++;
                     await storageFile.DeleteAsync(StorageDeleteOption.PermanentDelete);
                 }
             }
+
+            Debug.WriteLine($"Deleted {i} files");
         }
 
         protected abstract Task AddModel(FieldModel newDocument);
