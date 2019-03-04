@@ -5,7 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using DashShared;
+using Microsoft.Office.Interop.Word;
+using Task = System.Threading.Tasks.Task;
 using Type = Zu.TypeScript.TsTypes.Type;
 
 namespace Dash
@@ -24,9 +27,20 @@ namespace Dash
         public async Task Cleanup()
         {
             //TODO Make this use ids so we don't create a ton of field models for no reason
-            var docs = (await GetDocumentsByQuery(new EverythingQuery<FieldModel>())).Where(fm => !_cache.ContainsKey(fm.Id)).ToList();
+            var allFields = await GetDocumentsByQuery(new EverythingQuery<FieldModel>());
+            var docs = allFields.Where(fm => !_cache.ContainsKey(fm.Id)).ToList();
             await DeleteModels(docs);
-            Debug.WriteLine($"Cleanup removed {docs.Count} items");
+            var fields = _cache.Values.Where(field => field.GetValue() is Uri)
+                .Select(field => System.IO.Path.GetFileName(((Uri)field.GetValue()).LocalPath)).ToHashSet();
+            var folder = ApplicationData.Current.LocalFolder;
+            var files = await folder.GetFilesAsync();
+            foreach (var storageFile in files)
+            {
+                if (!fields.Contains(storageFile.Name) && !storageFile.Name.Contains("dash.db") && !storageFile.Name.Equals("pdf.db"))
+                {
+                    await storageFile.DeleteAsync(StorageDeleteOption.PermanentDelete);
+                }
+            }
         }
 
         protected abstract Task AddModel(FieldModel newDocument);

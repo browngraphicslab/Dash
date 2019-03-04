@@ -293,6 +293,8 @@ namespace Dash
             {
                 await ce.Cleanup();
             }
+
+            MainDocument.RemoveField(KeyStore.EventManagerKey);
             xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
 
             //get current presentations if any and set data context of pres view to pres view model
