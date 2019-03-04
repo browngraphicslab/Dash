@@ -184,25 +184,35 @@
                         <DataTemplate x:DataType="dash:PresentationItemViewModel">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="40"/>
                                     <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
-                                <local:PresentationViewTextBox FontSize="16" Grid.Column="1" HorizontalAlignment="Stretch" />
-                                <ToggleButton Grid.Column="3" Checked="ViewChecked" IsChecked="False"  Unchecked="ViewUnchecked"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Hide Document Until Presented">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <local:PresentationViewTextBox FontSize="16" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="7"  HorizontalAlignment="Stretch" />
+                                <ToggleButton Grid.Column="1" Grid.Row="1" Loaded="NavigateLoaded"  Checked="NavigateChecked" Unchecked="NavigateUnchecked"   HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Navigate to Document">
+                                    <SymbolIcon Symbol="Find" />
+                                </ToggleButton>
+                                <ToggleButton Grid.Column="2" Grid.Row="1" Loaded="ViewLoaded"  Checked="ViewChecked"  Unchecked="ViewUnchecked"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Hide Document Until Presented">
                                     <SymbolIcon Symbol="Preview" />
                                 </ToggleButton>
-                                <ToggleButton Grid.Column="4" Checked="FadeChecked" Unchecked="FadeUnchecked" IsChecked="False"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Fade Document After Presented">
+                                <ToggleButton Grid.Column="3" Grid.Row="1" Loaded="FadeLoaded"  Checked="FadeChecked" Unchecked="FadeUnchecked"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Fade Document After Presented">
+                                    <SymbolIcon Symbol="Page2" />
+                                </ToggleButton>
+                                <ToggleButton Grid.Column="4" Grid.Row="1" Loaded="HideLoaded"  Checked="HideChecked" Unchecked="HideUnchecked"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Hide Document After Presenting">
                                     <SymbolIcon Symbol="Page" />
                                 </ToggleButton>
-                                <ToggleButton Grid.Column="5" Checked="GroupChecked" Unchecked="GroupUnchecked" IsChecked="False"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Group Document With Document Above">
+                                <ToggleButton Grid.Column="5" Grid.Row="1" Loaded="GroupLoaded"  Checked="GroupChecked" Unchecked="GroupUnchecked"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Group Document With Document Above">
                                     <SymbolIcon Symbol="Up" />
                                 </ToggleButton>
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="6">
+                                <Button Tag="{Binding}" Click="DeletePin" Grid.Row="1" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="6">
                                     <SymbolIcon Symbol="Delete"/>
                                 </Button>
                             </Grid>

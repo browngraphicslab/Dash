@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -60,8 +61,30 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             xHelpPrompt.Text = "Pinned items will appear here.\rAdd content from right-click\rcontext menu.";
             xTitle.PropertyChanged += XTitleBox_PropertyChanged;
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
         }
 
+        private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        {
+            if (FocusManager.GetFocusedElement() is RichEditBox)
+            {
+                return;
+            }
+            if (IsPresentationPlaying)
+            {
+                switch (args.VirtualKey)
+                {
+                case VirtualKey.Right:
+                    this.NextButton_Click(null, null);
+                    args.Handled = true;
+                    break;
+                case VirtualKey.Left:
+                    this.BackButton_Click(null, null);
+                    args.Handled = true;
+                    break;
+                }
+            }
+        }
 
         public PresentationViewState CurrPresViewState
         {
@@ -116,7 +139,7 @@ namespace Dash
                 //open presentation
                 if (animate)
                 {
-                    TryPlayStopClick();
+                    //TryPlayStopClick();
                     xSettingsOut.Begin();
                     xContentOut.Begin();
                     xHelpOut.Begin();
@@ -284,7 +307,11 @@ namespace Dash
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
             if (LastSelectedIndex != -1)
             {
-                NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+                var selected = ((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document;
+                if (selected.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false)
+                {
+                    NavigateToDocument(selected);
+                }
             }
         }
 
@@ -312,16 +339,27 @@ namespace Dash
 
             LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
+            var selected = ((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document;
+
+            if (selected.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false)
+            {
+                NavigateToDocument(selected);
+            }
 
             for (var i = xPinnedNodesListView.SelectedIndex - 1; i >= 0; i--)
             {
                 var doc = ((PresentationItemViewModel)xPinnedNodesListView.Items[i]).Document;
-                if (doc.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false)
+                if (doc.GetField<BoolController>(KeyStore.PresentationHideKey)?.Data ?? false)
+                {
+                    doc.SetField<BoolController>(KeyStore.HiddenKey, true, true);
+                }
+                else if (doc.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false)
                 {
                     doc.SetField<NumberController>(KeyStore.OpacityKey, 0.3, true);
                 }
             }
+
+            selected.SetField<BoolController>(KeyStore.HiddenKey, false, true);
 
             if (xPinnedNodesListView.SelectedIndex + 1 < xPinnedNodesListView.Items.Count &&
                 (((PresentationItemViewModel)xPinnedNodesListView.Items[xPinnedNodesListView.SelectedIndex + 1])
@@ -379,13 +417,16 @@ namespace Dash
         {
             var dc = ((PresentationItemViewModel)e.ClickedItem).Document;
             BoolController zoomContext = dc.GetField(KeyStore.PresContextZoomKey) as BoolController;
-            NavigateToDocument(dc, zoomContext?.Data ?? false);
+
+            if (dc.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false)
+            {
+                NavigateToDocument(dc, zoomContext?.Data ?? false);
+            }
         }
 
         // helper method for moving the mainpage screen
         private static void NavigateToDocument(DocumentController dc, bool zoom = false)
         {
-            dc.SetField<BoolController>(KeyStore.HiddenKey, false, true);
 
             if (zoom)
             {
@@ -1049,6 +1090,60 @@ namespace Dash
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
             itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, true, true);
+        }
+
+        private void NavigateChecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationNavigateKey, true, true);
+        }
+
+        private void NavigateUnchecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationNavigateKey, false, true);
+        }
+
+        private void HideChecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationHideKey, true, true);
+        }
+
+        private void HideUnchecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationHideKey, false, true);
+        }
+
+        private void NavigateLoaded(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false;
+        }
+
+        private void ViewLoaded(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationVisibleKey)?.Data ?? false;
+        }
+
+        private void GroupLoaded(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false;
+        }
+
+        private void HideLoaded(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationHideKey)?.Data ?? false;
+        }
+
+        private void FadeLoaded(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false;
         }
     }
 }
