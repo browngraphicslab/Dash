@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using iText.Layout.Element;
+using Microsoft.VisualBasic;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -236,7 +237,8 @@ namespace Dash
                     // zoom to first item in the listview
 
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
-                    xPinnedNodesListView.SelectedIndex = 0;
+                    int nextIndex = GetNextIndex(-1);
+                    xPinnedNodesListView.SelectedIndex = nextIndex;
                     foreach (PresentationItemViewModel item in xPinnedNodesListView.Items)
                     {
                         if (item.Document.GetField<BoolController>(KeyStore.PresentationVisibleKey)?.Data ?? false)
@@ -245,23 +247,20 @@ namespace Dash
                         }
                     }
 
+                    for (int i = 0; i <= nextIndex; ++i)
+                    {
+                        ToDocument(ViewModel.PinnedNodes[i].Document, false);
+                    }
+
 
                     _startCollection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
 
                     _panZoom = _startCollection.GetField(KeyStore.PanZoomKey)?.Copy() as PointController;
                     _panPos = _startCollection.GetField(KeyStore.PanPositionKey)?.Copy() as PointController;
-                    NavigateToDocument(((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document);
 
                     IsPresentationPlaying = true;
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
                     xPlayStopButton.Label = "Stop";
-
-                    if (xPinnedNodesListView.SelectedIndex + 1 < xPinnedNodesListView.Items.Count &&
-                        (((PresentationItemViewModel)xPinnedNodesListView.Items[xPinnedNodesListView.SelectedIndex + 1])
-                             ?.Document.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false))
-                    {
-                        this.NextButton_Click(null, null);
-                    }
                 }
             }
 
@@ -283,35 +282,139 @@ namespace Dash
             }
         }
 
+        private static bool HideAfter(DocumentController doc)
+        {
+            return doc.GetField<BoolController>(KeyStore.PresentationHideKey)?.Data ?? false;
+        }
+
+        private static bool HideBefore(DocumentController doc)
+        {
+            return doc.GetField<BoolController>(KeyStore.PresentationVisibleKey)?.Data ?? false;
+        }
+
+        private static bool ShouldFade(DocumentController doc)
+        {
+            return doc.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false;
+        }
+
+        private static bool ShouldNavigate(DocumentController doc)
+        {
+            return doc.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false;
+        }
+
+        private static bool IsGrouped(DocumentController doc)
+        {
+            return doc.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false;
+        }
+
+        private void ToDocument(DocumentController doc, bool reverse)
+        {
+            if (HideBefore(doc))
+            {
+                doc.SetHidden(reverse);
+            }
+
+            if (ShouldNavigate(doc) && !reverse)
+            {
+                NavigateToDocument(doc);
+            }
+        }
+
+        private void FromDocument(DocumentController doc, bool reverse)
+        {
+            if (HideAfter(doc))
+            {
+                doc.SetHidden(!reverse);
+            }
+
+            if (ShouldFade(doc))
+            {
+                doc.SetField<NumberController>(KeyStore.OpacityKey, reverse ? 1 : 0.3, true);
+            }
+
+            if (ShouldNavigate(doc) && reverse)
+            {
+                NavigateToDocument(doc);
+            }
+        }
+
+        int GetNextIndex(int currentIndex)
+        {
+            int numNodes = ViewModel.PinnedNodes.Count;
+            currentIndex++;
+            if (currentIndex >= numNodes)
+            {
+                return -1;
+            }
+            while (currentIndex + 1 < numNodes)
+            {
+                var doc = ViewModel.PinnedNodes[currentIndex + 1].Document;
+                if (!IsGrouped(doc))
+                {
+                    break;
+                }
+                currentIndex++;
+            }
+
+            return currentIndex;
+        }
+
+        int GetPreviousIndex(int currentIndex)
+        {
+            while (currentIndex >= 0)
+            {
+                var doc = ViewModel.PinnedNodes[currentIndex].Document;
+                if (!IsGrouped(doc))
+                {
+                    break;
+                }
+                currentIndex--;
+            }
+
+            return currentIndex - 1;
+
+        }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            // only move back if there is a step to go back to
-            if (selectedIndex > 0)
+            int nextIndex = GetPreviousIndex(selectedIndex);
+            if (nextIndex == -1)
             {
-                IsNextEnabled(true);
-                xPinnedNodesListView.SelectedIndex = selectedIndex - 1;
-            }
-            else if (_repeat)
-            {
-                xPinnedNodesListView.SelectedIndex = xPinnedNodesListView.Items.Count - 1;
-            }
-
-            if (selectedIndex == 1 && !_repeat)
-            {
-                //disable back button
-                IsBackEnabled(false);
-            }
-
-            LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
-            if (LastSelectedIndex != -1)
-            {
-                var selected = ((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document;
-                if (selected.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false)
+                if (_repeat)
                 {
-                    NavigateToDocument(selected);
+                    nextIndex = ViewModel.PinnedNodes.Count - 1;
                 }
+                else
+                {
+                    return;
+                }
+            }
+
+            int nextNextIndex = GetPreviousIndex(nextIndex);
+
+            IsNextEnabled(true);
+            xPinnedNodesListView.SelectedIndex = nextIndex;
+
+
+            if (nextNextIndex == -1)
+            {
+                if (!_repeat)
+                {
+                    //end presentation
+                    IsBackEnabled(false);
+                }
+            }
+
+                for (int i = selectedIndex; i > nextIndex; --i)
+                {
+                    ToDocument(ViewModel.PinnedNodes[i].Document, true);
+                }
+
+            for (int i = nextIndex; i > nextNextIndex; --i)
+            {
+                FromDocument(ViewModel.PinnedNodes[i].Document, true);
             }
         }
 
@@ -319,53 +422,43 @@ namespace Dash
         {
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
-            // can only move forward if there's a node to move forward to
-            if (selectedIndex != xPinnedNodesListView.Items.Count - 1)
+            int nextIndex = GetNextIndex(selectedIndex);
+            if (nextIndex == -1)
             {
-                xBackButton.Opacity = 1;
-                xBackButton.IsEnabled = true;
-                xPinnedNodesListView.SelectedIndex = selectedIndex + 1;
-            }
-            else if (_repeat)
-            {
-                xPinnedNodesListView.SelectedIndex = 0;
+                if (_repeat)
+                {
+                    nextIndex = 0;
+                }
+                else
+                {
+                    return;
+                }
             }
 
-            if (selectedIndex == xPinnedNodesListView.Items.Count - 2 && !_repeat)
+            int nextNextIndex = GetNextIndex(nextIndex);
+            int prevIndex = GetPreviousIndex(selectedIndex);
+
+            IsBackEnabled(true);
+            xPinnedNodesListView.SelectedIndex = nextIndex;
+
+
+            if (nextNextIndex == -1 && !_repeat)
             {
                 //end presentation
                 IsNextEnabled(false);
             }
 
-            LastSelectedIndex = xPinnedNodesListView.SelectedIndex;
-
-            var selected = ((PresentationItemViewModel)xPinnedNodesListView.SelectedItem).Document;
-
-            if (selected.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false)
+            if (prevIndex != -1)
             {
-                NavigateToDocument(selected);
-            }
-
-            for (var i = xPinnedNodesListView.SelectedIndex - 1; i >= 0; i--)
-            {
-                var doc = ((PresentationItemViewModel)xPinnedNodesListView.Items[i]).Document;
-                if (doc.GetField<BoolController>(KeyStore.PresentationHideKey)?.Data ?? false)
+                for (int i = prevIndex + 1; i <= selectedIndex; ++i)
                 {
-                    doc.SetField<BoolController>(KeyStore.HiddenKey, true, true);
-                }
-                else if (doc.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false)
-                {
-                    doc.SetField<NumberController>(KeyStore.OpacityKey, 0.3, true);
+                    FromDocument(ViewModel.PinnedNodes[i].Document, false);
                 }
             }
 
-            selected.SetField<BoolController>(KeyStore.HiddenKey, false, true);
-
-            if (xPinnedNodesListView.SelectedIndex + 1 < xPinnedNodesListView.Items.Count &&
-                (((PresentationItemViewModel)xPinnedNodesListView.Items[xPinnedNodesListView.SelectedIndex + 1])
-                     ?.Document.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false))
+            for (int i = selectedIndex + 1; i <= nextIndex; ++i)
             {
-                this.NextButton_Click(null, null);
+                ToDocument(ViewModel.PinnedNodes[i].Document, false);
             }
         }
 

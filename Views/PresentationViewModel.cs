@@ -112,20 +112,6 @@ namespace Dash
                 pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(dc);
                 if (pres == CurrPres)
                 {
-                    var fields = new List<KeyValuePair<KeyController, FieldControllerBase>>()
-                    {
-                        new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.PresentationVisibleKey,
-                            new BoolController(false)),
-                        new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.PresentationGroupUpKey,
-                            new BoolController(false)),
-                        new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.PresentationFadeKey,
-                            new BoolController(false)),
-                        new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.PresentationNavigateKey,
-                            new BoolController(false)),
-                        new KeyValuePair<KeyController, FieldControllerBase>(KeyStore.PresentationHideKey,
-                            new BoolController(false))
-                    };
-                    dc.SetFields(fields, true);
                     PinnedNodes.Add(new PresentationItemViewModel(dc, PinnedNodes.Count));
                 }
             }
