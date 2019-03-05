@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -15,8 +13,6 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using iText.Layout.Element;
-using Microsoft.VisualBasic;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -51,10 +47,7 @@ namespace Dash
             set => ViewModel.CurrPres.SetTitle(value);
         }
 
-        public ObservableCollection<DocumentController> Presentations
-        {
-            get => ViewModel?.Presentations;
-        }
+        public ObservableCollection<DocumentController> Presentations => ViewModel?.Presentations;
 
         public PresentationView()
         {
@@ -81,6 +74,20 @@ namespace Dash
                     break;
                 case VirtualKey.Left:
                     this.BackButton_Click(null, null);
+                    args.Handled = true;
+                    break;
+                case VirtualKey.Up:
+                    var doc = SplitFrame.ActiveFrame.DocumentController;
+                    var paths = DocumentTree.GetPathsToDocuments(doc);
+                    if (paths.Any())
+                    {
+                        var path = paths[0];
+                        if (path.Count > 2)
+                        {
+                            var col = path[path.Count - 2];
+                            SplitFrame.ActiveFrame.OpenDocument(doc, col);
+                        }
+                    }
                     args.Handled = true;
                     break;
                 }
@@ -205,7 +212,10 @@ namespace Dash
             ViewModel.UpdateList();
         }
 
-        private void PlayStopButton_Click(object sender, RoutedEventArgs e) => PlayStopClick();
+        private void PlayStopButton_Click(object sender, RoutedEventArgs e)
+        {
+            PlayStopClick();
+        }
 
         public void PlayStopClick()
         {
@@ -407,10 +417,10 @@ namespace Dash
                 }
             }
 
-                for (int i = selectedIndex; i > nextIndex; --i)
-                {
-                    ToDocument(ViewModel.PinnedNodes[i].Document, true);
-                }
+            for (int i = selectedIndex; i > nextIndex; --i)
+            {
+                ToDocument(ViewModel.PinnedNodes[i].Document, true);
+            }
 
             for (int i = nextIndex; i > nextNextIndex; --i)
             {
@@ -509,17 +519,14 @@ namespace Dash
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
             var dc = ((PresentationItemViewModel)e.ClickedItem).Document;
-            BoolController zoomContext = dc.GetField(KeyStore.PresContextZoomKey) as BoolController;
 
-            if (dc.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false)
-            {
-                NavigateToDocument(dc, zoomContext?.Data ?? false);
-            }
+            NavigateToDocument(dc);
         }
 
         // helper method for moving the mainpage screen
-        private static void NavigateToDocument(DocumentController dc, bool zoom = false)
+        private static void NavigateToDocument(DocumentController dc)
         {
+            bool zoom = dc.GetField<BoolController>(KeyStore.PresContextZoomKey)?.Data ?? true;
 
             if (zoom)
             {
@@ -572,14 +579,20 @@ namespace Dash
             _textbox = source.GetFirstDescendantOfType<PresentationViewTextBox>() ??
                        source.GetFirstAncestorOfType<PresentationViewTextBox>();
 
-            var zoomContext = ((BoolController) _document.GetField(KeyStore.PresContextZoomKey))?.Data ?? false;
+            bool zoomContext = _document.GetField<BoolController>(KeyStore.PresContextZoomKey)?.Data ?? false;
             Fullscreen.Background = zoomContext ? new SolidColorBrush(Colors.LightSteelBlue) : new SolidColorBrush(Colors.Transparent);
 
         }
 
-        private void Edit_OnClick(object sender, RoutedEventArgs e) => _giveTextBoxFocusUponFlyoutClosing = true;
+        private void Edit_OnClick(object sender, RoutedEventArgs e)
+        {
+            _giveTextBoxFocusUponFlyoutClosing = true;
+        }
 
-        private void Reset_OnClick(object sender, RoutedEventArgs e) => _textbox.ResetTitle();
+        private void Reset_OnClick(object sender, RoutedEventArgs e)
+        {
+            _textbox.ResetTitle();
+        }
 
         private void Fullscreen_OnClick(object sender, RoutedEventArgs e)
         {
@@ -614,25 +627,25 @@ namespace Dash
             var docAPos = docA.GetField<PointController>(KeyStore.PositionFieldKey).Data;
             var docASize = docA.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             var docAsides = new List<Tuple<Point, Point>>();
-            var docAy = docAPos.Y + docASize.Y / 2;
-            var docAx = docAPos.X + docASize.X / 2;
-            var docALeft = docAPos.X;
-            var docARight = docAPos.X + docASize.X;
-            var docATop = docAPos.Y;
-            var docABottom = docAPos.Y + docASize.Y;
+            double docAy = docAPos.Y + docASize.Y / 2;
+            double docAx = docAPos.X + docASize.X / 2;
+            double docALeft = docAPos.X;
+            double docARight = docAPos.X + docASize.X;
+            double docATop = docAPos.Y;
+            double docABottom = docAPos.Y + docASize.Y;
 
             var docB = ((PresentationItemViewModel) docs[i + 1]).Document;
             var docBPos = docB.GetField<PointController>(KeyStore.PositionFieldKey).Data;
             var docBSize = docB.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             var docBsides = new List<Tuple<Point, Point>>();
-            var docBy = docBPos.Y + docBSize.Y / 2;
-            var docBx = docBPos.X + docBSize.X / 2;
-            var docBLeft = docBPos.X;
-            var docBRight = docBPos.X + docBSize.X;
-            var docBTop = docBPos.Y;
-            var docBBottom = docBPos.Y + docBSize.Y;
+            double docBy = docBPos.Y + docBSize.Y / 2;
+            double docBx = docBPos.X + docBSize.X / 2;
+            double docBLeft = docBPos.X;
+            double docBRight = docBPos.X + docBSize.X;
+            double docBTop = docBPos.Y;
+            double docBBottom = docBPos.Y + docBSize.Y;
 
-            var offset = Math.Sqrt(distSqr(new Point(docAx, docAy), new Point(docBx, docBy))) / 10;
+            double offset = Math.Sqrt(distSqr(new Point(docAx, docAy), new Point(docBx, docBy))) / 10;
 
             //the order goes left, top, right, bottom - in regualr UWP fashion
             docAsides.Add(Tuple.Create(new Point(docALeft, docAy), new Point(docALeft - offset, docAy)));
@@ -646,7 +659,7 @@ namespace Dash
             docBsides.Add(Tuple.Create(new Point(docBRight, docBy), new Point(docBRight + offset, docBy)));
             docBsides.Add(Tuple.Create(new Point(docBx, docBBottom), new Point(docBx, docBBottom + offset)));
 
-            var minDist = Double.PositiveInfinity;
+            double minDist = Double.PositiveInfinity;
             Point startPoint;
             Point endPoint;
             Point startControlPt;
@@ -657,7 +670,7 @@ namespace Dash
             {
                 foreach (var bside in docBsides)
                 {
-                    var dist = distSqr(aside.Item1, bside.Item1);
+                    double dist = distSqr(aside.Item1, bside.Item1);
                     if (dist < minDist)
                     {
                         minDist = dist;
@@ -717,7 +730,7 @@ namespace Dash
             //draw lines between members of presentation 
             var docs = xPinnedNodesListView.Items;
 
-            for (var i = 0; i < docs?.Count - 1; i++)
+            for (int i = 0; i < docs?.Count - 1; i++)
             {
                 var points = GetFourBeizerPoints(i);
                 Point startPoint = points[0];
@@ -747,21 +760,21 @@ namespace Dash
                 oldPath.Figures = figures;
 
                 //make arrow points
-                var diffX = endControlPt.X - endPoint.X;
-                var diffY = endControlPt.Y - endPoint.Y;
+                double diffX = endControlPt.X - endPoint.X;
+                double diffY = endControlPt.Y - endPoint.Y;
                 Point arrowPtA;
                 Point arrowPtB;
-                var arrowWidth = 10;
+                int arrowWidth = 10;
                 if (Math.Abs(diffX) > Math.Abs(diffY))
                 {
-                    var sign = diffX / Math.Abs(diffX);
+                    double sign = diffX / Math.Abs(diffX);
                     //arrow should come from x direction
                     arrowPtA = new Point(endPoint.X + sign * arrowWidth, endPoint.Y + arrowWidth);
                     arrowPtB = new Point(endPoint.X + sign * arrowWidth, endPoint.Y - arrowWidth);
                 }
                 else
                 {
-                    var sign = diffY / Math.Abs(diffY);
+                    double sign = diffY / Math.Abs(diffY);
                     arrowPtA = new Point(endPoint.X + arrowWidth, endPoint.Y + sign * arrowWidth);
                     arrowPtB = new Point(endPoint.X - arrowWidth, endPoint.Y + sign * arrowWidth);
                 }
@@ -792,7 +805,7 @@ namespace Dash
             //draw lines between members of presentation 
             var docs = xPinnedNodesListView.Items;
 
-            for (var i = 0; i < docs?.Count - 1; i++)
+            for (int i = 0; i < docs?.Count - 1; i++)
             {
                 var points = GetFourBeizerPoints(i);
                 Point startPoint = points[0];
@@ -828,21 +841,21 @@ namespace Dash
                 canvas.Children.Add(path);
 
                 //make arrow points
-                var diffX = endControlPt.X - endPoint.X;
-                var diffY = endControlPt.Y - endPoint.Y;
+                double diffX = endControlPt.X - endPoint.X;
+                double diffY = endControlPt.Y - endPoint.Y;
                 Point arrowPtA;
                 Point arrowPtB;
-                var arrowWidth = 10;
+                int arrowWidth = 10;
                 if (Math.Abs(diffX) > Math.Abs(diffY))
                 {
-                    var sign = diffX / Math.Abs(diffX);
+                    double sign = diffX / Math.Abs(diffX);
                     //arrow should come from x direction
                     arrowPtA = new Point(endPoint.X + sign * arrowWidth, endPoint.Y + arrowWidth);
                     arrowPtB = new Point(endPoint.X + sign * arrowWidth, endPoint.Y - arrowWidth);
                 }
                 else
                 {
-                    var sign = diffY / Math.Abs(diffY);
+                    double sign = diffY / Math.Abs(diffY);
                     arrowPtA = new Point(endPoint.X + arrowWidth, endPoint.Y + sign * arrowWidth);
                     arrowPtB = new Point(endPoint.X - arrowWidth, endPoint.Y + sign * arrowWidth);
                 }
@@ -883,7 +896,7 @@ namespace Dash
 
         public void DrawLinesWithNewDocs()
         {
-            var isChecked = xShowLinesButton.IsChecked;
+            bool? isChecked = xShowLinesButton.IsChecked;
             if (isChecked != null && (bool)!isChecked ||
                 CurrPresViewState == PresentationViewState.Collapsed) return;
 
@@ -903,7 +916,10 @@ namespace Dash
             DrawLines();
         }
 
-        private void ShowLinesButton_OnChecked(object sender, RoutedEventArgs e) => ShowLines();
+        private void ShowLinesButton_OnChecked(object sender, RoutedEventArgs e)
+        {
+            ShowLines();
+        }
 
         public void ShowLines()
         {
@@ -1000,7 +1016,7 @@ namespace Dash
         {
             DocumentController viewRefDoc = viewRef.ViewModel?.LayoutDocument;
 
-            var ind = 0;
+            int ind = 0;
             foreach (var viewDoc in ViewModel?.PinnedNodes)
             {
                 if (viewDoc.Document == viewRefDoc) break;
@@ -1152,91 +1168,109 @@ namespace Dash
         private void ViewChecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationVisibleKey, true, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationVisibleKey, true, true);
         }
 
         private void ViewUnchecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationVisibleKey, false, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationVisibleKey, false, true);
         }
 
         private void FadeChecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, true, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, true, true);
         }
 
         private void FadeUnchecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, false, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationFadeKey, false, true);
         }
 
         private void GroupUnchecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, false, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, false, true);
         }
 
         private void GroupChecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, true, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationGroupUpKey, true, true);
         }
 
         private void NavigateChecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationNavigateKey, true, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationNavigateKey, true, true);
         }
 
         private void NavigateUnchecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationNavigateKey, false, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationNavigateKey, false, true);
         }
 
         private void HideChecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel) ((FrameworkElement) sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationHideKey, true, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationHideKey, true, true);
         }
 
         private void HideUnchecked(object sender, RoutedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
-            itemViewModel.Document.SetField<BoolController>(KeyStore.PresentationHideKey, false, true);
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresentationHideKey, false, true);
         }
 
-        private void NavigateLoaded(object sender, RoutedEventArgs e)
+        private void ContextUnchecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresContextZoomKey, true, true);
+        }
+
+        private void ContextChecked(object sender, RoutedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            itemViewModel?.Document.SetField<BoolController>(KeyStore.PresContextZoomKey, false, true);
+        }
+
+        private void NavigateLoaded(object sender, DataContextChangedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
             ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationNavigateKey)?.Data ?? false;
         }
 
-        private void ViewLoaded(object sender, RoutedEventArgs e)
+        private void ViewLoaded(object sender, DataContextChangedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
             ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationVisibleKey)?.Data ?? false;
         }
 
-        private void GroupLoaded(object sender, RoutedEventArgs e)
+        private void GroupLoaded(object sender, DataContextChangedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
             ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationGroupUpKey)?.Data ?? false;
         }
 
-        private void HideLoaded(object sender, RoutedEventArgs e)
+        private void HideLoaded(object sender, DataContextChangedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
             ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationHideKey)?.Data ?? false;
         }
 
-        private void FadeLoaded(object sender, RoutedEventArgs e)
+        private void FadeLoaded(object sender, DataContextChangedEventArgs e)
         {
             var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
             ((ToggleButton)sender).IsChecked = itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresentationFadeKey)?.Data ?? false;
+        }
+
+        private void ContextLoaded(object sender, DataContextChangedEventArgs e)
+        {
+            var itemViewModel = (PresentationItemViewModel)((FrameworkElement)sender).DataContext;
+            ((ToggleButton)sender).IsChecked = !(itemViewModel?.Document?.GetField<BoolController>(KeyStore.PresContextZoomKey)?.Data ?? true);
         }
     }
 }
