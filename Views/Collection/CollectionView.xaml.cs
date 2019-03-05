@@ -305,7 +305,7 @@ namespace Dash
                         command_at = Array.IndexOf(words, "haydash") + 1;
                     if (at == 0)
                         command_at = Array.IndexOf(words, "hiddush") + 1;
-                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun" };
+                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun", "dashtan", "nash", "guys" };
                     if (at < words.Length && (dashWords.Contains(words[at])|| words.Contains("haydash") || words.Contains("hiddush")))
                     {
                         string command;
