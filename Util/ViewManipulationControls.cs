@@ -181,7 +181,7 @@ namespace Dash
                         //if in another touch mode, ignore
                         if ((TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.None ||
                              TouchInteractions.CurrInteraction == TouchInteractions.TouchInteraction.Marquee)
-                            && TouchInteractions.HeldDocument == null && _freeformView.StartMarquee(point))
+                            && TouchInteractions.HeldDocument == null )
                         {
                             TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Marquee;
                             e.Handled = true;

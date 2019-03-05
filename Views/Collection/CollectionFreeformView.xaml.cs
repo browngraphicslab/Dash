@@ -933,7 +933,7 @@ namespace Dash
                 TouchInteractions.TryShowMenu(args.GetCurrentPoint(MainPage.Instance.xCanvas).Position);
             }
 
-            if (this.GetDocumentView().AreContentsActive && args.IsLeftPressed())
+            if (this.GetDocumentView().AreContentsActive && (args.IsLeftPressed() || args.Pointer.PointerDeviceType == PointerDeviceType.Touch))
             {
                 GetOuterGrid().CapturePointer(args.Pointer);
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
@@ -1027,11 +1027,14 @@ namespace Dash
             {
                 if (TouchInteractions.NumFingers > 1)
                 {
+                    Debug.WriteLine("RESETTING!!");
                     ResetMarquee(true);
                     return false;
                 }
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
+
+               Debug.WriteLine("posX:" + pos.X + " dx" + dX);
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -1042,6 +1045,7 @@ namespace Dash
                 if (dX < 0) newAnchor.X += dX;
                 if (dY < 0) newAnchor.Y += dY;
 
+                Debug.WriteLine("marqueeAnchor_x: " + _marqueeAnchor.X + "new: " + newAnchor.X);
                 if (newWidth > 5 && newHeight > 5 && _marquee == null)
                 {
                     this.Focus(FocusState.Programmatic);
@@ -1050,10 +1054,13 @@ namespace Dash
 
                     _marquee = new MarqueeInfo(this);
                     SelectionCanvas?.Children.Add(_marquee);
+
+                    Debug.WriteLine("TESTING TESTEING");
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
                 {
+                    Debug.WriteLine(newWidth + "height: " + newHeight);
                     _marquee?.AdjustMarquee(newWidth, newHeight);
                     Canvas.SetLeft(_marquee, newAnchor.X);
                     Canvas.SetTop(_marquee, newAnchor.Y);

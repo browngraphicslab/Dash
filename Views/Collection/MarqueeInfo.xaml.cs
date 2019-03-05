@@ -30,7 +30,8 @@ namespace Dash.Views.Collection
             _marquee = new Rectangle()
             {
                 Stroke = new SolidColorBrush(Color.FromArgb(200, 66, 66, 66)),
-                StrokeThickness = 1.5 / col.Zoom,
+                //StrokeThickness = 1.5 / col.Zoom,
+                StrokeThickness = 1.5,
                 StrokeDashArray = new DoubleCollection { 4, 1 },
                 CompositeMode = ElementCompositeMode.SourceOver
             };
