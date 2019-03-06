@@ -224,14 +224,14 @@ namespace OfficeInterop
                     if (int.TryParse(strs[1], out int page))
                     {
                         pptApp.ActiveWindow.View.GotoSlide(page);
-                        try
-                        {
-                            found.Export("C:\\Users\\bcz\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\TestSlide", ".png", 2400);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Windows.Forms.MessageBox.Show("Ex:" + ex.ToString());
-                        }
+                        //try
+                        //{
+                        //    found.Export("C:\\Users\\bcz\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\TestSlide", ".png", 2400);
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    System.Windows.Forms.MessageBox.Show("Ex:" + ex.ToString());
+                        //}
                     }
                 }
                 else System.Diagnostics.Process.Start((string)request["DATA"]);
