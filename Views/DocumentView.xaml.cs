@@ -100,7 +100,7 @@ namespace Dash
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped   += (s, e) => { e.Handled = true; TappedHandler(true); };
             Tapped        += (s, e) => { e.Handled = true; TappedHandler(false); };
-            DoubleTapped  += (s, e) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
+            DoubleTapped  += async (s, e) => { e.Handled = await ExhibitBehaviors(KeyStore.DoubleTappedOpsKey); };
             PointerPressed += (s, e) => this_PointerPressed(s, e);
 
             ToFront();
@@ -516,11 +516,14 @@ namespace Dash
                 return true;
             }
 
-            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey) &&
-                !ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey))
             {
-                MenuFlyoutItemOpen_OnClick(null, null);
-                _doubleTapped = true;
+                if (!ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+                {
+                    MenuFlyoutItemOpen_OnClick(null, null);
+                    _doubleTapped =  true;
+                }
+                return true;
             }
 
             return false;

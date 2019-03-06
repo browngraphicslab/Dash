@@ -203,27 +203,35 @@ namespace OfficeInterop
                 if (strs.Count() == 2 && (strs[0].EndsWith(".pptx") || strs[0].EndsWith(".ppt")))
                 {
                     var pptApp = new Microsoft.Office.Interop.PowerPoint.Application();
-                    var found = false;
+                    Microsoft.Office.Interop.PowerPoint.Presentation found = null;
                     foreach (Microsoft.Office.Interop.PowerPoint.Presentation p in pptApp.Presentations)
                     {
                         try
                         {
                             if (p != null && p.FullName.Equals(strs[0]))
                             {
-                                found = true;
+                                found = p;
                             }
                         } catch (Exception)
                         {
 
                         }
                     }
-                    if (!found)
+                    if (found == null)
                     {
-                        pptApp.Presentations.Open(strs[0]);
+                        found = pptApp.Presentations.Open(strs[0]);
                     }
                     if (int.TryParse(strs[1], out int page))
                     {
                         pptApp.ActiveWindow.View.GotoSlide(page);
+                        try
+                        {
+                            found.Export("C:\\Users\\bcz\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\TestSlide", ".png", 2400);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Windows.Forms.MessageBox.Show("Ex:" + ex.ToString());
+                        }
                     }
                 }
                 else System.Diagnostics.Process.Start((string)request["DATA"]);

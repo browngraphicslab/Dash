@@ -972,7 +972,7 @@ namespace Dash
 
         public void AnnotationOverlayDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (this.GetDocumentView().ViewModel.IsSelected && CurrentAnnotationType == AnnotationType.Region)
+            if (this.GetDocumentView().AreContentsActive && CurrentAnnotationType == AnnotationType.Region)
             {
                 using (UndoManager.GetBatchHandle())
                 {
