@@ -76,6 +76,18 @@ namespace Dash
                 Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
                 SetZLayer();
                 SetUpToolTips();
+
+                if (ViewModel != null)
+                {
+                    var opacityBinding = new FieldBinding<NumberController>
+                    {
+                        Document = ViewModel.DocumentController,
+                        Key = KeyStore.OpacityKey,
+                        Mode = BindingMode.OneWay,
+                        FallbackValue = 1
+                    };
+                    this.AddFieldBinding(OpacityProperty, opacityBinding);
+                }
             };
 
             Unloaded += (sender, args) =>

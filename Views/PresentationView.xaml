@@ -187,10 +187,22 @@
                                     <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="30"/>
-                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
                                 <local:PresentationViewTextBox FontSize="16" Grid.Column="1" HorizontalAlignment="Stretch" />
-                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="3">
+                                <ToggleButton Grid.Column="3" Checked="ViewChecked" IsChecked="False"  Unchecked="ViewUnchecked"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Hide Document Until Presented">
+                                    <SymbolIcon Symbol="Preview" />
+                                </ToggleButton>
+                                <ToggleButton Grid.Column="4" Checked="FadeChecked" Unchecked="FadeUnchecked" IsChecked="False"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Fade Document After Presented">
+                                    <SymbolIcon Symbol="Page" />
+                                </ToggleButton>
+                                <ToggleButton Grid.Column="5" Checked="GroupChecked" Unchecked="GroupUnchecked" IsChecked="False"  HorizontalAlignment="Stretch" Background="Transparent" ToolTipService.ToolTip="Group Document With Document Above">
+                                    <SymbolIcon Symbol="Up" />
+                                </ToggleButton>
+                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="6">
                                     <SymbolIcon Symbol="Delete"/>
                                 </Button>
                             </Grid>

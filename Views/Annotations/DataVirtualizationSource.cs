@@ -35,11 +35,6 @@ namespace Dash
             PageSizes = new List<Size>();
             pageItemsControl.ItemsSource = _visibleElements;
         }
-        ~DataVirtualizationSource()
-        {
-            Debug.WriteLine("Finalizing DataVirtualizationSource");
-        }
-
         /// <summary>
         /// Given a vertical offset, return the corresponding 0-index page
         /// </summary>
@@ -121,7 +116,6 @@ namespace Dash
                     var targetWidth = _visibleElementsTargetedWidth[pageNum];
                     if (targetWidth != 0)
                     {
-                        Debug.WriteLine("Rendering " + pageNum);
                         var options = new Windows.Data.Pdf.PdfPageRenderOptions();
                         var stream = new InMemoryRandomAccessStream();
                         var screenMap = Util.DeltaTransformFromVisual(new Point(1, 1), _view);
