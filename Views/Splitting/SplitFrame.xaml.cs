@@ -504,6 +504,7 @@ namespace Dash
         {
             (sender as Shape).Fill = Transparent;
             e.Handled = true;
+            return;
             await DropHandler(e, SplitDirection.InPlace);
         }
 
@@ -582,7 +583,7 @@ namespace Dash
             XLeftDropTarget.Visibility = Visibility.Visible;
             XTopDropTarget.Visibility = Visibility.Visible;
             XBottomDropTarget.Visibility = Visibility.Visible;
-            XCenterDropTarget.Visibility = Visibility.Visible;
+            //XCenterDropTarget.Visibility = Visibility.Visible;
 
             this.RemoveHandler(DragOverEvent, _draggedOver);
             this.AddHandler(PointerMovedEvent, _pointerMoved, true);
@@ -594,7 +595,7 @@ namespace Dash
             XLeftDropTarget.Visibility = Visibility.Collapsed;
             XTopDropTarget.Visibility = Visibility.Collapsed;
             XBottomDropTarget.Visibility = Visibility.Collapsed;
-            XCenterDropTarget.Visibility = Visibility.Collapsed;
+            //XCenterDropTarget.Visibility = Visibility.Collapsed;
             this.AddHandler(DragOverEvent, _draggedOver, true);
             this.RemoveHandler(PointerMovedEvent, _pointerMoved);
         }

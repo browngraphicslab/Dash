@@ -96,7 +96,7 @@ namespace Dash
 
         private void Revert_Click(object sender, RoutedEventArgs e)
         {
-            _currentImage.Revert();
+            _currentImage?.Revert();
             AlertModified();
         }
 

@@ -865,6 +865,8 @@ namespace Dash
                 grid.Background = new SolidColorBrush(Colors.Transparent);
             }
 
+
+            Document.SetText(TextSetOptions.FormatRtf, this._lastSizeRTFText);
             _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
 
             if (CollectionFreeformView.ForceFocusPoint != null && this.GetBoundingRect(MainPage.Instance).Contains((Windows.Foundation.Point)CollectionFreeformView.ForceFocusPoint))
