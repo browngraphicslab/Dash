@@ -34,6 +34,10 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, KeyController key)
         {
+            if (docController.GetDataDocument().GetField(KeyStore.PDFImageKey) != null)
+            {
+                return ImageBox.MakeView(docController, KeyStore.PDFImageKey);
+            }
             var pdfView = new PdfView();
             SetupPdfBinding(pdfView, docController, key);
             return pdfView;

@@ -192,6 +192,7 @@ namespace Dash
         public static KeyController SearchIndexKey                       = KeyController.Get("SearchIndex");
         public static KeyController ScriptSourceKey                      = KeyController.Get("ScriptSource");
         public static KeyController OpacityKey                           = KeyController.Get("Opacity");
+        public static KeyController PDFImageKey                          = KeyController.Get("PDFImage");
 
         public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
         {

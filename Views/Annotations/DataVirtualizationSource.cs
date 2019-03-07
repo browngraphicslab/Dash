@@ -92,8 +92,9 @@ namespace Dash
                 endIndex   = Math.Min(endIndex + pageBuffer, _visibleElements.Count - 1);
                 for (var i = 0; i < _visibleElements.Count; i++)
                 {
-                    var targetWidth = (i < startIndex || i > endIndex) ? 0 : _view.ActualWidth;
-                    if (!_visibleElementsIsRendering[i] && targetWidth != _visibleElementsRenderedWidth[i])
+                    bool skip = (i < startIndex || i > endIndex);
+                    var targetWidth = skip ? 0 : _view.ActualWidth;
+                    if (!skip && !_visibleElementsIsRendering[i] && targetWidth != _visibleElementsRenderedWidth[i])
                     {
                         _visibleElementsIsRendering[i] = true;
                         _visibleElementsTargetedWidth[i] = targetWidth;
@@ -106,6 +107,9 @@ namespace Dash
                 }
             }
         }
+
+        private static int loadedPages = 0;
+        private static int loops = 0;
         private async void RenderPage(int pageNum)
         {
             using (var page = _view.PDFdoc?.GetPage((uint)pageNum))
@@ -129,9 +133,13 @@ namespace Dash
                     }
                     _visibleElements[pageNum].Source = source; 
                     _visibleElementsRenderedWidth[pageNum] = targetWidth;
+                    //loops++;
                 }
                 _visibleElementsIsRendering[pageNum] = false;
             }
+            //loadedPages++;
+            //Debug.WriteLine($"Loaded pages: {loadedPages}");
+            //Debug.WriteLine($"Loops: {loops}");
         }
 
 	    public static async Task<WriteableBitmap> GetImageFromPdf(WPdf.PdfDocument pdf, uint pageNum)
