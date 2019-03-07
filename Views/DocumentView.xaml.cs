@@ -698,11 +698,19 @@ namespace Dash
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    MainPage.Instance.xPresentationView.PinToPresentation(ViewModel.DocumentController);                    if (ViewModel.LayoutDocument == null)
+                    MainPage.Instance.xPresentationView.PinToPresentation(ViewModel.DocumentController);
+                    if (ViewModel.LayoutDocument == null)
                     {
                         Debug.WriteLine("uh oh");
                     }
                 }
+            }
+        }
+        private void MenuFlyoutItemPinAfter_Click(object sender, RoutedEventArgs e)
+        {
+            if (!SplitManager.IsRoot(ViewModel))
+            {
+                MainPage.Instance.xPresentationView.SetPinAtLocation(ViewModel.DocumentController);
             }
         }
 
@@ -839,6 +847,12 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemPin_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add to Presentation after node",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemPinAfter_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = ViewModel.LayoutDocument.GetIsAdornment() ? "Remove Adornment Behavior" : "Add Adornment Behavior",

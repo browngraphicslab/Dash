@@ -28,6 +28,13 @@ namespace Dash
         }
         public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
 
+        private DocumentController _toPinNext = null;
+
+        public void SetPinAtLocation(DocumentController doc)
+        {
+            _toPinNext = doc;
+        }
+
         private int LastSelectedIndex { get; set; }
 
         public bool IsPresentationPlaying = false;
@@ -518,16 +525,31 @@ namespace Dash
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            var dc = ((PresentationItemViewModel)e.ClickedItem).Document;
+            var itemVM = (PresentationItemViewModel)e.ClickedItem;
+            if (_toPinNext != null)
+            {
+                ViewModel.AddToPinnedNodesCollection(_toPinNext, index:ViewModel.PinnedNodes.IndexOf(itemVM) + 1);
+                _toPinNext = null;
+            }
+            else
+            {
+                var dc = itemVM.Document;
 
-            NavigateToDocument(dc);
+                NavigateToDocument(dc);
+            }
         }
 
         // helper method for moving the mainpage screen
         private static void NavigateToDocument(DocumentController dc)
         {
             bool zoom = dc.GetField<BoolController>(KeyStore.PresContextZoomKey)?.Data ?? true;
-
+            var parent = dc.GetRegionDefinition();
+            if (parent != null)
+            {
+                var region = dc;
+                dc = parent;
+                dc.GotoRegion(region);
+            }
             if (zoom)
             {
                 SplitFrame.OpenInActiveFrame(dc);

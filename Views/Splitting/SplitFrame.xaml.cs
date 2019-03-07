@@ -83,6 +83,13 @@ namespace Dash
 
         public DocumentController OpenDocument(DocumentController document, DocumentController workspace)
         {
+            var parent = document.GetRegionDefinition();
+            if (parent != null)
+            {
+                var region = document;
+                document = parent;
+                document.GotoRegion(region);
+            }
             Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Any(doc => doc.GetDataDocument().Equals(document.GetDataDocument())) ?? false);
 
             if (ViewModel.DataDocument.Equals(workspace.GetDataDocument())) //Collection is already open, so we need to animate to it
