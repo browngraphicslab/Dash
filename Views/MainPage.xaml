@@ -173,9 +173,9 @@
             </Grid>
             <Grid HorizontalAlignment="Left" Margin="78 0 0 0">
                 <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right"  >
-                    <local:DocumentPathView x:Name="XDocPathView" x:FieldModifier="public" />
                     <Button  Name="xBackButton" FontFamily="Segoe MDL2 Assets" Foreground="White" Content="&#xE72B;" Padding="4"  Margin="0 -12  0 0" Click="xBackButton_Clicked"/>
                     <Button  Name="xForwardButton" FontFamily="Segoe MDL2 Assets" Foreground="White" Content="&#xE72A;" Padding="4" Margin="0 -12  0 0" Click="xForwardButton_Clicked"/>
+                    <local:DocumentPathView x:Name="XDocPathView" x:FieldModifier="public" />
                 </StackPanel>
             </Grid>
         </Grid>

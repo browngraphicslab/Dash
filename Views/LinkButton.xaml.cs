@@ -90,7 +90,7 @@ namespace Dash
         private async void LinkButton_Tapped(object sender, TappedRoutedEventArgs args)
         {
             _doubleTapped = false;
-            await Task.Delay(new TimeSpan(0, 0, 0, 0, 100));
+            await Task.Delay(new TimeSpan(0, 0, 0, 0, 200));
             if (!_doubleTapped)
             {
                 _tooltip.IsOpen = false;

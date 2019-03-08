@@ -76,11 +76,25 @@ namespace Dash
                 switch (args.VirtualKey)
                 {
                 case VirtualKey.Right:
-                    this.NextButton_Click(null, null);
+                    if (this.IsCtrlPressed())
+                    {
+                        SplitFrame.ActiveFrame.GoForward();
+                    }
+                    else
+                    {
+                        this.NextButton_Click(null, null);
+                    }
                     args.Handled = true;
                     break;
                 case VirtualKey.Left:
-                    this.BackButton_Click(null, null);
+                    if (this.IsCtrlPressed())
+                    {
+                        SplitFrame.ActiveFrame.GoBack();
+                    }
+                    else
+                    {
+                        this.BackButton_Click(null, null);
+                    }
                     args.Handled = true;
                     break;
                 case VirtualKey.Up:
@@ -236,7 +250,7 @@ namespace Dash
 
                     xPlayStopButton.Icon = new SymbolIcon(Symbol.Play);
                     xPlayStopButton.Label = "Play";
-                    xPinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
+                    //xPinnedNodesListView.SelectionMode = ListViewSelectionMode.None;
 
                     //_startCollection.SetField(KeyStore.PanZoomKey, _panZoom, true);
                     //_startCollection.SetField(KeyStore.PanPositionKey, _panPos, true);
@@ -254,8 +268,16 @@ namespace Dash
                     // zoom to first item in the listview
 
                     xPinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
-                    int nextIndex = GetNextIndex(-1);
+                    int nextIndex = xPinnedNodesListView.SelectedIndex;
+                    if (nextIndex >= 0)
+                    {
+                        nextIndex--;
+                    }
+                    nextIndex = GetNextIndex(nextIndex);
                     xPinnedNodesListView.SelectedIndex = nextIndex;
+
+                    //int nextIndex = GetNextIndex(-1);
+                    //xPinnedNodesListView.SelectedIndex = nextIndex;
                     foreach (PresentationItemViewModel item in xPinnedNodesListView.Items)
                     {
                         if (item.Document.GetField<BoolController>(KeyStore.PresentationVisibleKey)?.Data ?? false)
@@ -269,6 +291,7 @@ namespace Dash
                         ToDocument(ViewModel.PinnedNodes[i].Document, false);
                     }
 
+                    UpdateTransform(nextIndex);
 
                     _startCollection = MainPage.Instance.MainDocument.GetDataDocument().GetField<DocumentController>(KeyStore.LastWorkspaceKey);
 
@@ -331,10 +354,10 @@ namespace Dash
                 doc.SetHidden(reverse);
             }
 
-            if (ShouldNavigate(doc) && !reverse)
-            {
-                NavigateToDocument(doc);
-            }
+            //if (ShouldNavigate(doc) && !reverse)
+            //{
+            //    NavigateToDocument(doc);
+            //}
         }
 
         private void FromDocument(DocumentController doc, bool reverse)
@@ -349,9 +372,22 @@ namespace Dash
                 doc.SetField<NumberController>(KeyStore.OpacityKey, reverse ? 1 : 0.5, true);
             }
 
-            if (ShouldNavigate(doc) && reverse)
+            //if (ShouldNavigate(doc) && reverse)
+            //{
+            //    NavigateToDocument(doc);
+            //}
+        }
+
+        private void UpdateTransform(int currentIndex)
+        {
+            for (int i = currentIndex; i >= 0; i--)
             {
-                NavigateToDocument(doc);
+                var doc = ViewModel.PinnedNodes[i].Document;
+                if (ShouldNavigate(doc))
+                {
+                    NavigateToDocument(doc);
+                    break;
+                }
             }
         }
 
@@ -433,6 +469,8 @@ namespace Dash
             {
                 FromDocument(ViewModel.PinnedNodes[i].Document, true);
             }
+
+            UpdateTransform(nextIndex);
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
@@ -477,6 +515,8 @@ namespace Dash
             {
                 ToDocument(ViewModel.PinnedNodes[i].Document, false);
             }
+
+            UpdateTransform(nextIndex);
         }
 
 
