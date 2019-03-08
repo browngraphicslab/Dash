@@ -96,7 +96,7 @@ namespace Dash.Views.Collection
                 dbf.SetAreContentsHitTestVisible(false);
 
                 xFolderPreview.Content = new DocumentView() { ViewModel = new DocumentViewModel(db) { IsDimensionless = true } };
-                xFolderIcon.Content    = new DocumentView() { ViewModel = new DocumentViewModel(dbf) { IsDimensionless = true } };
+                //xFolderIcon.Content    = new DocumentView() { ViewModel = new DocumentViewModel(dbf) { IsDimensionless = true } };
             }
         }
         public void OnDocumentSelected(bool selected)
@@ -108,7 +108,7 @@ namespace Dash.Views.Collection
 
         public void SetDropIndicationFill(Brush fill)
         {
-            xFolderIcon.Foreground = (fill as SolidColorBrush)?.Color != Colors.Transparent ? fill : new SolidColorBrush(Colors.DarkGoldenrod);
+            //xFolderIcon.Foreground = (fill as SolidColorBrush)?.Color != Colors.Transparent ? fill : new SolidColorBrush(Colors.DarkGoldenrod);
          }
 
         public void SetupContextMenu(MenuFlyout contextMenu)

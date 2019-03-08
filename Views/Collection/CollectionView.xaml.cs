@@ -1,12 +1,20 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Graphics.Display;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.FontIcons;
 using Dash.Views.Collection;
+using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -206,6 +214,12 @@ namespace Dash
             (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => Iconify_OnClick();
             contextMenu.Items.Add(new MenuFlyoutItem()
             {
+                Text = "Iconify with Image",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
+            });
+            (contextMenu.Items.Last() as MenuFlyoutItem).Click += (ss, ee) => IconifyWithImage_OnClick();
+            contextMenu.Items.Add(new MenuFlyoutItem()
+            {
                 Text = "Buttonize",
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.WindowMinimize }
             });
@@ -289,6 +303,25 @@ namespace Dash
         private void Templatize_OnClick()
         {
             CollectionViewModel.ConvertToTemplate(ViewModel.ContainerDocument, ViewModel.ContainerDocument);
+        }
+        private async void IconifyWithImage_OnClick()
+        {
+            var rtb = new RenderTargetBitmap();
+            await rtb.RenderAsync((FrameworkElement)xContentControl.Content, 2000, 0);
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var filePath = UtilShared.GenerateNewId() + ".jpg";
+            var localFile = await localFolder.CreateFileAsync(filePath, CreationCollisionOption.GenerateUniqueName);
+            var fileStream = await localFile.OpenAsync(FileAccessMode.ReadWrite);
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
+            var displayInformation = DisplayInformation.GetForCurrentView();
+            var pixels = (await rtb.GetPixelsAsync()).ToArray();
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied, (uint)rtb.PixelWidth, (uint)rtb.PixelHeight,
+                displayInformation.RawDpiX, displayInformation.RawDpiY, pixels);
+            await encoder.FlushAsync();
+            var doc = await ImageToDashUtil.CreateImageNoteFromLocalFile(localFile, "Icon");
+            ViewModel.ContainerDocument.GetDataDocument().SetField(KeyStore.FolderPreviewKey, doc, true);
+            ViewModel.ViewType = CollectionViewType.Icon;
         }
         private void Iconify_OnClick() 
         {

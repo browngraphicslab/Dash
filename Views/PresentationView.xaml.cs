@@ -346,7 +346,7 @@ namespace Dash
 
             if (ShouldFade(doc))
             {
-                doc.SetField<NumberController>(KeyStore.OpacityKey, reverse ? 1 : 0.3, true);
+                doc.SetField<NumberController>(KeyStore.OpacityKey, reverse ? 1 : 0.5, true);
             }
 
             if (ShouldNavigate(doc) && reverse)
