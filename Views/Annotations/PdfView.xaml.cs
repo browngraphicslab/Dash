@@ -368,16 +368,23 @@ namespace Dash
                     await Task.Run(async () =>
                     {
                         _pdfTextInitialized = true;
-                        var newstrategy = new BoundsExtractionStrategy(new PdfDocument(new PdfReader(await _file.OpenStreamForReadAsync())));
-                        var (selectableElements, authors, text, pages, vagueSections) = newstrategy.GetSelectableElements(0, newstrategy.Pages.Count);
-                        await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
-                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>  // needs to run on UI thread but may be called from a PDF Task
+                        if (_file != null)
                         {
-                            DataDocument?.SetField<TextController>(KeyStore.AuthorKey, authors, true);
-                            DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
-                            _topPdf.InitializeRegions(selectableElements, pages);
-                            _botPdf.InitializeRegions(selectableElements, pages);
-                        });
+                            var newstrategy =
+                                new BoundsExtractionStrategy(
+                                    new PdfDocument(new PdfReader(await _file.OpenStreamForReadAsync())));
+                            var (selectableElements, authors, text, pages, vagueSections) =
+                                newstrategy.GetSelectableElements(0, newstrategy.Pages.Count);
+                            await _pdfEndpoint.AddPdf(uri, pages, selectableElements);
+                            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                () => // needs to run on UI thread but may be called from a PDF Task
+                                {
+                                    DataDocument?.SetField<TextController>(KeyStore.AuthorKey, authors, true);
+                                    DataDocument?.SetField<TextController>(KeyStore.DocumentTextKey, text, true);
+                                    _topPdf.InitializeRegions(selectableElements, pages);
+                                    _botPdf.InitializeRegions(selectableElements, pages);
+                                });
+                        }
                     });
                 }
             }

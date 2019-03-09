@@ -94,7 +94,7 @@ namespace Dash
         }
 
         //Add passed-in document controller to the current presentation
-        public void AddToPinnedNodesCollection(DocumentController dc, DocumentController parentPres = null)
+        public void AddToPinnedNodesCollection(DocumentController dc, DocumentController parentPres = null, int index = -1)
         {
             if (PinnedNodes.Count == 0)
             {
@@ -109,10 +109,29 @@ namespace Dash
             else
             {
                 var pres = parentPres ?? CurrPres;
-                pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(dc);
+                if (index == -1)
+                {
+                    pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey).Add(dc);
+                }
+                else
+                {
+                    pres.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey).Insert(index, dc);
+                }
+
                 if (pres == CurrPres)
                 {
-                    PinnedNodes.Add(new PresentationItemViewModel(dc, PinnedNodes.Count));
+                    if (index == -1)
+                    {
+                        PinnedNodes.Add(new PresentationItemViewModel(dc, PinnedNodes.Count));
+                    }
+                    else
+                    {
+                        for (int i = index; i < PinnedNodes.Count; ++i)
+                        {
+                            PinnedNodes[i].Num++;
+                        }
+                        PinnedNodes.Insert(index, new PresentationItemViewModel(dc, index));
+                    }
                 }
             }
 

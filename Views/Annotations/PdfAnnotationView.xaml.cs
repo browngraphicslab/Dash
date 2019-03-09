@@ -58,7 +58,7 @@ namespace Dash
         public DocumentController                 LayoutDocument => ViewModel?.LayoutDocument;
         public DataVirtualizationSource           Pages { get; set; }
         public WPdf.PdfDocument                   PDFdoc { get; set; }
-        public InkCanvas XInkCanvas;
+        //public InkCanvas XInkCanvas;
         public double                             PdfMaxWidth { get; set; } = 1;
         public double                             PdfTotalHeight{ get; set; }
         public bool                               ActiveView { get; set; }
@@ -396,16 +396,16 @@ namespace Dash
                
                 xPdfGridWithEmbeddings.Children.Add(_annotationOverlay.AnnotationOverlayEmbeddings);
 
-                XInkCanvas = new InkCanvas();
-                XParentPdfGrid.Children.Add(XInkCanvas);
-                _annotationOverlay.BindInkCanvas();
+                //XInkCanvas = new InkCanvas();
+                //XParentPdfGrid.Children.Add(XInkCanvas);
+                //_annotationOverlay.BindInkCanvas();
                 //xPdfGridWithEmbeddings.Children.Add(XInkCanvas);
 
 
                 _annotationOverlay.CurrentAnnotationType =  AnnotationType.Region;
             }
 
-            xInkToolbar.TargetInkCanvas = XInkCanvas;
+            //xInkToolbar.TargetInkCanvas = XInkCanvas;
 
             if (Pages.PageSizes.Count != 0)
             {

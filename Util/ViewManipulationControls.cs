@@ -165,7 +165,8 @@ namespace Dash
 
                     TouchInteractions.isPanning = true;
                     TouchInteractions.CurrInteraction = TouchInteractions.TouchInteraction.Pan;
-                    e.Handled = true;
+
+                e.Handled = true;
                 }
                 else if (e.PointerDeviceType == PointerDeviceType.Touch && TouchInteractions.NumFingers == 1)
                 {

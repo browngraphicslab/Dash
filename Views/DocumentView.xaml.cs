@@ -121,8 +121,8 @@ namespace Dash
             DragStarting  += (s, e) => SelectionManager.DragStarting(this, s, e);
             DropCompleted += (s, e) => SelectionManager.DropCompleted(this, s, e);
             RightTapped   += (s, e) => { e.Handled = true; TappedHandler(true); };
-            Tapped        += (s, e) => { e.Handled = true; TappedHandler(false, e); };
-            DoubleTapped  += (s, e) => ExhibitBehaviors(KeyStore.DoubleTappedOpsKey);
+            Tapped        += (s, e) => { e.Handled = true; TappedHandler(false); };
+            DoubleTapped  += async (s, e) => { e.Handled = await ExhibitBehaviors(KeyStore.DoubleTappedOpsKey); };
             PointerPressed += (s, e) => this_PointerPressed(s, e);
             PointerCanceled += (s, e) =>
             {
@@ -593,11 +593,14 @@ namespace Dash
                 return true;
             }
 
-            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey) &&
-                !ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+            if (behaviorKey.Equals(KeyStore.DoubleTappedOpsKey))
             {
-                MenuFlyoutItemOpen_OnClick(null, null);
-                _doubleTapped = true;
+                if (!ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
+                {
+                    MenuFlyoutItemOpen_OnClick(null, null);
+                    _doubleTapped =  true;
+                }
+                return true;
             }
 
             return false;
@@ -763,11 +766,19 @@ namespace Dash
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    MainPage.Instance.xPresentationView.PinToPresentation(ViewModel.DocumentController);                    if (ViewModel.LayoutDocument == null)
+                    MainPage.Instance.xPresentationView.PinToPresentation(ViewModel.DocumentController);
+                    if (ViewModel.LayoutDocument == null)
                     {
                         Debug.WriteLine("uh oh");
                     }
                 }
+            }
+        }
+        private void MenuFlyoutItemPinAfter_Click(object sender, RoutedEventArgs e)
+        {
+            if (!SplitManager.IsRoot(ViewModel))
+            {
+                MainPage.Instance.xPresentationView.SetPinAtLocation(ViewModel.DocumentController);
             }
         }
 
@@ -910,6 +921,12 @@ namespace Dash
                 Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
             });
             (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemPin_Click;
+            xMenuFlyout.Items.Add(new MenuFlyoutItem()
+            {
+                Text = "Add to Presentation after node",
+                Icon = new FontIcons.FontAwesome { Icon = FontAwesomeIcon.MapPin }
+            });
+            (xMenuFlyout.Items.Last() as MenuFlyoutItem).Click += MenuFlyoutItemPinAfter_Click;
             xMenuFlyout.Items.Add(new MenuFlyoutItem()
             {
                 Text = ViewModel.LayoutDocument.GetIsAdornment() ? "Remove Adornment Behavior" : "Add Adornment Behavior",

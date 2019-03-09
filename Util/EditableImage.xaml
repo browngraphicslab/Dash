@@ -30,7 +30,7 @@
                     <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" />
                 </Grid>
                 <Canvas x:Name="XAnnotationGridWithEmbeddings" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                <InkCanvas x:Name="XInkCanvas" x:FieldModifier="public"></InkCanvas>
+                <!--<InkCanvas x:Name="XInkCanvas" x:FieldModifier="public"></InkCanvas>-->
             </Grid>
         </Viewbox>
     </Grid>

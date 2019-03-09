@@ -11,7 +11,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using MyToolkit.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -65,7 +64,7 @@ namespace Dash
                 }
 
                 doc.SetFitToParent(false);
-                var openViewType = doc.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data;
+                string openViewType = doc.GetDereferencedField<TextController>(KeyStore.CollectionOpenViewTypeKey, null)?.Data;
                 if (openViewType != null)
                 {
                     doc.SetField<TextController>(KeyStore.CollectionViewTypeKey, openViewType, true);
@@ -84,7 +83,14 @@ namespace Dash
 
         public DocumentController OpenDocument(DocumentController document, DocumentController workspace)
         {
-            Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Contains(document) ?? false);
+            var parent = document.GetRegionDefinition();
+            if (parent != null)
+            {
+                var region = document;
+                document = parent;
+                document.GotoRegion(region);
+            }
+            Debug.Assert(workspace.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.Any(doc => doc.GetDataDocument().Equals(document.GetDataDocument())) ?? false);
 
             if (ViewModel.DataDocument.Equals(workspace.GetDataDocument())) //Collection is already open, so we need to animate to it
             {
@@ -93,15 +99,39 @@ namespace Dash
             }
             else
             {
-                var center = document.GetPosition();
-                var size = document.GetActualSize();
+                var position = document.GetPosition();
+                var center = position;
+                var size   = document.GetActualSize();
                 center.X += (size.X - ActualWidth) / 2;
                 center.Y += (size.Y - ActualHeight) / 2;
-                center.X = -center.X;
-                center.Y = -center.Y;
+                center.X *= -1;
+                center.Y *= -1;
+
+                double widthRatio = ActualWidth / size.X;
+                double heightRatio = ActualHeight / size.Y;
+                widthRatio = Math.Clamp(widthRatio, 0.2, 6);
+                heightRatio = Math.Clamp(heightRatio, 0.2, 6);
+                double scale = Math.Min(widthRatio, heightRatio);
+                scale *= 0.9;
                 workspace = OpenDocument(workspace);
-                workspace.SetField<PointController>(KeyStore.PanPositionKey, center, true);
-                workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(1, 1), true);
+                var translate = new TranslateTransform
+                {
+                    X = center.X,
+                    Y = center.Y
+                };
+                var scaleTrans = new ScaleTransform
+                {
+                    CenterX = position.X + size.X / 2,
+                    CenterY = position.Y + size.Y / 2,
+                    ScaleX = scale,
+                    ScaleY = scale
+                };
+                var g = new TransformGroup();
+                g.Children.Add(scaleTrans);
+                g.Children.Add(translate);
+                var mat = g.Value;
+                workspace.SetField<PointController>(KeyStore.PanPositionKey, new Point(mat.OffsetX, mat.OffsetY), true);
+                workspace.SetField<PointController>(KeyStore.PanZoomKey, new Point(mat.M11, mat.M22), true);
                 return workspace;
             }
         }
@@ -197,16 +227,16 @@ namespace Dash
 
         private void TopLeftOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var x = e.Cumulative.Translation.X;
-            var y = e.Cumulative.Translation.Y;
-            var angle = Math.Atan2(y, x);
+            double x = e.Cumulative.Translation.X;
+            double y = e.Cumulative.Translation.Y;
+            double angle = Math.Atan2(y, x);
             angle = angle * 180 / Math.PI;
             if (angle >= -60 && angle < 45)
             {
                 Split(SplitDirection.Left);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
-                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                int index = currentDef.Parent.Children.IndexOf(currentDef);
                 var previousDef = currentDef.Parent.Children[index - 1];
                 _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(previousDef, currentDef, args.Delta.Translation);
                 XTopLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
@@ -216,7 +246,7 @@ namespace Dash
                 Split(SplitDirection.Up);
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
-                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                int index = currentDef.Parent.Children.IndexOf(currentDef);
                 var prevDef = currentDef.Parent.Children[index - 1];
                 _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(prevDef, currentDef, args.Delta.Translation);
                 XTopLeftResizer.ManipulationDelta += _manipulationDeltaHandler;
@@ -272,9 +302,9 @@ namespace Dash
 
         private void BottomRightOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var x = e.Cumulative.Translation.X;
-            var y = e.Cumulative.Translation.Y;
-            var angle = Math.Atan2(y, x);
+            double x = e.Cumulative.Translation.X;
+            double y = e.Cumulative.Translation.Y;
+            double angle = Math.Atan2(y, x);
             angle = angle * 180 / Math.PI;
             if (angle > 120 || angle < -135)
             {
@@ -282,7 +312,7 @@ namespace Dash
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
-                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                int index = currentDef.Parent.Children.IndexOf(currentDef);
                 var nextDef = currentDef.Parent.Children[index + 1];
                 _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
                 XBottomRightResizer.ManipulationDelta += _manipulationDeltaHandler;
@@ -293,7 +323,7 @@ namespace Dash
 
                 var pane = (SplitPane) Parent;
                 var currentDef = SplitPane.GetSplitLocation(this);
-                var index = currentDef.Parent.Children.IndexOf(currentDef);
+                int index = currentDef.Parent.Children.IndexOf(currentDef);
                 var nextDef = currentDef.Parent.Children[index + 1];
                 _manipulationDeltaHandler = (o, args) => pane.ResizeSplits(currentDef, nextDef, args.Delta.Translation);
                 XBottomRightResizer.ManipulationDelta += _manipulationDeltaHandler;
@@ -339,7 +369,7 @@ namespace Dash
                         bool previous = (vertical ? e.Cumulative.Translation.Y : e.Cumulative.Translation.X) < 0;
                         if (previous)
                         {
-                            var index = splitDef.Parent.Children.IndexOf(splitDef);
+                            int index = splitDef.Parent.Children.IndexOf(splitDef);
                             var neighborSplit = splitDef.Parent.Children[index - 1];
                             parentManager.Delete(neighborSplit, SplitDefinition.JoinOption.JoinNext);
                         }
@@ -366,7 +396,7 @@ namespace Dash
                         }
                         else
                         {
-                            var index = splitDef.Parent.Children.IndexOf(splitDef);
+                            int index = splitDef.Parent.Children.IndexOf(splitDef);
                             var neighborSplit = splitDef.Parent.Children[index + 1];
                             parentManager.Delete(neighborSplit, SplitDefinition.JoinOption.JoinPrevious);
                         }
@@ -417,15 +447,15 @@ namespace Dash
                 var docsToAdd = await e.DataView.GetDroppableDocumentsForDataOfType(DataTransferTypeInfo.Any, XDocView, new Point());
                 if (docsToAdd.Count != 0)
                 {
-                    var fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
+                    bool fromFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
 
                     var dragModel        = e.DataView.GetDragModel();
                     var dragDocModel     = dragModel as DragDocumentModel;
-                    var internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
-                    var isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
-                    var isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
-                    var isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
-                    var isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
+                    bool internalMove     = !MainPage.Instance.IsShiftPressed() && !MainPage.Instance.IsAltPressed() && !MainPage.Instance.IsCtrlPressed() && !fromFileSystem;
+                    bool isLinking        = e.AllowedOperations.HasFlag(DataPackageOperation.Link) && internalMove && dragDocModel?.DraggingLinkButton == true;
+                    bool isMoving         = e.AllowedOperations.HasFlag(DataPackageOperation.Move) && internalMove && dragDocModel?.DraggingLinkButton != true;
+                    bool isCopying        = e.AllowedOperations.HasFlag(DataPackageOperation.Copy) && (fromFileSystem || MainPage.Instance.IsShiftPressed());
+                    bool isSettingContext = MainPage.Instance.IsAltPressed() && !fromFileSystem;
 
                     e.AcceptedOperation = isSettingContext ? DataPackageOperation.None :
                                           isLinking ? DataPackageOperation.Link :
@@ -474,6 +504,7 @@ namespace Dash
         {
             (sender as Shape).Fill = Transparent;
             e.Handled = true;
+            return;
             await DropHandler(e, SplitDirection.InPlace);
         }
 
@@ -539,7 +570,7 @@ namespace Dash
         {
             ActiveDocumentChanged?.Invoke(frame);
             if (frame == ActiveFrame)
-            MainPage.Instance.XDocPathView.Document = (frame.DataContext as DocumentViewModel)?.DocumentController;
+                MainPage.Instance.XDocPathView.Document = (frame.DataContext as DocumentViewModel)?.DocumentController;
         }
 
         private readonly PointerEventHandler _pointerMoved;
@@ -552,7 +583,7 @@ namespace Dash
             XLeftDropTarget.Visibility = Visibility.Visible;
             XTopDropTarget.Visibility = Visibility.Visible;
             XBottomDropTarget.Visibility = Visibility.Visible;
-            XCenterDropTarget.Visibility = Visibility.Visible;
+            //XCenterDropTarget.Visibility = Visibility.Visible;
 
             this.RemoveHandler(DragOverEvent, _draggedOver);
             this.AddHandler(PointerMovedEvent, _pointerMoved, true);
@@ -564,7 +595,7 @@ namespace Dash
             XLeftDropTarget.Visibility = Visibility.Collapsed;
             XTopDropTarget.Visibility = Visibility.Collapsed;
             XBottomDropTarget.Visibility = Visibility.Collapsed;
-            XCenterDropTarget.Visibility = Visibility.Collapsed;
+            //XCenterDropTarget.Visibility = Visibility.Collapsed;
             this.AddHandler(DragOverEvent, _draggedOver, true);
             this.RemoveHandler(PointerMovedEvent, _pointerMoved);
         }
