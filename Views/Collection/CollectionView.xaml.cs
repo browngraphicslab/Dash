@@ -334,33 +334,19 @@ namespace Dash
 
             //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
             //delete selected docs and search
-            if (words.Length > 2 && (words.Contains("hey") || words.Contains("haydash") || words.Contains("hiddush")))
+            if (words.Length > 2)
             {
-                int at = Array.IndexOf(words, "hey") + 1;
-                int command_at = at + 1;
-                if (at == 0)
-                    command_at = Array.IndexOf(words, "haydash") + 1;
-                if (at == 0)
-                    command_at = Array.IndexOf(words, "hiddush") + 1;
-                string[] dashWords = { "dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun", "dashtan", "nash", "guys" };
-                if (at < words.Length && (dashWords.Contains(words[at]) || words.Contains("haydash") || words.Contains("hiddush")))
+                if (words[0] == "hey" && words[1] == "dash")
                 {
-                    string command;
-                    if (command_at >= words.Length)
-                        command = "";
-                    else
-                        command = words[command_at];
+                    string command = words[2];
                     var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
                     string searchTerm = "";
                     switch (command)
                     {
                     case "undo":
-                    case "do":
                         UtilFunctions.Undo();
                         break;
                     case "redo":
-                    case "review":
-                    case "reido":
                         UtilFunctions.Redo();
                         break;
                     case "presentation":
