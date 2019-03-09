@@ -1,17 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Globalization;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
+using Windows.Media.SpeechRecognition;
 using Windows.Media.SpeechSynthesis;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -293,135 +298,144 @@ namespace Dash
 
         public static async void voiceCommands()
         {
+            //dispatcher = CoreWindow.GetForCurrentThread().Dispatcher;
             // Create an instance of SpeechRecognizer.
-            var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
+            var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer(new Language("en-US"));
+            // Only allow specific input
+            string[] responses = { "hey dash undo", "hey dash redo", "hey dash next", "hey dash previous", "hey dash back", "hey dash delete",
+                "hey dash collection", "hey dash group", "hey dash search", "hey dash find", "hey dash presentation" };
+            // Add a list constraint to the recognizer.
+            var listConstraint = new Windows.Media.SpeechRecognition.SpeechRecognitionListConstraint(responses, "commands");
+            speechRecognizer.Constraints.Add(listConstraint);
             await speechRecognizer.CompileConstraintsAsync();
             //continually read for speech
             while (true)
             {
-                string[] words = new string[0];
                 try
                 {
                     Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult =
                         await speechRecognizer.RecognizeAsync();
                     string text = speechRecognitionResult.Text;
-                    Debug.WriteLine(text);
-                    words = text.Split(' ');
-                    last_spoken = text;
+                    respondToCommand(text);
                 }
                 catch (Exception)
                 {
                     break;
                 }
-
-
-                //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
-                //delete selected docs and search
-                if (words.Length > 2 && (words.Contains("hey") || words.Contains("haydash") || words.Contains("hiddush"))){ 
-                    int at = Array.IndexOf(words, "hey") + 1;
-                    int command_at = at + 1;
-                    if (at == 0)
-                        command_at = Array.IndexOf(words, "haydash") + 1;
-                    if (at == 0)
-                        command_at = Array.IndexOf(words, "hiddush") + 1;
-                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun", "dashtan", "nash", "guys" };
-                    if (at < words.Length && (dashWords.Contains(words[at])|| words.Contains("haydash") || words.Contains("hiddush")))
-                    {
-                        string command;
-                        if (command_at >= words.Length)
-                            command = "";
-                        else
-                            command = words[command_at];
-                        var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
-                        string searchTerm = "";
-                        switch (command)
-                        {
-                            case "undo":
-                            case "do":
-                                UtilFunctions.Undo();
-                                break;
-                            case "redo":
-                            case "review":
-                            case "reido":
-                                UtilFunctions.Redo();
-                                break;
-                            case "presentation":
-                                MainPage.Instance.xPresentationView.SetPresentationState(true);
-                                break;
-                            case "next":
-                                MainPage.Instance.xPresentationView.NextButton_Click(null, null);
-                                break;
-                            case "previous":
-                            case "back":
-                                MainPage.Instance.xPresentationView.BackButton_Click(null, null);
-                                break;
-                            case "delete":
-                                if (collection._marquee != null)
-                                    collection?.TriggerActionFromSelection(VirtualKey.Delete, true);
-                                else
-                                    SelectionManager.DeleteSelected();
-                                break;
-                            case "search":
-                                if (words.Length > 3)
-                                {
-                                    searchTerm = string.Join(' ', words, command_at + 1, words.Length - command_at - 1);
-                                }
-
-                                MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
-                                MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox
-                                    .xAutoSuggestBox);
-                                if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
-                                {
-                                    MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
-                                    MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
-                                    MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
-                                }
-
-                                MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
-                                break;
-                            case "find":
-                                var selected = TouchInteractions.HeldDocument?.ViewModel.DocumentController;
-                                if (selected != null)
-                                {
-                                    //find a doc related to selected one
-                                    searchTerm = selected.Title;
-                                } else if (words.Length > 3)
-                                {
-                                    searchTerm = string.Join(' ', words, command_at + 1, words.Length - command_at - 1);
-                                }
-
-                                var results = Search.Parse(searchTerm);
-                                if (results.Count != 0)
-                                {
-                                    var result = results.First().ViewDocument;
-                                    if (result == selected)
-                                    {
-                                        //found orgin doc - defeats purose 
-                                        result = null;
-                                        if (results.Count > 1)
-                                        {
-                                            result = results[1].ViewDocument;
-                                        } 
-                                    }
-                                    SplitFrame.TryNavigateToDocument(result);
-                                }
-                                break;
-                            case "collection":
-                                if (collection._marquee != null)
-                                    collection?.TriggerActionFromSelection(VirtualKey.C, true);
-                                break;
-                            case "group":
-                                if (collection._marquee != null)
-                                    collection?.TriggerActionFromSelection(VirtualKey.G, true);
-                                break;
-                        }
-                }
-            }
-
             }
         }
 
-        public static async Task<String> getSpokenText()
+        private static async void respondToCommand(string text)
+        {
+            Debug.WriteLine(text);
+            string[] words = text.Split(' ');
+            //if you make a link, the link descriptopn will be this text
+            last_spoken = text;
+
+            //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
+            //delete selected docs and search
+            if (words.Length > 2 && (words.Contains("hey") || words.Contains("haydash") || words.Contains("hiddush")))
+            {
+                int at = Array.IndexOf(words, "hey") + 1;
+                int command_at = at + 1;
+                if (at == 0)
+                    command_at = Array.IndexOf(words, "haydash") + 1;
+                if (at == 0)
+                    command_at = Array.IndexOf(words, "hiddush") + 1;
+                string[] dashWords = { "dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun", "dashtan", "nash", "guys" };
+                if (at < words.Length && (dashWords.Contains(words[at]) || words.Contains("haydash") || words.Contains("hiddush")))
+                {
+                    string command;
+                    if (command_at >= words.Length)
+                        command = "";
+                    else
+                        command = words[command_at];
+                    var collection = MainPage.Instance.GetFirstDescendantOfType<CollectionFreeformView>();
+                    string searchTerm = "";
+                    switch (command)
+                    {
+                    case "undo":
+                    case "do":
+                        UtilFunctions.Undo();
+                        break;
+                    case "redo":
+                    case "review":
+                    case "reido":
+                        UtilFunctions.Redo();
+                        break;
+                    case "presentation":
+                        MainPage.Instance.xPresentationView.SetPresentationState(true);
+                        break;
+                    case "next":
+                        MainPage.Instance.xPresentationView.NextButton_Click(null, null);
+                        break;
+                    case "previous":
+                    case "back":
+                        MainPage.Instance.xPresentationView.BackButton_Click(null, null);
+                        break;
+                    case "delete":
+                        if (collection._marquee != null)
+                            collection?.TriggerActionFromSelection(VirtualKey.Delete, true);
+                        else
+                            SelectionManager.DeleteSelected();
+                        break;
+                    case "search":
+                        searchTerm = await getSpokenText("Say what you want to search for...", "");
+
+                        MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
+                        MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox
+                            .xAutoSuggestBox);
+                        if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
+                        {
+                            MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
+                            MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                            MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                        }
+
+                        MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                        break;
+                    case "find":
+                        var selected = TouchInteractions.HeldDocument?.ViewModel.DocumentController;
+                        if (selected != null)
+                        {
+                            //find a doc related to selected one
+                            searchTerm = selected.Title;
+                        }
+                        else 
+                        {
+                            searchTerm = await getSpokenText("Say what you want to find...", "");
+                        }
+
+                        var results = Search.Parse(searchTerm);
+                        if (results.Count != 0)
+                        {
+                            var result = results.First().ViewDocument;
+                            if (result == selected)
+                            {
+                                //found orgin doc - defeats purose 
+                                result = null;
+                                if (results.Count > 1)
+                                {
+                                    result = results[1].ViewDocument;
+                                }
+                            }
+                            SplitFrame.TryNavigateToDocument(result);
+                        }
+                        break;
+                    case "collection":
+                        if (collection._marquee != null)
+                            collection?.TriggerActionFromSelection(VirtualKey.C, true);
+                        break;
+                    case "group":
+                        if (collection._marquee != null)
+                            collection?.TriggerActionFromSelection(VirtualKey.G, true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public static async Task<String> getSpokenText( string title = "Say what you want to save...", string subtitle = @"Ex. 'this document explains...'", bool ui = true)
         {
             try
             {
@@ -434,8 +448,8 @@ namespace Dash
                 // Add a web search grammar to the recognizer.
                 //var webSearchGrammar = new Windows.Media.SpeechRecognition.SpeechRecognitionTopicConstraint(Windows.Media.SpeechRecognition.SpeechRecognitionScenario.WebSearch, "webSearch");
 
-                speechRecognizer.UIOptions.AudiblePrompt = "Say what you want to save...";
-                speechRecognizer.UIOptions.ExampleText = @"Ex. 'this document explains...'";
+                speechRecognizer.UIOptions.AudiblePrompt = title;
+                speechRecognizer.UIOptions.ExampleText = subtitle;
                 //speechRecognizer.Constraints.Add(webSearchGrammar);
                 // speechRecognizer.Constraints.Add(new SpeechRecognitionVoiceCommandDefinitionConstraint());
                 //TODO: look into creating a SpeechRecognitionVoiceCommandDefinitionConstraint for speech commands
@@ -444,7 +458,15 @@ namespace Dash
                 await speechRecognizer.CompileConstraintsAsync();
 
                 // Start recognition.
-                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeWithUIAsync();
+                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult;
+                if (ui)
+                {
+                   speechRecognitionResult = await speechRecognizer.RecognizeWithUIAsync();
+                }
+                else
+                {
+                    speechRecognitionResult = await speechRecognizer.RecognizeAsync();
+                }
 
                 return speechRecognitionResult.Text;
 
@@ -472,6 +494,8 @@ namespace Dash
         }
 
         private static uint HResultPrivacyStatementDeclined = 0x80045509;
+        private CoreDispatcher dispatcher;
+
         private async void MakeSpeechDoc(object sender, RoutedEventArgs e)
         {
             var menuflyout = (sender as MenuFlyoutItem).GetFirstAncestorOfType<FrameworkElement>();

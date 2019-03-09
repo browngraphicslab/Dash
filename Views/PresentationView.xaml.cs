@@ -433,7 +433,7 @@ namespace Dash
             int selectedIndex = xPinnedNodesListView.SelectedIndex;
 
             int nextIndex = GetPreviousIndex(selectedIndex);
-            if (nextIndex == -1)
+            if (nextIndex < 0)
             {
                 if (_repeat)
                 {
