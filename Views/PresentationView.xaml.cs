@@ -424,7 +424,7 @@ namespace Dash
                 currentIndex--;
             }
 
-            return currentIndex - 1;
+            return Math.Max(currentIndex - 1, -1);
 
         }
 

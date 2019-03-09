@@ -303,7 +303,9 @@ namespace Dash
             var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer(new Language("en-US"));
             // Only allow specific input
             string[] responses = { "hey dash undo", "hey dash redo", "hey dash next", "hey dash previous", "hey dash back", "hey dash delete",
-                "hey dash collection", "hey dash group", "hey dash search", "hey dash find", "hey dash presentation" };
+                "hey dash collection", "hey dash group", "hey dash search", "hey dash find", "hey dash presentation", "hey dash forward",
+                "hey dash close"
+            };
             // Add a list constraint to the recognizer.
             var listConstraint = new Windows.Media.SpeechRecognition.SpeechRecognitionListConstraint(responses, "commands");
             speechRecognizer.Constraints.Add(listConstraint);
@@ -352,7 +354,11 @@ namespace Dash
                     case "presentation":
                         MainPage.Instance.xPresentationView.SetPresentationState(true);
                         break;
+                    case "close":
+                        MainPage.Instance.xPresentationView.SetPresentationState(false);
+                        break;
                     case "next":
+                    case "forward":
                         MainPage.Instance.xPresentationView.NextButton_Click(null, null);
                         break;
                     case "previous":
@@ -381,7 +387,7 @@ namespace Dash
                         MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
                         break;
                     case "find":
-                        var selected = TouchInteractions.HeldDocument?.ViewModel.DocumentController;
+                        var selected = TouchInteractions.HeldDocument?.ViewModel?.DocumentController;
                         if (selected != null)
                         {
                             //find a doc related to selected one
@@ -405,7 +411,20 @@ namespace Dash
                                     result = results[1].ViewDocument;
                                 }
                             }
-                            SplitFrame.TryNavigateToDocument(result);
+                            //if navigation failed, it wasn't in current workspace or something
+                            if (!SplitFrame.TryNavigateToDocument(result))
+                            {
+                                var tree = DocumentTree.MainPageTree;
+                                var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(result));
+                                if (docNode != null) //TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                                {
+                                    SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
+                                }
+                                else
+                                {
+                                    SplitFrame.OpenInActiveFrame(result);
+                                }
+                            }
                         }
                         break;
                     case "collection":
