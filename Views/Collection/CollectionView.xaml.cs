@@ -299,11 +299,21 @@ namespace Dash
             //continually read for speech
             while (true)
             {
-                Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult = await speechRecognizer.RecognizeAsync();
-                string text = speechRecognitionResult.Text;
-                Debug.WriteLine(text);
-                string[] words = text.Split(' ');
-                last_spoken = text;
+                string[] words = new string[0];
+                try
+                {
+                    Windows.Media.SpeechRecognition.SpeechRecognitionResult speechRecognitionResult =
+                        await speechRecognizer.RecognizeAsync();
+                    string text = speechRecognitionResult.Text;
+                    Debug.WriteLine(text);
+                    words = text.Split(' ');
+                    last_spoken = text;
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+
 
                 //user can use voice commands to undo, redo, open presentation, next and back in presentation, 
                 //delete selected docs and search
