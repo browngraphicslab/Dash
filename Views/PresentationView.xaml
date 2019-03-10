@@ -162,7 +162,6 @@
                     HorizontalAlignment="Stretch" 
                     Grid.Column="1" 
                     Opacity="0"
-                    SelectionMode="None" 
                     IsItemClickEnabled="True" 
                     ItemClick="PinnedNode_Click" 
                     RightTapped="PinnedNodesListView_OnRightTapped">

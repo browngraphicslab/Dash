@@ -1,6 +1,12 @@
-﻿using DashShared;
+﻿using System;
+using System.Diagnostics;
+using Windows.ApplicationModel.Core;
+using Dash.Converters;
+using DashShared;
 using Windows.Foundation;
-using System;
+using Windows.Media.Playback;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -9,21 +15,20 @@ using Windows.Devices.Input;
 using Windows.System;
 using Dash.Converters;
 using Windows.UI.Xaml.Input;
-using Windows.Devices.Input;
 
 namespace Dash
 {
-	class VideoBox : CourtesyDocument
-	{
-		public static DocumentType DocumentType = new DocumentType("7C4D8D1A-4E2B-45F4-A148-17EAFB4356B2", "Video Box");
-		private static readonly string PrototypeId = "513A5CEB-90FE-45A6-911E-1E46E933B553";
-		private static Uri DefaultVideoUri => new Uri("ms-appx://Dash/Assets/DefaultVideo.mp4");
+    class VideoBox : CourtesyDocument
+    {
+        public static DocumentType DocumentType = new DocumentType("7C4D8D1A-4E2B-45F4-A148-17EAFB4356B2", "Video Box");
+        private static readonly string PrototypeId = "513A5CEB-90FE-45A6-911E-1E46E933B553";
+        private static Uri DefaultVideoUri => new Uri("ms-appx://Dash/Assets/DefaultVideo.mp4");
 
-		public VideoBox(FieldControllerBase refToVideo, double x = 0, double y = 0, double w = 320, double h = 180)
-		{
-			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToVideo);
-			(fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
-			(fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
+        public VideoBox(FieldControllerBase refToVideo, double x = 0, double y = 0, double w = 320, double h = 180)
+        {
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToVideo);
+            (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
+            (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             SetupDocument(DocumentType, PrototypeId, "VideoBox Prototype Layout", fields);
         }
 
@@ -52,23 +57,38 @@ namespace Dash
                     e.Handled = true;
                 }
             };
-            
+
+            bool resetPosition = true;
             video.TransportControls.IsCompact = true;
             video.TransportControls.Visibility = Visibility.Collapsed;
-            video.Loaded   += (s,e) => video.TransportControls.Visibility = video.GetDocumentView().ViewModel.IsSelected ?  Visibility.Visible : Visibility.Collapsed;
-            video.Unloaded += (s,e) => video.MediaPlayer.Pause();
+            video.Loaded += (s, e) =>
+          {
+              video.TransportControls.Visibility = video.GetDocumentView().ViewModel.IsSelected
+                      ? Visibility.Visible
+                      : Visibility.Collapsed;
+              video.MediaPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(3);
+              video.MediaPlayer.CurrentStateChanged += async (sender, args) =>
+              {
+                  if (sender.PlaybackSession.PlaybackState == MediaPlaybackState.Playing && resetPosition)
+                  {
+                      resetPosition = false;
+                      await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                      {
+                          video.MediaPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(0);
+                      });
+                  }
+              };
+          };
+            video.Unloaded += (s, e) => video.MediaPlayer.Pause();
             video.PointerEntered += (s, e) =>
             {
                 video.TransportControls.Show();
                 video.TransportControls.Focus(FocusState.Programmatic);
             };
-            video.PointerExited += (s, e) =>
-            {
-                if (e.Pointer.PointerDeviceType != PointerDeviceType.Touch) video.TransportControls.Hide();
-            };
+            video.PointerExited += (s, e) => video.TransportControls.Hide();
 
             ManipulationControlHelper _manipulator = null;
-            video.Tapped         += (s, e) => video.TransportControls.Show();
+            video.Tapped += (s, e) => video.TransportControls.Show();
             video.PointerPressed += (s, e) =>
             {
                 //_manipulator = e.IsRightPressed() || !video.GetDocumentView().ViewModel.IsSelected ? new ManipulationControlHelper(video, true) : null;
@@ -78,36 +98,36 @@ namespace Dash
 
             // setup bindings on the video
             SetupVideoBinding(video, docController, key);
-			
-			return video;
-		}
 
-		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key)
-		{
-			BindVideoSource(video, controller, key);
-		}
+            return video;
+        }
 
-		/// <summary>
-		///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the video.
-		/// </summary>
-		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, KeyController key)
-		{
-			var data = docController.GetDereferencedField(key, null) as VideoController;
-			Debug.Assert(data != null);
-			var binding = new FieldBinding<VideoController>
-			{
-				Document = docController,
-				Key = key,
-				Mode = BindingMode.OneWay,
+        protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller, KeyController key)
+        {
+            BindVideoSource(video, controller, key);
+        }
+
+        /// <summary>
+        ///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the video.
+        /// </summary>
+        protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, KeyController key)
+        {
+            var data = docController.GetDereferencedField(key, null) as VideoController;
+            Debug.Assert(data != null);
+            var binding = new FieldBinding<VideoController>
+            {
+                Document = docController,
+                Key = key,
+                Mode = BindingMode.OneWay,
 				//converts uri to source data of the MediaPlayerElement
 				Converter = UriToIMediaPlayBackSourceConverter.Instance
-			};
-			//bind to source property of MediaPlayerElement
-			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
-		}
+            };
+            //bind to source property of MediaPlayerElement
+            video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
+        }
 
-		
-	}
+
+    }
 }
 
 
