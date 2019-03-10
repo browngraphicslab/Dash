@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Globalization;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
 using Windows.Media.SpeechSynthesis;
@@ -294,7 +295,10 @@ namespace Dash
         public static async void voiceCommands()
         {
             // Create an instance of SpeechRecognizer.
-            var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer();
+            var speechRecognizer = new Windows.Media.SpeechRecognition.SpeechRecognizer(new Language("en-US"));
+            // Add a web search grammar to the recognizer.
+            var webSearchGrammar = new Windows.Media.SpeechRecognition.SpeechRecognitionTopicConstraint(Windows.Media.SpeechRecognition.SpeechRecognitionScenario.WebSearch, "webSearch");
+            speechRecognizer.Constraints.Add(webSearchGrammar);
             await speechRecognizer.CompileConstraintsAsync();
             //continually read for speech
             while (true)
@@ -324,7 +328,7 @@ namespace Dash
                         command_at = Array.IndexOf(words, "haydash") + 1;
                     if (at == 0)
                         command_at = Array.IndexOf(words, "hiddush") + 1;
-                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun", "dashtan", "nash", "guys" };
+                    string[] dashWords = {"dash", "josh", "dadash", "bash", "tash", "dad", "dashawn", "dashun", "dashaun", "dashtan", "nash", "guys", "ash", "does" };
                     if (at < words.Length && (dashWords.Contains(words[at])|| words.Contains("haydash") || words.Contains("hiddush")))
                     {
                         string command;
@@ -348,7 +352,12 @@ namespace Dash
                             case "presentation":
                                 MainPage.Instance.xPresentationView.SetPresentationState(true);
                                 break;
+                            case "close":
+                                MainPage.Instance.xPresentationView.SetPresentationState(false);
+                                break;
                             case "next":
+                            case "schnetz":
+                            case "forward":
                                 MainPage.Instance.xPresentationView.NextButton_Click(null, null);
                                 break;
                             case "previous":
@@ -368,19 +377,18 @@ namespace Dash
                                 }
 
                                 MainPage.Instance.xMainSearchBox.xAutoSuggestBox.Text = searchTerm;
-                                MainPage.Instance.xMainSearchBox.ExecuteDishSearch(MainPage.Instance.xMainSearchBox
-                                    .xAutoSuggestBox);
-                                if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
+                                MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                                 if (MainPage.Instance.xSearchBoxGrid.Visibility != Visibility.Visible)
                                 {
                                     MainPage.Instance.xSearchBoxGrid.Visibility = Visibility.Visible;
                                     MainPage.Instance.xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                                     MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
                                 }
-
-                                MainPage.Instance.xMainSearchBox.Focus(FocusState.Pointer);
+                               
                                 break;
                             case "find":
-                                var selected = TouchInteractions.HeldDocument?.ViewModel.DocumentController;
+                            case "mind":
+                                var selected = TouchInteractions.HeldDocument?.ViewModel?.DocumentController;
                                 if (selected != null)
                                 {
                                     //find a doc related to selected one
@@ -403,8 +411,22 @@ namespace Dash
                                             result = results[1].ViewDocument;
                                         } 
                                     }
-                                    SplitFrame.TryNavigateToDocument(result);
-                                }
+                                    //if navigation failed, it wasn't in current workspace or something
+                                    if (!SplitFrame.TryNavigateToDocument(result))
+                                    {
+                                        var tree = DocumentTree.MainPageTree;
+                                        var docNode = tree.FirstOrDefault(dn => dn.ViewDocument.Equals(result));
+                                        if (docNode != null) //TODO This doesn't handle documents in collections that aren't in the document "visual tree"
+                                        {
+                                            SplitFrame.OpenDocumentInWorkspace(docNode.ViewDocument, docNode.Parent.ViewDocument);
+                                        }
+                                        else
+                                        {
+                                            SplitFrame.OpenInActiveFrame(result);
+                                        }
+                                    }
+                            }
+    
                                 break;
                             case "collection":
                                 if (collection._marquee != null)
