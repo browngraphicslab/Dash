@@ -40,9 +40,9 @@ namespace Dash
         /// </summary>
         public App()
         {
-#if !DEBUG
-            HockeyClient.Current.Configure("76a6328a3b574146b9d1a171d67f9af2");
-#endif
+//#if !DEBUG
+//            HockeyClient.Current.Configure("76a6328a3b574146b9d1a171d67f9af2");
+//#endif
             Instance = this;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
