@@ -60,11 +60,9 @@ namespace Dash
                 Text = "Select"
             };
 
-            var deleteBtn = new MenuFlyoutItem();
-            deleteBtn.Text = "Delete";
-
-            var pinButton = new MenuFlyoutItem();
-            pinButton.Text = "Pin to Presentation";
+            var deleteBtn = new MenuFlyoutItem { Text = "Delete" };
+            var pinButton = new MenuFlyoutItem { Text = "Pin to Presentation" };
+            var pinAfterButton = new MenuFlyoutItem { Text = "Pin To Presentation After" };
 
             var visOnScrollON = new MenuFlyoutItem();
             var visOnScrollOFF = new MenuFlyoutItem();
@@ -90,6 +88,11 @@ namespace Dash
             pinButton.Click += (s, e) =>
             {
                 MainPage.Instance.xPresentationView.PinToPresentation(RegionDocumentController);
+            };
+            pinAfterButton.Click += (s, e) =>
+            {
+                // SPLIT MANAGER IS ROOT CHECK?
+                MainPage.Instance.xPresentationView.SetPinAtLocation(RegionDocumentController);
             };
             visOnScrollON.Click += VisOnScrollOnOnClick;
             visOnScrollOFF.Click += VisOnScrollOnOnClick;

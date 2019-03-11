@@ -958,7 +958,7 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                var marqueeDocs = DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height)));
+                var marqueeDocs = DocsInMarquee(new Rect(pos, new Size(_marquee.ActualWidth, _marquee.ActualHeight)));
                 if (marqueeDocs.Any())
                 {
                     SelectionManager.SelectDocuments(marqueeDocs, this.IsShiftPressed());
@@ -1061,7 +1061,7 @@ namespace Dash
                    // _marquee.Height = newHeight;
 
                     Canvas.SetLeft(_marquee, newAnchor.X);
-                    Canvas.SetTop(_marquee, newAnchor.Y - 32);
+                    Canvas.SetTop(_marquee, newAnchor.Y);
 
                     return true;
                 }

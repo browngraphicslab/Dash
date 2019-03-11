@@ -85,7 +85,7 @@ namespace Dash
                 video.TransportControls.Show();
                 video.TransportControls.Focus(FocusState.Programmatic);
             };
-            video.PointerExited += (s, e) => video.TransportControls.Hide();
+            video.PointerExited += (s, e) => { if (e.Pointer.PointerDeviceType != PointerDeviceType.Touch) video.TransportControls.Hide(); };
 
             ManipulationControlHelper _manipulator = null;
             video.Tapped += (s, e) => video.TransportControls.Show();
