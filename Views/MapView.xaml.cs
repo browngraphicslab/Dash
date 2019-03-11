@@ -132,7 +132,7 @@ namespace Dash
             {
                 if (!mapActivateBtn.GetDescendants().Contains(e.OriginalSource))
                 {
-                    MainPage.Instance.JavaScriptHack.Focus(FocusState.Programmatic);
+                    //MainPage.Instance.JavaScriptHack.Focus(FocusState.Programmatic);
                     var mapViewCanvas = xMapDocumentView.GetFirstDescendantOfType<CollectionFreeformView>()?.GetItemsControl().GetFirstDescendantOfType<Canvas>();
                     var mapPt = e.GetPosition(mapViewCanvas);
 
